@@ -68,7 +68,7 @@ contact. The error names the conflicting field and the creation is rolled back.
 Install `effect` next to `samva` when using the Effect entrypoint:
 
 ```bash
-bun add samva effect@4.0.4
+bun add samva effect@4.0.5
 ```
 
 ```typescript

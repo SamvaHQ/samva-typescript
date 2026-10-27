@@ -1,3 +1,10 @@
+## @samva/webhooks@0.29.1
+
+### Use Effect 4.0.5 with the SDK and webhook adapter
+
+Install `effect@4.0.5` when using `samva/effect` or `@samva/webhooks/effect`. Both packages require
+that exact peer version.
+
 ## @samva/webhooks@0.29.0
 
 ### Author newsletter issues and pin saved content to campaigns

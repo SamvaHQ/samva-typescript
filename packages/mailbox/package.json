@@ -1,6 +1,6 @@
 {
   "name": "@samva/mailbox",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Authoring SDK for Samva mailbox extensions",
   "keywords": [
     "authoring",
@@ -54,7 +54,7 @@
     "test": "vitest run --root ../.. --project packages packages/mailbox/tests"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.29.0"
+    "@samva/webhooks": "workspace:0.29.1"
   },
   "devDependencies": {
     "tsc-rs": "catalog:",
