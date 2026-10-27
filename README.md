@@ -10,18 +10,17 @@ The source of Samva's TypeScript packages on npm:
 
 Each package's README covers installation and use.
 
-This repository is a read-only mirror. Samva's release process writes it after every release,
-copying each package's source exactly as it is built and published, and tags every version as
-`<package>@<version>`, such as `samva@0.27.0`. It does not accept pull requests, and the packages do
-not build here: they are generated from Samva's API description and built inside Samva's own
-repository, where `workspace:` and `catalog:` dependency versions resolve. The manifests published
-to npm carry the resolved versions.
+Samva's release process publishes each release's source here, exactly as it is built and published
+to npm, and tags every version as `<package>@<version>`, such as `samva@0.28.0`. The packages are
+generated from Samva's API description and built in Samva's own repository, where `workspace:` and
+`catalog:` dependency versions resolve, so they do not build here. The manifests published to npm
+carry the resolved versions.
 
 The SDK and the webhook types are generated from the public OpenAPI description in
 [SamvaHQ/samva-openapi](https://github.com/SamvaHQ/samva-openapi).
 
-Report a bug or request a change as an issue in this repository. See [SECURITY.md](./SECURITY.md)
-for vulnerabilities.
+Issues and pull requests are welcome; [CONTRIBUTING.md](./CONTRIBUTING.md) explains how a pull
+request reaches a release. See [SECURITY.md](./SECURITY.md) for vulnerabilities.
 
 ## License
 

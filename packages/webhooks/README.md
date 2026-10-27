@@ -1,5 +1,7 @@
 # `@samva/webhooks`
 
+Samva is the email API for your app: transactional and campaign sending, inbound mail, and webhooks behind one API.
+
 Verify signed Samva webhook deliveries in Node.js, Bun, Cloudflare Workers, and other Web
 Crypto-compatible runtimes.
 

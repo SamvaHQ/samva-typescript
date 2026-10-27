@@ -1,5 +1,7 @@
 # @samva/mailbox
 
+Samva is the email API for your app: transactional and campaign sending, inbound mail, and webhooks behind one API.
+
 Author extensions that react to Samva mailbox events and call the mailbox API.
 
 ## Hosted extension

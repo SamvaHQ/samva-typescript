@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "description": "TypeScript SDK for the Samva email API",
   "keywords": [
     "api-client",
@@ -208,7 +208,7 @@
     "typecheck": "tsc-rs --noEmit && tsc-rs --noEmit -p codegen/tsconfig.json && tsc-rs --noEmit -p tests/tsconfig.json && tsc-rs --noEmit --project tests/parity/tsconfig.json"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.28.0"
+    "@samva/webhooks": "workspace:0.28.1"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",
