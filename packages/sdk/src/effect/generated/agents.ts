@@ -219,7 +219,6 @@ export const AgentsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
         integrationIds: [],
         mode: "supervised",
         model: "standard",
-        approvalPolicy: "toolActions",
         workingHours: null,
         takeoverTimeoutMinutes: 30,
       },

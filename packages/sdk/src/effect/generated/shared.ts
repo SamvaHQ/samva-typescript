@@ -96,11 +96,6 @@ export const AgentModel = /* @__PURE__ */ Schema.Union([
   Schema.Literal("standard"),
   Schema.Literal("max"),
 ]).annotate({ identifier: "AgentModel" });
-export type AgentApprovalPolicy = "toolActions" | "none";
-export const AgentApprovalPolicy = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("toolActions"),
-  Schema.Literal("none"),
-]).annotate({ identifier: "AgentApprovalPolicy" });
 export type TimeZone = string;
 export const TimeZone = /* @__PURE__ */ Schema.String.annotate({ identifier: "TimeZone" });
 export type Weekday =
@@ -4166,7 +4161,6 @@ export type AgentDefinition = {
   readonly integrationIds: ReadonlyArray<AgentIntegrationReference>;
   readonly mode: AgentMode;
   readonly model: AgentModel;
-  readonly approvalPolicy: AgentApprovalPolicy;
   readonly workingHours: WorkingHours | null;
   readonly takeoverTimeoutMinutes: number;
 };
@@ -4191,7 +4185,6 @@ export const AgentDefinition = /* @__PURE__ */ Schema.Struct({
   ),
   mode: AgentMode,
   model: AgentModel,
-  approvalPolicy: AgentApprovalPolicy,
   workingHours: Schema.Union([WorkingHours, Schema.Null]),
   takeoverTimeoutMinutes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
     .check(
@@ -4420,7 +4413,6 @@ export const CreateAgentPayload = /* @__PURE__ */ Schema.Struct({
         integrationIds: [],
         mode: "supervised",
         model: "standard",
-        approvalPolicy: "toolActions",
         workingHours: null,
         takeoverTimeoutMinutes: 30,
       },

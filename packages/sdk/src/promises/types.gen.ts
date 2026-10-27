@@ -257,7 +257,6 @@ export type {
   ClockTime,
   Weekday,
   TimeZone,
-  AgentApprovalPolicy,
   AgentModel,
   AgentMode,
   AgentIntegrationReference,

@@ -2751,8 +2751,6 @@ export type Weekday =
 
 export type TimeZone = string;
 
-export type AgentApprovalPolicy = "toolActions" | "none";
-
 export type AgentModel = "standard" | "max";
 
 export type AgentMode = "live" | "supervised";
@@ -2794,7 +2792,6 @@ export type AgentDefinition = {
   integrationIds: Array<AgentIntegrationReference>;
   mode: AgentMode;
   model: AgentModel;
-  approvalPolicy: AgentApprovalPolicy;
   workingHours: WorkingHours | null;
   takeoverTimeoutMinutes: number;
 };

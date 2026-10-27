@@ -1,3 +1,113 @@
+## samva@0.28.0
+
+### Send at most 1,000 contact ids per bulk request
+
+**Breaking:** `contacts.bulkDelete`, `contacts.bulkUpdateTags`, `contacts.bulkUpdateStatus`,
+`conversations.addContacts`, `conversations.removeContacts`, and the `ids` filter of
+`contacts.export` accept at most 1,000 contact ids. A longer list fails with `ValidationError`
+(HTTP `422`), and the Effect client refuses it before sending. Split larger selections into
+batches of 1,000.
+
+### Subscribe contacts to topics
+
+**Breaking:** Topics replace unsubscribe groups. Use `client.topics` (Effect: `samva/effect/topics`),
+`audience.topicId` on campaigns, and `topicId` when requesting a confirmation email. Set each
+contact's `subscribed` or `unsubscribed` status per topic and channel with `topics.setSubscriptions`.
+Existing opt-outs carry over, and `opt_in` topics reach only subscribed contacts.
+
+- Webhooks: subscription events carry `topicId`, `topicName`, and `channel` instead of group fields.
+  Skipped-recipient receipts report `topic-unsubscribe` with a `topicId`, in the SDKs and in mailbox
+  extensions.
+- CLI: manage topics with `samva topics`. `samva subscriptions subscribe` requires `--topic-id`; the
+  contact-group and unsubscribe-group flags are removed.
+- Confirmation: a confirmation request creates the contact only once the recipient confirms.
+  Outstanding confirmation links that named no unsubscribe group no longer work.
+
+### Handle template build failures as `TemplateSourceError`
+
+**Breaking:** When a template's source fails to build, saving, opening, publishing, or restoring a
+workspace fails with `TemplateSourceError` (HTTP `422`) instead of `ConflictError` (`409`). Catch
+`TemplateSourceError` wherever you caught `ConflictError` to read build findings. It is a
+validation error and not retryable; the Effect client exports it from `samva/effect/errors`.
+
+Its `diagnostics` hold the compiler's findings, each with a code, severity, and `origins` locations;
+a failure with no location is a single `sml/build-failed` finding. If a save pulled in an outside
+commit before the build failed, the error includes `revision`: reload the workspace, fix the
+source, and retry. `ConflictError` now means only a real conflict, such as a moved branch head, a
+save already in progress, or a reused idempotency key.
+
+The CLI prints each finding's location and how to fix it. `--json` and `--jsonl` include every
+finding in `details.diagnostics` and the next step in `next`.
+
+### Pass query values as numbers and booleans
+
+**Breaking:** Query parameters take numbers and booleans instead of strings, in both SDKs and
+`@samva/mailbox`: for example `limit: 20`, `urlExpiresIn: 60`, `isActive: false`, `sendable: true`,
+`shared: true`, and the mailbox `unread`, `starred`, and `snoozed` filters. Replace values such as
+`limit: "20"`.
+
+A call whose body has only optional fields no longer needs one. `campaigns.scheduleRun({ id })`
+schedules a run with its defaults, and the Effect `Organizations.update()` and
+`Email.updateTrackingDefaults()` send `{}`. CLI flags are unchanged.
+
+### Personalize campaigns and see which campaign a reply answers
+
+Campaign templates merge each contact's profile and custom fields, falling back to `templateData`.
+A recipient missing a required value is skipped with `missing_merge_field` and the missing field.
+Campaigns can override the sender, reply mailbox, and preheader; the defaults come from the topic.
+
+Preview a campaign as a contact with `campaigns.preview`, and send yourself a copy with
+`campaigns.sendTest` without starting a run.
+
+An authenticated reply to a campaign message carries `campaign: { campaignId, runId }` in message
+and mailbox reads and in the `message.received` and `mailbox.message.received` webhooks.
+
+### Set a brand's return website
+
+Set `footer.websiteUrl` when creating or updating a brand to choose the HTTPS return link on its
+hosted recipient pages. Brand responses include the configured URL.
+
+### Import subscriber lists as a background job
+
+**Breaking:** `contacts.bulkImport` is removed. Plan an import with `contacts.planImport`, start it
+with `contacts.startImport` using the plan's preview hash and an idempotency key, and follow it with
+`contacts.getImportJob`. Imports run as a background job instead of returning per-contact results.
+List import is in Preview and must be enabled for your organization.
+
+Import related beehiiv, Substack, Kit, or Mailchimp exports together. When files disagree about a
+contact, the most restrictive status wins, and reimports keep existing unsubscribes, suppressions,
+and bounces. Contact detail shows which import a contact came from.
+
+In the CLI, preview with `samva contacts import --preset --topic --file EVIDENCE=PATH --dry-run`,
+start with an idempotency key, follow progress with `samva contacts import-status`, and resume an
+eligible failed job with `samva contacts import-resume`.
+
+### Read a campaign run's results
+
+`campaigns.getRunReport` and `samva campaigns report <campaignId> <runId>` return a run's delivery
+outcomes, replies, topic unsubscribes, and skipped recipients, counted once per recipient. Opens and
+clicks are marked directional and leave out those classified as automated.
+
+### Calendar changes always wait for approval
+
+**Breaking:** Remove `approvalPolicy` from the agent `definition` you pass to `agents.create` and
+`agents.replaceDraft`. An agent's Google Calendar bookings, changes, and cancellations always wait
+for a person to approve them.
+
+### Read the source on GitHub
+
+The packages' source is public at
+[SamvaHQ/samva-typescript](https://github.com/SamvaHQ/samva-typescript), a read-only mirror updated
+with each release. The npm `repository` and `bugs` links point there; report problems as issues on
+that repository.
+
+### Every agent draws AI credits
+
+**Breaking:** Organization usage no longer has a Standard allowance: `standardGranted`,
+`standardRemaining`, and `standardResetsAt` are removed, and `samva org usage` no longer prints
+them. Every agent draws the plan's monthly AI credits instead. Show the balance from
+`includedAiCredits`, `usedAiCredits`, `aiPackCredits`, and `aiResetsAt`.
+
 ## samva@0.27.0
 
 ### Manage hosted agents from the SDK

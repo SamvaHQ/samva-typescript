@@ -14,6 +14,5 @@ dist/
 # OS
 .DS_Store
 
-# The pinned release (scripts/openapi-pin.ts) and the generator input built from it (scripts/openapi.ts)
-openapi.pinned.json
+# The generator input built from the public OpenAPI document (scripts/openapi.ts)
 openapi.json

@@ -1,3 +1,50 @@
+## @samva/mailbox@0.7.0
+
+### Subscribe contacts to topics
+
+**Breaking:** Topics replace unsubscribe groups. Use `client.topics` (Effect: `samva/effect/topics`),
+`audience.topicId` on campaigns, and `topicId` when requesting a confirmation email. Set each
+contact's `subscribed` or `unsubscribed` status per topic and channel with `topics.setSubscriptions`.
+Existing opt-outs carry over, and `opt_in` topics reach only subscribed contacts.
+
+- Webhooks: subscription events carry `topicId`, `topicName`, and `channel` instead of group fields.
+  Skipped-recipient receipts report `topic-unsubscribe` with a `topicId`, in the SDKs and in mailbox
+  extensions.
+- CLI: manage topics with `samva topics`. `samva subscriptions subscribe` requires `--topic-id`; the
+  contact-group and unsubscribe-group flags are removed.
+- Confirmation: a confirmation request creates the contact only once the recipient confirms.
+  Outstanding confirmation links that named no unsubscribe group no longer work.
+
+### Pass query values as numbers and booleans
+
+**Breaking:** Query parameters take numbers and booleans instead of strings, in both SDKs and
+`@samva/mailbox`: for example `limit: 20`, `urlExpiresIn: 60`, `isActive: false`, `sendable: true`,
+`shared: true`, and the mailbox `unread`, `starred`, and `snoozed` filters. Replace values such as
+`limit: "20"`.
+
+A call whose body has only optional fields no longer needs one. `campaigns.scheduleRun({ id })`
+schedules a run with its defaults, and the Effect `Organizations.update()` and
+`Email.updateTrackingDefaults()` send `{}`. CLI flags are unchanged.
+
+### Personalize campaigns and see which campaign a reply answers
+
+Campaign templates merge each contact's profile and custom fields, falling back to `templateData`.
+A recipient missing a required value is skipped with `missing_merge_field` and the missing field.
+Campaigns can override the sender, reply mailbox, and preheader; the defaults come from the topic.
+
+Preview a campaign as a contact with `campaigns.preview`, and send yourself a copy with
+`campaigns.sendTest` without starting a run.
+
+An authenticated reply to a campaign message carries `campaign: { campaignId, runId }` in message
+and mailbox reads and in the `message.received` and `mailbox.message.received` webhooks.
+
+### Read the source on GitHub
+
+The packages' source is public at
+[SamvaHQ/samva-typescript](https://github.com/SamvaHQ/samva-typescript), a read-only mirror updated
+with each release. The npm `repository` and `bugs` links point there; report problems as issues on
+that repository.
+
 ## @samva/mailbox@0.6.0
 
 ### A held approval can be a tool call
