@@ -1,0 +1,65 @@
+## @samva/mailbox@0.6.0
+
+### A held approval can be a tool call
+
+`mailbox.action.pending_approval` can now hold a tool call instead of a send: `draft` is `null` for
+a held tool call and the new `tool` field names the tool, its arguments, and their hash. Check
+`draft` for `null` before reading its recipients. Actions gain the `toolCall` type and a `tool`
+field that carries the call on `toolCall` actions and is `null` on others, and an actor's `source`
+can be `samvaManagedAgent`.
+
+## @samva/mailbox@0.5.0
+
+### Message and send-intent types cover WhatsApp and SMS
+
+Breaking for TypeScript: `Message` is now `EmailMessage | ChatMessage`, so narrow on `channel`
+before reading `subject`, `recipients`, or `attachments`. `SendIntent` is likewise
+`EmailSendIntent | ChatSendIntent` (a chat intent carries one `to` number, `text` or `template`, and
+the `sender` endpoint). `MailboxThread` gains `whatsappServiceWindow`, and `SendRefusal` gains
+`WhatsAppServiceWindowClosedError`. `ChatMessage`, `EmailMessage`, `ChatSendIntent`, and
+`EmailSendIntent` are exported.
+
+## @samva/mailbox@0.4.0
+
+### See how a held send was resolved
+
+A send held for approval now tells you how it ended, without polling.
+
+- Every mailbox action carries `resolution`: `outcome` (`approved`, `denied`, or `cancelled`),
+  the resolving `actor` (`kind`, `id`, optional `displayName`, and `source`), `resolvedAt`, and
+  the denial `reason` (`null` otherwise). It is `null` while the action waits for approval and for
+  an action that never needed one.
+- A new `mailbox.action.resolved` event fires once when a held send is approved, denied, or
+  cancelled, on webhooks, the mailbox event stream, and to extensions that list it in `events`. It
+  carries the action and the same `resolution` object. An approved send still publishes
+  `mailbox.message.sent` once its email is accepted.
+- `samva mailboxes actions get|list|approve|deny` prints the resolution.
+
+Types that list every mailbox event, such as an exhaustive `switch` over `MailboxEventType`, gain
+`mailbox.action.resolved`.
+
+## @samva/mailbox@0.3.0
+
+### Channel and endpoint on mailbox events
+
+Mailbox extension events carry `message.channel`, and `mailbox.message.received` carries
+`thread.endpointId`, the endpoint the message arrived at (`null` once that endpoint is removed).
+Both are optional: events recorded before they existed omit them and are email.
+
+## @samva/mailbox@0.2.0
+
+### Breaking: mailbox sends return action receipts
+
+A send from an extension returns a receipt with a `state`, not a sent confirmation. Keep its
+`actionId` and follow the action to learn whether the message was sent. When a send is held back,
+`problem.error` carries the reason; narrow the exported `SendRefusal` type by `_tag` to read its
+retry or review details.
+
+## @samva/mailbox@0.1.1
+
+### First release
+
+`@samva/mailbox` is the SDK for Samva mailbox extensions. `defineExtension` declares the events and
+permissions an extension needs, `@samva/mailbox/webhook` serves it from your own server, and
+`@samva/mailbox/test` runs handlers locally without sending mail. `samva extensions init` scaffolds
+a project that uses it. See [Mailboxes](https://samva.dev/docs/mailboxes).

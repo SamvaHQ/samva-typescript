@@ -1,0 +1,89 @@
+{
+  "name": "@samva/webhooks",
+  "version": "0.27.0",
+  "description": "Runtime-neutral verification for Samva webhook deliveries",
+  "keywords": [
+    "samva",
+    "standard-webhooks",
+    "typescript",
+    "webcrypto",
+    "webhooks"
+  ],
+  "homepage": "https://samva.dev",
+  "bugs": {
+    "url": "https://github.com/SamvaHQ/samva-typescript/issues"
+  },
+  "license": "MIT",
+  "author": "Arya Labs, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SamvaHQ/samva-typescript.git",
+    "directory": "packages/webhooks"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "package.json",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/promise.d.ts",
+      "import": "./dist/promise.js"
+    },
+    "./promise": {
+      "types": "./dist/promise.d.ts",
+      "import": "./dist/promise.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "import": "./dist/effect.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas.gen.d.ts",
+      "import": "./dist/schemas.gen.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown && tsc --project tsconfig.build.json",
+    "prepack": "bun run build",
+    "test": "bun run test:generation && vitest run --root ../.. --project packages packages/webhooks/tests",
+    "typecheck": "tsc-rs --noEmit",
+    "generate": "bun run --filter @samva/openapi build && bun run scripts/generate.ts",
+    "test:generation": "bun run --filter @samva/openapi build && bun run scripts/generate.ts --check",
+    "test:bundle": "bun run build && bun run scripts/check-bundle.ts"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:effect",
+    "@samva/openapi": "workspace:*",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "effect": "catalog:effect",
+    "tsc-rs": "catalog:",
+    "tsdown": "^0.22.13",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "4.0.4"
+  },
+  "peerDependenciesMeta": {
+    "effect": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

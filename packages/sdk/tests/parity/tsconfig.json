@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "call-shapes.types.ts",
+    "categories.types.ts",
+    "pagination.types.ts",
+    "tracking.types.ts"
+  ],
+  "exclude": []
+}

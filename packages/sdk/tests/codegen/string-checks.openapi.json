@@ -1,0 +1,96 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Api",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/values": {
+      "get": {
+        "tags": ["values"],
+        "operationId": "values.get",
+        "parameters": [],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Values"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Values": {
+        "type": "object",
+        "properties": {
+          "lower": {
+            "type": "string",
+            "minLength": 1,
+            "x-samva-string-checks": [
+              {
+                "id": "effect/schema/isMinLength",
+                "payload": {
+                  "minLength": 2
+                }
+              }
+            ]
+          },
+          "mixed": {
+            "type": "string",
+            "maxLength": 1,
+            "x-samva-string-checks": [
+              {
+                "id": "effect/schema/isMaxLength",
+                "payload": {
+                  "maxLength": 3
+                }
+              }
+            ]
+          },
+          "pattern": {
+            "type": "string",
+            "pattern": "^😀$",
+            "x-samva-string-checks": [
+              {
+                "id": "effect/schema/isPattern",
+                "payload": {
+                  "source": "^..$",
+                  "flags": ""
+                }
+              },
+              {
+                "id": "effect/schema/isPattern",
+                "payload": {
+                  "source": "^😀$",
+                  "flags": "u"
+                }
+              }
+            ]
+          },
+          "points": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 3
+          }
+        },
+        "required": ["lower", "mixed", "pattern", "points"],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {}
+  },
+  "security": [],
+  "tags": [
+    {
+      "name": "values"
+    }
+  ]
+}

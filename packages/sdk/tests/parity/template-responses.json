@@ -1,0 +1,95 @@
+{
+  "publication": {
+    "id": "tpub_7q2xk9mvt4znw8rh",
+    "organizationId": "org_7q2xk9mvt4znw8rh",
+    "projectId": "tproj_7q2xk9mvt4znw8rh",
+    "templateId": "tmpl_7q2xk9mvt4znw8rh",
+    "inputContractId": "tcon_7q2xk9mvt4znw8rh",
+    "commitSha": "1111111111111111111111111111111111111111",
+    "treeSha": "1111111111111111111111111111111111111111",
+    "entryPath": "templates/welcome.tsx",
+    "buildIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "manifest": {
+      "templateKey": "welcome",
+      "compiled": {
+        "version": 1,
+        "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 128
+      },
+      "compiler": "@samva/markup@0.17.3",
+      "input": {
+        "schemaDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "contractDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "assets": {
+        "base": "https://cdn.samva.test",
+        "entries": []
+      },
+      "source": {
+        "commitSha": "1111111111111111111111111111111111111111",
+        "treeSha": "1111111111111111111111111111111111111111",
+        "entryPath": "templates/welcome.tsx",
+        "treeDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "brand": {
+        "slug": "acme",
+        "css": "",
+        "assets": {},
+        "footer": {},
+        "renderedFooter": {
+          "html": "<footer>Acme</footer>",
+          "text": "Acme",
+          "headCss": "footer { color: #111 }"
+        },
+        "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rendersFooter": "every"
+      }
+    },
+    "compiled": {
+      "key": "publications/welcome/compiled.json",
+      "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "assets": [],
+    "warnings": [],
+    "incompatibilities": [],
+    "status": "published",
+    "publishedAt": "2026-10-20T00:00:00.000Z",
+    "publishedBy": null,
+    "createdAt": "2026-10-20T00:00:00.000Z"
+  },
+  "diff": {
+    "projectId": "tproj_7q2xk9mvt4znw8rh",
+    "baseCommit": "1111111111111111111111111111111111111111",
+    "revision": "revision-1",
+    "changes": [],
+    "assetChanges": [
+      {
+        "path": "assets/logo.png",
+        "status": "modified",
+        "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "path": "assets/old.png",
+        "status": "deleted",
+        "digest": null
+      }
+    ]
+  },
+  "fixture": {
+    "projectId": "tproj_7q2xk9mvt4znw8rh",
+    "revision": "revision-1",
+    "entryPath": "templates/welcome.tsx",
+    "declaration": null,
+    "diagnostics": [],
+    "incompatibilities": [],
+    "fixture": "default",
+    "rendered": {
+      "subject": "Welcome",
+      "html": "<p>Welcome</p>",
+      "text": "Welcome",
+      "selections": [],
+      "sentBytes": 14,
+      "previewBytes": 14
+    }
+  }
+}

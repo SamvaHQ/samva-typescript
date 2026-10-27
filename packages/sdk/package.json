@@ -1,0 +1,236 @@
+{
+  "name": "samva",
+  "version": "0.27.0",
+  "description": "TypeScript SDK for the Samva email API",
+  "keywords": [
+    "api-client",
+    "effect",
+    "email",
+    "email-api",
+    "samva",
+    "sdk",
+    "transactional-email",
+    "typescript",
+    "webhooks"
+  ],
+  "homepage": "https://samva.dev",
+  "bugs": {
+    "url": "https://github.com/SamvaHQ/samva-typescript/issues"
+  },
+  "license": "MIT",
+  "author": "Arya Labs, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SamvaHQ/samva-typescript.git",
+    "directory": "packages/sdk"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "package.json",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./promises": {
+      "types": "./dist/promises/index.d.ts",
+      "import": "./dist/promises/index.js"
+    },
+    "./effect": {
+      "types": "./dist/effect/index.d.ts",
+      "import": "./dist/effect/index.js"
+    },
+    "./effect/errors": {
+      "types": "./dist/effect/errors.d.ts",
+      "import": "./dist/effect/errors.js"
+    },
+    "./effect/categories": {
+      "types": "./dist/effect/categories.d.ts",
+      "import": "./dist/effect/categories.js"
+    },
+    "./effect/agents": {
+      "types": "./dist/effect/agents.d.ts",
+      "import": "./dist/effect/agents.js"
+    },
+    "./effect/analytics": {
+      "types": "./dist/effect/analytics.d.ts",
+      "import": "./dist/effect/analytics.js"
+    },
+    "./effect/api-keys": {
+      "types": "./dist/effect/api-keys.d.ts",
+      "import": "./dist/effect/api-keys.js"
+    },
+    "./effect/attachments": {
+      "types": "./dist/effect/attachments.d.ts",
+      "import": "./dist/effect/attachments.js"
+    },
+    "./effect/brands": {
+      "types": "./dist/effect/brands.d.ts",
+      "import": "./dist/effect/brands.js"
+    },
+    "./effect/campaigns": {
+      "types": "./dist/effect/campaigns.d.ts",
+      "import": "./dist/effect/campaigns.js"
+    },
+    "./effect/client": {
+      "types": "./dist/effect/client.d.ts",
+      "import": "./dist/effect/client.js"
+    },
+    "./effect/contact-groups": {
+      "types": "./dist/effect/contact-groups.d.ts",
+      "import": "./dist/effect/contact-groups.js"
+    },
+    "./effect/contacts": {
+      "types": "./dist/effect/contacts.d.ts",
+      "import": "./dist/effect/contacts.js"
+    },
+    "./effect/conversations": {
+      "types": "./dist/effect/conversations.d.ts",
+      "import": "./dist/effect/conversations.js"
+    },
+    "./effect/custom-fields": {
+      "types": "./dist/effect/custom-fields.d.ts",
+      "import": "./dist/effect/custom-fields.js"
+    },
+    "./effect/email": {
+      "types": "./dist/effect/email.d.ts",
+      "import": "./dist/effect/email.js"
+    },
+    "./effect/messages": {
+      "types": "./dist/effect/messages.d.ts",
+      "import": "./dist/effect/messages.js"
+    },
+    "./effect/extension-installations": {
+      "types": "./dist/effect/extension-installations.d.ts",
+      "import": "./dist/effect/extension-installations.js"
+    },
+    "./effect/extensions": {
+      "types": "./dist/effect/extensions.d.ts",
+      "import": "./dist/effect/extensions.js"
+    },
+    "./effect/events": {
+      "types": "./dist/effect/events.d.ts",
+      "import": "./dist/effect/events.js"
+    },
+    "./effect/feedback": {
+      "types": "./dist/effect/feedback.d.ts",
+      "import": "./dist/effect/feedback.js"
+    },
+    "./effect/journeys": {
+      "types": "./dist/effect/journeys.d.ts",
+      "import": "./dist/effect/journeys.js"
+    },
+    "./effect/mailboxes": {
+      "types": "./dist/effect/mailboxes.d.ts",
+      "import": "./dist/effect/mailboxes.js"
+    },
+    "./effect/media": {
+      "types": "./dist/effect/media.d.ts",
+      "import": "./dist/effect/media.js"
+    },
+    "./effect/namespaces": {
+      "types": "./dist/effect/namespaces.d.ts",
+      "import": "./dist/effect/namespaces.js"
+    },
+    "./effect/operations": {
+      "types": "./dist/effect/operations.d.ts",
+      "import": "./dist/effect/operations.js"
+    },
+    "./effect/organizations": {
+      "types": "./dist/effect/organizations.d.ts",
+      "import": "./dist/effect/organizations.js"
+    },
+    "./effect/retry": {
+      "types": "./dist/effect/retry.d.ts",
+      "import": "./dist/effect/retry.js"
+    },
+    "./effect/scheduled-messages": {
+      "types": "./dist/effect/scheduled-messages.d.ts",
+      "import": "./dist/effect/scheduled-messages.js"
+    },
+    "./effect/subscriptions": {
+      "types": "./dist/effect/subscriptions.d.ts",
+      "import": "./dist/effect/subscriptions.js"
+    },
+    "./effect/templates": {
+      "types": "./dist/effect/templates.d.ts",
+      "import": "./dist/effect/templates.js"
+    },
+    "./effect/topic-forms": {
+      "types": "./dist/effect/topic-forms.d.ts",
+      "import": "./dist/effect/topic-forms.js"
+    },
+    "./effect/topics": {
+      "types": "./dist/effect/topics.d.ts",
+      "import": "./dist/effect/topics.js"
+    },
+    "./effect/webhooks": {
+      "types": "./dist/effect/webhooks.d.ts",
+      "import": "./dist/effect/webhooks.js"
+    },
+    "./effect/whoami": {
+      "types": "./dist/effect/whoami.d.ts",
+      "import": "./dist/effect/whoami.js"
+    },
+    "./webhooks": {
+      "types": "./dist/webhooks/promise.d.ts",
+      "import": "./dist/webhooks/promise.js"
+    },
+    "./webhooks/effect": {
+      "types": "./dist/webhooks/effect.d.ts",
+      "import": "./dist/webhooks/effect.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "NODE_OPTIONS=\"$NODE_OPTIONS --max-old-space-size=8192\" tsdown && tsc --project tsconfig.build.json",
+    "prepack": "bun run build",
+    "generate:openapi": "bun run scripts/openapi.ts",
+    "generate:promises": "bun run codegen/generate-promises.ts && bun run scripts/generate-promise-errors.ts && oxfmt --config=../../oxfmt.config.ts src/client src/promises/errors.gen.ts src/promises/types.gen.ts",
+    "generate:effect": "bun run codegen/generate-effect.ts && oxfmt --config=../../oxfmt.config.ts src/effect/generated src/effect/generated-metadata.ts && bun run codegen/normalize-effect.ts",
+    "generate": "bun run --filter @samva/openapi build && bun generate:openapi && bun generate:promises && bun generate:effect",
+    "test": "vitest run --root ../.. --project packages packages/sdk/tests",
+    "test:generation": "bun scripts/check-generation.ts",
+    "test:packed": "bun run build && bun scripts/test-packed-consumers.ts",
+    "test:tarball": "bun run build && bun scripts/check-tarball.ts",
+    "test:startup": "bun run build && bun scripts/check-startup.ts",
+    "test:tree-shaking": "bun run build && bun scripts/check-tree-shaking.ts",
+    "typecheck": "tsc-rs --noEmit && tsc-rs --noEmit -p codegen/tsconfig.json && tsc-rs --noEmit -p tests/tsconfig.json && tsc-rs --noEmit --project tests/parity/tsconfig.json"
+  },
+  "dependencies": {
+    "@samva/webhooks": "workspace:0.27.0"
+  },
+  "devDependencies": {
+    "@effect/openapi-generator": "catalog:effect",
+    "@effect/platform-node": "catalog:effect",
+    "@effect/vitest": "catalog:effect",
+    "@samva/openapi": "workspace:*",
+    "@types/node": "catalog:",
+    "effect": "catalog:effect",
+    "tsc-rs": "catalog:",
+    "tsdown": "^0.22.13",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "4.0.4"
+  },
+  "peerDependenciesMeta": {
+    "effect": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

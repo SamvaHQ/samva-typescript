@@ -1,0 +1,60 @@
+import { defineConfig } from "tsdown";
+
+export default defineConfig({
+  entry: [
+    "src/index.ts",
+    "src/promises/index.ts",
+    "src/effect/index.ts",
+    "src/effect/categories.ts",
+    "src/effect/errors.ts",
+    "src/effect/agents.ts",
+    "src/effect/analytics.ts",
+    "src/effect/api-keys.ts",
+    "src/effect/attachments.ts",
+    "src/effect/brands.ts",
+    "src/effect/campaigns.ts",
+    "src/effect/client.ts",
+    "src/effect/contact-groups.ts",
+    "src/effect/contacts.ts",
+    "src/effect/conversations.ts",
+    "src/effect/custom-fields.ts",
+    "src/effect/email.ts",
+    "src/effect/extension-installations.ts",
+    "src/effect/extensions.ts",
+    "src/effect/events.ts",
+    "src/effect/feedback.ts",
+    "src/effect/journeys.ts",
+    "src/effect/mailboxes.ts",
+    "src/effect/media.ts",
+    "src/effect/messages.ts",
+    "src/effect/namespaces.ts",
+    "src/effect/operations.ts",
+    "src/effect/organizations.ts",
+    "src/effect/retry.ts",
+    "src/effect/scheduled-messages.ts",
+    "src/effect/subscriptions.ts",
+    "src/effect/templates.ts",
+    "src/effect/topics.ts",
+    "src/effect/topic-forms.ts",
+    "src/effect/webhooks.ts",
+    "src/effect/whoami.ts",
+    "src/webhooks/promise.ts",
+    "src/webhooks/effect.ts",
+  ],
+  format: ["esm"],
+  // Keep schema modules separate so consumer bundlers can discard unused API groups.
+  unbundle: true,
+  outDir: "dist",
+  dts: false,
+  sourcemap: true,
+  clean: true,
+  // Platform neutral (works in Node.js and browsers)
+  platform: "neutral",
+  // The Effect client is generated from OpenAPI and has no private workspace
+  // runtime dependencies. The public webhook verifier and optional Effect peer
+  // remain external; only nanoid is intentionally embedded.
+  deps: {
+    alwaysBundle: ["nanoid"],
+    neverBundle: ["@samva/webhooks", "effect"],
+  },
+});

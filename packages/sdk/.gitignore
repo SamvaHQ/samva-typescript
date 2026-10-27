@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# The pinned release (scripts/openapi-pin.ts) and the generator input built from it (scripts/openapi.ts)
+openapi.pinned.json
+openapi.json
