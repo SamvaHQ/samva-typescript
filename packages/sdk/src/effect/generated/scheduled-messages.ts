@@ -43,12 +43,13 @@ import {
 } from "./shared";
 
 export type ScheduledMessageId = string & EffectBrand.Brand<"ScheduledMessageId">;
-export const ScheduledMessageId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^sched_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^sched_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "ScheduledMessageId",
-  }),
-).pipe(Schema.brand("ScheduledMessageId"));
+export const ScheduledMessageId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^sched_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^sched_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "ScheduledMessageId",
+    }),
+  ).pipe(Schema.brand("ScheduledMessageId")))();
 export type EmailDispatchContent = {
   readonly subject?: string | null;
   readonly html?: string | null;
@@ -68,39 +69,40 @@ export type EmailDispatchContent = {
   readonly footer?: EmailFooterOverride;
   readonly headers?: EmailCustomHeaders | null;
 };
-export const EmailDispatchContent = /* @__PURE__ */ Schema.Struct({
-  subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  attachments: Schema.optionalKey(EmailAttachments),
-  publicationId: Schema.optionalKey(TemplatePublicationId),
-  inputContractId: Schema.optionalKey(TemplateInputContractId),
-  templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
-  templateSlug: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-          expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  templateData: Schema.optionalKey(TemplateData),
-  locale: Schema.optionalKey(RenderLocale),
-  timeZone: Schema.optionalKey(RenderTimeZone),
-  inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
-  replyTo: Schema.optionalKey(ReplyToAddresses),
-  topicId: Schema.optionalKey(
-    Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null]).annotate({
-      description:
-        "The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.",
-    }),
-  ),
-  tracking: Schema.optionalKey(EmailTrackingOverrideV1),
-  footer: Schema.optionalKey(EmailFooterOverride),
-  headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
-}).annotate({ identifier: "EmailDispatchContent" });
+export const EmailDispatchContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(EmailAttachments),
+    publicationId: Schema.optionalKey(TemplatePublicationId),
+    inputContractId: Schema.optionalKey(TemplateInputContractId),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
+    templateSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    templateData: Schema.optionalKey(TemplateData),
+    locale: Schema.optionalKey(RenderLocale),
+    timeZone: Schema.optionalKey(RenderTimeZone),
+    inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
+    replyTo: Schema.optionalKey(ReplyToAddresses),
+    topicId: Schema.optionalKey(
+      Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null]).annotate({
+        description:
+          "The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.",
+      }),
+    ),
+    tracking: Schema.optionalKey(EmailTrackingOverrideV1),
+    footer: Schema.optionalKey(EmailFooterOverride),
+    headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
+  }).annotate({ identifier: "EmailDispatchContent" }))();
 export type SendMessagePayload = {
   readonly conversationId?: ConversationId | null | null;
   readonly metadata?: MessageMetadata;
@@ -111,18 +113,19 @@ export type SendMessagePayload = {
   readonly from?: EmailSender;
   readonly email: EmailContent;
 };
-export const SendMessagePayload = /* @__PURE__ */ Schema.Struct({
-  conversationId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(MessageMetadata),
-  channel: Schema.Literal("email"),
-  to: EmailRecipients,
-  cc: Schema.optionalKey(EmailCcRecipients),
-  bcc: Schema.optionalKey(EmailBccRecipients),
-  from: Schema.optionalKey(EmailSender),
-  email: EmailContent,
-}).annotate({ identifier: "SendMessagePayload" });
+export const SendMessagePayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("email"),
+    to: EmailRecipients,
+    cc: Schema.optionalKey(EmailCcRecipients),
+    bcc: Schema.optionalKey(EmailBccRecipients),
+    from: Schema.optionalKey(EmailSender),
+    email: EmailContent,
+  }).annotate({ identifier: "SendMessagePayload" }))();
 export type DispatchSendMessagePayload = {
   readonly conversationId?: ConversationId | null | null;
   readonly metadata?: MessageMetadata;
@@ -133,18 +136,19 @@ export type DispatchSendMessagePayload = {
   readonly from?: EmailSender;
   readonly email: EmailDispatchContent;
 };
-export const DispatchSendMessagePayload = /* @__PURE__ */ Schema.Struct({
-  conversationId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(MessageMetadata),
-  channel: Schema.Literal("email"),
-  to: EmailRecipients,
-  cc: Schema.optionalKey(EmailCcRecipients),
-  bcc: Schema.optionalKey(EmailBccRecipients),
-  from: Schema.optionalKey(EmailSender),
-  email: EmailDispatchContent,
-}).annotate({ identifier: "DispatchSendMessagePayload" });
+export const DispatchSendMessagePayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("email"),
+    to: EmailRecipients,
+    cc: Schema.optionalKey(EmailCcRecipients),
+    bcc: Schema.optionalKey(EmailBccRecipients),
+    from: Schema.optionalKey(EmailSender),
+    email: EmailDispatchContent,
+  }).annotate({ identifier: "DispatchSendMessagePayload" }))();
 export type ScheduledMessage = {
   readonly id: ScheduledMessageId;
   readonly status: "pending" | "dispatching" | "paused" | "dispatched" | "cancelled" | "failed";
@@ -162,38 +166,40 @@ export type ScheduledMessage = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const ScheduledMessage = /* @__PURE__ */ Schema.Struct({
-  id: ScheduledMessageId,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("dispatching"),
-    Schema.Literal("paused"),
-    Schema.Literal("dispatched"),
-    Schema.Literal("cancelled"),
-    Schema.Literal("failed"),
-  ]),
-  scheduledFor: Schema.String,
-  timezone: Schema.String,
-  send: SendMessagePayload,
-  messageId: Schema.Union([MessageId, Schema.Null]),
-  idempotencyKey: Schema.Union([Schema.String, Schema.Null]),
-  referenceId: Schema.Union([Schema.String, Schema.Null]),
-  failureReason: Schema.Union([Schema.String, Schema.Null]),
-  attempts: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  createdBy: Schema.Union([Schema.String, Schema.Null]),
-  actorEmail: Schema.String,
-  memberRole: Schema.String,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "ScheduledMessage" });
+export const ScheduledMessage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ScheduledMessageId,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("dispatching"),
+      Schema.Literal("paused"),
+      Schema.Literal("dispatched"),
+      Schema.Literal("cancelled"),
+      Schema.Literal("failed"),
+    ]),
+    scheduledFor: Schema.String,
+    timezone: Schema.String,
+    send: SendMessagePayload,
+    messageId: Schema.Union([MessageId, Schema.Null]),
+    idempotencyKey: Schema.Union([Schema.String, Schema.Null]),
+    referenceId: Schema.Union([Schema.String, Schema.Null]),
+    failureReason: Schema.Union([Schema.String, Schema.Null]),
+    attempts: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    createdBy: Schema.Union([Schema.String, Schema.Null]),
+    actorEmail: Schema.String,
+    memberRole: Schema.String,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "ScheduledMessage" }))();
 export type ScheduledMessagePage = {
   readonly items: ReadonlyArray<ScheduledMessage>;
   readonly nextCursor: string | null;
 };
-export const ScheduledMessagePage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ScheduledMessage),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ScheduledMessagePage" });
+export const ScheduledMessagePage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ScheduledMessage),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ScheduledMessagePage" }))();
 export type ScheduledMessagesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -206,35 +212,36 @@ export type ScheduledMessagesListQuery = {
     | "failed"
     | null;
 };
-export const ScheduledMessagesListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ScheduledMessagesListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("dispatching"),
-        Schema.Literal("paused"),
-        Schema.Literal("dispatched"),
-        Schema.Literal("cancelled"),
-        Schema.Literal("failed"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("dispatching"),
+          Schema.Literal("paused"),
+          Schema.Literal("dispatched"),
+          Schema.Literal("cancelled"),
+          Schema.Literal("failed"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type ScheduledMessagesList200 = ScheduledMessagePage;
 export const ScheduledMessagesList200 = ScheduledMessagePage;
 export type ScheduledMessagesList401 = UnauthorizedError;
@@ -254,22 +261,21 @@ export type ScheduledMessagesCreateRequestJson = {
   readonly idempotencyKey?: string | null;
   readonly referenceId?: string | null;
 };
-export const ScheduledMessagesCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  send: DispatchSendMessagePayload,
-  scheduledFor: __SamvaRuntimeAbsoluteInstant,
-  timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
-  idempotencyKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  referenceId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ScheduledMessagesCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    send: DispatchSendMessagePayload,
+    scheduledFor: __SamvaRuntimeAbsoluteInstant,
+    timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
+    idempotencyKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    referenceId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ScheduledMessagesCreate201 = ScheduledMessage;
 export const ScheduledMessagesCreate201 = ScheduledMessage;
 export type ScheduledMessagesCreate401 = UnauthorizedError;
 export const ScheduledMessagesCreate401 = UnauthorizedError;
 export type ScheduledMessagesCreate403 = FlagDisabledError | ForbiddenError;
-export const ScheduledMessagesCreate403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  ForbiddenError,
-]);
+export const ScheduledMessagesCreate403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type ScheduledMessagesCreate409 = ConflictError;
 export const ScheduledMessagesCreate409 = ConflictError;
 export type ScheduledMessagesCreate422 = ValidationError;
@@ -281,9 +287,8 @@ export const ScheduledMessagesCreate502 = ExternalServiceError;
 export type ScheduledMessagesCreate504 = GatewayTimeoutError;
 export const ScheduledMessagesCreate504 = GatewayTimeoutError;
 export type ScheduledMessagesGetPathParams = { readonly id: ScheduledMessageId };
-export const ScheduledMessagesGetPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ScheduledMessageId,
-});
+export const ScheduledMessagesGetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ScheduledMessageId }))();
 export type ScheduledMessagesGet200 = ScheduledMessage;
 export const ScheduledMessagesGet200 = ScheduledMessage;
 export type ScheduledMessagesGet401 = UnauthorizedError;
@@ -299,17 +304,14 @@ export const ScheduledMessagesGet500 = InternalError;
 export type ScheduledMessagesGet504 = GatewayTimeoutError;
 export const ScheduledMessagesGet504 = GatewayTimeoutError;
 export type ScheduledMessagesCancelPathParams = { readonly id: ScheduledMessageId };
-export const ScheduledMessagesCancelPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ScheduledMessageId,
-});
+export const ScheduledMessagesCancelPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ScheduledMessageId }))();
 export type ScheduledMessagesCancel200 = {
   readonly success: boolean;
   readonly item: ScheduledMessage;
 };
-export const ScheduledMessagesCancel200 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Boolean,
-  item: ScheduledMessage,
-});
+export const ScheduledMessagesCancel200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean, item: ScheduledMessage }))();
 export type ScheduledMessagesCancel401 = UnauthorizedError;
 export const ScheduledMessagesCancel401 = UnauthorizedError;
 export type ScheduledMessagesCancel403 = ForbiddenError;
@@ -325,19 +327,19 @@ export const ScheduledMessagesCancel500 = InternalError;
 export type ScheduledMessagesCancel504 = GatewayTimeoutError;
 export const ScheduledMessagesCancel504 = GatewayTimeoutError;
 export type ScheduledMessagesResumePathParams = { readonly id: ScheduledMessageId };
-export const ScheduledMessagesResumePathParams = /* @__PURE__ */ Schema.Struct({
-  id: ScheduledMessageId,
-});
+export const ScheduledMessagesResumePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ScheduledMessageId }))();
 export type ScheduledMessagesResumeRequestJson =
   | { readonly choice: "send_now" }
   | { readonly choice: "new_time"; readonly scheduledFor: __SamvaRuntimeAbsoluteInstant };
-export const ScheduledMessagesResumeRequestJson = /* @__PURE__ */ Schema.Union([
-  Schema.Struct({ choice: Schema.Literal("send_now") }),
-  Schema.Struct({
-    choice: Schema.Literal("new_time"),
-    scheduledFor: __SamvaRuntimeAbsoluteInstant,
-  }),
-]);
+export const ScheduledMessagesResumeRequestJson = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({ choice: Schema.Literal("send_now") }),
+    Schema.Struct({
+      choice: Schema.Literal("new_time"),
+      scheduledFor: __SamvaRuntimeAbsoluteInstant,
+    }),
+  ]))();
 export type ScheduledMessagesResume200 = ScheduledMessage;
 export const ScheduledMessagesResume200 = ScheduledMessage;
 export type ScheduledMessagesResume401 = UnauthorizedError;
@@ -349,10 +351,8 @@ export const ScheduledMessagesResume404 = ResourceNotFoundError;
 export type ScheduledMessagesResume409 = ConflictError;
 export const ScheduledMessagesResume409 = ConflictError;
 export type ScheduledMessagesResume422 = FromAddressRequiredError | ValidationError;
-export const ScheduledMessagesResume422 = /* @__PURE__ */ Schema.Union([
-  FromAddressRequiredError,
-  ValidationError,
-]);
+export const ScheduledMessagesResume422 = /* @__PURE__ */ (() =>
+  Schema.Union([FromAddressRequiredError, ValidationError]))();
 export type ScheduledMessagesResume500 = InternalError;
 export const ScheduledMessagesResume500 = InternalError;
 export type ScheduledMessagesResume502 = ExternalServiceError;

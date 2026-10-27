@@ -9,6 +9,7 @@ import * as Email from "../../src/effect/email";
 import * as Messages from "../../src/effect/messages";
 import * as Organizations from "../../src/effect/organizations";
 import * as Subscriptions from "../../src/effect/subscriptions";
+import * as TopicIssues from "../../src/effect/topic-issues";
 import * as Topics from "../../src/effect/topics";
 import { createClient as createPromiseClient, type SamvaClient } from "../../src/promises";
 
@@ -26,6 +27,42 @@ type CallShapeCell = {
 };
 
 const cells = [
+  {
+    name: "topic issue history numeric limit",
+    promise: (client) => client.topicIssues.history({ id: "unsub_1234567890abcdef", limit: 10 }),
+    effect: () => TopicIssues.history({ id: "unsub_1234567890abcdef", limit: 10 }),
+  },
+  {
+    name: "campaign create pins a saved topic issue",
+    promise: (client) =>
+      client.campaigns.create({
+        name: "Weekly digest",
+        channel: "email",
+        audience: { topicId: "unsub_1234567890abcdef" },
+        content: {
+          channel: "email",
+          email: {},
+          issue: {
+            path: "issues/weekly-digest.md",
+            commit: "1111111111111111111111111111111111111111",
+          },
+        },
+      }),
+    effect: () =>
+      Campaigns.create({
+        name: "Weekly digest",
+        channel: "email",
+        audience: { topicId: "unsub_1234567890abcdef" },
+        content: {
+          channel: "email",
+          email: {},
+          issue: {
+            path: "issues/weekly-digest.md",
+            commit: "1111111111111111111111111111111111111111",
+          },
+        },
+      }),
+  },
   {
     name: "required body without optional fields",
     promise: (client) => client.campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh" }),
@@ -437,6 +474,30 @@ describe("Promise and Effect direct call-shape parity", () => {
         const query = new URL(promiseRequest.path, "https://samva.dev").searchParams;
         expect(query.get("includeDownloadUrls")).toBe("true");
         expect(query.get("urlExpiresIn")).toBe("60");
+      }
+      if (cell.name === "topic issue history numeric limit") {
+        const query = new URL(promiseRequest.path, "https://samva.dev").searchParams;
+        expect(promiseRequest.path.split("?")[0]).toBe(
+          "/v1/topics/unsub_1234567890abcdef/issues/history",
+        );
+        expect(query.get("limit")).toBe("10");
+      }
+      if (cell.name === "campaign create pins a saved topic issue") {
+        expect(promiseRequest.method).toBe("POST");
+        expect(promiseRequest.path).toBe("/v1/campaigns");
+        expect(promiseRequest.body).toEqual({
+          name: "Weekly digest",
+          channel: "email",
+          audience: { topicId: "unsub_1234567890abcdef" },
+          content: {
+            channel: "email",
+            email: {},
+            issue: {
+              path: "issues/weekly-digest.md",
+              commit: "1111111111111111111111111111111111111111",
+            },
+          },
+        });
       }
       if (cell.name === "explicitly clear template topic") {
         expect(promiseRequest.body).toMatchObject({

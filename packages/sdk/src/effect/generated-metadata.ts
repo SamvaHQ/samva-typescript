@@ -333,19 +333,43 @@ const operationMetadata102 = { group: "Topic forms", method: "DELETE", paginated
 
 const operationMetadata103 = { group: "Topic forms", method: "PATCH", paginated: false } as const;
 
-const operationMetadata104 = { group: "Topics", method: "GET", paginated: true } as const;
+const operationMetadata104 = { group: "Topic issues", method: "GET", paginated: false } as const;
 
-const operationMetadata105 = { group: "Webhooks", method: "GET", paginated: true } as const;
+const operationMetadata105 = { group: "Topic issues", method: "POST", paginated: false } as const;
 
-const operationMetadata106 = { group: "Webhooks", method: "POST", paginated: false } as const;
+const operationMetadata106 = { group: "Topic issues", method: "PATCH", paginated: false } as const;
 
-const operationMetadata107 = { group: "Webhooks", method: "GET", paginated: false } as const;
+const operationMetadata107 = {
+  group: "Publication domains",
+  method: "POST",
+  paginated: false,
+} as const;
 
-const operationMetadata108 = { group: "Webhooks", method: "DELETE", paginated: false } as const;
+const operationMetadata108 = {
+  group: "Publication domains",
+  method: "GET",
+  paginated: false,
+} as const;
 
-const operationMetadata109 = { group: "Webhooks", method: "PATCH", paginated: false } as const;
+const operationMetadata109 = {
+  group: "Publication domains",
+  method: "DELETE",
+  paginated: false,
+} as const;
 
-const operationMetadata110 = { group: "Whoami", method: "GET", paginated: false } as const;
+const operationMetadata110 = { group: "Topics", method: "GET", paginated: true } as const;
+
+const operationMetadata111 = { group: "Webhooks", method: "GET", paginated: true } as const;
+
+const operationMetadata112 = { group: "Webhooks", method: "POST", paginated: false } as const;
+
+const operationMetadata113 = { group: "Webhooks", method: "GET", paginated: false } as const;
+
+const operationMetadata114 = { group: "Webhooks", method: "DELETE", paginated: false } as const;
+
+const operationMetadata115 = { group: "Webhooks", method: "PATCH", paginated: false } as const;
+
+const operationMetadata116 = { group: "Whoami", method: "GET", paginated: false } as const;
 
 export const SamvaOperations = {
   agentsList: operationMetadata0,
@@ -684,19 +708,33 @@ export const SamvaOperations = {
   topicFormsGet: operationMetadata100,
   topicFormsRemove: operationMetadata102,
   topicFormsUpdate: operationMetadata103,
-  topicsListSubscriptions: operationMetadata104,
+  topicIssuesList: operationMetadata104,
+  topicIssuesCreate: operationMetadata105,
+  topicIssuesUpdate: operationMetadata106,
+  topicIssuesCheck: operationMetadata105,
+  topicIssuesGet: operationMetadata104,
+  topicIssuesHead: operationMetadata104,
+  topicIssuesHistory: operationMetadata104,
+  topicIssuesRemove: operationMetadata105,
+  topicIssuesRender: operationMetadata105,
+  topicIssuesSave: operationMetadata105,
+  topicIssuesOpen: operationMetadata104,
+  topicPublicationDomainsAdd: operationMetadata107,
+  topicPublicationDomainsGet: operationMetadata108,
+  topicPublicationDomainsRemove: operationMetadata109,
+  topicsListSubscriptions: operationMetadata110,
   topicsSetSubscriptions: operationMetadata97,
   topicsCheckSubscription: operationMetadata96,
-  webhooksList: operationMetadata105,
-  webhooksCreate: operationMetadata106,
-  webhooksGet: operationMetadata107,
-  webhooksRemove: operationMetadata108,
-  webhooksUpdate: operationMetadata109,
-  webhooksRetryDelivery: operationMetadata106,
-  webhooksGetLogs: operationMetadata105,
-  webhooksRegenerateSecret: operationMetadata106,
-  webhooksGetSecret: operationMetadata107,
-  webhooksGetStats: operationMetadata107,
-  webhooksTest: operationMetadata106,
-  whoamiGet: operationMetadata110,
+  webhooksList: operationMetadata111,
+  webhooksCreate: operationMetadata112,
+  webhooksGet: operationMetadata113,
+  webhooksRemove: operationMetadata114,
+  webhooksUpdate: operationMetadata115,
+  webhooksRetryDelivery: operationMetadata112,
+  webhooksGetLogs: operationMetadata111,
+  webhooksRegenerateSecret: operationMetadata112,
+  webhooksGetSecret: operationMetadata113,
+  webhooksGetStats: operationMetadata113,
+  webhooksTest: operationMetadata112,
+  whoamiGet: operationMetadata116,
 } as const;

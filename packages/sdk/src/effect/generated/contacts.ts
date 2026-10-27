@@ -29,37 +29,40 @@ import {
 } from "./shared";
 
 export type ContactCustomFields = { readonly [x: string]: string | number | boolean | null };
-export const ContactCustomFields = /* @__PURE__ */ Schema.Record(
-  Schema.String,
-  Schema.Union([
+export const ContactCustomFields = /* @__PURE__ */ (() =>
+  Schema.Record(
     Schema.String,
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    Schema.Boolean,
-    Schema.Null,
-  ]),
-).annotate({ identifier: "ContactCustomFields" });
+    Schema.Union([
+      Schema.String,
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      Schema.Boolean,
+      Schema.Null,
+    ]),
+  ).annotate({ identifier: "ContactCustomFields" }))();
 export type ContactIdentityInput = {
   readonly type: "email" | "phone";
   readonly identifier: string;
   readonly verified?: boolean | null;
 };
-export const ContactIdentityInput = /* @__PURE__ */ Schema.Struct({
-  type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
-  identifier: Schema.String,
-  verified: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-}).annotate({ identifier: "ContactIdentityInput" });
+export const ContactIdentityInput = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
+    identifier: Schema.String,
+    verified: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }).annotate({ identifier: "ContactIdentityInput" }))();
 export type ContactLocation = {
   readonly country: string;
   readonly state: string;
   readonly city: string;
   readonly timezone: string;
 };
-export const ContactLocation = /* @__PURE__ */ Schema.Struct({
-  country: Schema.String,
-  state: Schema.String,
-  city: Schema.String,
-  timezone: Schema.String,
-}).annotate({ identifier: "ContactLocation" });
+export const ContactLocation = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    country: Schema.String,
+    state: Schema.String,
+    city: Schema.String,
+    timezone: Schema.String,
+  }).annotate({ identifier: "ContactLocation" }))();
 export type ContactPreferences = {
   readonly preferredChannels?: ReadonlyArray<"email"> | null;
   readonly language?: string | null;
@@ -69,76 +72,87 @@ export type ContactPreferences = {
     readonly quiet_hours?: { readonly start: string; readonly end: string } | null;
   } | null;
 };
-export const ContactPreferences = /* @__PURE__ */ Schema.Struct({
-  preferredChannels: Schema.optionalKey(
-    Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
-  ),
-  language: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  timezone: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  notifications: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        email: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-        quiet_hours: Schema.optionalKey(
-          Schema.Union([Schema.Struct({ start: Schema.String, end: Schema.String }), Schema.Null]),
-        ),
-      }),
-      Schema.Null,
-    ]),
-  ),
-}).annotate({ identifier: "ContactPreferences" });
+export const ContactPreferences = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    preferredChannels: Schema.optionalKey(
+      Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+    ),
+    language: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    timezone: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    notifications: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          email: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+          quiet_hours: Schema.optionalKey(
+            Schema.Union([
+              Schema.Struct({ start: Schema.String, end: Schema.String }),
+              Schema.Null,
+            ]),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "ContactPreferences" }))();
 export type ContactImportJobId = string & EffectBrand.Brand<"ContactImportJobId">;
-export const ContactImportJobId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^cimport_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^cimport_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "ContactImportJobId",
-  }),
-).pipe(Schema.brand("ContactImportJobId"));
+export const ContactImportJobId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^cimport_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^cimport_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "ContactImportJobId",
+    }),
+  ).pipe(Schema.brand("ContactImportJobId")))();
 export type BulkUpdateResult = { readonly updated: number; readonly failed: number };
-export const BulkUpdateResult = /* @__PURE__ */ Schema.Struct({
-  updated: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "BulkUpdateResult" });
+export const BulkUpdateResult = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    updated: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "BulkUpdateResult" }))();
 export type ContactLookup =
   | { readonly type: "email"; readonly value: string }
   | { readonly type: "phone"; readonly value: string }
   | { readonly type: "externalId"; readonly value: string };
-export const ContactLookup = /* @__PURE__ */ Schema.Union([
-  Schema.Struct({
-    type: Schema.Literal("email"),
-    value: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-  }),
-  Schema.Struct({
-    type: Schema.Literal("phone"),
-    value: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-  }),
-  Schema.Struct({
-    type: Schema.Literal("externalId"),
-    value: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-  }),
-]).annotate({ identifier: "ContactLookup" });
+export const ContactLookup = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      type: Schema.Literal("email"),
+      value: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+    }),
+    Schema.Struct({
+      type: Schema.Literal("phone"),
+      value: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+    }),
+    Schema.Struct({
+      type: Schema.Literal("externalId"),
+      value: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+    }),
+  ]).annotate({ identifier: "ContactLookup" }))();
 export type ContactActivityPage = {
   readonly items: ReadonlyArray<{
     readonly id: MessageId;
@@ -152,41 +166,43 @@ export type ContactActivityPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const ContactActivityPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: MessageId,
-      channel: Schema.String,
-      direction: Schema.String,
-      status: Schema.String,
-      subject: Schema.Union([Schema.String, Schema.Null]),
-      snippet: Schema.Union([Schema.String, Schema.Null]),
-      createdAt: Schema.String,
-      conversationId: Schema.Union([ConversationId, Schema.Null]),
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ContactActivityPage" });
+export const ContactActivityPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: MessageId,
+        channel: Schema.String,
+        direction: Schema.String,
+        status: Schema.String,
+        subject: Schema.Union([Schema.String, Schema.Null]),
+        snippet: Schema.Union([Schema.String, Schema.Null]),
+        createdAt: Schema.String,
+        conversationId: Schema.Union([ConversationId, Schema.Null]),
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ContactActivityPage" }))();
 export type ContactListMembership = {
   readonly id: ContactGroupId;
   readonly name: string;
   readonly color: "clay" | "sand" | "moss" | "sky" | "plum" | "rose" | null;
 };
-export const ContactListMembership = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-  name: Schema.String,
-  color: Schema.Union([
-    Schema.Union([
-      Schema.Literal("clay"),
-      Schema.Literal("sand"),
-      Schema.Literal("moss"),
-      Schema.Literal("sky"),
-      Schema.Literal("plum"),
-      Schema.Literal("rose"),
+export const ContactListMembership = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactGroupId,
+    name: Schema.String,
+    color: Schema.Union([
+      Schema.Union([
+        Schema.Literal("clay"),
+        Schema.Literal("sand"),
+        Schema.Literal("moss"),
+        Schema.Literal("sky"),
+        Schema.Literal("plum"),
+        Schema.Literal("rose"),
+      ]),
+      Schema.Null,
     ]),
-    Schema.Null,
-  ]),
-}).annotate({ identifier: "ContactListMembership" });
+  }).annotate({ identifier: "ContactListMembership" }))();
 export type ContactGroupMembershipPage = {
   readonly items: ReadonlyArray<{
     readonly id: ContactGroupId;
@@ -198,29 +214,30 @@ export type ContactGroupMembershipPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const ContactGroupMembershipPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: ContactGroupId,
-      name: Schema.String,
-      type: Schema.String,
-      color: Schema.Union([
-        Schema.Union([
-          Schema.Literal("clay"),
-          Schema.Literal("sand"),
-          Schema.Literal("moss"),
-          Schema.Literal("sky"),
-          Schema.Literal("plum"),
-          Schema.Literal("rose"),
+export const ContactGroupMembershipPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: ContactGroupId,
+        name: Schema.String,
+        type: Schema.String,
+        color: Schema.Union([
+          Schema.Union([
+            Schema.Literal("clay"),
+            Schema.Literal("sand"),
+            Schema.Literal("moss"),
+            Schema.Literal("sky"),
+            Schema.Literal("plum"),
+            Schema.Literal("rose"),
+          ]),
+          Schema.Null,
         ]),
-        Schema.Null,
-      ]),
-      role: Schema.String,
-      joinedAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ContactGroupMembershipPage" });
+        role: Schema.String,
+        joinedAt: Schema.String,
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ContactGroupMembershipPage" }))();
 export type ContactProfile = {
   readonly firstName?: string | null;
   readonly lastName?: string | null;
@@ -230,25 +247,26 @@ export type ContactProfile = {
   readonly customFields?: ContactCustomFields | null;
   readonly source?: "api" | "import" | "manual" | "form" | null;
 };
-export const ContactProfile = /* @__PURE__ */ Schema.Struct({
-  firstName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  lastName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  company: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  jobTitle: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  location: Schema.optionalKey(Schema.Union([ContactLocation, Schema.Null])),
-  customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
-  source: Schema.optionalKey(
-    Schema.Union([
+export const ContactProfile = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    firstName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    lastName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    company: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    jobTitle: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    location: Schema.optionalKey(Schema.Union([ContactLocation, Schema.Null])),
+    customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
+    source: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("api"),
-        Schema.Literal("import"),
-        Schema.Literal("manual"),
-        Schema.Literal("form"),
+        Schema.Union([
+          Schema.Literal("api"),
+          Schema.Literal("import"),
+          Schema.Literal("manual"),
+          Schema.Literal("form"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-}).annotate({ identifier: "ContactProfile" });
+    ),
+  }).annotate({ identifier: "ContactProfile" }))();
 export type ContactProfileUpdate = {
   readonly firstName?: string | null | null;
   readonly lastName?: string | null | null;
@@ -257,24 +275,25 @@ export type ContactProfileUpdate = {
   readonly location?: ContactLocation | null | null;
   readonly customFields?: ContactCustomFields | null;
 };
-export const ContactProfileUpdate = /* @__PURE__ */ Schema.Struct({
-  firstName: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  lastName: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  company: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  jobTitle: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  location: Schema.optionalKey(
-    Schema.Union([Schema.Union([ContactLocation, Schema.Null]), Schema.Null]),
-  ),
-  customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
-}).annotate({ identifier: "ContactProfileUpdate" });
+export const ContactProfileUpdate = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    firstName: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    lastName: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    company: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    jobTitle: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    location: Schema.optionalKey(
+      Schema.Union([Schema.Union([ContactLocation, Schema.Null]), Schema.Null]),
+    ),
+    customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
+  }).annotate({ identifier: "ContactProfileUpdate" }))();
 export type ContactSummary = {
   readonly id: ContactId;
   readonly namespaceId: NamespaceId | null;
@@ -289,33 +308,35 @@ export type ContactSummary = {
   readonly lastActiveAt: string | null;
   readonly createdAt: string;
 };
-export const ContactSummary = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  name: Schema.String,
-  displayName: Schema.Union([Schema.String, Schema.Null]),
-  status: Schema.Union([
-    Schema.Literal("active"),
-    Schema.Literal("paused"),
-    Schema.Literal("blocked"),
-    Schema.Literal("archived"),
-  ]),
-  email: Schema.Union([Schema.String, Schema.Null]),
-  channels: Schema.Array(Schema.Literal("email")),
-  tags: Schema.Array(Schema.String),
-  lists: Schema.Array(ContactListMembership),
-  customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
-  lastActiveAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-}).annotate({ identifier: "ContactSummary" });
+export const ContactSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    name: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    status: Schema.Union([
+      Schema.Literal("active"),
+      Schema.Literal("paused"),
+      Schema.Literal("blocked"),
+      Schema.Literal("archived"),
+    ]),
+    email: Schema.Union([Schema.String, Schema.Null]),
+    channels: Schema.Array(Schema.Literal("email")),
+    tags: Schema.Array(Schema.String),
+    lists: Schema.Array(ContactListMembership),
+    customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
+    lastActiveAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "ContactSummary" }))();
 export type ContactPage = {
   readonly items: ReadonlyArray<ContactSummary>;
   readonly nextCursor: string | null;
 };
-export const ContactPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ContactSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ContactPage" });
+export const ContactPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ContactSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ContactPage" }))();
 export type Contact = {
   readonly id: ContactId;
   readonly namespaceId: NamespaceId | null;
@@ -385,43 +406,58 @@ export type Contact = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const Contact = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  name: Schema.String,
-  displayName: Schema.Union([Schema.String, Schema.Null]),
-  avatar: Schema.Union([Schema.String, Schema.Null]),
-  status: Schema.Union([
-    Schema.Literal("active"),
-    Schema.Literal("paused"),
-    Schema.Literal("blocked"),
-    Schema.Literal("archived"),
-  ]),
-  statusReason: Schema.Union([Schema.String, Schema.Null]),
-  externalId: Schema.Union([Schema.String, Schema.Null]),
-  identities: Schema.Array(ContactIdentity),
-  profile: Schema.Union([ContactProfile, Schema.Null]),
-  preferences: Schema.Union([ContactPreferences, Schema.Null]),
-  tags: Schema.Array(Schema.String),
-  metadata: Schema.Union([JsonObject, Schema.Null]),
-  importProvenance: Schema.Union([
-    Schema.Struct({
-      first: Schema.Struct({
-        jobId: ContactImportJobId,
-        topicId: TopicId,
-        preset: Schema.Union([
-          Schema.Literal("beehiiv"),
-          Schema.Literal("substack"),
-          Schema.Literal("kit"),
-          Schema.Literal("mailchimp"),
-        ]),
-        importedAt: Schema.String,
-        summary: Schema.optionalKey(
-          Schema.Union([
-            Schema.Struct({
-              signupAt: Schema.Union([
-                Schema.Struct({
-                  value: Schema.String.check(
+export const Contact = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    name: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    avatar: Schema.Union([Schema.String, Schema.Null]),
+    status: Schema.Union([
+      Schema.Literal("active"),
+      Schema.Literal("paused"),
+      Schema.Literal("blocked"),
+      Schema.Literal("archived"),
+    ]),
+    statusReason: Schema.Union([Schema.String, Schema.Null]),
+    externalId: Schema.Union([Schema.String, Schema.Null]),
+    identities: Schema.Array(ContactIdentity),
+    profile: Schema.Union([ContactProfile, Schema.Null]),
+    preferences: Schema.Union([ContactPreferences, Schema.Null]),
+    tags: Schema.Array(Schema.String),
+    metadata: Schema.Union([JsonObject, Schema.Null]),
+    importProvenance: Schema.Union([
+      Schema.Struct({
+        first: Schema.Struct({
+          jobId: ContactImportJobId,
+          topicId: TopicId,
+          preset: Schema.Union([
+            Schema.Literal("beehiiv"),
+            Schema.Literal("substack"),
+            Schema.Literal("kit"),
+            Schema.Literal("mailchimp"),
+          ]),
+          importedAt: Schema.String,
+          summary: Schema.optionalKey(
+            Schema.Union([
+              Schema.Struct({
+                signupAt: Schema.Union([
+                  Schema.Struct({
+                    value: Schema.String.check(
+                      Schema.isMaxCodePoints(160).annotate({
+                        expected: "a string with at most 160 code points",
+                      }),
+                    ).check(
+                      Schema.isMaxLength(160).annotate({
+                        expected: "a value with a length of at most 160",
+                      }),
+                    ),
+                    kind: Schema.Union([Schema.Literal("time"), Schema.Literal("text")]),
+                  }),
+                  Schema.Null,
+                ]),
+                sources: Schema.Array(
+                  Schema.String.check(
                     Schema.isMaxCodePoints(160).annotate({
                       expected: "a string with at most 160 code points",
                     }),
@@ -430,29 +466,35 @@ export const Contact = /* @__PURE__ */ Schema.Struct({
                       expected: "a value with a length of at most 160",
                     }),
                   ),
-                  kind: Schema.Union([Schema.Literal("time"), Schema.Literal("text")]),
-                }),
-                Schema.Null,
-              ]),
-              sources: Schema.Array(
-                Schema.String.check(
-                  Schema.isMaxCodePoints(160).annotate({
-                    expected: "a string with at most 160 code points",
-                  }),
                 ).check(
-                  Schema.isMaxLength(160).annotate({
-                    expected: "a value with a length of at most 160",
+                  Schema.isMaxLength(8).annotate({
+                    expected: "a value with a length of at most 8",
                   }),
                 ),
-              ).check(
-                Schema.isMaxLength(8).annotate({ expected: "a value with a length of at most 8" }),
-              ),
-              omittedSources: Schema.Finite.check(
-                Schema.isInt().annotate({ expected: "an integer" }),
-              )
+                omittedSources: Schema.Finite.check(
+                  Schema.isInt().annotate({ expected: "an integer" }),
+                )
+                  .check(
+                    Schema.isGreaterThanOrEqualTo(0).annotate({
+                      expected: "a value greater than or equal to 0",
+                    }),
+                  )
+                  .check(
+                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                      expected: "a value less than or equal to 9007199254740991",
+                    }),
+                  ),
+              }),
+              Schema.Null,
+            ]),
+          ),
+          evidence: Schema.Array(
+            Schema.Struct({
+              file: Schema.String,
+              row: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
                 .check(
-                  Schema.isGreaterThanOrEqualTo(0).annotate({
-                    expected: "a value greater than or equal to 0",
+                  Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                    expected: "a value greater than or equal to -9007199254740991",
                   }),
                 )
                 .check(
@@ -460,59 +502,55 @@ export const Contact = /* @__PURE__ */ Schema.Struct({
                     expected: "a value less than or equal to 9007199254740991",
                   }),
                 ),
-            }),
-            Schema.Null,
-          ]),
-        ),
-        evidence: Schema.Array(
-          Schema.Struct({
-            file: Schema.String,
-            row: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
-            declared: Schema.Union([
-              Schema.Struct({ kind: Schema.Literal("status_column") }),
-              Schema.Struct({
-                kind: Schema.Literal("export_scope"),
-                scope: Schema.Union([
-                  Schema.Literal("subscribed"),
-                  Schema.Literal("unsubscribed"),
-                  Schema.Literal("suppressed"),
-                  Schema.Literal("cleaned/bounced"),
-                ]),
-              }),
-            ]),
-            suppressionFree: Schema.Boolean,
-            sourceStatus: Schema.Union([Schema.String, Schema.Null]),
-            signupAt: Schema.Union([Schema.String, Schema.Null]),
-            source: Schema.Union([Schema.String, Schema.Null]),
-          }),
-        ),
-      }),
-      latest: Schema.Struct({
-        jobId: ContactImportJobId,
-        topicId: TopicId,
-        preset: Schema.Union([
-          Schema.Literal("beehiiv"),
-          Schema.Literal("substack"),
-          Schema.Literal("kit"),
-          Schema.Literal("mailchimp"),
-        ]),
-        importedAt: Schema.String,
-        summary: Schema.optionalKey(
-          Schema.Union([
-            Schema.Struct({
-              signupAt: Schema.Union([
+              declared: Schema.Union([
+                Schema.Struct({ kind: Schema.Literal("status_column") }),
                 Schema.Struct({
-                  value: Schema.String.check(
+                  kind: Schema.Literal("export_scope"),
+                  scope: Schema.Union([
+                    Schema.Literal("subscribed"),
+                    Schema.Literal("unsubscribed"),
+                    Schema.Literal("suppressed"),
+                    Schema.Literal("cleaned/bounced"),
+                  ]),
+                }),
+              ]),
+              suppressionFree: Schema.Boolean,
+              sourceStatus: Schema.Union([Schema.String, Schema.Null]),
+              signupAt: Schema.Union([Schema.String, Schema.Null]),
+              source: Schema.Union([Schema.String, Schema.Null]),
+            }),
+          ),
+        }),
+        latest: Schema.Struct({
+          jobId: ContactImportJobId,
+          topicId: TopicId,
+          preset: Schema.Union([
+            Schema.Literal("beehiiv"),
+            Schema.Literal("substack"),
+            Schema.Literal("kit"),
+            Schema.Literal("mailchimp"),
+          ]),
+          importedAt: Schema.String,
+          summary: Schema.optionalKey(
+            Schema.Union([
+              Schema.Struct({
+                signupAt: Schema.Union([
+                  Schema.Struct({
+                    value: Schema.String.check(
+                      Schema.isMaxCodePoints(160).annotate({
+                        expected: "a string with at most 160 code points",
+                      }),
+                    ).check(
+                      Schema.isMaxLength(160).annotate({
+                        expected: "a value with a length of at most 160",
+                      }),
+                    ),
+                    kind: Schema.Union([Schema.Literal("time"), Schema.Literal("text")]),
+                  }),
+                  Schema.Null,
+                ]),
+                sources: Schema.Array(
+                  Schema.String.check(
                     Schema.isMaxCodePoints(160).annotate({
                       expected: "a string with at most 160 code points",
                     }),
@@ -521,29 +559,35 @@ export const Contact = /* @__PURE__ */ Schema.Struct({
                       expected: "a value with a length of at most 160",
                     }),
                   ),
-                  kind: Schema.Union([Schema.Literal("time"), Schema.Literal("text")]),
-                }),
-                Schema.Null,
-              ]),
-              sources: Schema.Array(
-                Schema.String.check(
-                  Schema.isMaxCodePoints(160).annotate({
-                    expected: "a string with at most 160 code points",
-                  }),
                 ).check(
-                  Schema.isMaxLength(160).annotate({
-                    expected: "a value with a length of at most 160",
+                  Schema.isMaxLength(8).annotate({
+                    expected: "a value with a length of at most 8",
                   }),
                 ),
-              ).check(
-                Schema.isMaxLength(8).annotate({ expected: "a value with a length of at most 8" }),
-              ),
-              omittedSources: Schema.Finite.check(
-                Schema.isInt().annotate({ expected: "an integer" }),
-              )
+                omittedSources: Schema.Finite.check(
+                  Schema.isInt().annotate({ expected: "an integer" }),
+                )
+                  .check(
+                    Schema.isGreaterThanOrEqualTo(0).annotate({
+                      expected: "a value greater than or equal to 0",
+                    }),
+                  )
+                  .check(
+                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                      expected: "a value less than or equal to 9007199254740991",
+                    }),
+                  ),
+              }),
+              Schema.Null,
+            ]),
+          ),
+          evidence: Schema.Array(
+            Schema.Struct({
+              file: Schema.String,
+              row: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
                 .check(
-                  Schema.isGreaterThanOrEqualTo(0).annotate({
-                    expected: "a value greater than or equal to 0",
+                  Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                    expected: "a value greater than or equal to -9007199254740991",
                   }),
                 )
                 .check(
@@ -551,49 +595,31 @@ export const Contact = /* @__PURE__ */ Schema.Struct({
                     expected: "a value less than or equal to 9007199254740991",
                   }),
                 ),
+              declared: Schema.Union([
+                Schema.Struct({ kind: Schema.Literal("status_column") }),
+                Schema.Struct({
+                  kind: Schema.Literal("export_scope"),
+                  scope: Schema.Union([
+                    Schema.Literal("subscribed"),
+                    Schema.Literal("unsubscribed"),
+                    Schema.Literal("suppressed"),
+                    Schema.Literal("cleaned/bounced"),
+                  ]),
+                }),
+              ]),
+              suppressionFree: Schema.Boolean,
+              sourceStatus: Schema.Union([Schema.String, Schema.Null]),
+              signupAt: Schema.Union([Schema.String, Schema.Null]),
+              source: Schema.Union([Schema.String, Schema.Null]),
             }),
-            Schema.Null,
-          ]),
-        ),
-        evidence: Schema.Array(
-          Schema.Struct({
-            file: Schema.String,
-            row: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
-            declared: Schema.Union([
-              Schema.Struct({ kind: Schema.Literal("status_column") }),
-              Schema.Struct({
-                kind: Schema.Literal("export_scope"),
-                scope: Schema.Union([
-                  Schema.Literal("subscribed"),
-                  Schema.Literal("unsubscribed"),
-                  Schema.Literal("suppressed"),
-                  Schema.Literal("cleaned/bounced"),
-                ]),
-              }),
-            ]),
-            suppressionFree: Schema.Boolean,
-            sourceStatus: Schema.Union([Schema.String, Schema.Null]),
-            signupAt: Schema.Union([Schema.String, Schema.Null]),
-            source: Schema.Union([Schema.String, Schema.Null]),
-          }),
-        ),
+          ),
+        }),
       }),
-    }),
-    Schema.Null,
-  ]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Contact" });
+      Schema.Null,
+    ]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Contact" }))();
 export type ContactsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -606,40 +632,41 @@ export type ContactsListQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const ContactsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ContactsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("active"),
-        Schema.Literal("paused"),
-        Schema.Literal("blocked"),
-        Schema.Literal("archived"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  fields: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  customField: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  customFieldValue: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("active"),
+          Schema.Literal("paused"),
+          Schema.Literal("blocked"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    fields: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    customField: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    customFieldValue: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ContactsList200 = ContactPage;
 export const ContactsList200 = ContactPage;
 export type ContactsList401 = UnauthorizedError;
@@ -666,44 +693,45 @@ export type ContactsCreateRequestJson = {
   readonly externalId?: string | null | null;
   readonly metadata?: JsonObject | null | null;
 };
-export const ContactsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  name: Schema.String,
-  displayName: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  avatar: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  identities: Schema.optionalKey(Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null])),
-  profile: Schema.optionalKey(
-    Schema.Union([Schema.Union([ContactProfile, Schema.Null]), Schema.Null]),
-  ),
-  preferences: Schema.optionalKey(
-    Schema.Union([Schema.Union([ContactPreferences, Schema.Null]), Schema.Null]),
-  ),
-  tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ContactsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    name: Schema.String,
+    displayName: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    avatar: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    identities: Schema.optionalKey(Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null])),
+    profile: Schema.optionalKey(
+      Schema.Union([Schema.Union([ContactProfile, Schema.Null]), Schema.Null]),
+    ),
+    preferences: Schema.optionalKey(
+      Schema.Union([Schema.Union([ContactPreferences, Schema.Null]), Schema.Null]),
+    ),
+    tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    status: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("active"),
-        Schema.Literal("paused"),
-        Schema.Literal("blocked"),
-        Schema.Literal("archived"),
+        Schema.Union([
+          Schema.Literal("active"),
+          Schema.Literal("paused"),
+          Schema.Literal("blocked"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  statusReason: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  externalId: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(
-    Schema.Union([Schema.Union([JsonObject, Schema.Null]), Schema.Null]),
-  ),
-});
+    ),
+    statusReason: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    externalId: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(
+      Schema.Union([Schema.Union([JsonObject, Schema.Null]), Schema.Null]),
+    ),
+  }))();
 export type ContactsCreate201 = Contact;
 export const ContactsCreate201 = Contact;
 export type ContactsCreate401 = UnauthorizedError;
@@ -725,7 +753,7 @@ export const ContactsCreate502 = BillingProviderError;
 export type ContactsCreate504 = GatewayTimeoutError;
 export const ContactsCreate504 = GatewayTimeoutError;
 export type ContactsGetPathParams = { readonly id: ContactId };
-export const ContactsGetPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsGet200 = Contact;
 export const ContactsGet200 = Contact;
 export type ContactsGet401 = UnauthorizedError;
@@ -741,9 +769,10 @@ export const ContactsGet500 = InternalError;
 export type ContactsGet504 = GatewayTimeoutError;
 export const ContactsGet504 = GatewayTimeoutError;
 export type ContactsRemovePathParams = { readonly id: ContactId };
-export const ContactsRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsRemove200 = { readonly success: boolean };
-export const ContactsRemove200 = /* @__PURE__ */ Schema.Struct({ success: Schema.Boolean });
+export const ContactsRemove200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean }))();
 export type ContactsRemove401 = UnauthorizedError;
 export const ContactsRemove401 = UnauthorizedError;
 export type ContactsRemove403 = ForbiddenError;
@@ -759,7 +788,7 @@ export const ContactsRemove502 = BillingProviderError;
 export type ContactsRemove504 = GatewayTimeoutError;
 export const ContactsRemove504 = GatewayTimeoutError;
 export type ContactsUpdatePathParams = { readonly id: ContactId };
-export const ContactsUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsUpdateRequestJson = {
   readonly name?: string | null;
   readonly displayName?: string | null | null;
@@ -771,37 +800,38 @@ export type ContactsUpdateRequestJson = {
   readonly externalId?: string | null | null;
   readonly metadata?: JsonObject | null;
 };
-export const ContactsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  displayName: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  avatar: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  profile: Schema.optionalKey(Schema.Union([ContactProfileUpdate, Schema.Null])),
-  preferences: Schema.optionalKey(
-    Schema.Union([Schema.Union([ContactPreferences, Schema.Null]), Schema.Null]),
-  ),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ContactsUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    avatar: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    profile: Schema.optionalKey(Schema.Union([ContactProfileUpdate, Schema.Null])),
+    preferences: Schema.optionalKey(
+      Schema.Union([Schema.Union([ContactPreferences, Schema.Null]), Schema.Null]),
+    ),
+    status: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("active"),
-        Schema.Literal("paused"),
-        Schema.Literal("blocked"),
-        Schema.Literal("archived"),
+        Schema.Union([
+          Schema.Literal("active"),
+          Schema.Literal("paused"),
+          Schema.Literal("blocked"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  statusReason: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  externalId: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-});
+    ),
+    statusReason: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    externalId: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+  }))();
 export type ContactsUpdate200 = Contact;
 export const ContactsUpdate200 = Contact;
 export type ContactsUpdate401 = UnauthorizedError;
@@ -821,31 +851,31 @@ export const ContactsUpdate502 = BillingProviderError;
 export type ContactsUpdate504 = GatewayTimeoutError;
 export const ContactsUpdate504 = GatewayTimeoutError;
 export type ContactsGetActivityTimelinePathParams = { readonly id: ContactId };
-export const ContactsGetActivityTimelinePathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-});
+export const ContactsGetActivityTimelinePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
 export type ContactsGetActivityTimelineQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly channel?: "email" | null;
 };
-export const ContactsGetActivityTimelineQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-});
+export const ContactsGetActivityTimelineQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+  }))();
 export type ContactsGetActivityTimeline200 = ContactActivityPage;
 export const ContactsGetActivityTimeline200 = ContactActivityPage;
 export type ContactsGetActivityTimeline401 = UnauthorizedError;
@@ -861,7 +891,8 @@ export const ContactsGetActivityTimeline500 = InternalError;
 export type ContactsGetActivityTimeline504 = GatewayTimeoutError;
 export const ContactsGetActivityTimeline504 = GatewayTimeoutError;
 export type ContactsGetEngagementPathParams = { readonly id: ContactId };
-export const ContactsGetEngagementPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsGetEngagementPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
 export type ContactsGetEngagement200 = {
   readonly totalMessages: number;
   readonly messagesSent: number;
@@ -870,47 +901,9 @@ export type ContactsGetEngagement200 = {
   readonly lastActivityAt: string | null;
   readonly channelsUsed: { readonly [x: string]: number };
 };
-export const ContactsGetEngagement200 = /* @__PURE__ */ Schema.Struct({
-  totalMessages: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  messagesSent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  messagesReceived: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  activeConversations: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastActivityAt: Schema.Union([Schema.String, Schema.Null]),
-  channelsUsed: Schema.Record(
-    Schema.String,
-    Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const ContactsGetEngagement200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    totalMessages: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(0).annotate({
           expected: "a value greater than or equal to 0",
@@ -921,8 +914,55 @@ export const ContactsGetEngagement200 = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-  ),
-});
+    messagesSent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    messagesReceived: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    activeConversations: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastActivityAt: Schema.Union([Schema.String, Schema.Null]),
+    channelsUsed: Schema.Record(
+      Schema.String,
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    ),
+  }))();
 export type ContactsGetEngagement401 = UnauthorizedError;
 export const ContactsGetEngagement401 = UnauthorizedError;
 export type ContactsGetEngagement403 = ForbiddenError;
@@ -936,29 +976,29 @@ export const ContactsGetEngagement500 = InternalError;
 export type ContactsGetEngagement504 = GatewayTimeoutError;
 export const ContactsGetEngagement504 = GatewayTimeoutError;
 export type ContactsGetGroupMembershipsPathParams = { readonly id: ContactId };
-export const ContactsGetGroupMembershipsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-});
+export const ContactsGetGroupMembershipsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
 export type ContactsGetGroupMembershipsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const ContactsGetGroupMembershipsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const ContactsGetGroupMembershipsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type ContactsGetGroupMemberships200 = ContactGroupMembershipPage;
 export const ContactsGetGroupMemberships200 = ContactGroupMembershipPage;
 export type ContactsGetGroupMemberships401 = UnauthorizedError;
@@ -974,17 +1014,19 @@ export const ContactsGetGroupMemberships500 = InternalError;
 export type ContactsGetGroupMemberships504 = GatewayTimeoutError;
 export const ContactsGetGroupMemberships504 = GatewayTimeoutError;
 export type ContactsAddIdentityPathParams = { readonly id: ContactId };
-export const ContactsAddIdentityPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsAddIdentityPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
 export type ContactsAddIdentityRequestJson = {
   readonly type: "email" | "phone";
   readonly identifier: string;
   readonly verified?: boolean | null;
 };
-export const ContactsAddIdentityRequestJson = /* @__PURE__ */ Schema.Struct({
-  type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
-  identifier: Schema.String,
-  verified: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+export const ContactsAddIdentityRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
+    identifier: Schema.String,
+    verified: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ContactsAddIdentity200 = Contact;
 export const ContactsAddIdentity200 = Contact;
 export type ContactsAddIdentity401 = UnauthorizedError;
@@ -1005,10 +1047,8 @@ export type ContactsRemoveIdentityPathParams = {
   readonly id: ContactId;
   readonly identityId: ContactIdentityId;
 };
-export const ContactsRemoveIdentityPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-  identityId: ContactIdentityId,
-});
+export const ContactsRemoveIdentityPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId, identityId: ContactIdentityId }))();
 export type ContactsRemoveIdentity200 = Contact;
 export const ContactsRemoveIdentity200 = Contact;
 export type ContactsRemoveIdentity401 = UnauthorizedError;
@@ -1028,30 +1068,34 @@ export type ContactsSetConsentPathParams = {
   readonly identityId: ContactIdentityId;
   readonly channel: "email";
 };
-export const ContactsSetConsentPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-  identityId: ContactIdentityId,
-  channel: Schema.Literal("email"),
-});
+export const ContactsSetConsentPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactId,
+    identityId: ContactIdentityId,
+    channel: Schema.Literal("email"),
+  }))();
 export type ContactsSetConsentRequestJson = {
   readonly status: "opted_in" | "opted_out";
   readonly source: string;
   readonly capturedAt: string;
   readonly proof?: JsonObject | null;
 };
-export const ContactsSetConsentRequestJson = /* @__PURE__ */ Schema.Struct({
-  status: Schema.Union([Schema.Literal("opted_in"), Schema.Literal("opted_out")]),
-  source: Schema.String.annotate({
-    description: "Where the consent was captured, such as a form URL or a checkout step.",
-  })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
-    )
-    .check(Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" })),
-  capturedAt: Schema.String,
-  proof: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-});
+export const ContactsSetConsentRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.Union([Schema.Literal("opted_in"), Schema.Literal("opted_out")]),
+    source: Schema.String.annotate({
+      description: "Where the consent was captured, such as a form URL or a checkout step.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+      ),
+    capturedAt: Schema.String,
+    proof: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+  }))();
 export type ContactsSetConsent200 = Contact;
 export const ContactsSetConsent200 = Contact;
 export type ContactsSetConsent401 = UnauthorizedError;
@@ -1067,11 +1111,10 @@ export const ContactsSetConsent500 = InternalError;
 export type ContactsSetConsent504 = GatewayTimeoutError;
 export const ContactsSetConsent504 = GatewayTimeoutError;
 export type ContactsAddTagsPathParams = { readonly id: ContactId };
-export const ContactsAddTagsPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsAddTagsPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsAddTagsRequestJson = { readonly tags: readonly [string, ...Array<string>] };
-export const ContactsAddTagsRequestJson = /* @__PURE__ */ Schema.Struct({
-  tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ContactsAddTagsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ContactsAddTags200 = Contact;
 export const ContactsAddTags200 = Contact;
 export type ContactsAddTags401 = UnauthorizedError;
@@ -1087,11 +1130,11 @@ export const ContactsAddTags500 = InternalError;
 export type ContactsAddTags504 = GatewayTimeoutError;
 export const ContactsAddTags504 = GatewayTimeoutError;
 export type ContactsRemoveTagsPathParams = { readonly id: ContactId };
-export const ContactsRemoveTagsPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactsRemoveTagsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
 export type ContactsRemoveTagsRequestJson = { readonly tags: readonly [string, ...Array<string>] };
-export const ContactsRemoveTagsRequestJson = /* @__PURE__ */ Schema.Struct({
-  tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ContactsRemoveTagsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ContactsRemoveTags200 = Contact;
 export const ContactsRemoveTags200 = Contact;
 export type ContactsRemoveTags401 = UnauthorizedError;
@@ -1109,32 +1152,38 @@ export const ContactsRemoveTags504 = GatewayTimeoutError;
 export type ContactsBulkDeleteRequestJson = {
   readonly ids: readonly [ContactId, ...Array<ContactId>];
 };
-export const ContactsBulkDeleteRequestJson = /* @__PURE__ */ Schema.Struct({
-  ids: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-});
+export const ContactsBulkDeleteRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    ids: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+  }))();
 export type ContactsBulkDelete200 = { readonly deleted: number; readonly failed: number };
-export const ContactsBulkDelete200 = /* @__PURE__ */ Schema.Struct({
-  deleted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-});
+export const ContactsBulkDelete200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    deleted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
 export type ContactsBulkDelete401 = UnauthorizedError;
 export const ContactsBulkDelete401 = UnauthorizedError;
 export type ContactsBulkDelete403 = ForbiddenError;
@@ -1151,17 +1200,18 @@ export type ContactsBulkUpdateStatusRequestJson = {
   readonly ids: readonly [ContactId, ...Array<ContactId>];
   readonly status: "active" | "paused" | "blocked" | "archived";
 };
-export const ContactsBulkUpdateStatusRequestJson = /* @__PURE__ */ Schema.Struct({
-  ids: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-  status: Schema.Union([
-    Schema.Literal("active"),
-    Schema.Literal("paused"),
-    Schema.Literal("blocked"),
-    Schema.Literal("archived"),
-  ]),
-});
+export const ContactsBulkUpdateStatusRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    ids: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+    status: Schema.Union([
+      Schema.Literal("active"),
+      Schema.Literal("paused"),
+      Schema.Literal("blocked"),
+      Schema.Literal("archived"),
+    ]),
+  }))();
 export type ContactsBulkUpdateStatus200 = BulkUpdateResult;
 export const ContactsBulkUpdateStatus200 = BulkUpdateResult;
 export type ContactsBulkUpdateStatus401 = UnauthorizedError;
@@ -1183,13 +1233,18 @@ export type ContactsBulkUpdateTagsRequestJson = {
   readonly operation: "add" | "remove" | "set";
   readonly tags: readonly [string, ...Array<string>];
 };
-export const ContactsBulkUpdateTagsRequestJson = /* @__PURE__ */ Schema.Struct({
-  ids: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-  operation: Schema.Union([Schema.Literal("add"), Schema.Literal("remove"), Schema.Literal("set")]),
-  tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ContactsBulkUpdateTagsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    ids: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+    operation: Schema.Union([
+      Schema.Literal("add"),
+      Schema.Literal("remove"),
+      Schema.Literal("set"),
+    ]),
+    tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+  }))();
 export type ContactsBulkUpdateTags200 = BulkUpdateResult;
 export const ContactsBulkUpdateTags200 = BulkUpdateResult;
 export type ContactsBulkUpdateTags401 = UnauthorizedError;
@@ -1211,57 +1266,61 @@ export type ContactsExportRequestJson = {
   } | null;
   readonly fields?: ReadonlyArray<string> | null;
 };
-export const ContactsExportRequestJson = /* @__PURE__ */ Schema.Struct({
-  ids: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(ContactId).check(
-        Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  format: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Literal("json"), Schema.Literal("csv")]), Schema.Null]),
-  ),
-  filters: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        status: Schema.optionalKey(
-          Schema.Union([
-            Schema.Union([
-              Schema.Literal("active"),
-              Schema.Literal("paused"),
-              Schema.Literal("blocked"),
-              Schema.Literal("archived"),
-            ]),
-            Schema.Null,
-          ]),
+export const ContactsExportRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    ids: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(ContactId).check(
+          Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
         ),
-        tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      }),
-      Schema.Null,
-    ]),
-  ),
-  fields: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-});
+        Schema.Null,
+      ]),
+    ),
+    format: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Literal("json"), Schema.Literal("csv")]), Schema.Null]),
+    ),
+    filters: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          status: Schema.optionalKey(
+            Schema.Union([
+              Schema.Union([
+                Schema.Literal("active"),
+                Schema.Literal("paused"),
+                Schema.Literal("blocked"),
+                Schema.Literal("archived"),
+              ]),
+              Schema.Null,
+            ]),
+          ),
+          tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    fields: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+  }))();
 export type ContactsExport200 = {
   readonly data: string;
   readonly format: "json" | "csv";
   readonly count: number;
 };
-export const ContactsExport200 = /* @__PURE__ */ Schema.Struct({
-  data: Schema.String,
-  format: Schema.Union([Schema.Literal("json"), Schema.Literal("csv")]),
-  count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-});
+export const ContactsExport200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    data: Schema.String,
+    format: Schema.Union([Schema.Literal("json"), Schema.Literal("csv")]),
+    count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
 export type ContactsExport401 = UnauthorizedError;
 export const ContactsExport401 = UnauthorizedError;
 export type ContactsExport403 = ForbiddenError;
@@ -1278,14 +1337,15 @@ export type ContactsFindRequestJson = {
   readonly phone?: string | null;
   readonly externalId?: string | null;
 };
-export const ContactsFindRequestJson = /* @__PURE__ */ Schema.Struct({
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  phone: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ContactsFindRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    phone: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ContactsFind200 = Contact | null;
-export const ContactsFind200 = /* @__PURE__ */ Schema.Union([Contact, Schema.Null]);
+export const ContactsFind200 = /* @__PURE__ */ (() => Schema.Union([Contact, Schema.Null]))();
 export type ContactsFind401 = UnauthorizedError;
 export const ContactsFind401 = UnauthorizedError;
 export type ContactsFind403 = ForbiddenError;
@@ -1312,38 +1372,37 @@ export type ContactsFindOrCreateRequestJson = {
     readonly externalId?: string | null | null;
   } | null;
 };
-export const ContactsFindOrCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  lookup: ContactLookup,
-  create: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        displayName: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
-        avatar: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
-        identities: Schema.optionalKey(
-          Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null]),
-        ),
-        profile: Schema.optionalKey(
-          Schema.Union([Schema.Union([ContactProfile, Schema.Null]), Schema.Null]),
-        ),
-        externalId: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
-      }),
-      Schema.Null,
-    ]),
-  ),
-});
+export const ContactsFindOrCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    lookup: ContactLookup,
+    create: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          displayName: Schema.optionalKey(
+            Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+          ),
+          avatar: Schema.optionalKey(
+            Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+          ),
+          identities: Schema.optionalKey(
+            Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null]),
+          ),
+          profile: Schema.optionalKey(
+            Schema.Union([Schema.Union([ContactProfile, Schema.Null]), Schema.Null]),
+          ),
+          externalId: Schema.optionalKey(
+            Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type ContactsFindOrCreate200 = { readonly contact: Contact; readonly created: boolean };
-export const ContactsFindOrCreate200 = /* @__PURE__ */ Schema.Struct({
-  contact: Contact,
-  created: Schema.Boolean,
-});
+export const ContactsFindOrCreate200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ contact: Contact, created: Schema.Boolean }))();
 export type ContactsFindOrCreate401 = UnauthorizedError;
 export const ContactsFindOrCreate401 = UnauthorizedError;
 export type ContactsFindOrCreate402 = PaymentRequiredError;
@@ -1402,126 +1461,131 @@ export type ContactsStartImportRequestJson =
       readonly jobId: ContactImportJobId;
       readonly expectedGeneration: number;
     };
-export const ContactsStartImportRequestJson = /* @__PURE__ */ Schema.Union([
-  Schema.Struct({
-    mode: Schema.Literal("new"),
-    input: Schema.Struct({
-      preset: Schema.Union([
-        Schema.Literal("beehiiv"),
-        Schema.Literal("substack"),
-        Schema.Literal("kit"),
-        Schema.Literal("mailchimp"),
-      ]),
-      topicId: TopicId,
-      namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-      files: Schema.TupleWithRest(
-        Schema.Tuple([
-          Schema.Struct({
-            name: Schema.String.check(
-              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-            )
-              .check(
-                Schema.isMaxCodePoints(255).annotate({
-                  expected: "a string with at most 255 code points",
-                }),
-              )
-              .check(
-                Schema.isBetweenLength(1, 255).annotate({
-                  expected: "a value with a length between 1 and 255",
-                }),
-              ),
-            csv: Schema.String.check(
-              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-            ),
-            evidence: Schema.Union([
-              Schema.Struct({ kind: Schema.Literal("status_column") }),
-              Schema.Struct({
-                kind: Schema.Literal("export_scope"),
-                scope: Schema.Union([
-                  Schema.Literal("subscribed"),
-                  Schema.Literal("unsubscribed"),
-                  Schema.Literal("suppressed"),
-                  Schema.Literal("cleaned/bounced"),
-                ]),
-              }),
-            ]),
-            suppressionFree: Schema.optionalKey(
-              Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-                description:
-                  "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-              }),
-            ),
-          }),
+export const ContactsStartImportRequestJson = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      mode: Schema.Literal("new"),
+      input: Schema.Struct({
+        preset: Schema.Union([
+          Schema.Literal("beehiiv"),
+          Schema.Literal("substack"),
+          Schema.Literal("kit"),
+          Schema.Literal("mailchimp"),
         ]),
-        [
-          Schema.Struct({
-            name: Schema.String.check(
-              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-            )
-              .check(
-                Schema.isMaxCodePoints(255).annotate({
-                  expected: "a string with at most 255 code points",
-                }),
+        topicId: TopicId,
+        namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+        files: Schema.TupleWithRest(
+          Schema.Tuple([
+            Schema.Struct({
+              name: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
               )
-              .check(
-                Schema.isBetweenLength(1, 255).annotate({
-                  expected: "a value with a length between 1 and 255",
+                .check(
+                  Schema.isMaxCodePoints(255).annotate({
+                    expected: "a string with at most 255 code points",
+                  }),
+                )
+                .check(
+                  Schema.isBetweenLength(1, 255).annotate({
+                    expected: "a value with a length between 1 and 255",
+                  }),
+                ),
+              csv: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              ),
+              evidence: Schema.Union([
+                Schema.Struct({ kind: Schema.Literal("status_column") }),
+                Schema.Struct({
+                  kind: Schema.Literal("export_scope"),
+                  scope: Schema.Union([
+                    Schema.Literal("subscribed"),
+                    Schema.Literal("unsubscribed"),
+                    Schema.Literal("suppressed"),
+                    Schema.Literal("cleaned/bounced"),
+                  ]),
+                }),
+              ]),
+              suppressionFree: Schema.optionalKey(
+                Schema.Union([Schema.Boolean, Schema.Null]).annotate({
+                  description:
+                    "The operator declares this beehiiv export was filtered to Suppression does not exist.",
                 }),
               ),
-            csv: Schema.String.check(
-              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-            ),
-            evidence: Schema.Union([
-              Schema.Struct({ kind: Schema.Literal("status_column") }),
-              Schema.Struct({
-                kind: Schema.Literal("export_scope"),
-                scope: Schema.Union([
-                  Schema.Literal("subscribed"),
-                  Schema.Literal("unsubscribed"),
-                  Schema.Literal("suppressed"),
-                  Schema.Literal("cleaned/bounced"),
-                ]),
-              }),
-            ]),
-            suppressionFree: Schema.optionalKey(
-              Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-                description:
-                  "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-              }),
-            ),
+            }),
+          ]),
+          [
+            Schema.Struct({
+              name: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+                .check(
+                  Schema.isMaxCodePoints(255).annotate({
+                    expected: "a string with at most 255 code points",
+                  }),
+                )
+                .check(
+                  Schema.isBetweenLength(1, 255).annotate({
+                    expected: "a value with a length between 1 and 255",
+                  }),
+                ),
+              csv: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              ),
+              evidence: Schema.Union([
+                Schema.Struct({ kind: Schema.Literal("status_column") }),
+                Schema.Struct({
+                  kind: Schema.Literal("export_scope"),
+                  scope: Schema.Union([
+                    Schema.Literal("subscribed"),
+                    Schema.Literal("unsubscribed"),
+                    Schema.Literal("suppressed"),
+                    Schema.Literal("cleaned/bounced"),
+                  ]),
+                }),
+              ]),
+              suppressionFree: Schema.optionalKey(
+                Schema.Union([Schema.Boolean, Schema.Null]).annotate({
+                  description:
+                    "The operator declares this beehiiv export was filtered to Suppression does not exist.",
+                }),
+              ),
+            }),
+          ],
+        ).check(
+          Schema.isMaxLength(20).annotate({ expected: "a value with a length of at most 20" }),
+        ),
+      }),
+      planHash: Schema.String,
+      idempotencyKey: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
           }),
-        ],
-      ).check(Schema.isMaxLength(20).annotate({ expected: "a value with a length of at most 20" })),
+        )
+        .check(
+          Schema.isBetweenLength(1, 255).annotate({
+            expected: "a value with a length between 1 and 255",
+          }),
+        ),
     }),
-    planHash: Schema.String,
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isBetweenLength(1, 255).annotate({
-          expected: "a value with a length between 1 and 255",
-        }),
-      ),
-  }),
-  Schema.Struct({
-    mode: Schema.Literal("resume"),
-    jobId: ContactImportJobId,
-    expectedGeneration: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-]);
+    Schema.Struct({
+      mode: Schema.Literal("resume"),
+      jobId: ContactImportJobId,
+      expectedGeneration: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+  ]))();
 export type ContactsStartImport202 = {
   readonly id: ContactImportJobId;
   readonly namespaceId: NamespaceId | null;
@@ -1553,33 +1617,147 @@ export type ContactsStartImport202 = {
   } | null;
   readonly resumable: boolean;
 };
-export const ContactsStartImport202 = /* @__PURE__ */ Schema.Struct({
-  id: ContactImportJobId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  topicId: TopicId,
-  preset: Schema.Union([
-    Schema.Literal("beehiiv"),
-    Schema.Literal("substack"),
-    Schema.Literal("kit"),
-    Schema.Literal("mailchimp"),
-  ]),
-  status: Schema.Union([
-    Schema.Literal("queued"),
-    Schema.Literal("running"),
-    Schema.Literal("finalizing"),
-    Schema.Literal("completed"),
-    Schema.Literal("failed"),
-  ]),
-  generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  counts: Schema.Struct({
+export const ContactsStartImport202 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactImportJobId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    topicId: TopicId,
+    preset: Schema.Union([
+      Schema.Literal("beehiiv"),
+      Schema.Literal("substack"),
+      Schema.Literal("kit"),
+      Schema.Literal("mailchimp"),
+    ]),
+    status: Schema.Union([
+      Schema.Literal("queued"),
+      Schema.Literal("running"),
+      Schema.Literal("finalizing"),
+      Schema.Literal("completed"),
+      Schema.Literal("failed"),
+    ]),
+    generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    counts: Schema.Struct({
+      totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      uniqueAddresses: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      suppressed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      conflicts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      created: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      existing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+    processedRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
     totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(0).annotate({
@@ -1591,132 +1769,23 @@ export const ContactsStartImport202 = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-    uniqueAddresses: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    suppressed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    conflicts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    created: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    existing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-  processedRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  createdAt: Schema.String,
-  startedAt: Schema.Union([Schema.String, Schema.Null]),
-  updatedAt: Schema.String,
-  completedAt: Schema.Union([Schema.String, Schema.Null]),
-  failure: Schema.Union([
-    Schema.Struct({ code: Schema.String, message: Schema.String, retryable: Schema.Boolean }),
-    Schema.Null,
-  ]),
-  resumable: Schema.Boolean,
-});
+    createdAt: Schema.String,
+    startedAt: Schema.Union([Schema.String, Schema.Null]),
+    updatedAt: Schema.String,
+    completedAt: Schema.Union([Schema.String, Schema.Null]),
+    failure: Schema.Union([
+      Schema.Struct({ code: Schema.String, message: Schema.String, retryable: Schema.Boolean }),
+      Schema.Null,
+    ]),
+    resumable: Schema.Boolean,
+  }))();
 export type ContactsStartImport401 = UnauthorizedError;
 export const ContactsStartImport401 = UnauthorizedError;
 export type ContactsStartImport402 = PaymentRequiredError;
 export const ContactsStartImport402 = PaymentRequiredError;
 export type ContactsStartImport403 = ForbiddenError | FlagDisabledError;
-export const ContactsStartImport403 = /* @__PURE__ */ Schema.Union([
-  ForbiddenError,
-  FlagDisabledError,
-]);
+export const ContactsStartImport403 = /* @__PURE__ */ (() =>
+  Schema.Union([ForbiddenError, FlagDisabledError]))();
 export type ContactsStartImport404 = ResourceNotFoundError;
 export const ContactsStartImport404 = ResourceNotFoundError;
 export type ContactsStartImport409 = ConflictError;
@@ -1730,9 +1799,8 @@ export const ContactsStartImport502 = BillingProviderError;
 export type ContactsStartImport504 = GatewayTimeoutError;
 export const ContactsStartImport504 = GatewayTimeoutError;
 export type ContactsGetImportJobPathParams = { readonly id: ContactImportJobId };
-export const ContactsGetImportJobPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactImportJobId,
-});
+export const ContactsGetImportJobPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactImportJobId }))();
 export type ContactsGetImportJob200 = {
   readonly id: ContactImportJobId;
   readonly namespaceId: NamespaceId | null;
@@ -1764,33 +1832,147 @@ export type ContactsGetImportJob200 = {
   } | null;
   readonly resumable: boolean;
 };
-export const ContactsGetImportJob200 = /* @__PURE__ */ Schema.Struct({
-  id: ContactImportJobId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  topicId: TopicId,
-  preset: Schema.Union([
-    Schema.Literal("beehiiv"),
-    Schema.Literal("substack"),
-    Schema.Literal("kit"),
-    Schema.Literal("mailchimp"),
-  ]),
-  status: Schema.Union([
-    Schema.Literal("queued"),
-    Schema.Literal("running"),
-    Schema.Literal("finalizing"),
-    Schema.Literal("completed"),
-    Schema.Literal("failed"),
-  ]),
-  generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  counts: Schema.Struct({
+export const ContactsGetImportJob200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactImportJobId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    topicId: TopicId,
+    preset: Schema.Union([
+      Schema.Literal("beehiiv"),
+      Schema.Literal("substack"),
+      Schema.Literal("kit"),
+      Schema.Literal("mailchimp"),
+    ]),
+    status: Schema.Union([
+      Schema.Literal("queued"),
+      Schema.Literal("running"),
+      Schema.Literal("finalizing"),
+      Schema.Literal("completed"),
+      Schema.Literal("failed"),
+    ]),
+    generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    counts: Schema.Struct({
+      totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      uniqueAddresses: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      suppressed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      conflicts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      created: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      existing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+    processedRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
     totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(0).annotate({
@@ -1802,123 +1984,16 @@ export const ContactsGetImportJob200 = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-    uniqueAddresses: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    suppressed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    conflicts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    created: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    existing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-  processedRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  createdAt: Schema.String,
-  startedAt: Schema.Union([Schema.String, Schema.Null]),
-  updatedAt: Schema.String,
-  completedAt: Schema.Union([Schema.String, Schema.Null]),
-  failure: Schema.Union([
-    Schema.Struct({ code: Schema.String, message: Schema.String, retryable: Schema.Boolean }),
-    Schema.Null,
-  ]),
-  resumable: Schema.Boolean,
-});
+    createdAt: Schema.String,
+    startedAt: Schema.Union([Schema.String, Schema.Null]),
+    updatedAt: Schema.String,
+    completedAt: Schema.Union([Schema.String, Schema.Null]),
+    failure: Schema.Union([
+      Schema.Struct({ code: Schema.String, message: Schema.String, retryable: Schema.Boolean }),
+      Schema.Null,
+    ]),
+    resumable: Schema.Boolean,
+  }))();
 export type ContactsGetImportJob401 = UnauthorizedError;
 export const ContactsGetImportJob401 = UnauthorizedError;
 export type ContactsGetImportJob403 = ForbiddenError;
@@ -1960,94 +2035,95 @@ export type ContactsPlanImportRequestJson = {
     }>,
   ];
 };
-export const ContactsPlanImportRequestJson = /* @__PURE__ */ Schema.Struct({
-  preset: Schema.Union([
-    Schema.Literal("beehiiv"),
-    Schema.Literal("substack"),
-    Schema.Literal("kit"),
-    Schema.Literal("mailchimp"),
-  ]),
-  topicId: TopicId,
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  files: Schema.TupleWithRest(
-    Schema.Tuple([
-      Schema.Struct({
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isBetweenLength(1, 255).annotate({
-              expected: "a value with a length between 1 and 255",
-            }),
-          ),
-        csv: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
-        evidence: Schema.Union([
-          Schema.Struct({ kind: Schema.Literal("status_column") }),
-          Schema.Struct({
-            kind: Schema.Literal("export_scope"),
-            scope: Schema.Union([
-              Schema.Literal("subscribed"),
-              Schema.Literal("unsubscribed"),
-              Schema.Literal("suppressed"),
-              Schema.Literal("cleaned/bounced"),
-            ]),
-          }),
-        ]),
-        suppressionFree: Schema.optionalKey(
-          Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-            description:
-              "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-          }),
-        ),
-      }),
+export const ContactsPlanImportRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    preset: Schema.Union([
+      Schema.Literal("beehiiv"),
+      Schema.Literal("substack"),
+      Schema.Literal("kit"),
+      Schema.Literal("mailchimp"),
     ]),
-    [
-      Schema.Struct({
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
+    topicId: TopicId,
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    files: Schema.TupleWithRest(
+      Schema.Tuple([
+        Schema.Struct({
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
           )
-          .check(
-            Schema.isBetweenLength(1, 255).annotate({
-              expected: "a value with a length between 1 and 255",
+            .check(
+              Schema.isMaxCodePoints(255).annotate({
+                expected: "a string with at most 255 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 255).annotate({
+                expected: "a value with a length between 1 and 255",
+              }),
+            ),
+          csv: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+          evidence: Schema.Union([
+            Schema.Struct({ kind: Schema.Literal("status_column") }),
+            Schema.Struct({
+              kind: Schema.Literal("export_scope"),
+              scope: Schema.Union([
+                Schema.Literal("subscribed"),
+                Schema.Literal("unsubscribed"),
+                Schema.Literal("suppressed"),
+                Schema.Literal("cleaned/bounced"),
+              ]),
+            }),
+          ]),
+          suppressionFree: Schema.optionalKey(
+            Schema.Union([Schema.Boolean, Schema.Null]).annotate({
+              description:
+                "The operator declares this beehiiv export was filtered to Suppression does not exist.",
             }),
           ),
-        csv: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
-        evidence: Schema.Union([
-          Schema.Struct({ kind: Schema.Literal("status_column") }),
-          Schema.Struct({
-            kind: Schema.Literal("export_scope"),
-            scope: Schema.Union([
-              Schema.Literal("subscribed"),
-              Schema.Literal("unsubscribed"),
-              Schema.Literal("suppressed"),
-              Schema.Literal("cleaned/bounced"),
-            ]),
-          }),
-        ]),
-        suppressionFree: Schema.optionalKey(
-          Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-            description:
-              "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-          }),
-        ),
-      }),
-    ],
-  ).check(Schema.isMaxLength(20).annotate({ expected: "a value with a length of at most 20" })),
-});
+        }),
+      ]),
+      [
+        Schema.Struct({
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(255).annotate({
+                expected: "a string with at most 255 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 255).annotate({
+                expected: "a value with a length between 1 and 255",
+              }),
+            ),
+          csv: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+          evidence: Schema.Union([
+            Schema.Struct({ kind: Schema.Literal("status_column") }),
+            Schema.Struct({
+              kind: Schema.Literal("export_scope"),
+              scope: Schema.Union([
+                Schema.Literal("subscribed"),
+                Schema.Literal("unsubscribed"),
+                Schema.Literal("suppressed"),
+                Schema.Literal("cleaned/bounced"),
+              ]),
+            }),
+          ]),
+          suppressionFree: Schema.optionalKey(
+            Schema.Union([Schema.Boolean, Schema.Null]).annotate({
+              description:
+                "The operator declares this beehiiv export was filtered to Suppression does not exist.",
+            }),
+          ),
+        }),
+      ],
+    ).check(Schema.isMaxLength(20).annotate({ expected: "a value with a length of at most 20" })),
+  }))();
 export type ContactsPlanImport200 = {
   readonly planHash: string;
   readonly presetVersion: string;
@@ -2074,120 +2150,18 @@ export type ContactsPlanImport200 = {
   }>;
   readonly diagnosticsTruncated: boolean;
 };
-export const ContactsPlanImport200 = /* @__PURE__ */ Schema.Struct({
-  planHash: Schema.String,
-  presetVersion: Schema.String,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  topicId: TopicId,
-  canStart: Schema.Boolean,
-  counts: Schema.Struct({
-    totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    uniqueAddresses: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    suppressed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    conflicts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    created: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    existing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-  diagnostics: Schema.Array(
-    Schema.Struct({
-      file: Schema.String,
-      row: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const ContactsPlanImport200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    planHash: Schema.String,
+    presetVersion: Schema.String,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    topicId: TopicId,
+    canStart: Schema.Boolean,
+    counts: Schema.Struct({
+      totalRows: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
         .check(
-          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-            expected: "a value greater than or equal to -9007199254740991",
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
           }),
         )
         .check(
@@ -2195,20 +2169,121 @@ export const ContactsPlanImport200 = /* @__PURE__ */ Schema.Struct({
             expected: "a value less than or equal to 9007199254740991",
           }),
         ),
-      code: Schema.String,
-      message: Schema.String,
-      email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      uniqueAddresses: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      suppressed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      conflicts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      created: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      existing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
     }),
-  ),
-  diagnosticsTruncated: Schema.Boolean,
-});
+    diagnostics: Schema.Array(
+      Schema.Struct({
+        file: Schema.String,
+        row: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+              expected: "a value greater than or equal to -9007199254740991",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        code: Schema.String,
+        message: Schema.String,
+        email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      }),
+    ),
+    diagnosticsTruncated: Schema.Boolean,
+  }))();
 export type ContactsPlanImport401 = UnauthorizedError;
 export const ContactsPlanImport401 = UnauthorizedError;
 export type ContactsPlanImport403 = ForbiddenError | FlagDisabledError;
-export const ContactsPlanImport403 = /* @__PURE__ */ Schema.Union([
-  ForbiddenError,
-  FlagDisabledError,
-]);
+export const ContactsPlanImport403 = /* @__PURE__ */ (() =>
+  Schema.Union([ForbiddenError, FlagDisabledError]))();
 export type ContactsPlanImport404 = ResourceNotFoundError;
 export const ContactsPlanImport404 = ResourceNotFoundError;
 export type ContactsPlanImport422 = ValidationError;

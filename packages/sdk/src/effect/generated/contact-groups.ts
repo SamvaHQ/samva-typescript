@@ -38,54 +38,55 @@ export type ContactGroupPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const ContactGroupPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: ContactGroupId,
-      organizationId: OrganizationId,
-      name: Schema.String,
-      description: Schema.Union([Schema.String, Schema.Null]),
-      type: Schema.Union([
-        Schema.Literal("static"),
-        Schema.Literal("dynamic"),
-        Schema.Literal("smart"),
-      ]),
-      criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-      color: Schema.Union([
-        Schema.Union([
-          Schema.Literal("clay"),
-          Schema.Literal("sand"),
-          Schema.Literal("moss"),
-          Schema.Literal("sky"),
-          Schema.Literal("plum"),
-          Schema.Literal("rose"),
+export const ContactGroupPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: ContactGroupId,
+        organizationId: OrganizationId,
+        name: Schema.String,
+        description: Schema.Union([Schema.String, Schema.Null]),
+        type: Schema.Union([
+          Schema.Literal("static"),
+          Schema.Literal("dynamic"),
+          Schema.Literal("smart"),
         ]),
-        Schema.Null,
-      ]).annotate({
-        description:
-          "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+        criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+        color: Schema.Union([
+          Schema.Union([
+            Schema.Literal("clay"),
+            Schema.Literal("sand"),
+            Schema.Literal("moss"),
+            Schema.Literal("sky"),
+            Schema.Literal("plum"),
+            Schema.Literal("rose"),
+          ]),
+          Schema.Null,
+        ]).annotate({
+          description:
+            "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+        }),
+        icon: Schema.Union([Schema.String, Schema.Null]),
+        parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
+        contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
+        isActive: Schema.Boolean,
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
       }),
-      icon: Schema.Union([Schema.String, Schema.Null]),
-      parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
-      contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
-      isActive: Schema.Boolean,
-      createdAt: Schema.String,
-      updatedAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ContactGroupPage" });
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ContactGroupPage" }))();
 export type ContactGroupMemberPage = {
   readonly items: ReadonlyArray<{
     readonly id: string;
@@ -106,37 +107,38 @@ export type ContactGroupMemberPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const ContactGroupMemberPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: Schema.String,
-      organizationId: OrganizationId,
-      groupId: ContactGroupId,
-      contactId: ContactId,
-      role: Schema.Union([
-        Schema.Literal("member"),
-        Schema.Literal("moderator"),
-        Schema.Literal("admin"),
-      ]),
-      joinedAt: Schema.String,
-      joinedBy: Schema.Union([ContactId, Schema.Null]),
-      expiresAt: Schema.Union([Schema.String, Schema.Null]),
-      contact: Schema.Union([
-        Schema.Struct({
-          id: ContactId,
-          name: Schema.String,
-          displayName: Schema.Union([Schema.String, Schema.Null]),
-          type: Schema.String,
-          identities: Schema.optionalKey(
-            Schema.Union([Schema.Array(ContactIdentity), Schema.Null]),
-          ),
-        }),
-        Schema.Null,
-      ]),
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ContactGroupMemberPage" });
+export const ContactGroupMemberPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: Schema.String,
+        organizationId: OrganizationId,
+        groupId: ContactGroupId,
+        contactId: ContactId,
+        role: Schema.Union([
+          Schema.Literal("member"),
+          Schema.Literal("moderator"),
+          Schema.Literal("admin"),
+        ]),
+        joinedAt: Schema.String,
+        joinedBy: Schema.Union([ContactId, Schema.Null]),
+        expiresAt: Schema.Union([Schema.String, Schema.Null]),
+        contact: Schema.Union([
+          Schema.Struct({
+            id: ContactId,
+            name: Schema.String,
+            displayName: Schema.Union([Schema.String, Schema.Null]),
+            type: Schema.String,
+            identities: Schema.optionalKey(
+              Schema.Union([Schema.Array(ContactIdentity), Schema.Null]),
+            ),
+          }),
+          Schema.Null,
+        ]),
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ContactGroupMemberPage" }))();
 export type ContactGroupsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -148,42 +150,43 @@ export type ContactGroupsListQuery = {
     | null;
   readonly isActive?: boolean | null;
 };
-export const ContactGroupsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  type: Schema.optionalKey(
-    Schema.Union([
+export const ContactGroupsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Literal("static"),
-          Schema.Literal("dynamic"),
-          Schema.Literal("smart"),
-        ]),
-        Schema.Array(
           Schema.Union([
             Schema.Literal("static"),
             Schema.Literal("dynamic"),
             Schema.Literal("smart"),
           ]),
-        ),
+          Schema.Array(
+            Schema.Union([
+              Schema.Literal("static"),
+              Schema.Literal("dynamic"),
+              Schema.Literal("smart"),
+            ]),
+          ),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ContactGroupsList200 = ContactGroupPage;
 export const ContactGroupsList200 = ContactGroupPage;
 export type ContactGroupsList401 = UnauthorizedError;
@@ -206,48 +209,55 @@ export type ContactGroupsCreateRequestJson = {
   readonly parentGroupId?: ContactGroupId | null | null;
   readonly isActive?: boolean | null;
 };
-export const ContactGroupsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String,
-  description: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  type: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("static"), Schema.Literal("dynamic"), Schema.Literal("smart")]),
-      Schema.Null,
-    ]),
-  ),
-  criteria: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-      Schema.Null,
-    ]),
-  ),
-  color: Schema.optionalKey(
-    Schema.Union([
+export const ContactGroupsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String,
+    description: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Literal("clay"),
-          Schema.Literal("sand"),
-          Schema.Literal("moss"),
-          Schema.Literal("sky"),
-          Schema.Literal("plum"),
-          Schema.Literal("rose"),
+          Schema.Literal("static"),
+          Schema.Literal("dynamic"),
+          Schema.Literal("smart"),
         ]),
         Schema.Null,
-      ]).annotate({
-        description:
-          "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-  icon: Schema.optionalKey(Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null])),
-  parentGroupId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ContactGroupId, Schema.Null]), Schema.Null]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+      ]),
+    ),
+    criteria: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+        Schema.Null,
+      ]),
+    ),
+    color: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Union([
+            Schema.Literal("clay"),
+            Schema.Literal("sand"),
+            Schema.Literal("moss"),
+            Schema.Literal("sky"),
+            Schema.Literal("plum"),
+            Schema.Literal("rose"),
+          ]),
+          Schema.Null,
+        ]).annotate({
+          description:
+            "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    icon: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    parentGroupId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ContactGroupId, Schema.Null]), Schema.Null]),
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ContactGroupsCreate201 = {
   readonly id: ContactGroupId;
   readonly organizationId: OrganizationId;
@@ -264,47 +274,50 @@ export type ContactGroupsCreate201 = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const ContactGroupsCreate201 = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-  organizationId: OrganizationId,
-  name: Schema.String,
-  description: Schema.Union([Schema.String, Schema.Null]),
-  type: Schema.Union([
-    Schema.Literal("static"),
-    Schema.Literal("dynamic"),
-    Schema.Literal("smart"),
-  ]),
-  criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  color: Schema.Union([
-    Schema.Union([
-      Schema.Literal("clay"),
-      Schema.Literal("sand"),
-      Schema.Literal("moss"),
-      Schema.Literal("sky"),
-      Schema.Literal("plum"),
-      Schema.Literal("rose"),
+export const ContactGroupsCreate201 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactGroupId,
+    organizationId: OrganizationId,
+    name: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    type: Schema.Union([
+      Schema.Literal("static"),
+      Schema.Literal("dynamic"),
+      Schema.Literal("smart"),
     ]),
-    Schema.Null,
-  ]).annotate({
-    description:
-      "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
-  }),
-  icon: Schema.Union([Schema.String, Schema.Null]),
-  parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
-  contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-});
+    criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    color: Schema.Union([
+      Schema.Union([
+        Schema.Literal("clay"),
+        Schema.Literal("sand"),
+        Schema.Literal("moss"),
+        Schema.Literal("sky"),
+        Schema.Literal("plum"),
+        Schema.Literal("rose"),
+      ]),
+      Schema.Null,
+    ]).annotate({
+      description:
+        "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+    }),
+    icon: Schema.Union([Schema.String, Schema.Null]),
+    parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
+    contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }))();
 export type ContactGroupsCreate401 = UnauthorizedError;
 export const ContactGroupsCreate401 = UnauthorizedError;
 export type ContactGroupsCreate403 = ForbiddenError;
@@ -316,7 +329,8 @@ export const ContactGroupsCreate500 = InternalError;
 export type ContactGroupsCreate504 = GatewayTimeoutError;
 export const ContactGroupsCreate504 = GatewayTimeoutError;
 export type ContactGroupsGetByIdPathParams = { readonly id: ContactGroupId };
-export const ContactGroupsGetByIdPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactGroupId });
+export const ContactGroupsGetByIdPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsGetById200 = {
   readonly id: ContactGroupId;
   readonly organizationId: OrganizationId;
@@ -333,47 +347,50 @@ export type ContactGroupsGetById200 = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const ContactGroupsGetById200 = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-  organizationId: OrganizationId,
-  name: Schema.String,
-  description: Schema.Union([Schema.String, Schema.Null]),
-  type: Schema.Union([
-    Schema.Literal("static"),
-    Schema.Literal("dynamic"),
-    Schema.Literal("smart"),
-  ]),
-  criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  color: Schema.Union([
-    Schema.Union([
-      Schema.Literal("clay"),
-      Schema.Literal("sand"),
-      Schema.Literal("moss"),
-      Schema.Literal("sky"),
-      Schema.Literal("plum"),
-      Schema.Literal("rose"),
+export const ContactGroupsGetById200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactGroupId,
+    organizationId: OrganizationId,
+    name: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    type: Schema.Union([
+      Schema.Literal("static"),
+      Schema.Literal("dynamic"),
+      Schema.Literal("smart"),
     ]),
-    Schema.Null,
-  ]).annotate({
-    description:
-      "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
-  }),
-  icon: Schema.Union([Schema.String, Schema.Null]),
-  parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
-  contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-});
+    criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    color: Schema.Union([
+      Schema.Union([
+        Schema.Literal("clay"),
+        Schema.Literal("sand"),
+        Schema.Literal("moss"),
+        Schema.Literal("sky"),
+        Schema.Literal("plum"),
+        Schema.Literal("rose"),
+      ]),
+      Schema.Null,
+    ]).annotate({
+      description:
+        "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+    }),
+    icon: Schema.Union([Schema.String, Schema.Null]),
+    parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
+    contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }))();
 export type ContactGroupsGetById401 = UnauthorizedError;
 export const ContactGroupsGetById401 = UnauthorizedError;
 export type ContactGroupsGetById403 = ForbiddenError;
@@ -387,9 +404,11 @@ export const ContactGroupsGetById500 = InternalError;
 export type ContactGroupsGetById504 = GatewayTimeoutError;
 export const ContactGroupsGetById504 = GatewayTimeoutError;
 export type ContactGroupsRemovePathParams = { readonly id: ContactGroupId };
-export const ContactGroupsRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: ContactGroupId });
+export const ContactGroupsRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsRemove200 = { readonly success: boolean };
-export const ContactGroupsRemove200 = /* @__PURE__ */ Schema.Struct({ success: Schema.Boolean });
+export const ContactGroupsRemove200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean }))();
 export type ContactGroupsRemove401 = UnauthorizedError;
 export const ContactGroupsRemove401 = UnauthorizedError;
 export type ContactGroupsRemove403 = ForbiddenError;
@@ -403,7 +422,8 @@ export const ContactGroupsRemove500 = InternalError;
 export type ContactGroupsRemove504 = GatewayTimeoutError;
 export const ContactGroupsRemove504 = GatewayTimeoutError;
 export type ContactGroupsUpdatePathParams = { readonly id: ContactGroupId };
-export const ContactGroupsUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: ContactGroupId });
+export const ContactGroupsUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsUpdateRequestJson = {
   readonly name?: string | null;
   readonly description?: string | null | null;
@@ -414,48 +434,55 @@ export type ContactGroupsUpdateRequestJson = {
   readonly parentGroupId?: ContactGroupId | null | null;
   readonly isActive?: boolean | null;
 };
-export const ContactGroupsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  description: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  type: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("static"), Schema.Literal("dynamic"), Schema.Literal("smart")]),
-      Schema.Null,
-    ]),
-  ),
-  criteria: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-      Schema.Null,
-    ]),
-  ),
-  color: Schema.optionalKey(
-    Schema.Union([
+export const ContactGroupsUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    description: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Literal("clay"),
-          Schema.Literal("sand"),
-          Schema.Literal("moss"),
-          Schema.Literal("sky"),
-          Schema.Literal("plum"),
-          Schema.Literal("rose"),
+          Schema.Literal("static"),
+          Schema.Literal("dynamic"),
+          Schema.Literal("smart"),
         ]),
         Schema.Null,
-      ]).annotate({
-        description:
-          "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-  icon: Schema.optionalKey(Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null])),
-  parentGroupId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ContactGroupId, Schema.Null]), Schema.Null]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+      ]),
+    ),
+    criteria: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+        Schema.Null,
+      ]),
+    ),
+    color: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Union([
+            Schema.Literal("clay"),
+            Schema.Literal("sand"),
+            Schema.Literal("moss"),
+            Schema.Literal("sky"),
+            Schema.Literal("plum"),
+            Schema.Literal("rose"),
+          ]),
+          Schema.Null,
+        ]).annotate({
+          description:
+            "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    icon: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    parentGroupId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ContactGroupId, Schema.Null]), Schema.Null]),
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ContactGroupsUpdate200 = {
   readonly id: ContactGroupId;
   readonly organizationId: OrganizationId;
@@ -472,47 +499,50 @@ export type ContactGroupsUpdate200 = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const ContactGroupsUpdate200 = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-  organizationId: OrganizationId,
-  name: Schema.String,
-  description: Schema.Union([Schema.String, Schema.Null]),
-  type: Schema.Union([
-    Schema.Literal("static"),
-    Schema.Literal("dynamic"),
-    Schema.Literal("smart"),
-  ]),
-  criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  color: Schema.Union([
-    Schema.Union([
-      Schema.Literal("clay"),
-      Schema.Literal("sand"),
-      Schema.Literal("moss"),
-      Schema.Literal("sky"),
-      Schema.Literal("plum"),
-      Schema.Literal("rose"),
+export const ContactGroupsUpdate200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactGroupId,
+    organizationId: OrganizationId,
+    name: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    type: Schema.Union([
+      Schema.Literal("static"),
+      Schema.Literal("dynamic"),
+      Schema.Literal("smart"),
     ]),
-    Schema.Null,
-  ]).annotate({
-    description:
-      "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
-  }),
-  icon: Schema.Union([Schema.String, Schema.Null]),
-  parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
-  contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-});
+    criteria: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    color: Schema.Union([
+      Schema.Union([
+        Schema.Literal("clay"),
+        Schema.Literal("sand"),
+        Schema.Literal("moss"),
+        Schema.Literal("sky"),
+        Schema.Literal("plum"),
+        Schema.Literal("rose"),
+      ]),
+      Schema.Null,
+    ]).annotate({
+      description:
+        "The list's label color, one of six families, or null for the neutral chip. Customer-chosen and purely presentational; it carries no meaning the API enforces.",
+    }),
+    icon: Schema.Union([Schema.String, Schema.Null]),
+    parentGroupId: Schema.Union([ContactGroupId, Schema.Null]),
+    contactCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastCalculatedAt: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }))();
 export type ContactGroupsUpdate401 = UnauthorizedError;
 export const ContactGroupsUpdate401 = UnauthorizedError;
 export type ContactGroupsUpdate403 = ForbiddenError;
@@ -526,43 +556,49 @@ export const ContactGroupsUpdate500 = InternalError;
 export type ContactGroupsUpdate504 = GatewayTimeoutError;
 export const ContactGroupsUpdate504 = GatewayTimeoutError;
 export type ContactGroupsEvaluateDynamicPathParams = { readonly id: ContactGroupId };
-export const ContactGroupsEvaluateDynamicPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-});
+export const ContactGroupsEvaluateDynamicPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsEvaluateDynamic200 = {
   readonly added: number;
   readonly removed: number;
   readonly total: number;
 };
-export const ContactGroupsEvaluateDynamic200 = /* @__PURE__ */ Schema.Struct({
-  added: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  removed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-});
+export const ContactGroupsEvaluateDynamic200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    added: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    removed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
 export type ContactGroupsEvaluateDynamic401 = UnauthorizedError;
 export const ContactGroupsEvaluateDynamic401 = UnauthorizedError;
 export type ContactGroupsEvaluateDynamic403 = ForbiddenError;
@@ -576,29 +612,29 @@ export const ContactGroupsEvaluateDynamic500 = InternalError;
 export type ContactGroupsEvaluateDynamic504 = GatewayTimeoutError;
 export const ContactGroupsEvaluateDynamic504 = GatewayTimeoutError;
 export type ContactGroupsGetMembersPathParams = { readonly id: ContactGroupId };
-export const ContactGroupsGetMembersPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-});
+export const ContactGroupsGetMembersPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsGetMembersQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const ContactGroupsGetMembersQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const ContactGroupsGetMembersQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type ContactGroupsGetMembers200 = ContactGroupMemberPage;
 export const ContactGroupsGetMembers200 = ContactGroupMemberPage;
 export type ContactGroupsGetMembers401 = UnauthorizedError;
@@ -614,49 +650,54 @@ export const ContactGroupsGetMembers500 = InternalError;
 export type ContactGroupsGetMembers504 = GatewayTimeoutError;
 export const ContactGroupsGetMembers504 = GatewayTimeoutError;
 export type ContactGroupsAddMembersPathParams = { readonly id: ContactGroupId };
-export const ContactGroupsAddMembersPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-});
+export const ContactGroupsAddMembersPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsAddMembersRequestJson = {
   readonly contactIds: readonly [ContactId, ...Array<ContactId>];
   readonly role?: "member" | "moderator" | "admin" | null;
 };
-export const ContactGroupsAddMembersRequestJson = /* @__PURE__ */ Schema.Struct({
-  contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-  role: Schema.optionalKey(
-    Schema.Union([
+export const ContactGroupsAddMembersRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+    role: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("member"),
-        Schema.Literal("moderator"),
-        Schema.Literal("admin"),
+        Schema.Union([
+          Schema.Literal("member"),
+          Schema.Literal("moderator"),
+          Schema.Literal("admin"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+  }))();
 export type ContactGroupsAddMembers200 = { readonly added: number; readonly skipped: number };
-export const ContactGroupsAddMembers200 = /* @__PURE__ */ Schema.Struct({
-  added: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-});
+export const ContactGroupsAddMembers200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    added: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    skipped: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
 export type ContactGroupsAddMembers401 = UnauthorizedError;
 export const ContactGroupsAddMembers401 = UnauthorizedError;
 export type ContactGroupsAddMembers403 = ForbiddenError;
@@ -670,29 +711,32 @@ export const ContactGroupsAddMembers500 = InternalError;
 export type ContactGroupsAddMembers504 = GatewayTimeoutError;
 export const ContactGroupsAddMembers504 = GatewayTimeoutError;
 export type ContactGroupsRemoveMembersPathParams = { readonly id: ContactGroupId };
-export const ContactGroupsRemoveMembersPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ContactGroupId,
-});
+export const ContactGroupsRemoveMembersPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsRemoveMembersRequestJson = {
   readonly contactIds: readonly [ContactId, ...Array<ContactId>];
 };
-export const ContactGroupsRemoveMembersRequestJson = /* @__PURE__ */ Schema.Struct({
-  contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-});
-export type ContactGroupsRemoveMembers200 = { readonly removed: number };
-export const ContactGroupsRemoveMembers200 = /* @__PURE__ */ Schema.Struct({
-  removed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
+export const ContactGroupsRemoveMembersRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
     ),
-});
+  }))();
+export type ContactGroupsRemoveMembers200 = { readonly removed: number };
+export const ContactGroupsRemoveMembers200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    removed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
 export type ContactGroupsRemoveMembers401 = UnauthorizedError;
 export const ContactGroupsRemoveMembers401 = UnauthorizedError;
 export type ContactGroupsRemoveMembers403 = ForbiddenError;
@@ -717,23 +761,24 @@ export type ContactGroupsPreviewRequestJson = {
     }> | null;
   };
 };
-export const ContactGroupsPreviewRequestJson = /* @__PURE__ */ Schema.Struct({
-  criteria: Schema.Struct({
-    tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    channels: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    match: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Literal("all"), Schema.Literal("any")]), Schema.Null]),
-    ),
-    conditions: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(
-          Schema.Struct({ field: Schema.String, operator: Schema.String, value: JsonValue }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-  }),
-});
+export const ContactGroupsPreviewRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    criteria: Schema.Struct({
+      tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+      channels: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+      match: Schema.optionalKey(
+        Schema.Union([Schema.Union([Schema.Literal("all"), Schema.Literal("any")]), Schema.Null]),
+      ),
+      conditions: Schema.optionalKey(
+        Schema.Union([
+          Schema.Array(
+            Schema.Struct({ field: Schema.String, operator: Schema.String, value: JsonValue }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+    }),
+  }))();
 export type ContactGroupsPreview200 = {
   readonly count: number;
   readonly sample: ReadonlyArray<{
@@ -742,20 +787,23 @@ export type ContactGroupsPreview200 = {
     readonly status: string;
   }>;
 };
-export const ContactGroupsPreview200 = /* @__PURE__ */ Schema.Struct({
-  count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
+export const ContactGroupsPreview200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    sample: Schema.Array(
+      Schema.Struct({ id: ContactId, name: Schema.String, status: Schema.String }),
     ),
-  sample: Schema.Array(
-    Schema.Struct({ id: ContactId, name: Schema.String, status: Schema.String }),
-  ),
-});
+  }))();
 export type ContactGroupsPreview401 = UnauthorizedError;
 export const ContactGroupsPreview401 = UnauthorizedError;
 export type ContactGroupsPreview403 = ForbiddenError;

@@ -21,52 +21,27 @@ import {
 } from "./shared";
 
 export type AgentId = string & EffectBrand.Brand<"AgentId">;
-export const AgentId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^agt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^agt_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "AgentId",
-  }),
-).pipe(Schema.brand("AgentId"));
+export const AgentId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^agt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^agt_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "AgentId",
+    }),
+  ).pipe(Schema.brand("AgentId")))();
 export type DeleteAgentResponse = { readonly id: AgentId; readonly deleted: true };
-export const DeleteAgentResponse = /* @__PURE__ */ Schema.Struct({
-  id: AgentId,
-  deleted: Schema.Literal(true),
-}).annotate({ identifier: "DeleteAgentResponse" });
+export const DeleteAgentResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AgentId, deleted: Schema.Literal(true) }).annotate({
+    identifier: "DeleteAgentResponse",
+  }))();
 export type AgentVersionSummary = {
   readonly agentId: AgentId;
   readonly version: number;
   readonly publishedAt: string;
 };
-export const AgentVersionSummary = /* @__PURE__ */ Schema.Struct({
-  agentId: AgentId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  publishedAt: Schema.String,
-}).annotate({ identifier: "AgentVersionSummary" });
-export type AgentListItem = {
-  readonly id: AgentId;
-  readonly name: string;
-  readonly namespaceId: NamespaceId | null;
-  readonly publishedVersion: number | null;
-  readonly publishedAt: string | null;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-};
-export const AgentListItem = /* @__PURE__ */ Schema.Struct({
-  id: AgentId,
-  name: Schema.String,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  publishedVersion: Schema.Union([
-    Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const AgentVersionSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    agentId: AgentId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
           expected: "a value greater than or equal to -9007199254740991",
@@ -77,28 +52,58 @@ export const AgentListItem = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-    Schema.Null,
-  ]),
-  publishedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "AgentListItem" });
+    publishedAt: Schema.String,
+  }).annotate({ identifier: "AgentVersionSummary" }))();
+export type AgentListItem = {
+  readonly id: AgentId;
+  readonly name: string;
+  readonly namespaceId: NamespaceId | null;
+  readonly publishedVersion: number | null;
+  readonly publishedAt: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+export const AgentListItem = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: AgentId,
+    name: Schema.String,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    publishedVersion: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "AgentListItem" }))();
 export type AgentVersionPage = {
   readonly items: ReadonlyArray<AgentVersionSummary>;
   readonly nextCursor: string | null;
 };
-export const AgentVersionPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(AgentVersionSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "AgentVersionPage" });
+export const AgentVersionPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(AgentVersionSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "AgentVersionPage" }))();
 export type AgentPage = {
   readonly items: ReadonlyArray<AgentListItem>;
   readonly nextCursor: string | null;
 };
-export const AgentPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(AgentListItem),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "AgentPage" });
+export const AgentPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(AgentListItem),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "AgentPage" }))();
 export type Agent = {
   readonly id: AgentId;
   readonly name: string;
@@ -110,14 +115,41 @@ export type Agent = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const Agent = /* @__PURE__ */ Schema.Struct({
-  id: AgentId,
-  name: Schema.String,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  revision: Schema.String,
-  draft: AgentDefinition,
-  publishedVersion: Schema.Union([
-    Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const Agent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: AgentId,
+    name: Schema.String,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    revision: Schema.String,
+    draft: AgentDefinition,
+    publishedVersion: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Agent" }))();
+export type AgentVersion = {
+  readonly agentId: AgentId;
+  readonly version: number;
+  readonly definition: AgentDefinition;
+  readonly publishedAt: string;
+};
+export const AgentVersion = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    agentId: AgentId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
           expected: "a value greater than or equal to -9007199254740991",
@@ -128,61 +160,36 @@ export const Agent = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-    Schema.Null,
-  ]),
-  publishedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Agent" });
-export type AgentVersion = {
-  readonly agentId: AgentId;
-  readonly version: number;
-  readonly definition: AgentDefinition;
-  readonly publishedAt: string;
-};
-export const AgentVersion = /* @__PURE__ */ Schema.Struct({
-  agentId: AgentId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  definition: AgentDefinition,
-  publishedAt: Schema.String,
-}).annotate({ identifier: "AgentVersion" });
+    definition: AgentDefinition,
+    publishedAt: Schema.String,
+  }).annotate({ identifier: "AgentVersion" }))();
 export type PublishAgentResponse = {
   readonly agent: Agent;
   readonly version: AgentVersion;
   readonly published: boolean;
 };
-export const PublishAgentResponse = /* @__PURE__ */ Schema.Struct({
-  agent: Agent,
-  version: AgentVersion,
-  published: Schema.Boolean,
-}).annotate({ identifier: "PublishAgentResponse" });
+export const PublishAgentResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({ agent: Agent, version: AgentVersion, published: Schema.Boolean }).annotate({
+    identifier: "PublishAgentResponse",
+  }))();
 export type AgentsListQuery = { readonly limit?: number | null; readonly cursor?: Cursor | null };
-export const AgentsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const AgentsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type AgentsList200 = AgentPage;
 export const AgentsList200 = AgentPage;
 export type AgentsList401 = UnauthorizedError;
@@ -200,31 +207,32 @@ export type AgentsCreateRequestJson = {
   readonly namespaceId?: NamespaceId | null;
   readonly definition?: AgentDefinition | null;
 };
-export const AgentsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: AgentName,
-  namespaceId: Schema.optionalKey(
-    Schema.Union([NamespaceId, Schema.Null]).annotate({
-      description:
-        "The namespace the agent belongs to; it cannot move later. Omit for an organization-level agent. A namespace-scoped key always creates in its own namespace.",
-    }),
-  ),
-  definition: Schema.optionalKey(
-    Schema.Union([AgentDefinition, Schema.Null]).annotate({
-      description:
-        "The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model.",
-      default: {
-        instructions: "",
-        knowledge: "",
-        endpointIds: [],
-        integrationIds: [],
-        mode: "supervised",
-        model: "standard",
-        workingHours: null,
-        takeoverTimeoutMinutes: 30,
-      },
-    }),
-  ),
-});
+export const AgentsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: AgentName,
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "The namespace the agent belongs to; it cannot move later. Omit for an organization-level agent. A namespace-scoped key always creates in its own namespace.",
+      }),
+    ),
+    definition: Schema.optionalKey(
+      Schema.Union([AgentDefinition, Schema.Null]).annotate({
+        description:
+          "The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model.",
+        default: {
+          instructions: "",
+          knowledge: "",
+          endpointIds: [],
+          integrationIds: [],
+          mode: "supervised",
+          model: "standard",
+          workingHours: null,
+          takeoverTimeoutMinutes: 30,
+        },
+      }),
+    ),
+  }))();
 export type AgentsCreate201 = Agent;
 export const AgentsCreate201 = Agent;
 export type AgentsCreate401 = UnauthorizedError;
@@ -240,7 +248,7 @@ export const AgentsCreate500 = InternalError;
 export type AgentsCreate504 = GatewayTimeoutError;
 export const AgentsCreate504 = GatewayTimeoutError;
 export type AgentsGetPathParams = { readonly id: AgentId };
-export const AgentsGetPathParams = /* @__PURE__ */ Schema.Struct({ id: AgentId });
+export const AgentsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: AgentId }))();
 export type AgentsGet200 = Agent;
 export const AgentsGet200 = Agent;
 export type AgentsGet401 = UnauthorizedError;
@@ -256,7 +264,7 @@ export const AgentsGet500 = InternalError;
 export type AgentsGet504 = GatewayTimeoutError;
 export const AgentsGet504 = GatewayTimeoutError;
 export type AgentsRemovePathParams = { readonly id: AgentId };
-export const AgentsRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: AgentId });
+export const AgentsRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: AgentId }))();
 export type AgentsRemove200 = DeleteAgentResponse;
 export const AgentsRemove200 = DeleteAgentResponse;
 export type AgentsRemove401 = UnauthorizedError;
@@ -272,9 +280,9 @@ export const AgentsRemove500 = InternalError;
 export type AgentsRemove504 = GatewayTimeoutError;
 export const AgentsRemove504 = GatewayTimeoutError;
 export type AgentsUpdatePathParams = { readonly id: AgentId };
-export const AgentsUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: AgentId });
+export const AgentsUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: AgentId }))();
 export type AgentsUpdateRequestJson = { readonly name: AgentName };
-export const AgentsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({ name: AgentName });
+export const AgentsUpdateRequestJson = /* @__PURE__ */ (() => Schema.Struct({ name: AgentName }))();
 export type AgentsUpdate200 = Agent;
 export const AgentsUpdate200 = Agent;
 export type AgentsUpdate401 = UnauthorizedError;
@@ -290,17 +298,19 @@ export const AgentsUpdate500 = InternalError;
 export type AgentsUpdate504 = GatewayTimeoutError;
 export const AgentsUpdate504 = GatewayTimeoutError;
 export type AgentsReplaceDraftPathParams = { readonly id: AgentId };
-export const AgentsReplaceDraftPathParams = /* @__PURE__ */ Schema.Struct({ id: AgentId });
+export const AgentsReplaceDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AgentId }))();
 export type AgentsReplaceDraftRequestJson = {
   readonly revision: string;
   readonly definition: AgentDefinition;
 };
-export const AgentsReplaceDraftRequestJson = /* @__PURE__ */ Schema.Struct({
-  revision: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-  definition: AgentDefinition,
-});
+export const AgentsReplaceDraftRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    revision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    definition: AgentDefinition,
+  }))();
 export type AgentsReplaceDraft200 = Agent;
 export const AgentsReplaceDraft200 = Agent;
 export type AgentsReplaceDraft401 = UnauthorizedError;
@@ -318,13 +328,14 @@ export const AgentsReplaceDraft500 = InternalError;
 export type AgentsReplaceDraft504 = GatewayTimeoutError;
 export const AgentsReplaceDraft504 = GatewayTimeoutError;
 export type AgentsPublishPathParams = { readonly id: AgentId };
-export const AgentsPublishPathParams = /* @__PURE__ */ Schema.Struct({ id: AgentId });
+export const AgentsPublishPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: AgentId }))();
 export type AgentsPublishRequestJson = { readonly revision: string };
-export const AgentsPublishRequestJson = /* @__PURE__ */ Schema.Struct({
-  revision: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-});
+export const AgentsPublishRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    revision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+  }))();
 export type AgentsPublish200 = PublishAgentResponse;
 export const AgentsPublish200 = PublishAgentResponse;
 export type AgentsPublish401 = UnauthorizedError;
@@ -342,27 +353,29 @@ export const AgentsPublish500 = InternalError;
 export type AgentsPublish504 = GatewayTimeoutError;
 export const AgentsPublish504 = GatewayTimeoutError;
 export type AgentsListVersionsPathParams = { readonly id: AgentId };
-export const AgentsListVersionsPathParams = /* @__PURE__ */ Schema.Struct({ id: AgentId });
+export const AgentsListVersionsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AgentId }))();
 export type AgentsListVersionsQuery = {
   readonly limit?: number | null;
   readonly cursor?: VersionCursor | null;
 };
-export const AgentsListVersionsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([VersionCursor, Schema.Null])),
-});
+export const AgentsListVersionsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([VersionCursor, Schema.Null])),
+  }))();
 export type AgentsListVersions200 = AgentVersionPage;
 export const AgentsListVersions200 = AgentVersionPage;
 export type AgentsListVersions401 = UnauthorizedError;
@@ -378,10 +391,8 @@ export const AgentsListVersions500 = InternalError;
 export type AgentsListVersions504 = GatewayTimeoutError;
 export const AgentsListVersions504 = GatewayTimeoutError;
 export type AgentsGetVersionPathParams = { readonly id: AgentId; readonly version: string };
-export const AgentsGetVersionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: AgentId,
-  version: Schema.String,
-});
+export const AgentsGetVersionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AgentId, version: Schema.String }))();
 export type AgentsGetVersion200 = AgentVersion;
 export const AgentsGetVersion200 = AgentVersion;
 export type AgentsGetVersion401 = UnauthorizedError;

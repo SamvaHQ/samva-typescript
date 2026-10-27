@@ -22,52 +22,54 @@ export type OperationPage = {
   readonly items: ReadonlyArray<Operation>;
   readonly nextCursor: string | null;
 };
-export const OperationPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(Operation),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "OperationPage" });
+export const OperationPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(Operation),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "OperationPage" }))();
 export type OperationsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly kind?: "email-domain-provisioning" | "organization-deletion" | null;
   readonly status?: "pending" | "running" | "succeeded" | "failed" | null;
 };
-export const OperationsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  kind: Schema.optionalKey(
-    Schema.Union([
+export const OperationsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("email-domain-provisioning"),
-        Schema.Literal("organization-deletion"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  status: Schema.optionalKey(
-    Schema.Union([
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    kind: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("running"),
-        Schema.Literal("succeeded"),
-        Schema.Literal("failed"),
+        Schema.Union([
+          Schema.Literal("email-domain-provisioning"),
+          Schema.Literal("organization-deletion"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("running"),
+          Schema.Literal("succeeded"),
+          Schema.Literal("failed"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type OperationsList200 = OperationPage;
 export const OperationsList200 = OperationPage;
 export type OperationsList401 = UnauthorizedError;
@@ -81,7 +83,7 @@ export const OperationsList500 = InternalError;
 export type OperationsList504 = GatewayTimeoutError;
 export const OperationsList504 = GatewayTimeoutError;
 export type OperationsGetPathParams = { readonly id: OperationId };
-export const OperationsGetPathParams = /* @__PURE__ */ Schema.Struct({ id: OperationId });
+export const OperationsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: OperationId }))();
 export type OperationsGet200 = Operation;
 export const OperationsGet200 = Operation;
 export type OperationsGet401 = UnauthorizedError;
@@ -97,7 +99,8 @@ export const OperationsGet500 = InternalError;
 export type OperationsGet504 = GatewayTimeoutError;
 export const OperationsGet504 = GatewayTimeoutError;
 export type OperationsRetryPathParams = { readonly id: OperationId };
-export const OperationsRetryPathParams = /* @__PURE__ */ Schema.Struct({ id: OperationId });
+export const OperationsRetryPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: OperationId }))();
 export type OperationsRetry202 = OperationAccepted;
 export const OperationsRetry202 = OperationAccepted;
 export type OperationsRetry401 = UnauthorizedError;

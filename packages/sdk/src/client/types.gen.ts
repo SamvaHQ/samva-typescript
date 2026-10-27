@@ -2458,6 +2458,89 @@ export type AnalyticsQueryError = {
   message: string;
 };
 
+export type TopicIssueRenderPayload = {
+  path: string;
+  expectedRevision: string;
+  fixture: string;
+  target: "email" | "web";
+};
+
+export type TopicIssueCheckPayload = {
+  path: string;
+  expectedRevision: string;
+};
+
+export type TopicIssueSavePayload = {
+  expectedRevision: string;
+  expectedHead: string;
+  message: string;
+  idempotencyKey: string;
+};
+
+export type TopicIssueRemovePayload = {
+  path: string;
+  idempotencyKey: string;
+  expectedRevision: string;
+};
+
+export type TopicIssueUpdatePayload = {
+  path: string;
+  content: string;
+  idempotencyKey: string;
+  expectedRevision: string;
+};
+
+export type TopicIssueCreatePayload = {
+  path: string;
+  content: string;
+  idempotencyKey: string;
+  expectedRevision?: string | null | undefined;
+};
+
+export type TopicIssueDocument = {
+  projectId: TemplateProjectId;
+  revision: string;
+  path: string;
+  content: string;
+};
+
+export type TopicIssueList = {
+  projectId: TemplateProjectId | null;
+  revision: string | null;
+  items: Array<TopicIssueListItem>;
+};
+
+export type TopicIssueListItem = {
+  path: string;
+  title: string | null;
+  latestSend: TopicIssueSend | null;
+};
+
+export type TopicIssueSend = {
+  campaignId: CampaignId;
+  run: CampaignLatestRun;
+};
+
+export type CampaignLatestRun = {
+  id: CampaignRunId;
+  status:
+    | "scheduled"
+    | "resolving"
+    | "dispatching"
+    | "paused"
+    | "completed"
+    | "cancelled"
+    | "failed";
+  scheduledFor: string;
+  completedAt: string | null;
+  totalRecipients: number;
+  dispatchedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  pendingCount: number;
+  estimatedCompletionAt: string | null;
+};
+
 export type TopicForm = {
   id: string;
   publicKey: string;
@@ -2544,6 +2627,8 @@ export type Topic = {
   defaultSenderId: EmailSenderId | null;
   replyMailboxId: MailboxId | null;
   templateId: TemplateId | null;
+  archiveEnabled: boolean;
+  publicationSlug: string | null;
   subscriptions: TopicSubscriptionCounts;
   createdAt: string;
   updatedAt: string;
@@ -2562,6 +2647,8 @@ export type TopicUpdatePayload = {
   name?: string | null | undefined;
   description?: string | null | null | undefined;
   default?: "opt_out" | "opt_in" | null | undefined;
+  archiveEnabled?: boolean | null | undefined;
+  publicationSlug?: string | null | null | undefined;
   defaultSenderId?: EmailSenderId | null | null | undefined;
   replyMailboxId?: MailboxId | null | null | undefined;
   templateId?: TemplateId | null | null | undefined;
@@ -2572,6 +2659,8 @@ export type TopicCreatePayload = {
   description?: string | null | null | undefined;
   namespaceId?: NamespaceId | null | null | undefined;
   default?: "opt_out" | "opt_in" | null | undefined;
+  archiveEnabled?: boolean | null | undefined;
+  publicationSlug?: string | null | null | undefined;
   defaultSenderId?: EmailSenderId | null | null | undefined;
   replyMailboxId?: MailboxId | null | null | undefined;
   templateId?: TemplateId | null | null | undefined;
@@ -4579,6 +4668,16 @@ export type CampaignAudience = {
 export type CampaignContent = {
   channel: "email";
   email: CampaignEmailContent;
+  /**
+   * Render a saved Markdown issue from the audience topic's repository. Its saved title and preheader supply the email content; templateData supplies recipient fallbacks.
+   */
+  issue?:
+    | {
+        path: string;
+        commit: string;
+      }
+    | null
+    | undefined;
   from?: CampaignFrom | undefined;
   replyMailboxId?: CampaignReplyMailbox | undefined;
   conversationId?: CampaignConversationRef | undefined;
@@ -4739,26 +4838,6 @@ export type Campaign = {
   updatedAt: string;
 };
 
-export type CampaignLatestRun = {
-  id: CampaignRunId;
-  status:
-    | "scheduled"
-    | "resolving"
-    | "dispatching"
-    | "paused"
-    | "completed"
-    | "cancelled"
-    | "failed";
-  scheduledFor: string;
-  completedAt: string | null;
-  totalRecipients: number;
-  dispatchedCount: number;
-  failedCount: number;
-  skippedCount: number;
-  pendingCount: number;
-  estimatedCompletionAt: string | null;
-};
-
 export type CampaignDefinitionSummary = {
   state: "editable" | "frozen" | "archived";
   frozenAt: string | null;
@@ -4767,6 +4846,16 @@ export type CampaignDefinitionSummary = {
 export type CampaignContentInput = {
   channel: "email";
   email: CampaignEmailInput;
+  /**
+   * Render a saved Markdown issue from the audience topic's repository. Its saved title and preheader supply the email content; templateData supplies recipient fallbacks.
+   */
+  issue?:
+    | {
+        path: string;
+        commit: string;
+      }
+    | null
+    | undefined;
   from?: CampaignFrom | undefined;
   replyMailboxId?: CampaignReplyMailbox | undefined;
   conversationId?: CampaignConversationRef | undefined;
@@ -6451,17 +6540,21 @@ export type CampaignsPreviewErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError
+   * FlagDisabledError | ForbiddenError
    */
-  403: ForbiddenError;
+  403: FlagDisabledError | ForbiddenError;
   /**
    * ResourceNotFoundError
    */
   404: ResourceNotFoundError;
   /**
-   * ValidationError
+   * ConflictError
    */
-  422: ValidationError;
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
   /**
    * InternalError
    */
@@ -6516,9 +6609,10 @@ export type CampaignsSendTestErrors = {
    */
   409: ConflictError;
   /**
-   * ValidationError | FromAddressRequiredError | BrandAddressRequiredError | CampaignFooterRequiredError
+   * TemplateSourceError | ValidationError | FromAddressRequiredError | BrandAddressRequiredError | CampaignFooterRequiredError
    */
   422:
+    | TemplateSourceError
     | ValidationError
     | FromAddressRequiredError
     | BrandAddressRequiredError
@@ -6894,9 +6988,10 @@ export type CampaignsScheduleRunErrors = {
    */
   409: ConflictError;
   /**
-   * FromAddressRequiredError | ValidationError | BrandAddressRequiredError | CampaignFooterRequiredError
+   * TemplateSourceError | FromAddressRequiredError | ValidationError | BrandAddressRequiredError | CampaignFooterRequiredError
    */
   422:
+    | TemplateSourceError
     | FromAddressRequiredError
     | ValidationError
     | BrandAddressRequiredError
@@ -15445,6 +15540,8 @@ export type TopicsCreateData = {
     description?: string | null | null | undefined;
     namespaceId?: NamespaceId | null | null | undefined;
     default?: "opt_out" | "opt_in" | null | undefined;
+    archiveEnabled?: boolean | null | undefined;
+    publicationSlug?: string | null | null | undefined;
     defaultSenderId?: EmailSenderId | null | null | undefined;
     replyMailboxId?: MailboxId | null | null | undefined;
     templateId?: TemplateId | null | null | undefined;
@@ -15655,6 +15752,8 @@ export type TopicsUpdateData = {
     name?: string | null | undefined;
     description?: string | null | null | undefined;
     default?: "opt_out" | "opt_in" | null | undefined;
+    archiveEnabled?: boolean | null | undefined;
+    publicationSlug?: string | null | null | undefined;
     defaultSenderId?: EmailSenderId | null | null | undefined;
     replyMailboxId?: MailboxId | null | null | undefined;
     templateId?: TemplateId | null | null | undefined;
@@ -15679,6 +15778,10 @@ export type TopicsUpdateErrors = {
    * ResourceNotFoundError
    */
   404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
   /**
    * ValidationError
    */
@@ -16122,6 +16225,1502 @@ export type TopicFormsUpdateResponses = {
 };
 
 export type TopicFormsUpdateResponse = TopicFormsUpdateResponses[keyof TopicFormsUpdateResponses];
+
+export type TopicIssuesListData = {
+  body?: never;
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues";
+};
+
+export type TopicIssuesListErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesListError = TopicIssuesListErrors[keyof TopicIssuesListErrors];
+
+export type TopicIssuesListResponses = {
+  /**
+   * TopicIssueList
+   */
+  200: TopicIssueList;
+};
+
+export type TopicIssuesListResponse = TopicIssuesListResponses[keyof TopicIssuesListResponses];
+
+export type TopicIssuesUpdateData = {
+  body: {
+    path: string;
+    content: string;
+    idempotencyKey: string;
+    expectedRevision: string;
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues";
+};
+
+export type TopicIssuesUpdateErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesUpdateError = TopicIssuesUpdateErrors[keyof TopicIssuesUpdateErrors];
+
+export type TopicIssuesUpdateResponses = {
+  /**
+   * Success
+   */
+  200: {
+    workspace: {
+      projectId: TemplateProjectId;
+      organizationId: OrganizationId | null;
+      ownerEpoch: number;
+      repositoryName: string;
+      defaultBranch: string;
+      baseCommit: string;
+      remoteHead: string;
+      pendingRemoteHead: string | null;
+      revision: string;
+      overlay: {
+        [key: string]: string | null;
+      };
+      assetChanges: Array<{
+        path: string;
+        status: "added" | "modified" | "deleted";
+      }>;
+      conflicts: Array<{
+        path: string;
+        base: string | null;
+        draft: string | null;
+        main: string | null;
+      }>;
+      provenance: {
+        references: Array<{
+          kind: string;
+          digest: string;
+          locator?: string | undefined;
+        }>;
+      };
+      mounts: Array<
+        | {
+            kind: "project";
+            root: "/project";
+            access: "read-write";
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "started-from";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "resource";
+            access: "read-only";
+            resourceId: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "library-template";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+      >;
+      libraryManifestDigest: string;
+      createdAt: string;
+      updatedAt: string;
+      createdBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+      updatedBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+    };
+    files: {
+      [key: string]: string;
+    };
+  };
+};
+
+export type TopicIssuesUpdateResponse =
+  TopicIssuesUpdateResponses[keyof TopicIssuesUpdateResponses];
+
+export type TopicIssuesCreateData = {
+  body: {
+    path: string;
+    content: string;
+    idempotencyKey: string;
+    expectedRevision?: string | null | undefined;
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues";
+};
+
+export type TopicIssuesCreateErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesCreateError = TopicIssuesCreateErrors[keyof TopicIssuesCreateErrors];
+
+export type TopicIssuesCreateResponses = {
+  /**
+   * Success
+   */
+  200: {
+    workspace: {
+      projectId: TemplateProjectId;
+      organizationId: OrganizationId | null;
+      ownerEpoch: number;
+      repositoryName: string;
+      defaultBranch: string;
+      baseCommit: string;
+      remoteHead: string;
+      pendingRemoteHead: string | null;
+      revision: string;
+      overlay: {
+        [key: string]: string | null;
+      };
+      assetChanges: Array<{
+        path: string;
+        status: "added" | "modified" | "deleted";
+      }>;
+      conflicts: Array<{
+        path: string;
+        base: string | null;
+        draft: string | null;
+        main: string | null;
+      }>;
+      provenance: {
+        references: Array<{
+          kind: string;
+          digest: string;
+          locator?: string | undefined;
+        }>;
+      };
+      mounts: Array<
+        | {
+            kind: "project";
+            root: "/project";
+            access: "read-write";
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "started-from";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "resource";
+            access: "read-only";
+            resourceId: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "library-template";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+      >;
+      libraryManifestDigest: string;
+      createdAt: string;
+      updatedAt: string;
+      createdBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+      updatedBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+    };
+    files: {
+      [key: string]: string;
+    };
+  };
+};
+
+export type TopicIssuesCreateResponse =
+  TopicIssuesCreateResponses[keyof TopicIssuesCreateResponses];
+
+export type TopicIssuesOpenData = {
+  body?: never;
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues/workspace";
+};
+
+export type TopicIssuesOpenErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesOpenError = TopicIssuesOpenErrors[keyof TopicIssuesOpenErrors];
+
+export type TopicIssuesOpenResponses = {
+  /**
+   * Success
+   */
+  200: {
+    workspace: {
+      projectId: TemplateProjectId;
+      organizationId: OrganizationId | null;
+      ownerEpoch: number;
+      repositoryName: string;
+      defaultBranch: string;
+      baseCommit: string;
+      remoteHead: string;
+      pendingRemoteHead: string | null;
+      revision: string;
+      overlay: {
+        [key: string]: string | null;
+      };
+      assetChanges: Array<{
+        path: string;
+        status: "added" | "modified" | "deleted";
+      }>;
+      conflicts: Array<{
+        path: string;
+        base: string | null;
+        draft: string | null;
+        main: string | null;
+      }>;
+      provenance: {
+        references: Array<{
+          kind: string;
+          digest: string;
+          locator?: string | undefined;
+        }>;
+      };
+      mounts: Array<
+        | {
+            kind: "project";
+            root: "/project";
+            access: "read-write";
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "started-from";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "resource";
+            access: "read-only";
+            resourceId: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "library-template";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+      >;
+      libraryManifestDigest: string;
+      createdAt: string;
+      updatedAt: string;
+      createdBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+      updatedBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+    };
+    files: {
+      [key: string]: string;
+    };
+  };
+};
+
+export type TopicIssuesOpenResponse = TopicIssuesOpenResponses[keyof TopicIssuesOpenResponses];
+
+export type TopicIssuesGetData = {
+  body?: never;
+  path: {
+    id: TopicId;
+  };
+  query: {
+    path: string;
+    expectedRevision: string;
+  };
+  url: "/v1/topics/{id}/issues/document";
+};
+
+export type TopicIssuesGetErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesGetError = TopicIssuesGetErrors[keyof TopicIssuesGetErrors];
+
+export type TopicIssuesGetResponses = {
+  /**
+   * TopicIssueDocument
+   */
+  200: TopicIssueDocument;
+};
+
+export type TopicIssuesGetResponse = TopicIssuesGetResponses[keyof TopicIssuesGetResponses];
+
+export type TopicIssuesRemoveData = {
+  body: {
+    path: string;
+    idempotencyKey: string;
+    expectedRevision: string;
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues/remove";
+};
+
+export type TopicIssuesRemoveErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesRemoveError = TopicIssuesRemoveErrors[keyof TopicIssuesRemoveErrors];
+
+export type TopicIssuesRemoveResponses = {
+  /**
+   * Success
+   */
+  200: {
+    workspace: {
+      projectId: TemplateProjectId;
+      organizationId: OrganizationId | null;
+      ownerEpoch: number;
+      repositoryName: string;
+      defaultBranch: string;
+      baseCommit: string;
+      remoteHead: string;
+      pendingRemoteHead: string | null;
+      revision: string;
+      overlay: {
+        [key: string]: string | null;
+      };
+      assetChanges: Array<{
+        path: string;
+        status: "added" | "modified" | "deleted";
+      }>;
+      conflicts: Array<{
+        path: string;
+        base: string | null;
+        draft: string | null;
+        main: string | null;
+      }>;
+      provenance: {
+        references: Array<{
+          kind: string;
+          digest: string;
+          locator?: string | undefined;
+        }>;
+      };
+      mounts: Array<
+        | {
+            kind: "project";
+            root: "/project";
+            access: "read-write";
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "started-from";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "resource";
+            access: "read-only";
+            resourceId: string;
+            name: string;
+          }
+        | {
+            root: string;
+            digest: string;
+            fileCount: number;
+            byteSize: number;
+            kind: "library-template";
+            access: "read-only";
+            templateId: string;
+            slug: string;
+            name: string;
+          }
+      >;
+      libraryManifestDigest: string;
+      createdAt: string;
+      updatedAt: string;
+      createdBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+      updatedBy: {
+        userId: UserId;
+        via: "api" | "mcp" | "agent";
+      };
+    };
+    files: {
+      [key: string]: string;
+    };
+  };
+};
+
+export type TopicIssuesRemoveResponse =
+  TopicIssuesRemoveResponses[keyof TopicIssuesRemoveResponses];
+
+export type TopicIssuesSaveData = {
+  body: {
+    expectedRevision: string;
+    expectedHead: string;
+    message: string;
+    idempotencyKey: string;
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues/save";
+};
+
+export type TopicIssuesSaveErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesSaveError = TopicIssuesSaveErrors[keyof TopicIssuesSaveErrors];
+
+export type TopicIssuesSaveResponses = {
+  /**
+   * Success
+   */
+  200: {
+    commit: string;
+    parentCommit: string;
+    tree: string;
+    revision: string;
+    changedPaths: Array<string>;
+    sourceDigest: string;
+    buildDigest: string;
+    warnings: Array<{
+      code: string;
+      severity: "error" | "warning" | "info";
+      message: string;
+      origins: Array<{
+        fileName: string;
+        lineNumber: number;
+        columnNumber: number;
+      }>;
+      clients?: Array<string> | null | undefined;
+      notes?: string | null | undefined;
+      provenance?: string | null | undefined;
+      fixtures?: Array<string> | null | undefined;
+      occurrences?:
+        | Array<
+            Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>
+          >
+        | null
+        | undefined;
+      compatibility?:
+        | {
+            assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+            title: string;
+          }
+        | null
+        | undefined;
+    }>;
+    incompatibilities: Array<{
+      code: string;
+      severity: "error" | "warning" | "info";
+      message: string;
+      origins: Array<{
+        fileName: string;
+        lineNumber: number;
+        columnNumber: number;
+      }>;
+      clients?: Array<string> | null | undefined;
+      notes?: string | null | undefined;
+      provenance?: string | null | undefined;
+      fixtures?: Array<string> | null | undefined;
+      occurrences?:
+        | Array<
+            Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>
+          >
+        | null
+        | undefined;
+      compatibility?:
+        | {
+            assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+            title: string;
+          }
+        | null
+        | undefined;
+    }>;
+  };
+};
+
+export type TopicIssuesSaveResponse = TopicIssuesSaveResponses[keyof TopicIssuesSaveResponses];
+
+export type TopicIssuesCheckData = {
+  body: {
+    path: string;
+    expectedRevision: string;
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues/check";
+};
+
+export type TopicIssuesCheckErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesCheckError = TopicIssuesCheckErrors[keyof TopicIssuesCheckErrors];
+
+export type TopicIssuesCheckResponses = {
+  /**
+   * Success
+   */
+  200: {
+    projectId: TemplateProjectId;
+    revision: string;
+    entryPath: string | string;
+    declaration: {
+      codeDigest: string;
+      templateId: string;
+      input: {
+        schema: {
+          [key: string]: JsonValue;
+        };
+        schemaDigest: string;
+        contractDigest: string;
+      };
+      fixtures: Array<string>;
+    } | null;
+    issue?:
+      | {
+          path: string;
+          frontmatter: {
+            title: string;
+            slug: string;
+            topic: string;
+            preheader?: string | undefined;
+            seo?:
+              | {
+                  title?: string | undefined;
+                  description?: string | undefined;
+                  image?: string | undefined;
+                }
+              | undefined;
+            gate?:
+              | {
+                  leadIn: number;
+                }
+              | undefined;
+          };
+        }
+      | undefined;
+    diagnostics: Array<{
+      code: string;
+      severity: "error" | "warning" | "info";
+      message: string;
+      origins: Array<{
+        fileName: string;
+        lineNumber: number;
+        columnNumber: number;
+      }>;
+      clients?: Array<string> | null | undefined;
+      notes?: string | null | undefined;
+      provenance?: string | null | undefined;
+      fixtures?: Array<string> | null | undefined;
+      occurrences?:
+        | Array<
+            Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>
+          >
+        | null
+        | undefined;
+      compatibility?:
+        | {
+            assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+            title: string;
+          }
+        | null
+        | undefined;
+    }>;
+    incompatibilities: Array<{
+      code: string;
+      severity: "error" | "warning" | "info";
+      message: string;
+      origins: Array<{
+        fileName: string;
+        lineNumber: number;
+        columnNumber: number;
+      }>;
+      clients?: Array<string> | null | undefined;
+      notes?: string | null | undefined;
+      provenance?: string | null | undefined;
+      fixtures?: Array<string> | null | undefined;
+      occurrences?:
+        | Array<
+            Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>
+          >
+        | null
+        | undefined;
+      compatibility?:
+        | {
+            assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+            title: string;
+          }
+        | null
+        | undefined;
+    }>;
+  };
+};
+
+export type TopicIssuesCheckResponse = TopicIssuesCheckResponses[keyof TopicIssuesCheckResponses];
+
+export type TopicIssuesRenderData = {
+  body: {
+    path: string;
+    expectedRevision: string;
+    fixture: string;
+    target: "email" | "web";
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues/render";
+};
+
+export type TopicIssuesRenderErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesRenderError = TopicIssuesRenderErrors[keyof TopicIssuesRenderErrors];
+
+export type TopicIssuesRenderResponses = {
+  /**
+   * Success
+   */
+  200: {
+    projectId: TemplateProjectId;
+    revision: string;
+    entryPath: string | string;
+    declaration: {
+      codeDigest: string;
+      templateId: string;
+      input: {
+        schema: {
+          [key: string]: JsonValue;
+        };
+        schemaDigest: string;
+        contractDigest: string;
+      };
+      fixtures: Array<string>;
+    } | null;
+    issue?:
+      | {
+          path: string;
+          frontmatter: {
+            title: string;
+            slug: string;
+            topic: string;
+            preheader?: string | undefined;
+            seo?:
+              | {
+                  title?: string | undefined;
+                  description?: string | undefined;
+                  image?: string | undefined;
+                }
+              | undefined;
+            gate?:
+              | {
+                  leadIn: number;
+                }
+              | undefined;
+          };
+        }
+      | undefined;
+    diagnostics: Array<{
+      code: string;
+      severity: "error" | "warning" | "info";
+      message: string;
+      origins: Array<{
+        fileName: string;
+        lineNumber: number;
+        columnNumber: number;
+      }>;
+      clients?: Array<string> | null | undefined;
+      notes?: string | null | undefined;
+      provenance?: string | null | undefined;
+      fixtures?: Array<string> | null | undefined;
+      occurrences?:
+        | Array<
+            Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>
+          >
+        | null
+        | undefined;
+      compatibility?:
+        | {
+            assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+            title: string;
+          }
+        | null
+        | undefined;
+    }>;
+    incompatibilities: Array<{
+      code: string;
+      severity: "error" | "warning" | "info";
+      message: string;
+      origins: Array<{
+        fileName: string;
+        lineNumber: number;
+        columnNumber: number;
+      }>;
+      clients?: Array<string> | null | undefined;
+      notes?: string | null | undefined;
+      provenance?: string | null | undefined;
+      fixtures?: Array<string> | null | undefined;
+      occurrences?:
+        | Array<
+            Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>
+          >
+        | null
+        | undefined;
+      compatibility?:
+        | {
+            assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+            title: string;
+          }
+        | null
+        | undefined;
+    }>;
+    fixture: string;
+    rendered: {
+      subject: string;
+      preheader?: string | undefined;
+      html: string;
+      text: string;
+      selections: Array<{
+        instancePath: string;
+        tag: string;
+        origins: Array<{
+          fileName: string;
+          lineNumber: number;
+          columnNumber: number;
+        }>;
+        authored: boolean;
+        occurrence: number;
+        occurrences: number;
+        parentPath?: string | undefined;
+        start: number;
+        end: number;
+      }>;
+      sentBytes: number;
+      previewBytes: number;
+    } | null;
+    page?:
+      | {
+          kind: "page";
+          html: string;
+          selections: Array<{
+            instancePath: string;
+            tag: string;
+            origins: Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>;
+            authored: boolean;
+            occurrence: number;
+            occurrences: number;
+            parentPath?: string | undefined;
+            start: number;
+            end: number;
+          }>;
+        }
+      | null
+      | undefined;
+  };
+};
+
+export type TopicIssuesRenderResponse =
+  TopicIssuesRenderResponses[keyof TopicIssuesRenderResponses];
+
+export type TopicIssuesHeadData = {
+  body?: never;
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/issues/head";
+};
+
+export type TopicIssuesHeadErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesHeadError = TopicIssuesHeadErrors[keyof TopicIssuesHeadErrors];
+
+export type TopicIssuesHeadResponses = {
+  /**
+   * Success
+   */
+  200: {
+    projectId: TemplateProjectId;
+    revision: string;
+    remoteHead: string;
+  };
+};
+
+export type TopicIssuesHeadResponse = TopicIssuesHeadResponses[keyof TopicIssuesHeadResponses];
+
+export type TopicIssuesHistoryData = {
+  body?: never;
+  path: {
+    id: TopicId;
+  };
+  query?: {
+    limit?: number | null | undefined;
+  };
+  url: "/v1/topics/{id}/issues/history";
+};
+
+export type TopicIssuesHistoryErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicIssuesHistoryError = TopicIssuesHistoryErrors[keyof TopicIssuesHistoryErrors];
+
+export type TopicIssuesHistoryResponses = {
+  /**
+   * Success
+   */
+  200: {
+    projectId: TemplateProjectId;
+    head: string;
+    commits: Array<{
+      commit: string;
+      tree: string;
+      parentCommit: string | null;
+      message: string;
+      committedAt: string;
+    }>;
+  };
+};
+
+export type TopicIssuesHistoryResponse =
+  TopicIssuesHistoryResponses[keyof TopicIssuesHistoryResponses];
+
+export type TopicPublicationDomainsAddData = {
+  body: {
+    hostname: string;
+    idempotencyKey: string;
+  };
+  path: {
+    id: TopicId;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/publication/domains";
+};
+
+export type TopicPublicationDomainsAddErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicPublicationDomainsAddError =
+  TopicPublicationDomainsAddErrors[keyof TopicPublicationDomainsAddErrors];
+
+export type TopicPublicationDomainsAddResponses = {
+  /**
+   * Success
+   */
+  200: {
+    organizationId: OrganizationId;
+    topicId: TopicId;
+    hostname: string;
+    canonicalHostname: string;
+    phase: "pending" | "active" | "removing" | "removed" | "conflict";
+    active: boolean;
+    hostnameStatus: string | null;
+    sslStatus: string | null;
+    cname: {
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    };
+    verificationRecords: Array<{
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    }>;
+    verificationErrors: Array<string>;
+  };
+};
+
+export type TopicPublicationDomainsAddResponse =
+  TopicPublicationDomainsAddResponses[keyof TopicPublicationDomainsAddResponses];
+
+export type TopicPublicationDomainsRemoveData = {
+  body?: never;
+  path: {
+    id: TopicId;
+    hostname: string;
+  };
+  query: {
+    idempotencyKey: string;
+  };
+  url: "/v1/topics/{id}/publication/domains/{hostname}";
+};
+
+export type TopicPublicationDomainsRemoveErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicPublicationDomainsRemoveError =
+  TopicPublicationDomainsRemoveErrors[keyof TopicPublicationDomainsRemoveErrors];
+
+export type TopicPublicationDomainsRemoveResponses = {
+  /**
+   * Success
+   */
+  200: {
+    organizationId: OrganizationId;
+    topicId: TopicId;
+    hostname: string;
+    canonicalHostname: string;
+    phase: "pending" | "active" | "removing" | "removed" | "conflict";
+    active: boolean;
+    hostnameStatus: string | null;
+    sslStatus: string | null;
+    cname: {
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    };
+    verificationRecords: Array<{
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    }>;
+    verificationErrors: Array<string>;
+  };
+};
+
+export type TopicPublicationDomainsRemoveResponse =
+  TopicPublicationDomainsRemoveResponses[keyof TopicPublicationDomainsRemoveResponses];
+
+export type TopicPublicationDomainsGetData = {
+  body?: never;
+  path: {
+    id: TopicId;
+    hostname: string;
+  };
+  query?: never;
+  url: "/v1/topics/{id}/publication/domains/{hostname}";
+};
+
+export type TopicPublicationDomainsGetErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TopicPublicationDomainsGetError =
+  TopicPublicationDomainsGetErrors[keyof TopicPublicationDomainsGetErrors];
+
+export type TopicPublicationDomainsGetResponses = {
+  /**
+   * Success
+   */
+  200: {
+    organizationId: OrganizationId;
+    topicId: TopicId;
+    hostname: string;
+    canonicalHostname: string;
+    phase: "pending" | "active" | "removing" | "removed" | "conflict";
+    active: boolean;
+    hostnameStatus: string | null;
+    sslStatus: string | null;
+    cname: {
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    };
+    verificationRecords: Array<{
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    }>;
+    verificationErrors: Array<string>;
+  };
+};
+
+export type TopicPublicationDomainsGetResponse =
+  TopicPublicationDomainsGetResponses[keyof TopicPublicationDomainsGetResponses];
 
 export type AnalyticsGetStatsData = {
   body?: never;
@@ -18365,7 +19964,7 @@ export type TemplatesCheckWorkspaceResponses = {
   200: {
     projectId: TemplateProjectId;
     revision: string;
-    entryPath: string;
+    entryPath: string | string;
     declaration: {
       codeDigest: string;
       templateId: string;
@@ -18378,6 +19977,29 @@ export type TemplatesCheckWorkspaceResponses = {
       };
       fixtures: Array<string>;
     } | null;
+    issue?:
+      | {
+          path: string;
+          frontmatter: {
+            title: string;
+            slug: string;
+            topic: string;
+            preheader?: string | undefined;
+            seo?:
+              | {
+                  title?: string | undefined;
+                  description?: string | undefined;
+                  image?: string | undefined;
+                }
+              | undefined;
+            gate?:
+              | {
+                  leadIn: number;
+                }
+              | undefined;
+          };
+        }
+      | undefined;
     diagnostics: Array<{
       code: string;
       severity: "error" | "warning" | "info";
@@ -18499,7 +20121,7 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
   200: {
     projectId: TemplateProjectId;
     revision: string;
-    entryPath: string;
+    entryPath: string | string;
     declaration: {
       codeDigest: string;
       templateId: string;
@@ -18512,6 +20134,29 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
       };
       fixtures: Array<string>;
     } | null;
+    issue?:
+      | {
+          path: string;
+          frontmatter: {
+            title: string;
+            slug: string;
+            topic: string;
+            preheader?: string | undefined;
+            seo?:
+              | {
+                  title?: string | undefined;
+                  description?: string | undefined;
+                  image?: string | undefined;
+                }
+              | undefined;
+            gate?:
+              | {
+                  leadIn: number;
+                }
+              | undefined;
+          };
+        }
+      | undefined;
     diagnostics: Array<{
       code: string;
       severity: "error" | "warning" | "info";
@@ -18598,6 +20243,28 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
       sentBytes: number;
       previewBytes: number;
     } | null;
+    page?:
+      | {
+          kind: "page";
+          html: string;
+          selections: Array<{
+            instancePath: string;
+            tag: string;
+            origins: Array<{
+              fileName: string;
+              lineNumber: number;
+              columnNumber: number;
+            }>;
+            authored: boolean;
+            occurrence: number;
+            occurrences: number;
+            parentPath?: string | undefined;
+            start: number;
+            end: number;
+          }>;
+        }
+      | null
+      | undefined;
   };
 };
 
@@ -18692,7 +20359,7 @@ export type TemplatesPublishResponses = {
       source: {
         commitSha: string;
         treeSha: string;
-        entryPath: string;
+        entryPath: string | string;
         treeDigest: string;
       };
       brand?:
@@ -18870,7 +20537,7 @@ export type TemplatesGetPublicationResponses = {
       source: {
         commitSha: string;
         treeSha: string;
-        entryPath: string;
+        entryPath: string | string;
         treeDigest: string;
       };
       brand?:

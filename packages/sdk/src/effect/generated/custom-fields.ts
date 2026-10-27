@@ -17,12 +17,13 @@ import {
 } from "./shared";
 
 export type CustomFieldDefinitionId = string & EffectBrand.Brand<"CustomFieldDefinitionId">;
-export const CustomFieldDefinitionId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^cfield_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^cfield_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "CustomFieldDefinitionId",
-  }),
-).pipe(Schema.brand("CustomFieldDefinitionId"));
+export const CustomFieldDefinitionId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^cfield_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^cfield_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "CustomFieldDefinitionId",
+    }),
+  ).pipe(Schema.brand("CustomFieldDefinitionId")))();
 export type CustomFieldList = {
   readonly items: ReadonlyArray<{
     readonly id: CustomFieldDefinitionId;
@@ -38,39 +39,40 @@ export type CustomFieldList = {
     readonly updatedAt: string;
   }>;
 };
-export const CustomFieldList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: CustomFieldDefinitionId,
-      organizationId: OrganizationId,
-      key: Schema.String,
-      label: Schema.String,
-      type: Schema.Union([
-        Schema.Literal("text"),
-        Schema.Literal("number"),
-        Schema.Literal("boolean"),
-        Schema.Literal("date"),
-        Schema.Literal("select"),
-      ]),
-      options: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-      defaultValue: Schema.Union([Schema.String, Schema.Null]),
-      isRequired: Schema.Boolean,
-      sortOrder: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      createdAt: Schema.String,
-      updatedAt: Schema.String,
-    }),
-  ).check(Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" })),
-}).annotate({ identifier: "CustomFieldList" });
+export const CustomFieldList = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: CustomFieldDefinitionId,
+        organizationId: OrganizationId,
+        key: Schema.String,
+        label: Schema.String,
+        type: Schema.Union([
+          Schema.Literal("text"),
+          Schema.Literal("number"),
+          Schema.Literal("boolean"),
+          Schema.Literal("date"),
+          Schema.Literal("select"),
+        ]),
+        options: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+        defaultValue: Schema.Union([Schema.String, Schema.Null]),
+        isRequired: Schema.Boolean,
+        sortOrder: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
+      }),
+    ).check(Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" })),
+  }).annotate({ identifier: "CustomFieldList" }))();
 export type CustomFieldsList200 = CustomFieldList;
 export const CustomFieldsList200 = CustomFieldList;
 export type CustomFieldsList401 = UnauthorizedError;
@@ -92,38 +94,39 @@ export type CustomFieldsCreateRequestJson = {
   readonly isRequired?: boolean | null;
   readonly sortOrder?: number | null;
 };
-export const CustomFieldsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  key: Schema.String,
-  label: Schema.String,
-  type: Schema.Union([
-    Schema.Literal("text"),
-    Schema.Literal("number"),
-    Schema.Literal("boolean"),
-    Schema.Literal("date"),
-    Schema.Literal("select"),
-  ]),
-  options: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  defaultValue: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  isRequired: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  sortOrder: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
+export const CustomFieldsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    key: Schema.String,
+    label: Schema.String,
+    type: Schema.Union([
+      Schema.Literal("text"),
+      Schema.Literal("number"),
+      Schema.Literal("boolean"),
+      Schema.Literal("date"),
+      Schema.Literal("select"),
     ]),
-  ),
-});
+    options: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    defaultValue: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    isRequired: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    sortOrder: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type CustomFieldsCreate201 = {
   readonly id: CustomFieldDefinitionId;
   readonly organizationId: OrganizationId;
@@ -137,33 +140,36 @@ export type CustomFieldsCreate201 = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const CustomFieldsCreate201 = /* @__PURE__ */ Schema.Struct({
-  id: CustomFieldDefinitionId,
-  organizationId: OrganizationId,
-  key: Schema.String,
-  label: Schema.String,
-  type: Schema.Union([
-    Schema.Literal("text"),
-    Schema.Literal("number"),
-    Schema.Literal("boolean"),
-    Schema.Literal("date"),
-    Schema.Literal("select"),
-  ]),
-  options: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  defaultValue: Schema.Union([Schema.String, Schema.Null]),
-  isRequired: Schema.Boolean,
-  sortOrder: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-});
+export const CustomFieldsCreate201 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: CustomFieldDefinitionId,
+    organizationId: OrganizationId,
+    key: Schema.String,
+    label: Schema.String,
+    type: Schema.Union([
+      Schema.Literal("text"),
+      Schema.Literal("number"),
+      Schema.Literal("boolean"),
+      Schema.Literal("date"),
+      Schema.Literal("select"),
+    ]),
+    options: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    defaultValue: Schema.Union([Schema.String, Schema.Null]),
+    isRequired: Schema.Boolean,
+    sortOrder: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }))();
 export type CustomFieldsCreate401 = UnauthorizedError;
 export const CustomFieldsCreate401 = UnauthorizedError;
 export type CustomFieldsCreate403 = ForbiddenError;
@@ -177,11 +183,11 @@ export const CustomFieldsCreate500 = InternalError;
 export type CustomFieldsCreate504 = GatewayTimeoutError;
 export const CustomFieldsCreate504 = GatewayTimeoutError;
 export type CustomFieldsRemovePathParams = { readonly id: CustomFieldDefinitionId };
-export const CustomFieldsRemovePathParams = /* @__PURE__ */ Schema.Struct({
-  id: CustomFieldDefinitionId,
-});
+export const CustomFieldsRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: CustomFieldDefinitionId }))();
 export type CustomFieldsRemove200 = { readonly success: boolean };
-export const CustomFieldsRemove200 = /* @__PURE__ */ Schema.Struct({ success: Schema.Boolean });
+export const CustomFieldsRemove200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean }))();
 export type CustomFieldsRemove401 = UnauthorizedError;
 export const CustomFieldsRemove401 = UnauthorizedError;
 export type CustomFieldsRemove403 = ForbiddenError;
@@ -195,9 +201,8 @@ export const CustomFieldsRemove500 = InternalError;
 export type CustomFieldsRemove504 = GatewayTimeoutError;
 export const CustomFieldsRemove504 = GatewayTimeoutError;
 export type CustomFieldsUpdatePathParams = { readonly id: CustomFieldDefinitionId };
-export const CustomFieldsUpdatePathParams = /* @__PURE__ */ Schema.Struct({
-  id: CustomFieldDefinitionId,
-});
+export const CustomFieldsUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: CustomFieldDefinitionId }))();
 export type CustomFieldsUpdateRequestJson = {
   readonly label?: string | null;
   readonly options?: ReadonlyArray<string> | null;
@@ -205,30 +210,31 @@ export type CustomFieldsUpdateRequestJson = {
   readonly isRequired?: boolean | null;
   readonly sortOrder?: number | null;
 };
-export const CustomFieldsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  label: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  options: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  defaultValue: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  isRequired: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  sortOrder: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const CustomFieldsUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    label: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    options: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    defaultValue: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    isRequired: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    sortOrder: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type CustomFieldsUpdate200 = {
   readonly id: CustomFieldDefinitionId;
   readonly organizationId: OrganizationId;
@@ -242,33 +248,36 @@ export type CustomFieldsUpdate200 = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const CustomFieldsUpdate200 = /* @__PURE__ */ Schema.Struct({
-  id: CustomFieldDefinitionId,
-  organizationId: OrganizationId,
-  key: Schema.String,
-  label: Schema.String,
-  type: Schema.Union([
-    Schema.Literal("text"),
-    Schema.Literal("number"),
-    Schema.Literal("boolean"),
-    Schema.Literal("date"),
-    Schema.Literal("select"),
-  ]),
-  options: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  defaultValue: Schema.Union([Schema.String, Schema.Null]),
-  isRequired: Schema.Boolean,
-  sortOrder: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-});
+export const CustomFieldsUpdate200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: CustomFieldDefinitionId,
+    organizationId: OrganizationId,
+    key: Schema.String,
+    label: Schema.String,
+    type: Schema.Union([
+      Schema.Literal("text"),
+      Schema.Literal("number"),
+      Schema.Literal("boolean"),
+      Schema.Literal("date"),
+      Schema.Literal("select"),
+    ]),
+    options: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    defaultValue: Schema.Union([Schema.String, Schema.Null]),
+    isRequired: Schema.Boolean,
+    sortOrder: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }))();
 export type CustomFieldsUpdate401 = UnauthorizedError;
 export const CustomFieldsUpdate401 = UnauthorizedError;
 export type CustomFieldsUpdate403 = ForbiddenError;

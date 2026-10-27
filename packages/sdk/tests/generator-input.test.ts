@@ -35,6 +35,13 @@ describe("SDK generator input", () => {
     expect(schemas.CreateTemplatePayload).toBeDefined();
   });
 
+  it("excludes the private issue-agent surface", () => {
+    const paths = Object.keys(spec.paths ?? {});
+    expect(paths).toContain("/v1/topics/{id}/issues");
+    expect(paths.filter((path) => path.includes("/issues/agent"))).toEqual([]);
+    expect(JSON.stringify(spec)).not.toContain("topicIssueAgent.");
+  });
+
   it("otherwise matches the published document", () => {
     expect(spec.components).toEqual(published.components);
     expect(Object.keys(spec.paths ?? {})).toEqual(Object.keys(published.paths ?? {}));

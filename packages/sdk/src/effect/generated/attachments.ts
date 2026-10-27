@@ -29,9 +29,148 @@ export type AttachmentList = {
     readonly createdAt: string;
   }>;
 };
-export const AttachmentList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
+export const AttachmentList = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: AttachmentId,
+        messageId: MessageId,
+        organizationId: OrganizationId,
+        filename: Schema.String,
+        contentType: Schema.String,
+        size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        contentId: Schema.Union([Schema.String, Schema.Null]),
+        isInline: Schema.Boolean,
+        createdAt: Schema.String,
+      }),
+    ),
+  }).annotate({ identifier: "AttachmentList" }))();
+export type AttachmentsListQuery = { readonly messageId: MessageId };
+export const AttachmentsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({ messageId: MessageId }))();
+export type AttachmentsList200 = AttachmentList;
+export const AttachmentsList200 = AttachmentList;
+export type AttachmentsList401 = UnauthorizedError;
+export const AttachmentsList401 = UnauthorizedError;
+export type AttachmentsList403 = ForbiddenError;
+export const AttachmentsList403 = ForbiddenError;
+export type AttachmentsList404 = ResourceNotFoundError;
+export const AttachmentsList404 = ResourceNotFoundError;
+export type AttachmentsList422 = ValidationError;
+export const AttachmentsList422 = ValidationError;
+export type AttachmentsList500 = InternalError;
+export const AttachmentsList500 = InternalError;
+export type AttachmentsList504 = GatewayTimeoutError;
+export const AttachmentsList504 = GatewayTimeoutError;
+export type AttachmentsGetByIdPathParams = { readonly id: AttachmentId };
+export const AttachmentsGetByIdPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AttachmentId }))();
+export type AttachmentsGetById200 = {
+  readonly id: AttachmentId;
+  readonly messageId: MessageId;
+  readonly organizationId: OrganizationId;
+  readonly filename: string;
+  readonly contentType: string;
+  readonly size: number;
+  readonly contentId: string | null;
+  readonly isInline: boolean;
+  readonly createdAt: string;
+};
+export const AttachmentsGetById200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: AttachmentId,
+    messageId: MessageId,
+    organizationId: OrganizationId,
+    filename: Schema.String,
+    contentType: Schema.String,
+    size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    contentId: Schema.Union([Schema.String, Schema.Null]),
+    isInline: Schema.Boolean,
+    createdAt: Schema.String,
+  }))();
+export type AttachmentsGetById401 = UnauthorizedError;
+export const AttachmentsGetById401 = UnauthorizedError;
+export type AttachmentsGetById403 = ForbiddenError;
+export const AttachmentsGetById403 = ForbiddenError;
+export type AttachmentsGetById404 = ResourceNotFoundError;
+export const AttachmentsGetById404 = ResourceNotFoundError;
+export type AttachmentsGetById422 = ValidationError;
+export const AttachmentsGetById422 = ValidationError;
+export type AttachmentsGetById500 = InternalError;
+export const AttachmentsGetById500 = InternalError;
+export type AttachmentsGetById504 = GatewayTimeoutError;
+export const AttachmentsGetById504 = GatewayTimeoutError;
+export type AttachmentsRemovePathParams = { readonly id: AttachmentId };
+export const AttachmentsRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AttachmentId }))();
+export type AttachmentsRemove200 = { readonly success: boolean; readonly deletedId: AttachmentId };
+export const AttachmentsRemove200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean, deletedId: AttachmentId }))();
+export type AttachmentsRemove401 = UnauthorizedError;
+export const AttachmentsRemove401 = UnauthorizedError;
+export type AttachmentsRemove403 = ForbiddenError;
+export const AttachmentsRemove403 = ForbiddenError;
+export type AttachmentsRemove404 = ResourceNotFoundError;
+export const AttachmentsRemove404 = ResourceNotFoundError;
+export type AttachmentsRemove422 = ValidationError;
+export const AttachmentsRemove422 = ValidationError;
+export type AttachmentsRemove500 = InternalError;
+export const AttachmentsRemove500 = InternalError;
+export type AttachmentsRemove504 = GatewayTimeoutError;
+export const AttachmentsRemove504 = GatewayTimeoutError;
+export type AttachmentsDownloadUrlPathParams = { readonly id: AttachmentId };
+export const AttachmentsDownloadUrlPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AttachmentId }))();
+export type AttachmentsDownloadUrlQuery = { readonly expiresIn?: number | null };
+export const AttachmentsDownloadUrlQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expiresIn: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type AttachmentsDownloadUrl200 = {
+  readonly url: string;
+  readonly expiresAt: string;
+  readonly attachment: {
+    readonly id: AttachmentId;
+    readonly messageId: MessageId;
+    readonly organizationId: OrganizationId;
+    readonly filename: string;
+    readonly contentType: string;
+    readonly size: number;
+    readonly contentId: string | null;
+    readonly isInline: boolean;
+    readonly createdAt: string;
+  };
+};
+export const AttachmentsDownloadUrl200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    url: Schema.String,
+    expiresAt: Schema.String,
+    attachment: Schema.Struct({
       id: AttachmentId,
       messageId: MessageId,
       organizationId: OrganizationId,
@@ -52,138 +191,7 @@ export const AttachmentList = /* @__PURE__ */ Schema.Struct({
       isInline: Schema.Boolean,
       createdAt: Schema.String,
     }),
-  ),
-}).annotate({ identifier: "AttachmentList" });
-export type AttachmentsListQuery = { readonly messageId: MessageId };
-export const AttachmentsListQuery = /* @__PURE__ */ Schema.Struct({ messageId: MessageId });
-export type AttachmentsList200 = AttachmentList;
-export const AttachmentsList200 = AttachmentList;
-export type AttachmentsList401 = UnauthorizedError;
-export const AttachmentsList401 = UnauthorizedError;
-export type AttachmentsList403 = ForbiddenError;
-export const AttachmentsList403 = ForbiddenError;
-export type AttachmentsList404 = ResourceNotFoundError;
-export const AttachmentsList404 = ResourceNotFoundError;
-export type AttachmentsList422 = ValidationError;
-export const AttachmentsList422 = ValidationError;
-export type AttachmentsList500 = InternalError;
-export const AttachmentsList500 = InternalError;
-export type AttachmentsList504 = GatewayTimeoutError;
-export const AttachmentsList504 = GatewayTimeoutError;
-export type AttachmentsGetByIdPathParams = { readonly id: AttachmentId };
-export const AttachmentsGetByIdPathParams = /* @__PURE__ */ Schema.Struct({ id: AttachmentId });
-export type AttachmentsGetById200 = {
-  readonly id: AttachmentId;
-  readonly messageId: MessageId;
-  readonly organizationId: OrganizationId;
-  readonly filename: string;
-  readonly contentType: string;
-  readonly size: number;
-  readonly contentId: string | null;
-  readonly isInline: boolean;
-  readonly createdAt: string;
-};
-export const AttachmentsGetById200 = /* @__PURE__ */ Schema.Struct({
-  id: AttachmentId,
-  messageId: MessageId,
-  organizationId: OrganizationId,
-  filename: Schema.String,
-  contentType: Schema.String,
-  size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  contentId: Schema.Union([Schema.String, Schema.Null]),
-  isInline: Schema.Boolean,
-  createdAt: Schema.String,
-});
-export type AttachmentsGetById401 = UnauthorizedError;
-export const AttachmentsGetById401 = UnauthorizedError;
-export type AttachmentsGetById403 = ForbiddenError;
-export const AttachmentsGetById403 = ForbiddenError;
-export type AttachmentsGetById404 = ResourceNotFoundError;
-export const AttachmentsGetById404 = ResourceNotFoundError;
-export type AttachmentsGetById422 = ValidationError;
-export const AttachmentsGetById422 = ValidationError;
-export type AttachmentsGetById500 = InternalError;
-export const AttachmentsGetById500 = InternalError;
-export type AttachmentsGetById504 = GatewayTimeoutError;
-export const AttachmentsGetById504 = GatewayTimeoutError;
-export type AttachmentsRemovePathParams = { readonly id: AttachmentId };
-export const AttachmentsRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: AttachmentId });
-export type AttachmentsRemove200 = { readonly success: boolean; readonly deletedId: AttachmentId };
-export const AttachmentsRemove200 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Boolean,
-  deletedId: AttachmentId,
-});
-export type AttachmentsRemove401 = UnauthorizedError;
-export const AttachmentsRemove401 = UnauthorizedError;
-export type AttachmentsRemove403 = ForbiddenError;
-export const AttachmentsRemove403 = ForbiddenError;
-export type AttachmentsRemove404 = ResourceNotFoundError;
-export const AttachmentsRemove404 = ResourceNotFoundError;
-export type AttachmentsRemove422 = ValidationError;
-export const AttachmentsRemove422 = ValidationError;
-export type AttachmentsRemove500 = InternalError;
-export const AttachmentsRemove500 = InternalError;
-export type AttachmentsRemove504 = GatewayTimeoutError;
-export const AttachmentsRemove504 = GatewayTimeoutError;
-export type AttachmentsDownloadUrlPathParams = { readonly id: AttachmentId };
-export const AttachmentsDownloadUrlPathParams = /* @__PURE__ */ Schema.Struct({ id: AttachmentId });
-export type AttachmentsDownloadUrlQuery = { readonly expiresIn?: number | null };
-export const AttachmentsDownloadUrlQuery = /* @__PURE__ */ Schema.Struct({
-  expiresIn: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-  ),
-});
-export type AttachmentsDownloadUrl200 = {
-  readonly url: string;
-  readonly expiresAt: string;
-  readonly attachment: {
-    readonly id: AttachmentId;
-    readonly messageId: MessageId;
-    readonly organizationId: OrganizationId;
-    readonly filename: string;
-    readonly contentType: string;
-    readonly size: number;
-    readonly contentId: string | null;
-    readonly isInline: boolean;
-    readonly createdAt: string;
-  };
-};
-export const AttachmentsDownloadUrl200 = /* @__PURE__ */ Schema.Struct({
-  url: Schema.String,
-  expiresAt: Schema.String,
-  attachment: Schema.Struct({
-    id: AttachmentId,
-    messageId: MessageId,
-    organizationId: OrganizationId,
-    filename: Schema.String,
-    contentType: Schema.String,
-    size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    contentId: Schema.Union([Schema.String, Schema.Null]),
-    isInline: Schema.Boolean,
-    createdAt: Schema.String,
-  }),
-});
+  }))();
 export type AttachmentsDownloadUrl401 = UnauthorizedError;
 export const AttachmentsDownloadUrl401 = UnauthorizedError;
 export type AttachmentsDownloadUrl403 = ForbiddenError;

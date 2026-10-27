@@ -27,12 +27,13 @@ import {
 } from "./shared";
 
 export type ExtensionInstallationId = string & EffectBrand.Brand<"ExtensionInstallationId">;
-export const ExtensionInstallationId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^exti_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^exti_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "ExtensionInstallationId",
-  }),
-).pipe(Schema.brand("ExtensionInstallationId"));
+export const ExtensionInstallationId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^exti_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^exti_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "ExtensionInstallationId",
+    }),
+  ).pipe(Schema.brand("ExtensionInstallationId")))();
 export type ExtensionRunSummary = {
   readonly id: string;
   readonly eventId: string;
@@ -50,50 +51,51 @@ export type ExtensionRunSummary = {
   readonly outcome: "succeeded" | "failed" | "timed_out" | "budget_exhausted" | "revoked";
   readonly error: string | null;
 };
-export const ExtensionRunSummary = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  eventId: Schema.String,
-  eventType: Schema.Union([
-    Schema.Literal("mailbox.message.received"),
-    Schema.Literal("mailbox.message.sent"),
-    Schema.Literal("mailbox.action.pending_approval"),
-    Schema.Literal("mailbox.action.resolved"),
-    Schema.Literal("mailbox.message.quarantined"),
-    Schema.Literal("mailbox.message.released"),
-    Schema.Literal("mailbox.message.discarded"),
-  ]),
-  attempt: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  startedAt: Schema.String,
-  durationMs: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  outcome: Schema.Union([
-    Schema.Literal("succeeded"),
-    Schema.Literal("failed"),
-    Schema.Literal("timed_out"),
-    Schema.Literal("budget_exhausted"),
-    Schema.Literal("revoked"),
-  ]),
-  error: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ExtensionRunSummary" });
+export const ExtensionRunSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    eventId: Schema.String,
+    eventType: Schema.Union([
+      Schema.Literal("mailbox.message.received"),
+      Schema.Literal("mailbox.message.sent"),
+      Schema.Literal("mailbox.action.pending_approval"),
+      Schema.Literal("mailbox.action.resolved"),
+      Schema.Literal("mailbox.message.quarantined"),
+      Schema.Literal("mailbox.message.released"),
+      Schema.Literal("mailbox.message.discarded"),
+    ]),
+    attempt: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    startedAt: Schema.String,
+    durationMs: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    outcome: Schema.Union([
+      Schema.Literal("succeeded"),
+      Schema.Literal("failed"),
+      Schema.Literal("timed_out"),
+      Schema.Literal("budget_exhausted"),
+      Schema.Literal("revoked"),
+    ]),
+    error: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ExtensionRunSummary" }))();
 export type ExtensionRun = {
   readonly id: string;
   readonly eventId: string;
@@ -112,51 +114,52 @@ export type ExtensionRun = {
   readonly error: string | null;
   readonly logs: ReadonlyArray<string>;
 };
-export const ExtensionRun = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  eventId: Schema.String,
-  eventType: Schema.Union([
-    Schema.Literal("mailbox.message.received"),
-    Schema.Literal("mailbox.message.sent"),
-    Schema.Literal("mailbox.action.pending_approval"),
-    Schema.Literal("mailbox.action.resolved"),
-    Schema.Literal("mailbox.message.quarantined"),
-    Schema.Literal("mailbox.message.released"),
-    Schema.Literal("mailbox.message.discarded"),
-  ]),
-  attempt: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  startedAt: Schema.String,
-  durationMs: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  outcome: Schema.Union([
-    Schema.Literal("succeeded"),
-    Schema.Literal("failed"),
-    Schema.Literal("timed_out"),
-    Schema.Literal("budget_exhausted"),
-    Schema.Literal("revoked"),
-  ]),
-  error: Schema.Union([Schema.String, Schema.Null]),
-  logs: Schema.Array(Schema.String),
-}).annotate({ identifier: "ExtensionRun" });
+export const ExtensionRun = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    eventId: Schema.String,
+    eventType: Schema.Union([
+      Schema.Literal("mailbox.message.received"),
+      Schema.Literal("mailbox.message.sent"),
+      Schema.Literal("mailbox.action.pending_approval"),
+      Schema.Literal("mailbox.action.resolved"),
+      Schema.Literal("mailbox.message.quarantined"),
+      Schema.Literal("mailbox.message.released"),
+      Schema.Literal("mailbox.message.discarded"),
+    ]),
+    attempt: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    startedAt: Schema.String,
+    durationMs: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    outcome: Schema.Union([
+      Schema.Literal("succeeded"),
+      Schema.Literal("failed"),
+      Schema.Literal("timed_out"),
+      Schema.Literal("budget_exhausted"),
+      Schema.Literal("revoked"),
+    ]),
+    error: Schema.Union([Schema.String, Schema.Null]),
+    logs: Schema.Array(Schema.String),
+  }).annotate({ identifier: "ExtensionRun" }))();
 export type ExtensionPermissionDiff = {
   readonly added: ReadonlyArray<
     | "permission:read"
@@ -185,42 +188,44 @@ export type ExtensionPermissionDiff = {
     | "event:mailbox.message.discarded"
   >;
 };
-export const ExtensionPermissionDiff = /* @__PURE__ */ Schema.Struct({
-  added: Schema.Array(
-    Schema.Union([
-      Schema.Literal("permission:read"),
-      Schema.Literal("permission:update"),
-      Schema.Literal("permission:send"),
-      Schema.Literal("permission:quarantine.read"),
-      Schema.Literal("event:mailbox.message.received"),
-      Schema.Literal("event:mailbox.message.sent"),
-      Schema.Literal("event:mailbox.action.pending_approval"),
-      Schema.Literal("event:mailbox.action.resolved"),
-      Schema.Literal("event:mailbox.message.quarantined"),
-      Schema.Literal("event:mailbox.message.released"),
-      Schema.Literal("event:mailbox.message.discarded"),
-    ]),
-  ),
-  removed: Schema.Array(
-    Schema.Union([
-      Schema.Literal("permission:read"),
-      Schema.Literal("permission:update"),
-      Schema.Literal("permission:send"),
-      Schema.Literal("permission:quarantine.read"),
-      Schema.Literal("event:mailbox.message.received"),
-      Schema.Literal("event:mailbox.message.sent"),
-      Schema.Literal("event:mailbox.action.pending_approval"),
-      Schema.Literal("event:mailbox.action.resolved"),
-      Schema.Literal("event:mailbox.message.quarantined"),
-      Schema.Literal("event:mailbox.message.released"),
-      Schema.Literal("event:mailbox.message.discarded"),
-    ]),
-  ),
-}).annotate({ identifier: "ExtensionPermissionDiff" });
+export const ExtensionPermissionDiff = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    added: Schema.Array(
+      Schema.Union([
+        Schema.Literal("permission:read"),
+        Schema.Literal("permission:update"),
+        Schema.Literal("permission:send"),
+        Schema.Literal("permission:quarantine.read"),
+        Schema.Literal("event:mailbox.message.received"),
+        Schema.Literal("event:mailbox.message.sent"),
+        Schema.Literal("event:mailbox.action.pending_approval"),
+        Schema.Literal("event:mailbox.action.resolved"),
+        Schema.Literal("event:mailbox.message.quarantined"),
+        Schema.Literal("event:mailbox.message.released"),
+        Schema.Literal("event:mailbox.message.discarded"),
+      ]),
+    ),
+    removed: Schema.Array(
+      Schema.Union([
+        Schema.Literal("permission:read"),
+        Schema.Literal("permission:update"),
+        Schema.Literal("permission:send"),
+        Schema.Literal("permission:quarantine.read"),
+        Schema.Literal("event:mailbox.message.received"),
+        Schema.Literal("event:mailbox.message.sent"),
+        Schema.Literal("event:mailbox.action.pending_approval"),
+        Schema.Literal("event:mailbox.action.resolved"),
+        Schema.Literal("event:mailbox.message.quarantined"),
+        Schema.Literal("event:mailbox.message.released"),
+        Schema.Literal("event:mailbox.message.discarded"),
+      ]),
+    ),
+  }).annotate({ identifier: "ExtensionPermissionDiff" }))();
 export type ExtensionRunList = { readonly items: ReadonlyArray<ExtensionRunSummary> };
-export const ExtensionRunList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ExtensionRunSummary),
-}).annotate({ identifier: "ExtensionRunList" });
+export const ExtensionRunList = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(ExtensionRunSummary) }).annotate({
+    identifier: "ExtensionRunList",
+  }))();
 export type ExtensionInstallationSummary = {
   readonly id: ExtensionInstallationId;
   readonly extensionId: ExtensionId;
@@ -231,16 +236,17 @@ export type ExtensionInstallationSummary = {
   readonly status: "active" | "disabled";
   readonly createdAt: string;
 };
-export const ExtensionInstallationSummary = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-  extensionId: ExtensionId,
-  name: Schema.String,
-  displayName: Schema.String,
-  version: ExtensionVersionRef,
-  runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-  status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-  createdAt: Schema.String,
-}).annotate({ identifier: "ExtensionInstallationSummary" });
+export const ExtensionInstallationSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ExtensionInstallationId,
+    extensionId: ExtensionId,
+    name: Schema.String,
+    displayName: Schema.String,
+    version: ExtensionVersionRef,
+    runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
+    status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "ExtensionInstallationSummary" }))();
 export type ExtensionInstallation = {
   readonly id: ExtensionInstallationId;
   readonly extensionId: ExtensionId;
@@ -269,46 +275,47 @@ export type ExtensionInstallation = {
   readonly updatedAt: string;
   readonly disabledAt: string | null;
 };
-export const ExtensionInstallation = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-  extensionId: ExtensionId,
-  name: Schema.String,
-  displayName: Schema.String,
-  version: ExtensionVersionRef,
-  runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-  status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-  createdAt: Schema.String,
-  events: Schema.Array(
-    Schema.Union([
-      Schema.Literal("mailbox.message.received"),
-      Schema.Literal("mailbox.message.sent"),
-      Schema.Literal("mailbox.action.pending_approval"),
-      Schema.Literal("mailbox.action.resolved"),
-      Schema.Literal("mailbox.message.quarantined"),
-      Schema.Literal("mailbox.message.released"),
-      Schema.Literal("mailbox.message.discarded"),
+export const ExtensionInstallation = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ExtensionInstallationId,
+    extensionId: ExtensionId,
+    name: Schema.String,
+    displayName: Schema.String,
+    version: ExtensionVersionRef,
+    runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
+    status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+    createdAt: Schema.String,
+    events: Schema.Array(
+      Schema.Union([
+        Schema.Literal("mailbox.message.received"),
+        Schema.Literal("mailbox.message.sent"),
+        Schema.Literal("mailbox.action.pending_approval"),
+        Schema.Literal("mailbox.action.resolved"),
+        Schema.Literal("mailbox.message.quarantined"),
+        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.discarded"),
+      ]),
+    ),
+    permissions: Schema.Array(
+      Schema.Union([
+        Schema.Literal("read"),
+        Schema.Literal("update"),
+        Schema.Literal("send"),
+        Schema.Literal("quarantine.read"),
+      ]),
+    ),
+    sendMode: Schema.Union([Schema.Literal("send"), Schema.Literal("approval")]),
+    scope: Schema.Struct({
+      mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
+      namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    }),
+    webhook: Schema.Union([
+      Schema.Struct({ endpointId: WebhookEndpointId, url: Schema.String }),
+      Schema.Null,
     ]),
-  ),
-  permissions: Schema.Array(
-    Schema.Union([
-      Schema.Literal("read"),
-      Schema.Literal("update"),
-      Schema.Literal("send"),
-      Schema.Literal("quarantine.read"),
-    ]),
-  ),
-  sendMode: Schema.Union([Schema.Literal("send"), Schema.Literal("approval")]),
-  scope: Schema.Struct({
-    mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
-    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  }),
-  webhook: Schema.Union([
-    Schema.Struct({ endpointId: WebhookEndpointId, url: Schema.String }),
-    Schema.Null,
-  ]),
-  updatedAt: Schema.String,
-  disabledAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ExtensionInstallation" });
+    updatedAt: Schema.String,
+    disabledAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ExtensionInstallation" }))();
 export type ExtensionVersionChange = {
   readonly id: string;
   readonly organizationId: OrganizationId;
@@ -320,25 +327,27 @@ export type ExtensionVersionChange = {
   readonly changedBy: UserId;
   readonly changedAt: string;
 };
-export const ExtensionVersionChange = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  organizationId: OrganizationId,
-  installationId: ExtensionInstallationId,
-  extensionId: ExtensionId,
-  fromVersion: ExtensionVersionRef,
-  toVersion: ExtensionVersionRef,
-  permissionDiff: ExtensionPermissionDiff,
-  changedBy: UserId,
-  changedAt: Schema.String,
-}).annotate({ identifier: "ExtensionVersionChange" });
+export const ExtensionVersionChange = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    organizationId: OrganizationId,
+    installationId: ExtensionInstallationId,
+    extensionId: ExtensionId,
+    fromVersion: ExtensionVersionRef,
+    toVersion: ExtensionVersionRef,
+    permissionDiff: ExtensionPermissionDiff,
+    changedBy: UserId,
+    changedAt: Schema.String,
+  }).annotate({ identifier: "ExtensionVersionChange" }))();
 export type ExtensionInstallationPage = {
   readonly items: ReadonlyArray<ExtensionInstallationSummary>;
   readonly nextCursor: string | null;
 };
-export const ExtensionInstallationPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ExtensionInstallationSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ExtensionInstallationPage" });
+export const ExtensionInstallationPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ExtensionInstallationSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ExtensionInstallationPage" }))();
 export type InstallExtensionResponse = {
   readonly installation: ExtensionInstallation;
   readonly credentials: {
@@ -346,16 +355,17 @@ export type InstallExtensionResponse = {
     readonly webhookSecret: __SamvaRuntimeSensitiveString;
   } | null;
 };
-export const InstallExtensionResponse = /* @__PURE__ */ Schema.Struct({
-  installation: ExtensionInstallation,
-  credentials: Schema.Union([
-    Schema.Struct({
-      apiKey: __SamvaRuntimeSensitiveString,
-      webhookSecret: __SamvaRuntimeSensitiveString,
-    }),
-    Schema.Null,
-  ]),
-}).annotate({ identifier: "InstallExtensionResponse" });
+export const InstallExtensionResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    installation: ExtensionInstallation,
+    credentials: Schema.Union([
+      Schema.Struct({
+        apiKey: __SamvaRuntimeSensitiveString,
+        webhookSecret: __SamvaRuntimeSensitiveString,
+      }),
+      Schema.Null,
+    ]),
+  }).annotate({ identifier: "InstallExtensionResponse" }))();
 export type UpgradeExtensionResponse = {
   readonly installation: ExtensionInstallation;
   readonly fromVersion: ExtensionVersionRef;
@@ -364,38 +374,40 @@ export type UpgradeExtensionResponse = {
   readonly dryRun: boolean;
   readonly versionChange: ExtensionVersionChange | null;
 };
-export const UpgradeExtensionResponse = /* @__PURE__ */ Schema.Struct({
-  installation: ExtensionInstallation,
-  fromVersion: ExtensionVersionRef,
-  toVersion: ExtensionVersionRef,
-  permissionDiff: ExtensionPermissionDiff,
-  dryRun: Schema.Boolean,
-  versionChange: Schema.Union([ExtensionVersionChange, Schema.Null]),
-}).annotate({ identifier: "UpgradeExtensionResponse" });
+export const UpgradeExtensionResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    installation: ExtensionInstallation,
+    fromVersion: ExtensionVersionRef,
+    toVersion: ExtensionVersionRef,
+    permissionDiff: ExtensionPermissionDiff,
+    dryRun: Schema.Boolean,
+    versionChange: Schema.Union([ExtensionVersionChange, Schema.Null]),
+  }).annotate({ identifier: "UpgradeExtensionResponse" }))();
 export type ExtensionInstallationsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const ExtensionInstallationsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ExtensionInstallationsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ExtensionInstallationsList200 = ExtensionInstallationPage;
 export const ExtensionInstallationsList200 = ExtensionInstallationPage;
 export type ExtensionInstallationsList401 = UnauthorizedError;
@@ -419,48 +431,52 @@ export type ExtensionInstallationsInstallRequestJson = {
   readonly sendMode?: "send" | "approval" | null;
   readonly webhookUrl?: string | null;
 };
-export const ExtensionInstallationsInstallRequestJson = /* @__PURE__ */ Schema.Struct({
-  extension: Schema.String,
-  version: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(
-          new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  mailboxIds: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(MailboxId).check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  permissions: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(
-        Schema.Union([
-          Schema.Literal("read"),
-          Schema.Literal("update"),
-          Schema.Literal("send"),
-          Schema.Literal("quarantine.read"),
-        ]),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  sendMode: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Literal("send"), Schema.Literal("approval")]), Schema.Null]),
-  ),
-  webhookUrl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ExtensionInstallationsInstallRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    extension: Schema.String,
+    version: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(
+            new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    mailboxIds: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(MailboxId).check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    permissions: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("read"),
+            Schema.Literal("update"),
+            Schema.Literal("send"),
+            Schema.Literal("quarantine.read"),
+          ]),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    sendMode: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("send"), Schema.Literal("approval")]),
+        Schema.Null,
+      ]),
+    ),
+    webhookUrl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ExtensionInstallationsInstall201 = InstallExtensionResponse;
 export const ExtensionInstallationsInstall201 = InstallExtensionResponse;
 export type ExtensionInstallationsInstall401 = UnauthorizedError;
@@ -478,9 +494,8 @@ export const ExtensionInstallationsInstall500 = InternalError;
 export type ExtensionInstallationsInstall504 = GatewayTimeoutError;
 export const ExtensionInstallationsInstall504 = GatewayTimeoutError;
 export type ExtensionInstallationsGetPathParams = { readonly id: ExtensionInstallationId };
-export const ExtensionInstallationsGetPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-});
+export const ExtensionInstallationsGetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsGet200 = ExtensionInstallation;
 export const ExtensionInstallationsGet200 = ExtensionInstallation;
 export type ExtensionInstallationsGet401 = UnauthorizedError;
@@ -496,9 +511,8 @@ export const ExtensionInstallationsGet500 = InternalError;
 export type ExtensionInstallationsGet504 = GatewayTimeoutError;
 export const ExtensionInstallationsGet504 = GatewayTimeoutError;
 export type ExtensionInstallationsUninstallPathParams = { readonly id: ExtensionInstallationId };
-export const ExtensionInstallationsUninstallPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-});
+export const ExtensionInstallationsUninstallPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsUninstall200 = SuccessResponse;
 export const ExtensionInstallationsUninstall200 = SuccessResponse;
 export type ExtensionInstallationsUninstall401 = UnauthorizedError;
@@ -516,9 +530,8 @@ export const ExtensionInstallationsUninstall500 = InternalError;
 export type ExtensionInstallationsUninstall504 = GatewayTimeoutError;
 export const ExtensionInstallationsUninstall504 = GatewayTimeoutError;
 export type ExtensionInstallationsDisablePathParams = { readonly id: ExtensionInstallationId };
-export const ExtensionInstallationsDisablePathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-});
+export const ExtensionInstallationsDisablePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsDisable200 = ExtensionInstallation;
 export const ExtensionInstallationsDisable200 = ExtensionInstallation;
 export type ExtensionInstallationsDisable401 = UnauthorizedError;
@@ -536,9 +549,8 @@ export const ExtensionInstallationsDisable500 = InternalError;
 export type ExtensionInstallationsDisable504 = GatewayTimeoutError;
 export const ExtensionInstallationsDisable504 = GatewayTimeoutError;
 export type ExtensionInstallationsEnablePathParams = { readonly id: ExtensionInstallationId };
-export const ExtensionInstallationsEnablePathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-});
+export const ExtensionInstallationsEnablePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsEnable200 = ExtensionInstallation;
 export const ExtensionInstallationsEnable200 = ExtensionInstallation;
 export type ExtensionInstallationsEnable401 = UnauthorizedError;
@@ -556,9 +568,8 @@ export const ExtensionInstallationsEnable500 = InternalError;
 export type ExtensionInstallationsEnable504 = GatewayTimeoutError;
 export const ExtensionInstallationsEnable504 = GatewayTimeoutError;
 export type ExtensionInstallationsListRunsPathParams = { readonly id: ExtensionInstallationId };
-export const ExtensionInstallationsListRunsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-});
+export const ExtensionInstallationsListRunsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsListRuns200 = ExtensionRunList;
 export const ExtensionInstallationsListRuns200 = ExtensionRunList;
 export type ExtensionInstallationsListRuns401 = UnauthorizedError;
@@ -577,16 +588,17 @@ export type ExtensionInstallationsGetRunPathParams = {
   readonly id: ExtensionInstallationId;
   readonly runId: string;
 };
-export const ExtensionInstallationsGetRunPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-  runId: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+export const ExtensionInstallationsGetRunPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ExtensionInstallationId,
+    runId: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
-});
+      .check(
+        Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+      )
+      .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
+  }))();
 export type ExtensionInstallationsGetRun200 = ExtensionRun;
 export const ExtensionInstallationsGetRun200 = ExtensionRun;
 export type ExtensionInstallationsGetRun401 = UnauthorizedError;
@@ -602,9 +614,8 @@ export const ExtensionInstallationsGetRun500 = InternalError;
 export type ExtensionInstallationsGetRun504 = GatewayTimeoutError;
 export const ExtensionInstallationsGetRun504 = GatewayTimeoutError;
 export type ExtensionInstallationsUpgradePathParams = { readonly id: ExtensionInstallationId };
-export const ExtensionInstallationsUpgradePathParams = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionInstallationId,
-});
+export const ExtensionInstallationsUpgradePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsUpgradeRequestJson = {
   readonly version?: string | ExtensionVersionId | null;
   readonly acceptPermissions?: ReadonlyArray<
@@ -622,45 +633,46 @@ export type ExtensionInstallationsUpgradeRequestJson = {
   > | null;
   readonly dryRun?: boolean | null;
 };
-export const ExtensionInstallationsUpgradeRequestJson = /* @__PURE__ */ Schema.Struct({
-  version: Schema.optionalKey(
-    Schema.Union([
+export const ExtensionInstallationsUpgradeRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    version: Schema.optionalKey(
       Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(
-            new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
-          }),
-        ),
-        ExtensionVersionId,
-      ]),
-      Schema.Null,
-    ]),
-  ),
-  acceptPermissions: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(
         Schema.Union([
-          Schema.Literal("permission:read"),
-          Schema.Literal("permission:update"),
-          Schema.Literal("permission:send"),
-          Schema.Literal("permission:quarantine.read"),
-          Schema.Literal("event:mailbox.message.received"),
-          Schema.Literal("event:mailbox.message.sent"),
-          Schema.Literal("event:mailbox.action.pending_approval"),
-          Schema.Literal("event:mailbox.action.resolved"),
-          Schema.Literal("event:mailbox.message.quarantined"),
-          Schema.Literal("event:mailbox.message.released"),
-          Schema.Literal("event:mailbox.message.discarded"),
+          Schema.String.check(
+            Schema.isPattern(
+              new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
+            }),
+          ),
+          ExtensionVersionId,
         ]),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  dryRun: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+        Schema.Null,
+      ]),
+    ),
+    acceptPermissions: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("permission:read"),
+            Schema.Literal("permission:update"),
+            Schema.Literal("permission:send"),
+            Schema.Literal("permission:quarantine.read"),
+            Schema.Literal("event:mailbox.message.received"),
+            Schema.Literal("event:mailbox.message.sent"),
+            Schema.Literal("event:mailbox.action.pending_approval"),
+            Schema.Literal("event:mailbox.action.resolved"),
+            Schema.Literal("event:mailbox.message.quarantined"),
+            Schema.Literal("event:mailbox.message.released"),
+            Schema.Literal("event:mailbox.message.discarded"),
+          ]),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    dryRun: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ExtensionInstallationsUpgrade200 = UpgradeExtensionResponse;
 export const ExtensionInstallationsUpgrade200 = UpgradeExtensionResponse;
 export type ExtensionInstallationsUpgrade401 = UnauthorizedError;

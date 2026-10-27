@@ -56,10 +56,10 @@ import {
 } from "./shared";
 
 export type MailboxStatus = "active" | "paused";
-export const MailboxStatus = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("active"),
-  Schema.Literal("paused"),
-]).annotate({ identifier: "MailboxStatus" });
+export const MailboxStatus = /* @__PURE__ */ (() =>
+  Schema.Union([Schema.Literal("active"), Schema.Literal("paused")]).annotate({
+    identifier: "MailboxStatus",
+  }))();
 export type MailboxActionResolution = {
   readonly outcome: "approved" | "denied" | "cancelled";
   readonly actor: {
@@ -77,60 +77,64 @@ export type MailboxActionResolution = {
   readonly resolvedAt: string;
   readonly reason: string | null;
 };
-export const MailboxActionResolution = /* @__PURE__ */ Schema.Struct({
-  outcome: Schema.Union([
-    Schema.Literal("approved"),
-    Schema.Literal("denied"),
-    Schema.Literal("cancelled"),
-  ]),
-  actor: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
-      Schema.Literal("extension"),
-      Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
-      Schema.Literal("system"),
+export const MailboxActionResolution = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    outcome: Schema.Union([
+      Schema.Literal("approved"),
+      Schema.Literal("denied"),
+      Schema.Literal("cancelled"),
     ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    source: Schema.Union([
-      Schema.Literal("humanUi"),
-      Schema.Literal("externalApi"),
-      Schema.Literal("externalAgent"),
-      Schema.Literal("extension"),
-      Schema.Literal("samvaManagedAgent"),
-      Schema.Literal("system"),
-    ]),
-  }).annotate({ description: "Who resolved the approval." }),
-  resolvedAt: Schema.String,
-  reason: Schema.Union([Schema.String, Schema.Null]).annotate({
-    description: "The denial reason; null for an approval or a cancellation.",
-  }),
-}).annotate({
-  description: "How the action's approval ended.",
-  identifier: "MailboxActionResolution",
-});
+    actor: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      source: Schema.Union([
+        Schema.Literal("humanUi"),
+        Schema.Literal("externalApi"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("extension"),
+        Schema.Literal("samvaManagedAgent"),
+        Schema.Literal("system"),
+      ]),
+    }).annotate({ description: "Who resolved the approval." }),
+    resolvedAt: Schema.String,
+    reason: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description: "The denial reason; null for an approval or a cancellation.",
+    }),
+  }).annotate({
+    description: "How the action's approval ended.",
+    identifier: "MailboxActionResolution",
+  }))();
 export type MailboxToolCall = {
   readonly name: string;
   readonly argumentsHash: string;
   readonly arguments: { readonly [x: string]: JsonValue };
 };
-export const MailboxToolCall = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+export const MailboxToolCall = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" })),
-  argumentsHash: Schema.String.check(
-    Schema.isPattern(new RegExp("^[0-9a-f]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[0-9a-f]{64}$",
-    }),
-  ),
-  arguments: Schema.Record(Schema.String, JsonValue),
-}).annotate({ identifier: "MailboxToolCall" });
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+    argumentsHash: Schema.String.check(
+      Schema.isPattern(new RegExp("^[0-9a-f]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[0-9a-f]{64}$",
+      }),
+    ),
+    arguments: Schema.Record(Schema.String, JsonValue),
+  }).annotate({ identifier: "MailboxToolCall" }))();
 export type MailboxAgentActivity = {
   readonly actions: {
     readonly byType: ReadonlyArray<{
@@ -187,129 +191,135 @@ export type MailboxAgentActivity = {
   };
   readonly pendingApprovals: number;
 };
-export const MailboxAgentActivity = /* @__PURE__ */ Schema.Struct({
-  actions: Schema.Struct({
-    byType: Schema.Array(
-      Schema.Struct({
-        type: Schema.Union([
-          Schema.Literal("sendMessage"),
-          Schema.Literal("reply"),
-          Schema.Literal("updateDraft"),
-          Schema.Literal("createNote"),
-          Schema.Literal("assignThread"),
-          Schema.Literal("changeThreadState"),
-          Schema.Literal("call"),
-          Schema.Literal("extensionRequest"),
-          Schema.Literal("toolCall"),
-        ]),
-        count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(0).annotate({
-              expected: "a value greater than or equal to 0",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-      }),
-    ),
-    byState: Schema.Array(
-      Schema.Struct({
-        state: Schema.Union([
-          Schema.Literal("proposed"),
-          Schema.Literal("allowed"),
-          Schema.Literal("approvalRequired"),
-          Schema.Literal("policyDenied"),
-          Schema.Literal("approved"),
-          Schema.Literal("approvalDenied"),
-          Schema.Literal("executing"),
-          Schema.Literal("executed"),
-          Schema.Literal("failed"),
-          Schema.Literal("queued"),
-          Schema.Literal("accepted"),
-          Schema.Literal("completed"),
-          Schema.Literal("notSent"),
-          Schema.Literal("uncertain"),
-        ]),
-        count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(0).annotate({
-              expected: "a value greater than or equal to 0",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-      }),
-    ),
-  }),
-  events: Schema.Struct({
-    byType: Schema.Array(
-      Schema.Struct({
-        type: Schema.Union([
-          Schema.Literal("mailbox.created"),
-          Schema.Literal("endpoint.attached"),
-          Schema.Literal("endpoint.detached"),
-          Schema.Literal("message.received"),
-          Schema.Literal("message.released"),
-          Schema.Literal("message.sent"),
-          Schema.Literal("thread.created"),
-          Schema.Literal("action.proposed"),
-          Schema.Literal("action.policy_decided"),
-          Schema.Literal("action.approval_requested"),
-          Schema.Literal("action.approval_resolved"),
-          Schema.Literal("action.accepted"),
-          Schema.Literal("action.executed"),
-          Schema.Literal("action.failed"),
-        ]),
-        count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(0).annotate({
-              expected: "a value greater than or equal to 0",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-      }),
-    ),
-  }),
-  pendingApprovals: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "MailboxAgentActivity" });
+export const MailboxAgentActivity = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    actions: Schema.Struct({
+      byType: Schema.Array(
+        Schema.Struct({
+          type: Schema.Union([
+            Schema.Literal("sendMessage"),
+            Schema.Literal("reply"),
+            Schema.Literal("updateDraft"),
+            Schema.Literal("createNote"),
+            Schema.Literal("assignThread"),
+            Schema.Literal("changeThreadState"),
+            Schema.Literal("call"),
+            Schema.Literal("extensionRequest"),
+            Schema.Literal("toolCall"),
+          ]),
+          count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(0).annotate({
+                expected: "a value greater than or equal to 0",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+        }),
+      ),
+      byState: Schema.Array(
+        Schema.Struct({
+          state: Schema.Union([
+            Schema.Literal("proposed"),
+            Schema.Literal("allowed"),
+            Schema.Literal("approvalRequired"),
+            Schema.Literal("policyDenied"),
+            Schema.Literal("approved"),
+            Schema.Literal("approvalDenied"),
+            Schema.Literal("executing"),
+            Schema.Literal("executed"),
+            Schema.Literal("failed"),
+            Schema.Literal("queued"),
+            Schema.Literal("accepted"),
+            Schema.Literal("completed"),
+            Schema.Literal("notSent"),
+            Schema.Literal("uncertain"),
+          ]),
+          count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(0).annotate({
+                expected: "a value greater than or equal to 0",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+        }),
+      ),
+    }),
+    events: Schema.Struct({
+      byType: Schema.Array(
+        Schema.Struct({
+          type: Schema.Union([
+            Schema.Literal("mailbox.created"),
+            Schema.Literal("endpoint.attached"),
+            Schema.Literal("endpoint.detached"),
+            Schema.Literal("message.received"),
+            Schema.Literal("message.released"),
+            Schema.Literal("message.sent"),
+            Schema.Literal("thread.created"),
+            Schema.Literal("action.proposed"),
+            Schema.Literal("action.policy_decided"),
+            Schema.Literal("action.approval_requested"),
+            Schema.Literal("action.approval_resolved"),
+            Schema.Literal("action.accepted"),
+            Schema.Literal("action.executed"),
+            Schema.Literal("action.failed"),
+          ]),
+          count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(0).annotate({
+                expected: "a value greater than or equal to 0",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+        }),
+      ),
+    }),
+    pendingApprovals: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "MailboxAgentActivity" }))();
 export type MailboxDraftState = "saved" | "locked" | "sent";
-export const MailboxDraftState = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("saved"),
-  Schema.Literal("locked"),
-  Schema.Literal("sent"),
-]).annotate({ identifier: "MailboxDraftState" });
+export const MailboxDraftState = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("saved"),
+    Schema.Literal("locked"),
+    Schema.Literal("sent"),
+  ]).annotate({ identifier: "MailboxDraftState" }))();
 export type MailboxEventId = string & EffectBrand.Brand<"MailboxEventId">;
-export const MailboxEventId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "MailboxEventId",
-  }),
-).pipe(Schema.brand("MailboxEventId"));
+export const MailboxEventId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MailboxEventId",
+    }),
+  ).pipe(Schema.brand("MailboxEventId")))();
 export type MailboxGrantId = string & EffectBrand.Brand<"MailboxGrantId">;
-export const MailboxGrantId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "MailboxGrantId",
-  }),
-).pipe(Schema.brand("MailboxGrantId"));
+export const MailboxGrantId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MailboxGrantId",
+    }),
+  ).pipe(Schema.brand("MailboxGrantId")))();
 export type MailboxMessageSender = {
   readonly actor?: {
     readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
@@ -319,27 +329,28 @@ export type MailboxMessageSender = {
   readonly displayName?: string | null;
   readonly address: string;
 };
-export const MailboxMessageSender = /* @__PURE__ */ Schema.Struct({
-  actor: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        kind: Schema.Union([
-          Schema.Literal("user"),
-          Schema.Literal("apiKey"),
-          Schema.Literal("extension"),
-          Schema.Literal("externalAgent"),
-          Schema.Literal("samvaAgent"),
-          Schema.Literal("system"),
-        ]),
-        id: Schema.String,
-        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      }),
-      Schema.Null,
-    ]),
-  ),
-  displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  address: Schema.String,
-}).annotate({ identifier: "MailboxMessageSender" });
+export const MailboxMessageSender = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    actor: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Union([
+            Schema.Literal("user"),
+            Schema.Literal("apiKey"),
+            Schema.Literal("extension"),
+            Schema.Literal("externalAgent"),
+            Schema.Literal("samvaAgent"),
+            Schema.Literal("system"),
+          ]),
+          id: Schema.String,
+          displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    address: Schema.String,
+  }).annotate({ identifier: "MailboxMessageSender" }))();
 export type MailboxMessageRecipient = {
   readonly kind: "to" | "cc" | "bcc";
   readonly actor?: {
@@ -350,51 +361,54 @@ export type MailboxMessageRecipient = {
   readonly displayName?: string | null;
   readonly address: string;
 };
-export const MailboxMessageRecipient = /* @__PURE__ */ Schema.Struct({
-  kind: Schema.Union([Schema.Literal("to"), Schema.Literal("cc"), Schema.Literal("bcc")]),
-  actor: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        kind: Schema.Union([
-          Schema.Literal("user"),
-          Schema.Literal("apiKey"),
-          Schema.Literal("extension"),
-          Schema.Literal("externalAgent"),
-          Schema.Literal("samvaAgent"),
-          Schema.Literal("system"),
-        ]),
-        id: Schema.String,
-        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      }),
-      Schema.Null,
-    ]),
-  ),
-  displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  address: Schema.String,
-}).annotate({ identifier: "MailboxMessageRecipient" });
+export const MailboxMessageRecipient = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    kind: Schema.Union([Schema.Literal("to"), Schema.Literal("cc"), Schema.Literal("bcc")]),
+    actor: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Union([
+            Schema.Literal("user"),
+            Schema.Literal("apiKey"),
+            Schema.Literal("extension"),
+            Schema.Literal("externalAgent"),
+            Schema.Literal("samvaAgent"),
+            Schema.Literal("system"),
+          ]),
+          id: Schema.String,
+          displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    address: Schema.String,
+  }).annotate({ identifier: "MailboxMessageRecipient" }))();
 export type MailboxMessageAuthentication = {
   readonly spf: string | null;
   readonly dkim: string | null;
   readonly dmarc: string | null;
 };
-export const MailboxMessageAuthentication = /* @__PURE__ */ Schema.Struct({
-  spf: Schema.Union([Schema.String, Schema.Null]),
-  dkim: Schema.Union([Schema.String, Schema.Null]),
-  dmarc: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxMessageAuthentication" });
+export const MailboxMessageAuthentication = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    spf: Schema.Union([Schema.String, Schema.Null]),
+    dkim: Schema.Union([Schema.String, Schema.Null]),
+    dmarc: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxMessageAuthentication" }))();
 export type MailboxDownloadUrl = { readonly url: string; readonly expiresAt: string };
-export const MailboxDownloadUrl = /* @__PURE__ */ Schema.Struct({
-  url: Schema.String,
-  expiresAt: Schema.String,
-}).annotate({ identifier: "MailboxDownloadUrl" });
+export const MailboxDownloadUrl = /* @__PURE__ */ (() =>
+  Schema.Struct({ url: Schema.String, expiresAt: Schema.String }).annotate({
+    identifier: "MailboxDownloadUrl",
+  }))();
 export type MailboxThreadSender = {
   readonly address: string | null;
   readonly displayName: string | null;
 };
-export const MailboxThreadSender = /* @__PURE__ */ Schema.Struct({
-  address: Schema.Union([Schema.String, Schema.Null]),
-  displayName: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxThreadSender" });
+export const MailboxThreadSender = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    address: Schema.Union([Schema.String, Schema.Null]),
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxThreadSender" }))();
 export type MailboxThreadParticipant = {
   readonly actor: {
     readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
@@ -404,34 +418,36 @@ export type MailboxThreadParticipant = {
   readonly role: "recipient" | "sender" | "assignee" | "observer";
   readonly address?: string | null;
 };
-export const MailboxThreadParticipant = /* @__PURE__ */ Schema.Struct({
-  actor: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
-      Schema.Literal("extension"),
-      Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
-      Schema.Literal("system"),
+export const MailboxThreadParticipant = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    actor: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    role: Schema.Union([
+      Schema.Literal("recipient"),
+      Schema.Literal("sender"),
+      Schema.Literal("assignee"),
+      Schema.Literal("observer"),
     ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-  role: Schema.Union([
-    Schema.Literal("recipient"),
-    Schema.Literal("sender"),
-    Schema.Literal("assignee"),
-    Schema.Literal("observer"),
-  ]),
-  address: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-}).annotate({ identifier: "MailboxThreadParticipant" });
+    address: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }).annotate({ identifier: "MailboxThreadParticipant" }))();
 export type MailboxNoteId = string & EffectBrand.Brand<"MailboxNoteId">;
-export const MailboxNoteId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^note_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^note_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "MailboxNoteId",
-  }),
-).pipe(Schema.brand("MailboxNoteId"));
+export const MailboxNoteId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^note_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^note_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MailboxNoteId",
+    }),
+  ).pipe(Schema.brand("MailboxNoteId")))();
 export type MailboxEndpoint = {
   readonly id: MailboxEndpointId;
   readonly address: string;
@@ -441,15 +457,16 @@ export type MailboxEndpoint = {
   readonly source: "samvaHosted" | "verifiedDomain";
   readonly domainId: string | null;
 };
-export const MailboxEndpoint = /* @__PURE__ */ Schema.Struct({
-  id: MailboxEndpointId,
-  address: Schema.String,
-  displayName: Schema.Union([Schema.String, Schema.Null]),
-  default: Schema.Boolean,
-  channel: Schema.Literal("email"),
-  source: Schema.Union([Schema.Literal("samvaHosted"), Schema.Literal("verifiedDomain")]),
-  domainId: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxEndpoint" });
+export const MailboxEndpoint = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxEndpointId,
+    address: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    default: Schema.Boolean,
+    channel: Schema.Literal("email"),
+    source: Schema.Union([Schema.Literal("samvaHosted"), Schema.Literal("verifiedDomain")]),
+    domainId: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxEndpoint" }))();
 export type MailboxCopiedAttachment = {
   readonly filename: string;
   readonly content?: string | null;
@@ -457,19 +474,20 @@ export type MailboxCopiedAttachment = {
   readonly contentType: string;
   readonly size: number;
 };
-export const MailboxCopiedAttachment = /* @__PURE__ */ Schema.Struct({
-  filename: Schema.String,
-  content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
-  contentType: Schema.String,
-  size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(26214400).annotate({
-        expected: "a value less than or equal to 26214400",
-      }),
-    )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-}).annotate({ identifier: "MailboxCopiedAttachment" });
+export const MailboxCopiedAttachment = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    filename: Schema.String,
+    content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
+    contentType: Schema.String,
+    size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(26214400).annotate({
+          expected: "a value less than or equal to 26214400",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+  }).annotate({ identifier: "MailboxCopiedAttachment" }))();
 export type MailboxSummary = {
   readonly id: MailboxId;
   readonly namespaceId: NamespaceId | null;
@@ -479,15 +497,16 @@ export type MailboxSummary = {
   readonly primaryAddress: string | null;
   readonly createdAt: string;
 };
-export const MailboxSummary = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  slug: Schema.String,
-  name: Schema.String,
-  status: MailboxStatus,
-  primaryAddress: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-}).annotate({ identifier: "MailboxSummary" });
+export const MailboxSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    slug: Schema.String,
+    name: Schema.String,
+    status: MailboxStatus,
+    primaryAddress: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "MailboxSummary" }))();
 export type MailboxQuarantinedMessage = {
   readonly id: MessageId;
   readonly disposition: "quarantined" | "isolated";
@@ -508,27 +527,31 @@ export type MailboxQuarantinedMessage = {
   readonly threadId: MailboxThreadId | null;
   readonly discardedAt: string | null;
 };
-export const MailboxQuarantinedMessage = /* @__PURE__ */ Schema.Struct({
-  id: MessageId,
-  disposition: Schema.Union([Schema.Literal("quarantined"), Schema.Literal("isolated")]),
-  reason: Schema.Union([
-    Schema.Literal("spam"),
-    Schema.Literal("dmarc"),
-    Schema.Literal("virus"),
-    Schema.Literal("virus_unscanned"),
-    Schema.Literal("phishing"),
-    Schema.Literal("fraud"),
-    Schema.Literal("prompt_injection"),
-  ]),
-  source: Schema.Union([Schema.Literal("receipt"), Schema.Literal("classifier")]),
-  from: Schema.Struct({ address: Schema.String, name: Schema.Union([Schema.String, Schema.Null]) }),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  receivedAt: Schema.String,
-  heldAt: Schema.String,
-  releasedAt: Schema.Union([Schema.String, Schema.Null]),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  discardedAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxQuarantinedMessage" });
+export const MailboxQuarantinedMessage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    disposition: Schema.Union([Schema.Literal("quarantined"), Schema.Literal("isolated")]),
+    reason: Schema.Union([
+      Schema.Literal("spam"),
+      Schema.Literal("dmarc"),
+      Schema.Literal("virus"),
+      Schema.Literal("virus_unscanned"),
+      Schema.Literal("phishing"),
+      Schema.Literal("fraud"),
+      Schema.Literal("prompt_injection"),
+    ]),
+    source: Schema.Union([Schema.Literal("receipt"), Schema.Literal("classifier")]),
+    from: Schema.Struct({
+      address: Schema.String,
+      name: Schema.Union([Schema.String, Schema.Null]),
+    }),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    receivedAt: Schema.String,
+    heldAt: Schema.String,
+    releasedAt: Schema.Union([Schema.String, Schema.Null]),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    discardedAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxQuarantinedMessage" }))();
 export type MailboxDraftSummary = {
   readonly id: MailboxDraftId;
   readonly channel: MailboxChannel;
@@ -541,18 +564,19 @@ export type MailboxDraftSummary = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const MailboxDraftSummary = /* @__PURE__ */ Schema.Struct({
-  id: MailboxDraftId,
-  channel: MailboxChannel,
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-  state: MailboxDraftState,
-  lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
-  to: Schema.Array(Schema.String),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "MailboxDraftSummary" });
+export const MailboxDraftSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxDraftId,
+    channel: MailboxChannel,
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+    state: MailboxDraftState,
+    lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
+    to: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MailboxDraftSummary" }))();
 export type MailboxEvent = {
   readonly id: MailboxEventId;
   readonly type:
@@ -580,67 +604,73 @@ export type MailboxEvent = {
   readonly payload: { readonly [x: string]: JsonValue };
   readonly occurredAt: string;
 };
-export const MailboxEvent = /* @__PURE__ */ Schema.Struct({
-  id: MailboxEventId,
-  type: Schema.Union([
-    Schema.Literal("mailbox.created"),
-    Schema.Literal("endpoint.attached"),
-    Schema.Literal("endpoint.detached"),
-    Schema.Literal("message.received"),
-    Schema.Literal("message.released"),
-    Schema.Literal("message.sent"),
-    Schema.Literal("thread.created"),
-    Schema.Literal("action.proposed"),
-    Schema.Literal("action.policy_decided"),
-    Schema.Literal("action.approval_requested"),
-    Schema.Literal("action.approval_resolved"),
-    Schema.Literal("action.accepted"),
-    Schema.Literal("action.executed"),
-    Schema.Literal("action.failed"),
-  ]),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  actionId: Schema.Union([MailboxActionId, Schema.Null]),
-  actor: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
-      Schema.Literal("extension"),
-      Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
-      Schema.Literal("system"),
+export const MailboxEvent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxEventId,
+    type: Schema.Union([
+      Schema.Literal("mailbox.created"),
+      Schema.Literal("endpoint.attached"),
+      Schema.Literal("endpoint.detached"),
+      Schema.Literal("message.received"),
+      Schema.Literal("message.released"),
+      Schema.Literal("message.sent"),
+      Schema.Literal("thread.created"),
+      Schema.Literal("action.proposed"),
+      Schema.Literal("action.policy_decided"),
+      Schema.Literal("action.approval_requested"),
+      Schema.Literal("action.approval_resolved"),
+      Schema.Literal("action.accepted"),
+      Schema.Literal("action.executed"),
+      Schema.Literal("action.failed"),
     ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-  payload: Schema.Record(Schema.String, JsonValue),
-  occurredAt: Schema.String,
-}).annotate({ identifier: "MailboxEvent" });
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    actionId: Schema.Union([MailboxActionId, Schema.Null]),
+    actor: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    payload: Schema.Record(Schema.String, JsonValue),
+    occurredAt: Schema.String,
+  }).annotate({ identifier: "MailboxEvent" }))();
 export type MailboxFolderCount = {
   readonly folder: MailboxThreadFolder;
   readonly count: number;
   readonly unreadCount: number;
 };
-export const MailboxFolderCount = /* @__PURE__ */ Schema.Struct({
-  folder: MailboxThreadFolder,
-  count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  unreadCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "MailboxFolderCount" });
+export const MailboxFolderCount = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    folder: MailboxThreadFolder,
+    count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    unreadCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "MailboxFolderCount" }))();
 export type MailboxGrant = {
   readonly id: MailboxGrantId;
   readonly actor: {
@@ -665,39 +695,40 @@ export type MailboxGrant = {
   readonly sendMode: MailboxSendMode;
   readonly createdAt: string;
 };
-export const MailboxGrant = /* @__PURE__ */ Schema.Struct({
-  id: MailboxGrantId,
-  actor: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
-      Schema.Literal("extension"),
-      Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
-      Schema.Literal("system"),
-    ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-  permissions: Schema.Array(
-    Schema.Union([
-      Schema.Literal("mailbox:read"),
-      Schema.Literal("mailbox:configure"),
-      Schema.Literal("thread:read"),
-      Schema.Literal("thread:write"),
-      Schema.Literal("label:write"),
-      Schema.Literal("draft:write"),
-      Schema.Literal("note:write"),
-      Schema.Literal("action:propose"),
-      Schema.Literal("action:approve"),
-      Schema.Literal("policy:read"),
-      Schema.Literal("quarantine:read"),
-      Schema.Literal("quarantine:release"),
-    ]),
-  ),
-  sendMode: MailboxSendMode,
-  createdAt: Schema.String,
-}).annotate({ identifier: "MailboxGrant" });
+export const MailboxGrant = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxGrantId,
+    actor: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    permissions: Schema.Array(
+      Schema.Union([
+        Schema.Literal("mailbox:read"),
+        Schema.Literal("mailbox:configure"),
+        Schema.Literal("thread:read"),
+        Schema.Literal("thread:write"),
+        Schema.Literal("label:write"),
+        Schema.Literal("draft:write"),
+        Schema.Literal("note:write"),
+        Schema.Literal("action:propose"),
+        Schema.Literal("action:approve"),
+        Schema.Literal("policy:read"),
+        Schema.Literal("quarantine:read"),
+        Schema.Literal("quarantine:release"),
+      ]),
+    ),
+    sendMode: MailboxSendMode,
+    createdAt: Schema.String,
+  }).annotate({ identifier: "MailboxGrant" }))();
 export type MailboxLabel = {
   readonly id: MailboxLabelId;
   readonly slug: string;
@@ -706,24 +737,25 @@ export type MailboxLabel = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const MailboxLabel = /* @__PURE__ */ Schema.Struct({
-  id: MailboxLabelId,
-  slug: Schema.String,
-  displayName: Schema.String,
-  color: Schema.Union([
-    Schema.Union([
-      Schema.Literal("billing"),
-      Schema.Literal("domain"),
-      Schema.Literal("agent"),
-      Schema.Literal("routing"),
-      Schema.Literal("important"),
-      Schema.Literal("neutral"),
+export const MailboxLabel = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxLabelId,
+    slug: Schema.String,
+    displayName: Schema.String,
+    color: Schema.Union([
+      Schema.Union([
+        Schema.Literal("billing"),
+        Schema.Literal("domain"),
+        Schema.Literal("agent"),
+        Schema.Literal("routing"),
+        Schema.Literal("important"),
+        Schema.Literal("neutral"),
+      ]),
+      Schema.Null,
     ]),
-    Schema.Null,
-  ]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "MailboxLabel" });
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MailboxLabel" }))();
 export type MailboxMessageSummary = {
   readonly id: MessageId;
   readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
@@ -736,20 +768,21 @@ export type MailboxMessageSummary = {
   readonly hasAttachments: boolean;
   readonly occurredAt: string;
 };
-export const MailboxMessageSummary = /* @__PURE__ */ Schema.Struct({
-  id: MessageId,
-  campaign: Schema.optionalKey(
-    Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
-  ),
-  channel: MailboxChannel,
-  direction: Schema.Union([Schema.Literal("inbound"), Schema.Literal("outbound")]),
-  from: MailboxMessageSender,
-  to: Schema.Array(Schema.String),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  preview: Schema.Union([Schema.String, Schema.Null]),
-  hasAttachments: Schema.Boolean,
-  occurredAt: Schema.String,
-}).annotate({ identifier: "MailboxMessageSummary" });
+export const MailboxMessageSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    campaign: Schema.optionalKey(
+      Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
+    ),
+    channel: MailboxChannel,
+    direction: Schema.Union([Schema.Literal("inbound"), Schema.Literal("outbound")]),
+    from: MailboxMessageSender,
+    to: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    preview: Schema.Union([Schema.String, Schema.Null]),
+    hasAttachments: Schema.Boolean,
+    occurredAt: Schema.String,
+  }).annotate({ identifier: "MailboxMessageSummary" }))();
 export type MailboxMessage = {
   readonly id: MessageId;
   readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
@@ -784,66 +817,67 @@ export type MailboxMessage = {
     readonly isInline: boolean;
   }>;
 };
-export const MailboxMessage = /* @__PURE__ */ Schema.Struct({
-  id: MessageId,
-  campaign: Schema.optionalKey(
-    Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
-  ),
-  threadId: MailboxThreadId,
-  conversationId: ConversationId,
-  direction: Schema.Union([Schema.Literal("inbound"), Schema.Literal("outbound")]),
-  from: MailboxMessageSender,
-  sentBy: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        kind: Schema.Union([
-          Schema.Literal("user"),
-          Schema.Literal("apiKey"),
-          Schema.Literal("extension"),
-          Schema.Literal("externalAgent"),
-          Schema.Literal("samvaAgent"),
-          Schema.Literal("system"),
-        ]),
-        id: Schema.String,
-        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      }),
-      Schema.Null,
-    ]),
-  ),
-  occurredAt: Schema.String,
-  channel: Schema.Literal("email"),
-  recipients: Schema.Array(MailboxMessageRecipient),
-  replyTo: Schema.Array(Schema.String),
-  subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  replyText: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  headers: Schema.Struct({
-    messageId: Schema.Union([Schema.String, Schema.Null]),
-    inReplyTo: Schema.Union([Schema.String, Schema.Null]),
-    references: Schema.Array(Schema.String),
-  }),
-  authentication: Schema.Union([MailboxMessageAuthentication, Schema.Null]),
-  attachments: Schema.Array(
-    Schema.Struct({
-      id: AttachmentId,
-      filename: Schema.String,
-      contentType: Schema.String,
-      size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      isInline: Schema.Boolean,
+export const MailboxMessage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    campaign: Schema.optionalKey(
+      Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
+    ),
+    threadId: MailboxThreadId,
+    conversationId: ConversationId,
+    direction: Schema.Union([Schema.Literal("inbound"), Schema.Literal("outbound")]),
+    from: MailboxMessageSender,
+    sentBy: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Union([
+            Schema.Literal("user"),
+            Schema.Literal("apiKey"),
+            Schema.Literal("extension"),
+            Schema.Literal("externalAgent"),
+            Schema.Literal("samvaAgent"),
+            Schema.Literal("system"),
+          ]),
+          id: Schema.String,
+          displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    occurredAt: Schema.String,
+    channel: Schema.Literal("email"),
+    recipients: Schema.Array(MailboxMessageRecipient),
+    replyTo: Schema.Array(Schema.String),
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    replyText: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    headers: Schema.Struct({
+      messageId: Schema.Union([Schema.String, Schema.Null]),
+      inReplyTo: Schema.Union([Schema.String, Schema.Null]),
+      references: Schema.Array(Schema.String),
     }),
-  ),
-}).annotate({ identifier: "MailboxMessage" });
+    authentication: Schema.Union([MailboxMessageAuthentication, Schema.Null]),
+    attachments: Schema.Array(
+      Schema.Struct({
+        id: AttachmentId,
+        filename: Schema.String,
+        contentType: Schema.String,
+        size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        isInline: Schema.Boolean,
+      }),
+    ),
+  }).annotate({ identifier: "MailboxMessage" }))();
 export type MailboxPolicy = {
   readonly id: MailboxPolicyId;
   readonly name: string;
@@ -853,15 +887,16 @@ export type MailboxPolicy = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const MailboxPolicy = /* @__PURE__ */ Schema.Struct({
-  id: MailboxPolicyId,
-  name: Schema.String,
-  outcome: MailboxPolicyOutcomeKind,
-  reason: Schema.Union([Schema.String, Schema.Null]),
-  enabled: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "MailboxPolicy" });
+export const MailboxPolicy = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxPolicyId,
+    name: Schema.String,
+    outcome: MailboxPolicyOutcomeKind,
+    reason: Schema.Union([Schema.String, Schema.Null]),
+    enabled: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MailboxPolicy" }))();
 export type MailboxThreadSummary = {
   readonly id: MailboxThreadId;
   readonly channel: MailboxChannel;
@@ -880,32 +915,35 @@ export type MailboxThreadSummary = {
   readonly snoozedUntil: string | null;
   readonly lastActivityAt: string;
 };
-export const MailboxThreadSummary = /* @__PURE__ */ Schema.Struct({
-  id: MailboxThreadId,
-  channel: MailboxChannel,
-  endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  preview: Schema.Union([Schema.String, Schema.Null]),
-  from: Schema.Union([MailboxThreadSender, Schema.Null]),
-  messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  hasAttachments: Schema.Boolean,
-  hasDraft: Schema.Boolean,
-  folder: MailboxThreadFolder,
-  priority: MailboxThreadPriority,
-  labels: Schema.Array(MailboxLabelId),
-  read: Schema.Boolean,
-  starred: Schema.Boolean,
-  snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
-  lastActivityAt: Schema.String,
-}).annotate({ identifier: "MailboxThreadSummary" });
+export const MailboxThreadSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxThreadId,
+    channel: MailboxChannel,
+    endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    preview: Schema.Union([Schema.String, Schema.Null]),
+    from: Schema.Union([MailboxThreadSender, Schema.Null]),
+    messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    hasAttachments: Schema.Boolean,
+    hasDraft: Schema.Boolean,
+    folder: MailboxThreadFolder,
+    priority: MailboxThreadPriority,
+    labels: Schema.Array(MailboxLabelId),
+    read: Schema.Boolean,
+    starred: Schema.Boolean,
+    snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    lastActivityAt: Schema.String,
+  }).annotate({ identifier: "MailboxThreadSummary" }))();
 export type MailboxThreadState = {
   readonly id: MailboxThreadId;
   readonly folder: MailboxThreadFolder;
@@ -915,15 +953,16 @@ export type MailboxThreadState = {
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
 };
-export const MailboxThreadState = /* @__PURE__ */ Schema.Struct({
-  id: MailboxThreadId,
-  folder: MailboxThreadFolder,
-  priority: MailboxThreadPriority,
-  labels: Schema.Array(MailboxLabelId),
-  read: Schema.Boolean,
-  starred: Schema.Boolean,
-  snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxThreadState" });
+export const MailboxThreadState = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxThreadId,
+    folder: MailboxThreadFolder,
+    priority: MailboxThreadPriority,
+    labels: Schema.Array(MailboxLabelId),
+    read: Schema.Boolean,
+    starred: Schema.Boolean,
+    snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxThreadState" }))();
 export type MailboxThread = {
   readonly id: MailboxThreadId;
   readonly channel: MailboxChannel;
@@ -945,35 +984,38 @@ export type MailboxThread = {
   readonly participants: ReadonlyArray<MailboxThreadParticipant>;
   readonly createdAt: string;
 };
-export const MailboxThread = /* @__PURE__ */ Schema.Struct({
-  id: MailboxThreadId,
-  channel: MailboxChannel,
-  endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  preview: Schema.Union([Schema.String, Schema.Null]),
-  from: Schema.Union([MailboxThreadSender, Schema.Null]),
-  messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  hasAttachments: Schema.Boolean,
-  hasDraft: Schema.Boolean,
-  folder: MailboxThreadFolder,
-  priority: MailboxThreadPriority,
-  labels: Schema.Array(MailboxLabelId),
-  read: Schema.Boolean,
-  starred: Schema.Boolean,
-  snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
-  lastActivityAt: Schema.String,
-  conversationId: ConversationId,
-  participants: Schema.Array(MailboxThreadParticipant),
-  createdAt: Schema.String,
-}).annotate({ identifier: "MailboxThread" });
+export const MailboxThread = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxThreadId,
+    channel: MailboxChannel,
+    endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    preview: Schema.Union([Schema.String, Schema.Null]),
+    from: Schema.Union([MailboxThreadSender, Schema.Null]),
+    messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    hasAttachments: Schema.Boolean,
+    hasDraft: Schema.Boolean,
+    folder: MailboxThreadFolder,
+    priority: MailboxThreadPriority,
+    labels: Schema.Array(MailboxLabelId),
+    read: Schema.Boolean,
+    starred: Schema.Boolean,
+    snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    lastActivityAt: Schema.String,
+    conversationId: ConversationId,
+    participants: Schema.Array(MailboxThreadParticipant),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "MailboxThread" }))();
 export type MailboxNote = {
   readonly id: MailboxNoteId;
   readonly author: {
@@ -987,26 +1029,27 @@ export type MailboxNote = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const MailboxNote = /* @__PURE__ */ Schema.Struct({
-  id: MailboxNoteId,
-  author: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
-      Schema.Literal("extension"),
-      Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
-      Schema.Literal("system"),
-    ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-  body: Schema.String,
-  color: Schema.Union([Schema.String, Schema.Null]),
-  pinned: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "MailboxNote" });
+export const MailboxNote = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxNoteId,
+    author: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    body: Schema.String,
+    color: Schema.Union([Schema.String, Schema.Null]),
+    pinned: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MailboxNote" }))();
 export type Mailbox = {
   readonly id: MailboxId;
   readonly namespaceId: NamespaceId | null;
@@ -1020,19 +1063,20 @@ export type Mailbox = {
   readonly endpoints: ReadonlyArray<MailboxEndpoint>;
   readonly updatedAt: string;
 };
-export const Mailbox = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  slug: Schema.String,
-  name: Schema.String,
-  status: MailboxStatus,
-  primaryAddress: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  description: Schema.Union([Schema.String, Schema.Null]),
-  metadata: MailboxMetadata,
-  endpoints: Schema.Array(MailboxEndpoint),
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Mailbox" });
+export const Mailbox = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    slug: Schema.String,
+    name: Schema.String,
+    status: MailboxStatus,
+    primaryAddress: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    metadata: MailboxMetadata,
+    endpoints: Schema.Array(MailboxEndpoint),
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Mailbox" }))();
 export type MailboxSendSnapshot = {
   readonly channel: "email";
   readonly draftRevision: number;
@@ -1050,31 +1094,32 @@ export type MailboxSendSnapshot = {
   readonly conversationId: ConversationId | null;
   readonly inReplyToMessageId: MessageId | null;
 };
-export const MailboxSendSnapshot = /* @__PURE__ */ Schema.Struct({
-  channel: Schema.Literal("email"),
-  draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-  from: Schema.String,
-  fromName: Schema.Union([Schema.String, Schema.Null]),
-  to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-  cc: Schema.Array(Schema.String),
-  bcc: Schema.Array(Schema.String),
-  replyTo: Schema.Array(Schema.String),
-  subject: Schema.String,
-  text: Schema.Union([Schema.String, Schema.Null]),
-  html: Schema.Union([Schema.String, Schema.Null]),
-  attachments: Schema.Array(EmailAttachment).check(
-    Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-  ),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  conversationId: Schema.Union([ConversationId, Schema.Null]),
-  inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-}).annotate({ identifier: "MailboxSendSnapshot" });
+export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("email"),
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    from: Schema.String,
+    fromName: Schema.Union([Schema.String, Schema.Null]),
+    to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+    cc: Schema.Array(Schema.String),
+    bcc: Schema.Array(Schema.String),
+    replyTo: Schema.Array(Schema.String),
+    subject: Schema.String,
+    text: Schema.Union([Schema.String, Schema.Null]),
+    html: Schema.Union([Schema.String, Schema.Null]),
+    attachments: Schema.Array(EmailAttachment).check(
+      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+    ),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    conversationId: Schema.Union([ConversationId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+  }).annotate({ identifier: "MailboxSendSnapshot" }))();
 export type MailboxDraft = {
   readonly id: MailboxDraftId;
   readonly channel: "email";
@@ -1094,43 +1139,46 @@ export type MailboxDraft = {
   readonly text: string | null;
   readonly attachments: ReadonlyArray<EmailAttachment>;
 };
-export const MailboxDraft = /* @__PURE__ */ Schema.Struct({
-  id: MailboxDraftId,
-  channel: Schema.Literal("email"),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-  state: MailboxDraftState,
-  lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
-  to: Schema.Array(Schema.String),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
-  cc: Schema.Array(Schema.String),
-  bcc: Schema.Array(Schema.String),
-  replyTo: Schema.Array(Schema.String),
-  html: Schema.Union([Schema.String, Schema.Null]),
-  text: Schema.Union([Schema.String, Schema.Null]),
-  attachments: Schema.Array(EmailAttachment).check(
-    Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-  ),
-}).annotate({ identifier: "MailboxDraft" });
+export const MailboxDraft = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxDraftId,
+    channel: Schema.Literal("email"),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+    state: MailboxDraftState,
+    lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
+    to: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    cc: Schema.Array(Schema.String),
+    bcc: Schema.Array(Schema.String),
+    replyTo: Schema.Array(Schema.String),
+    html: Schema.Union([Schema.String, Schema.Null]),
+    text: Schema.Union([Schema.String, Schema.Null]),
+    attachments: Schema.Array(EmailAttachment).check(
+      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+    ),
+  }).annotate({ identifier: "MailboxDraft" }))();
 export type MailboxPage = {
   readonly items: ReadonlyArray<MailboxSummary>;
   readonly nextCursor: string | null;
 };
-export const MailboxPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxPage" });
+export const MailboxPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxPage" }))();
 export type MailboxQuarantinePage = {
   readonly items: ReadonlyArray<MailboxQuarantinedMessage>;
   readonly nextCursor: string | null;
 };
-export const MailboxQuarantinePage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxQuarantinedMessage),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxQuarantinePage" });
+export const MailboxQuarantinePage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxQuarantinedMessage),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxQuarantinePage" }))();
 export type MailboxNonSendAction = {
   readonly id: MailboxActionId;
   readonly source:
@@ -1172,63 +1220,64 @@ export type MailboxNonSendAction = {
     | "failed";
   readonly tool: MailboxToolCall | null;
 };
-export const MailboxNonSendAction = /* @__PURE__ */ Schema.Struct({
-  id: MailboxActionId,
-  source: Schema.Union([
-    Schema.Literal("humanUi"),
-    Schema.Literal("externalApi"),
-    Schema.Literal("aiSdkTool"),
-    Schema.Literal("extension"),
-    Schema.Literal("externalAgent"),
-    Schema.Literal("samvaManagedAgent"),
-    Schema.Literal("system"),
-  ]),
-  proposedBy: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
+export const MailboxNonSendAction = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxActionId,
+    source: Schema.Union([
+      Schema.Literal("humanUi"),
+      Schema.Literal("externalApi"),
+      Schema.Literal("aiSdkTool"),
       Schema.Literal("extension"),
       Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
+      Schema.Literal("samvaManagedAgent"),
       Schema.Literal("system"),
     ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  draftId: Schema.Union([MailboxDraftId, Schema.Null]),
-  decision: Schema.Union([MailboxActionDecision, Schema.Null]),
-  resolution: Schema.Union([MailboxActionResolution, Schema.Null]).annotate({
-    description:
-      "How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.",
-  }),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  type: Schema.Union([
-    Schema.Literal("updateDraft"),
-    Schema.Literal("createNote"),
-    Schema.Literal("assignThread"),
-    Schema.Literal("changeThreadState"),
-    Schema.Literal("call"),
-    Schema.Literal("extensionRequest"),
-    Schema.Literal("toolCall"),
-  ]),
-  state: Schema.Union([
-    Schema.Literal("proposed"),
-    Schema.Literal("allowed"),
-    Schema.Literal("approvalRequired"),
-    Schema.Literal("policyDenied"),
-    Schema.Literal("approved"),
-    Schema.Literal("approvalDenied"),
-    Schema.Literal("executing"),
-    Schema.Literal("executed"),
-    Schema.Literal("failed"),
-  ]),
-  tool: Schema.Union([MailboxToolCall, Schema.Null]).annotate({
-    description:
-      "The tool a `toolCall` runs, with its arguments and their hash; an approval covers exactly this call. Null for every other action type.",
-  }),
-}).annotate({ identifier: "MailboxNonSendAction" });
+    proposedBy: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    draftId: Schema.Union([MailboxDraftId, Schema.Null]),
+    decision: Schema.Union([MailboxActionDecision, Schema.Null]),
+    resolution: Schema.Union([MailboxActionResolution, Schema.Null]).annotate({
+      description:
+        "How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.",
+    }),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    type: Schema.Union([
+      Schema.Literal("updateDraft"),
+      Schema.Literal("createNote"),
+      Schema.Literal("assignThread"),
+      Schema.Literal("changeThreadState"),
+      Schema.Literal("call"),
+      Schema.Literal("extensionRequest"),
+      Schema.Literal("toolCall"),
+    ]),
+    state: Schema.Union([
+      Schema.Literal("proposed"),
+      Schema.Literal("allowed"),
+      Schema.Literal("approvalRequired"),
+      Schema.Literal("policyDenied"),
+      Schema.Literal("approved"),
+      Schema.Literal("approvalDenied"),
+      Schema.Literal("executing"),
+      Schema.Literal("executed"),
+      Schema.Literal("failed"),
+    ]),
+    tool: Schema.Union([MailboxToolCall, Schema.Null]).annotate({
+      description:
+        "The tool a `toolCall` runs, with its arguments and their hash; an approval covers exactly this call. Null for every other action type.",
+    }),
+  }).annotate({ identifier: "MailboxNonSendAction" }))();
 export type MailboxPendingSendReceipt = {
   readonly actionId: MailboxActionId;
   readonly draftId: MailboxDraftId | null;
@@ -1265,114 +1314,125 @@ export type MailboxPendingSendReceipt = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const MailboxPendingSendReceipt = /* @__PURE__ */ Schema.Struct({
-  actionId: MailboxActionId,
-  draftId: Schema.Union([MailboxDraftId, Schema.Null]),
-  messageId: Schema.Union([MessageId, Schema.Null]),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  state: Schema.Union([
-    Schema.Literal("approvalRequired"),
-    Schema.Literal("queued"),
-    Schema.Literal("accepted"),
-    Schema.Literal("completed"),
-    Schema.Literal("notSent"),
-    Schema.Literal("uncertain"),
-  ]),
-  acceptedAt: Schema.Union([Schema.String, Schema.Null]),
-  waitReason: Schema.Union([
-    Schema.Union([
-      Schema.Literal("rate"),
-      Schema.Literal("daily-quota"),
-      Schema.Literal("domain-health"),
-      Schema.Literal("sending-paused"),
-      Schema.Literal("upstream-unavailable"),
-      Schema.Literal("retry"),
-      Schema.Literal("campaign-paused"),
-      Schema.Literal("domain-warming"),
-      Schema.Literal("onboarding-review"),
-      Schema.Literal("content-review"),
-      Schema.Literal("screening-unavailable"),
+export const MailboxPendingSendReceipt = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    actionId: MailboxActionId,
+    draftId: Schema.Union([MailboxDraftId, Schema.Null]),
+    messageId: Schema.Union([MessageId, Schema.Null]),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    state: Schema.Union([
+      Schema.Literal("approvalRequired"),
+      Schema.Literal("queued"),
+      Schema.Literal("accepted"),
+      Schema.Literal("completed"),
+      Schema.Literal("notSent"),
+      Schema.Literal("uncertain"),
     ]),
-    Schema.Null,
-  ]),
-  reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
-  skippedRecipients: Schema.Array(SkippedRecipient),
-  executeUntil: Schema.Union([Schema.String, Schema.Null]),
-  retryAt: Schema.Union([Schema.String, Schema.Null]),
-  problem: Schema.Union([MailboxSendOutcome, Schema.Null]),
-  retryEligible: Schema.Boolean,
-  decision: Schema.Union([MailboxActionDecision, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "MailboxPendingSendReceipt" });
+    acceptedAt: Schema.Union([Schema.String, Schema.Null]),
+    waitReason: Schema.Union([
+      Schema.Union([
+        Schema.Literal("rate"),
+        Schema.Literal("daily-quota"),
+        Schema.Literal("domain-health"),
+        Schema.Literal("sending-paused"),
+        Schema.Literal("upstream-unavailable"),
+        Schema.Literal("retry"),
+        Schema.Literal("campaign-paused"),
+        Schema.Literal("domain-warming"),
+        Schema.Literal("onboarding-review"),
+        Schema.Literal("content-review"),
+        Schema.Literal("screening-unavailable"),
+      ]),
+      Schema.Null,
+    ]),
+    reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
+    skippedRecipients: Schema.Array(SkippedRecipient),
+    executeUntil: Schema.Union([Schema.String, Schema.Null]),
+    retryAt: Schema.Union([Schema.String, Schema.Null]),
+    problem: Schema.Union([MailboxSendOutcome, Schema.Null]),
+    retryEligible: Schema.Boolean,
+    decision: Schema.Union([MailboxActionDecision, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MailboxPendingSendReceipt" }))();
 export type MailboxDraftPage = {
   readonly items: ReadonlyArray<MailboxDraftSummary>;
   readonly nextCursor: string | null;
 };
-export const MailboxDraftPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxDraftSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxDraftPage" });
+export const MailboxDraftPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxDraftSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxDraftPage" }))();
 export type MailboxEventPage = {
   readonly items: ReadonlyArray<MailboxEvent>;
   readonly nextCursor: string | null;
 };
-export const MailboxEventPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxEvent),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxEventPage" });
+export const MailboxEventPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxEvent),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxEventPage" }))();
 export type MailboxFolderCountList = { readonly items: ReadonlyArray<MailboxFolderCount> };
-export const MailboxFolderCountList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxFolderCount),
-}).annotate({ identifier: "MailboxFolderCountList" });
+export const MailboxFolderCountList = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(MailboxFolderCount) }).annotate({
+    identifier: "MailboxFolderCountList",
+  }))();
 export type MailboxGrantPage = {
   readonly items: ReadonlyArray<MailboxGrant>;
   readonly nextCursor: string | null;
 };
-export const MailboxGrantPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxGrant),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxGrantPage" });
+export const MailboxGrantPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxGrant),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxGrantPage" }))();
 export type MailboxLabelList = { readonly items: ReadonlyArray<MailboxLabel> };
-export const MailboxLabelList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxLabel),
-}).annotate({ identifier: "MailboxLabelList" });
+export const MailboxLabelList = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(MailboxLabel) }).annotate({
+    identifier: "MailboxLabelList",
+  }))();
 export type MailboxMessagePage = {
   readonly items: ReadonlyArray<MailboxMessageSummary>;
   readonly nextCursor: string | null;
 };
-export const MailboxMessagePage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxMessageSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxMessagePage" });
+export const MailboxMessagePage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxMessageSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxMessagePage" }))();
 export type MailboxThreadContentPage = {
   readonly items: ReadonlyArray<MailboxMessage>;
   readonly nextCursor: string | null;
 };
-export const MailboxThreadContentPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxMessage),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxThreadContentPage" });
+export const MailboxThreadContentPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxMessage),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxThreadContentPage" }))();
 export type MailboxPolicyList = { readonly items: ReadonlyArray<MailboxPolicy> };
-export const MailboxPolicyList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxPolicy),
-}).annotate({ identifier: "MailboxPolicyList" });
+export const MailboxPolicyList = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(MailboxPolicy) }).annotate({
+    identifier: "MailboxPolicyList",
+  }))();
 export type MailboxThreadPage = {
   readonly items: ReadonlyArray<MailboxThreadSummary>;
   readonly nextCursor: string | null;
 };
-export const MailboxThreadPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxThreadSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxThreadPage" });
+export const MailboxThreadPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxThreadSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxThreadPage" }))();
 export type MailboxNotePage = {
   readonly items: ReadonlyArray<MailboxNote>;
   readonly nextCursor: string | null;
 };
-export const MailboxNotePage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxNote),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxNotePage" });
+export const MailboxNotePage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxNote),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxNotePage" }))();
 export type MailboxSendAction = {
   readonly id: MailboxActionId;
   readonly source:
@@ -1405,92 +1465,95 @@ export type MailboxSendAction = {
   readonly send: MailboxSendReceipt;
   readonly intent: MailboxSendSnapshot | null;
 };
-export const MailboxSendAction = /* @__PURE__ */ Schema.Struct({
-  id: MailboxActionId,
-  source: Schema.Union([
-    Schema.Literal("humanUi"),
-    Schema.Literal("externalApi"),
-    Schema.Literal("aiSdkTool"),
-    Schema.Literal("extension"),
-    Schema.Literal("externalAgent"),
-    Schema.Literal("samvaManagedAgent"),
-    Schema.Literal("system"),
-  ]),
-  proposedBy: Schema.Struct({
-    kind: Schema.Union([
-      Schema.Literal("user"),
-      Schema.Literal("apiKey"),
+export const MailboxSendAction = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxActionId,
+    source: Schema.Union([
+      Schema.Literal("humanUi"),
+      Schema.Literal("externalApi"),
+      Schema.Literal("aiSdkTool"),
       Schema.Literal("extension"),
       Schema.Literal("externalAgent"),
-      Schema.Literal("samvaAgent"),
+      Schema.Literal("samvaManagedAgent"),
       Schema.Literal("system"),
     ]),
-    id: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-  threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-  draftId: Schema.Union([MailboxDraftId, Schema.Null]),
-  decision: Schema.Union([MailboxActionDecision, Schema.Null]),
-  resolution: Schema.Union([MailboxActionResolution, Schema.Null]).annotate({
-    description:
-      "How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.",
-  }),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  type: Schema.Union([Schema.Literal("sendMessage"), Schema.Literal("reply")]),
-  state: Schema.Union([
-    Schema.Literal("approvalRequired"),
-    Schema.Literal("queued"),
-    Schema.Literal("accepted"),
-    Schema.Literal("completed"),
-    Schema.Literal("notSent"),
-    Schema.Literal("uncertain"),
-  ]),
-  send: MailboxSendReceipt,
-  intent: Schema.Union([MailboxSendSnapshot, Schema.Null]),
-}).annotate({ identifier: "MailboxSendAction" });
+    proposedBy: Schema.Struct({
+      kind: Schema.Union([
+        Schema.Literal("user"),
+        Schema.Literal("apiKey"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaAgent"),
+        Schema.Literal("system"),
+      ]),
+      id: Schema.String,
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    draftId: Schema.Union([MailboxDraftId, Schema.Null]),
+    decision: Schema.Union([MailboxActionDecision, Schema.Null]),
+    resolution: Schema.Union([MailboxActionResolution, Schema.Null]).annotate({
+      description:
+        "How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.",
+    }),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    type: Schema.Union([Schema.Literal("sendMessage"), Schema.Literal("reply")]),
+    state: Schema.Union([
+      Schema.Literal("approvalRequired"),
+      Schema.Literal("queued"),
+      Schema.Literal("accepted"),
+      Schema.Literal("completed"),
+      Schema.Literal("notSent"),
+      Schema.Literal("uncertain"),
+    ]),
+    send: MailboxSendReceipt,
+    intent: Schema.Union([MailboxSendSnapshot, Schema.Null]),
+  }).annotate({ identifier: "MailboxSendAction" }))();
 export type MailboxAction = MailboxSendAction | MailboxNonSendAction;
-export const MailboxAction = /* @__PURE__ */ Schema.Union([
-  MailboxSendAction,
-  MailboxNonSendAction,
-]).annotate({ identifier: "MailboxAction" });
+export const MailboxAction = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendAction, MailboxNonSendAction]).annotate({
+    identifier: "MailboxAction",
+  }))();
 export type MailboxPendingAction = MailboxSendAction | MailboxNonSendAction;
-export const MailboxPendingAction = /* @__PURE__ */ Schema.Union([
-  MailboxSendAction,
-  MailboxNonSendAction,
-]).annotate({ identifier: "MailboxPendingAction" });
+export const MailboxPendingAction = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendAction, MailboxNonSendAction]).annotate({
+    identifier: "MailboxPendingAction",
+  }))();
 export type MailboxActionPage = {
   readonly items: ReadonlyArray<MailboxAction>;
   readonly nextCursor: string | null;
 };
-export const MailboxActionPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MailboxAction),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MailboxActionPage" });
+export const MailboxActionPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxAction),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxActionPage" }))();
 export type MailboxesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const MailboxesListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const MailboxesListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MailboxesList200 = MailboxPage;
 export const MailboxesList200 = MailboxPage;
 export type MailboxesList401 = UnauthorizedError;
@@ -1510,13 +1573,14 @@ export type MailboxesCreateRequestJson = {
   readonly slug?: string | null;
   readonly metadata?: MailboxMetadata | null;
 };
-export const MailboxesCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  endpoint: CreateMailboxEndpointPayload,
-  name: Schema.String,
-  slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  metadata: Schema.optionalKey(Schema.Union([MailboxMetadata, Schema.Null])),
-});
+export const MailboxesCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    endpoint: CreateMailboxEndpointPayload,
+    name: Schema.String,
+    slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    metadata: Schema.optionalKey(Schema.Union([MailboxMetadata, Schema.Null])),
+  }))();
 export type MailboxesCreate201 = Mailbox;
 export const MailboxesCreate201 = Mailbox;
 export type MailboxesCreate401 = UnauthorizedError;
@@ -1524,7 +1588,8 @@ export const MailboxesCreate401 = UnauthorizedError;
 export type MailboxesCreate402 = PaymentRequiredError;
 export const MailboxesCreate402 = PaymentRequiredError;
 export type MailboxesCreate403 = FlagDisabledError | ForbiddenError;
-export const MailboxesCreate403 = /* @__PURE__ */ Schema.Union([FlagDisabledError, ForbiddenError]);
+export const MailboxesCreate403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type MailboxesCreate404 = ResourceNotFoundError;
 export const MailboxesCreate404 = ResourceNotFoundError;
 export type MailboxesCreate409 = ConflictError;
@@ -1538,7 +1603,7 @@ export const MailboxesCreate502 = BillingProviderError;
 export type MailboxesCreate504 = GatewayTimeoutError;
 export const MailboxesCreate504 = GatewayTimeoutError;
 export type MailboxesGetPathParams = { readonly id: MailboxId };
-export const MailboxesGetPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesGet200 = Mailbox;
 export const MailboxesGet200 = Mailbox;
 export type MailboxesGet401 = UnauthorizedError;
@@ -1554,7 +1619,7 @@ export const MailboxesGet500 = InternalError;
 export type MailboxesGet504 = GatewayTimeoutError;
 export const MailboxesGet504 = GatewayTimeoutError;
 export type MailboxesRemovePathParams = { readonly id: MailboxId };
-export const MailboxesRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesRemove200 = SuccessResponse;
 export const MailboxesRemove200 = SuccessResponse;
 export type MailboxesRemove401 = UnauthorizedError;
@@ -1572,22 +1637,23 @@ export const MailboxesRemove502 = BillingProviderError;
 export type MailboxesRemove504 = GatewayTimeoutError;
 export const MailboxesRemove504 = GatewayTimeoutError;
 export type MailboxesUpdatePathParams = { readonly id: MailboxId };
-export const MailboxesUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesUpdateRequestJson = {
   readonly name?: string | null;
   readonly metadata?: MailboxMetadataPatch | null;
 };
-export const MailboxesUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  metadata: Schema.optionalKey(Schema.Union([MailboxMetadataPatch, Schema.Null])),
-});
+export const MailboxesUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    metadata: Schema.optionalKey(Schema.Union([MailboxMetadataPatch, Schema.Null])),
+  }))();
 export type MailboxesUpdate200 = Mailbox;
 export const MailboxesUpdate200 = Mailbox;
 export type MailboxesUpdate401 = UnauthorizedError;
@@ -1603,7 +1669,8 @@ export const MailboxesUpdate500 = InternalError;
 export type MailboxesUpdate504 = GatewayTimeoutError;
 export const MailboxesUpdate504 = GatewayTimeoutError;
 export type MailboxesListActionsPathParams = { readonly id: MailboxId };
-export const MailboxesListActionsPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListActionsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListActionsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -1627,46 +1694,47 @@ export type MailboxesListActionsQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const MailboxesListActionsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
-  state: Schema.optionalKey(
-    Schema.Union([
+export const MailboxesListActionsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("proposed"),
-        Schema.Literal("allowed"),
-        Schema.Literal("approvalRequired"),
-        Schema.Literal("policyDenied"),
-        Schema.Literal("approved"),
-        Schema.Literal("approvalDenied"),
-        Schema.Literal("executing"),
-        Schema.Literal("executed"),
-        Schema.Literal("failed"),
-        Schema.Literal("queued"),
-        Schema.Literal("accepted"),
-        Schema.Literal("completed"),
-        Schema.Literal("notSent"),
-        Schema.Literal("uncertain"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
+    state: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("proposed"),
+          Schema.Literal("allowed"),
+          Schema.Literal("approvalRequired"),
+          Schema.Literal("policyDenied"),
+          Schema.Literal("approved"),
+          Schema.Literal("approvalDenied"),
+          Schema.Literal("executing"),
+          Schema.Literal("executed"),
+          Schema.Literal("failed"),
+          Schema.Literal("queued"),
+          Schema.Literal("accepted"),
+          Schema.Literal("completed"),
+          Schema.Literal("notSent"),
+          Schema.Literal("uncertain"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MailboxesListActions200 = MailboxActionPage;
 export const MailboxesListActions200 = MailboxActionPage;
 export type MailboxesListActions401 = UnauthorizedError;
@@ -1685,10 +1753,8 @@ export type MailboxesGetActionPathParams = {
   readonly id: MailboxId;
   readonly actionId: MailboxActionId;
 };
-export const MailboxesGetActionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  actionId: MailboxActionId,
-});
+export const MailboxesGetActionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, actionId: MailboxActionId }))();
 export type MailboxesGetAction200 = MailboxAction;
 export const MailboxesGetAction200 = MailboxAction;
 export type MailboxesGetAction401 = UnauthorizedError;
@@ -1707,10 +1773,8 @@ export type MailboxesApproveActionPathParams = {
   readonly id: MailboxId;
   readonly actionId: MailboxActionId;
 };
-export const MailboxesApproveActionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  actionId: MailboxActionId,
-});
+export const MailboxesApproveActionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, actionId: MailboxActionId }))();
 export type MailboxesApproveAction200 = MailboxAction;
 export const MailboxesApproveAction200 = MailboxAction;
 export type MailboxesApproveAction202 = MailboxPendingAction;
@@ -1724,19 +1788,18 @@ export type MailboxesApproveAction403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesApproveAction403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesApproveAction403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesApproveAction404 = ResourceNotFoundError;
 export const MailboxesApproveAction404 = ResourceNotFoundError;
 export type MailboxesApproveAction409 = MailboxSendConflictError | ConflictError;
-export const MailboxesApproveAction409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesApproveAction409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesApproveAction422 = ValidationError;
 export const MailboxesApproveAction422 = ValidationError;
 export type MailboxesApproveAction429 = RateLimitedError;
@@ -1753,10 +1816,8 @@ export type MailboxesCancelActionPathParams = {
   readonly id: MailboxId;
   readonly actionId: MailboxActionId;
 };
-export const MailboxesCancelActionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  actionId: MailboxActionId,
-});
+export const MailboxesCancelActionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, actionId: MailboxActionId }))();
 export type MailboxesCancelAction200 = MailboxSendReceipt;
 export const MailboxesCancelAction200 = MailboxSendReceipt;
 export type MailboxesCancelAction202 = MailboxPendingSendReceipt;
@@ -1770,19 +1831,18 @@ export type MailboxesCancelAction403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesCancelAction403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesCancelAction403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesCancelAction404 = ResourceNotFoundError;
 export const MailboxesCancelAction404 = ResourceNotFoundError;
 export type MailboxesCancelAction409 = MailboxSendConflictError | ConflictError;
-export const MailboxesCancelAction409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesCancelAction409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesCancelAction422 = ValidationError;
 export const MailboxesCancelAction422 = ValidationError;
 export type MailboxesCancelAction429 = RateLimitedError;
@@ -1799,14 +1859,11 @@ export type MailboxesDenyActionPathParams = {
   readonly id: MailboxId;
   readonly actionId: MailboxActionId;
 };
-export const MailboxesDenyActionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  actionId: MailboxActionId,
-});
+export const MailboxesDenyActionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, actionId: MailboxActionId }))();
 export type MailboxesDenyActionRequestJson = { readonly reason: string };
-export const MailboxesDenyActionRequestJson = /* @__PURE__ */ Schema.Struct({
-  reason: Schema.String,
-});
+export const MailboxesDenyActionRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ reason: Schema.String }))();
 export type MailboxesDenyAction200 = MailboxAction;
 export const MailboxesDenyAction200 = MailboxAction;
 export type MailboxesDenyAction401 = UnauthorizedError;
@@ -1816,10 +1873,8 @@ export const MailboxesDenyAction403 = ForbiddenError;
 export type MailboxesDenyAction404 = ResourceNotFoundError;
 export const MailboxesDenyAction404 = ResourceNotFoundError;
 export type MailboxesDenyAction409 = ConflictError | MailboxSendConflictError;
-export const MailboxesDenyAction409 = /* @__PURE__ */ Schema.Union([
-  ConflictError,
-  MailboxSendConflictError,
-]);
+export const MailboxesDenyAction409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, MailboxSendConflictError]))();
 export type MailboxesDenyAction422 = ValidationError;
 export const MailboxesDenyAction422 = ValidationError;
 export type MailboxesDenyAction500 = InternalError;
@@ -1830,10 +1885,8 @@ export type MailboxesRetryActionPathParams = {
   readonly id: MailboxId;
   readonly actionId: MailboxActionId;
 };
-export const MailboxesRetryActionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  actionId: MailboxActionId,
-});
+export const MailboxesRetryActionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, actionId: MailboxActionId }))();
 export type MailboxesRetryAction200 = MailboxSendReceipt;
 export const MailboxesRetryAction200 = MailboxSendReceipt;
 export type MailboxesRetryAction202 = MailboxPendingSendReceipt;
@@ -1847,19 +1900,18 @@ export type MailboxesRetryAction403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesRetryAction403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesRetryAction403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesRetryAction404 = ResourceNotFoundError;
 export const MailboxesRetryAction404 = ResourceNotFoundError;
 export type MailboxesRetryAction409 = MailboxSendConflictError | ConflictError;
-export const MailboxesRetryAction409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesRetryAction409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesRetryAction422 = ValidationError;
 export const MailboxesRetryAction422 = ValidationError;
 export type MailboxesRetryAction429 = RateLimitedError;
@@ -1873,15 +1925,17 @@ export const MailboxesRetryAction503 = SenderNotReadyError;
 export type MailboxesRetryAction504 = GatewayTimeoutError;
 export const MailboxesRetryAction504 = GatewayTimeoutError;
 export type MailboxesGetAgentActivityPathParams = { readonly id: MailboxId };
-export const MailboxesGetAgentActivityPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesGetAgentActivityPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesGetAgentActivityQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const MailboxesGetAgentActivityQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const MailboxesGetAgentActivityQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MailboxesGetAgentActivity200 = MailboxAgentActivity;
 export const MailboxesGetAgentActivity200 = MailboxAgentActivity;
 export type MailboxesGetAgentActivity401 = UnauthorizedError;
@@ -1897,29 +1951,31 @@ export const MailboxesGetAgentActivity500 = InternalError;
 export type MailboxesGetAgentActivity504 = GatewayTimeoutError;
 export const MailboxesGetAgentActivity504 = GatewayTimeoutError;
 export type MailboxesListDraftsPathParams = { readonly id: MailboxId };
-export const MailboxesListDraftsPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListDraftsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListDraftsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly threadId?: MailboxThreadId | null;
 };
-export const MailboxesListDraftsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
-});
+export const MailboxesListDraftsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
+  }))();
 export type MailboxesListDrafts200 = MailboxDraftPage;
 export const MailboxesListDrafts200 = MailboxDraftPage;
 export type MailboxesListDrafts401 = UnauthorizedError;
@@ -1935,7 +1991,8 @@ export const MailboxesListDrafts500 = InternalError;
 export type MailboxesListDrafts504 = GatewayTimeoutError;
 export const MailboxesListDrafts504 = GatewayTimeoutError;
 export type MailboxesCreateDraftPathParams = { readonly id: MailboxId };
-export const MailboxesCreateDraftPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesCreateDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesCreateDraftRequestJson = {
   readonly channel?: "email" | null;
   readonly endpointId?: MailboxEndpointId | null;
@@ -1949,26 +2006,27 @@ export type MailboxesCreateDraftRequestJson = {
   readonly attachments?: ReadonlyArray<EmailAttachment> | null;
   readonly inReplyToMessageId?: MessageId | null;
 };
-export const MailboxesCreateDraftRequestJson = /* @__PURE__ */ Schema.Struct({
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  endpointId: Schema.optionalKey(Schema.Union([MailboxEndpointId, Schema.Null])),
-  to: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  attachments: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(EmailAttachment).check(
-        Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
-});
+export const MailboxesCreateDraftRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    endpointId: Schema.optionalKey(Schema.Union([MailboxEndpointId, Schema.Null])),
+    to: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(EmailAttachment).check(
+          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
+  }))();
 export type MailboxesCreateDraft201 = MailboxDraft;
 export const MailboxesCreateDraft201 = MailboxDraft;
 export type MailboxesCreateDraft401 = UnauthorizedError;
@@ -1987,10 +2045,8 @@ export type MailboxesGetDraftPathParams = {
   readonly id: MailboxId;
   readonly draftId: MailboxDraftId;
 };
-export const MailboxesGetDraftPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  draftId: MailboxDraftId,
-});
+export const MailboxesGetDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesGetDraft200 = MailboxDraft;
 export const MailboxesGetDraft200 = MailboxDraft;
 export type MailboxesGetDraft401 = UnauthorizedError;
@@ -2009,10 +2065,8 @@ export type MailboxesDeleteDraftPathParams = {
   readonly id: MailboxId;
   readonly draftId: MailboxDraftId;
 };
-export const MailboxesDeleteDraftPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  draftId: MailboxDraftId,
-});
+export const MailboxesDeleteDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesDeleteDraft200 = SuccessResponse;
 export const MailboxesDeleteDraft200 = SuccessResponse;
 export type MailboxesDeleteDraft401 = UnauthorizedError;
@@ -2031,10 +2085,8 @@ export type MailboxesUpdateDraftPathParams = {
   readonly id: MailboxId;
   readonly draftId: MailboxDraftId;
 };
-export const MailboxesUpdateDraftPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  draftId: MailboxDraftId,
-});
+export const MailboxesUpdateDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesUpdateDraftRequestJson = {
   readonly to?: ReadonlyArray<string> | null;
   readonly cc?: ReadonlyArray<string> | null | null;
@@ -2045,34 +2097,39 @@ export type MailboxesUpdateDraftRequestJson = {
   readonly html?: string | null | null;
   readonly attachments?: ReadonlyArray<EmailAttachment> | null | null;
 };
-export const MailboxesUpdateDraftRequestJson = /* @__PURE__ */ Schema.Struct({
-  to: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  cc: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-  ),
-  bcc: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-  ),
-  replyTo: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-  ),
-  subject: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  text: Schema.optionalKey(Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null])),
-  attachments: Schema.optionalKey(
-    Schema.Union([
+export const MailboxesUpdateDraftRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    to: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    cc: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+    ),
+    bcc: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+    ),
+    replyTo: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+    ),
+    subject: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    text: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    html: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    attachments: Schema.optionalKey(
       Schema.Union([
-        Schema.Array(EmailAttachment).check(
-          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-        ),
+        Schema.Union([
+          Schema.Array(EmailAttachment).check(
+            Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+          ),
+          Schema.Null,
+        ]),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+  }))();
 export type MailboxesUpdateDraft200 = MailboxDraft;
 export const MailboxesUpdateDraft200 = MailboxDraft;
 export type MailboxesUpdateDraft401 = UnauthorizedError;
@@ -2093,26 +2150,25 @@ export type MailboxesSendDraftPathParams = {
   readonly id: MailboxId;
   readonly draftId: MailboxDraftId;
 };
-export const MailboxesSendDraftPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  draftId: MailboxDraftId,
-});
+export const MailboxesSendDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesSendDraftHeaders = { readonly "idempotency-key"?: string | null };
-export const MailboxesSendDraftHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-      }).check(
-        Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesSendDraftHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+        }).check(
+          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
+            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesSendDraft200 = MailboxSendReceipt;
 export const MailboxesSendDraft200 = MailboxSendReceipt;
 export type MailboxesSendDraft202 = MailboxPendingSendReceipt;
@@ -2126,19 +2182,18 @@ export type MailboxesSendDraft403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesSendDraft403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesSendDraft403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesSendDraft404 = ResourceNotFoundError;
 export const MailboxesSendDraft404 = ResourceNotFoundError;
 export type MailboxesSendDraft409 = MailboxSendConflictError | ConflictError;
-export const MailboxesSendDraft409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesSendDraft409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesSendDraft422 = ValidationError;
 export const MailboxesSendDraft422 = ValidationError;
 export type MailboxesSendDraft429 = RateLimitedError;
@@ -2152,26 +2207,26 @@ export const MailboxesSendDraft503 = SenderNotReadyError;
 export type MailboxesSendDraft504 = GatewayTimeoutError;
 export const MailboxesSendDraft504 = GatewayTimeoutError;
 export type MailboxesCreateEndpointPathParams = { readonly id: MailboxId };
-export const MailboxesCreateEndpointPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesCreateEndpointPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesCreateEndpointRequestJson = {
   readonly channel: MailboxChannel;
   readonly address: string;
   readonly displayName?: string | null;
 };
-export const MailboxesCreateEndpointRequestJson = /* @__PURE__ */ Schema.Struct({
-  channel: MailboxChannel,
-  address: Schema.String,
-  displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const MailboxesCreateEndpointRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: MailboxChannel,
+    address: Schema.String,
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MailboxesCreateEndpoint201 = Mailbox;
 export const MailboxesCreateEndpoint201 = Mailbox;
 export type MailboxesCreateEndpoint401 = UnauthorizedError;
 export const MailboxesCreateEndpoint401 = UnauthorizedError;
 export type MailboxesCreateEndpoint403 = FlagDisabledError | ForbiddenError;
-export const MailboxesCreateEndpoint403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  ForbiddenError,
-]);
+export const MailboxesCreateEndpoint403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type MailboxesCreateEndpoint404 = ResourceNotFoundError;
 export const MailboxesCreateEndpoint404 = ResourceNotFoundError;
 export type MailboxesCreateEndpoint409 = ConflictError;
@@ -2186,10 +2241,8 @@ export type MailboxesRemoveEndpointPathParams = {
   readonly id: MailboxId;
   readonly endpointId: MailboxEndpointId;
 };
-export const MailboxesRemoveEndpointPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  endpointId: MailboxEndpointId,
-});
+export const MailboxesRemoveEndpointPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, endpointId: MailboxEndpointId }))();
 export type MailboxesRemoveEndpoint200 = Mailbox;
 export const MailboxesRemoveEndpoint200 = Mailbox;
 export type MailboxesRemoveEndpoint401 = UnauthorizedError;
@@ -2208,20 +2261,19 @@ export type MailboxesUpdateEndpointPathParams = {
   readonly id: MailboxId;
   readonly endpointId: MailboxEndpointId;
 };
-export const MailboxesUpdateEndpointPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  endpointId: MailboxEndpointId,
-});
+export const MailboxesUpdateEndpointPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, endpointId: MailboxEndpointId }))();
 export type MailboxesUpdateEndpointRequestJson = {
   readonly displayName?: string | null | null;
   readonly default?: true | null;
 };
-export const MailboxesUpdateEndpointRequestJson = /* @__PURE__ */ Schema.Struct({
-  displayName: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  default: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
-});
+export const MailboxesUpdateEndpointRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    displayName: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    default: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
+  }))();
 export type MailboxesUpdateEndpoint200 = Mailbox;
 export const MailboxesUpdateEndpoint200 = Mailbox;
 export type MailboxesUpdateEndpoint401 = UnauthorizedError;
@@ -2237,31 +2289,33 @@ export const MailboxesUpdateEndpoint500 = InternalError;
 export type MailboxesUpdateEndpoint504 = GatewayTimeoutError;
 export const MailboxesUpdateEndpoint504 = GatewayTimeoutError;
 export type MailboxesListEventsPathParams = { readonly id: MailboxId };
-export const MailboxesListEventsPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListEventsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListEventsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const MailboxesListEventsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const MailboxesListEventsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MailboxesListEvents200 = MailboxEventPage;
 export const MailboxesListEvents200 = MailboxEventPage;
 export type MailboxesListEvents401 = UnauthorizedError;
@@ -2277,7 +2331,8 @@ export const MailboxesListEvents500 = InternalError;
 export type MailboxesListEvents504 = GatewayTimeoutError;
 export const MailboxesListEvents504 = GatewayTimeoutError;
 export type MailboxesListFoldersPathParams = { readonly id: MailboxId };
-export const MailboxesListFoldersPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListFoldersPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListFolders200 = MailboxFolderCountList;
 export const MailboxesListFolders200 = MailboxFolderCountList;
 export type MailboxesListFolders401 = UnauthorizedError;
@@ -2293,27 +2348,29 @@ export const MailboxesListFolders500 = InternalError;
 export type MailboxesListFolders504 = GatewayTimeoutError;
 export const MailboxesListFolders504 = GatewayTimeoutError;
 export type MailboxesListGrantsPathParams = { readonly id: MailboxId };
-export const MailboxesListGrantsPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListGrantsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListGrantsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const MailboxesListGrantsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const MailboxesListGrantsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type MailboxesListGrants200 = MailboxGrantPage;
 export const MailboxesListGrants200 = MailboxGrantPage;
 export type MailboxesListGrants401 = UnauthorizedError;
@@ -2329,17 +2386,19 @@ export const MailboxesListGrants500 = InternalError;
 export type MailboxesListGrants504 = GatewayTimeoutError;
 export const MailboxesListGrants504 = GatewayTimeoutError;
 export type MailboxesCreateGrantPathParams = { readonly id: MailboxId };
-export const MailboxesCreateGrantPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesCreateGrantPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesCreateGrantRequestJson = {
   readonly userId: UserId;
   readonly role: MailboxGrantRole;
   readonly sendMode?: MailboxSendMode | null;
 };
-export const MailboxesCreateGrantRequestJson = /* @__PURE__ */ Schema.Struct({
-  userId: UserId,
-  role: MailboxGrantRole,
-  sendMode: Schema.optionalKey(Schema.Union([MailboxSendMode, Schema.Null])),
-});
+export const MailboxesCreateGrantRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    userId: UserId,
+    role: MailboxGrantRole,
+    sendMode: Schema.optionalKey(Schema.Union([MailboxSendMode, Schema.Null])),
+  }))();
 export type MailboxesCreateGrant201 = MailboxGrant;
 export const MailboxesCreateGrant201 = MailboxGrant;
 export type MailboxesCreateGrant401 = UnauthorizedError;
@@ -2360,10 +2419,8 @@ export type MailboxesRevokeGrantPathParams = {
   readonly id: MailboxId;
   readonly grantId: MailboxGrantId;
 };
-export const MailboxesRevokeGrantPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  grantId: MailboxGrantId,
-});
+export const MailboxesRevokeGrantPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, grantId: MailboxGrantId }))();
 export type MailboxesRevokeGrant200 = SuccessResponse;
 export const MailboxesRevokeGrant200 = SuccessResponse;
 export type MailboxesRevokeGrant401 = UnauthorizedError;
@@ -2384,18 +2441,17 @@ export type MailboxesUpdateGrantPathParams = {
   readonly id: MailboxId;
   readonly grantId: MailboxGrantId;
 };
-export const MailboxesUpdateGrantPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  grantId: MailboxGrantId,
-});
+export const MailboxesUpdateGrantPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, grantId: MailboxGrantId }))();
 export type MailboxesUpdateGrantRequestJson = {
   readonly role?: MailboxGrantRole | null;
   readonly sendMode?: MailboxSendMode | null;
 };
-export const MailboxesUpdateGrantRequestJson = /* @__PURE__ */ Schema.Struct({
-  role: Schema.optionalKey(Schema.Union([MailboxGrantRole, Schema.Null])),
-  sendMode: Schema.optionalKey(Schema.Union([MailboxSendMode, Schema.Null])),
-});
+export const MailboxesUpdateGrantRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    role: Schema.optionalKey(Schema.Union([MailboxGrantRole, Schema.Null])),
+    sendMode: Schema.optionalKey(Schema.Union([MailboxSendMode, Schema.Null])),
+  }))();
 export type MailboxesUpdateGrant200 = MailboxGrant;
 export const MailboxesUpdateGrant200 = MailboxGrant;
 export type MailboxesUpdateGrant401 = UnauthorizedError;
@@ -2413,7 +2469,8 @@ export const MailboxesUpdateGrant500 = InternalError;
 export type MailboxesUpdateGrant504 = GatewayTimeoutError;
 export const MailboxesUpdateGrant504 = GatewayTimeoutError;
 export type MailboxesListLabelsPathParams = { readonly id: MailboxId };
-export const MailboxesListLabelsPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListLabelsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListLabels200 = MailboxLabelList;
 export const MailboxesListLabels200 = MailboxLabelList;
 export type MailboxesListLabels401 = UnauthorizedError;
@@ -2429,7 +2486,8 @@ export const MailboxesListLabels500 = InternalError;
 export type MailboxesListLabels504 = GatewayTimeoutError;
 export const MailboxesListLabels504 = GatewayTimeoutError;
 export type MailboxesCreateLabelPathParams = { readonly id: MailboxId };
-export const MailboxesCreateLabelPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesCreateLabelPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesCreateLabelRequestJson = {
   readonly slug: string;
   readonly displayName: string;
@@ -2443,26 +2501,27 @@ export type MailboxesCreateLabelRequestJson = {
     | null
     | null;
 };
-export const MailboxesCreateLabelRequestJson = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String,
-  displayName: Schema.String,
-  color: Schema.optionalKey(
-    Schema.Union([
+export const MailboxesCreateLabelRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String,
+    displayName: Schema.String,
+    color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Literal("billing"),
-          Schema.Literal("domain"),
-          Schema.Literal("agent"),
-          Schema.Literal("routing"),
-          Schema.Literal("important"),
-          Schema.Literal("neutral"),
+          Schema.Union([
+            Schema.Literal("billing"),
+            Schema.Literal("domain"),
+            Schema.Literal("agent"),
+            Schema.Literal("routing"),
+            Schema.Literal("important"),
+            Schema.Literal("neutral"),
+          ]),
+          Schema.Null,
         ]),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+  }))();
 export type MailboxesCreateLabel201 = MailboxLabel;
 export const MailboxesCreateLabel201 = MailboxLabel;
 export type MailboxesCreateLabel401 = UnauthorizedError;
@@ -2483,10 +2542,8 @@ export type MailboxesDeleteLabelPathParams = {
   readonly id: MailboxId;
   readonly labelId: MailboxLabelId;
 };
-export const MailboxesDeleteLabelPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  labelId: MailboxLabelId,
-});
+export const MailboxesDeleteLabelPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, labelId: MailboxLabelId }))();
 export type MailboxesDeleteLabel200 = SuccessResponse;
 export const MailboxesDeleteLabel200 = SuccessResponse;
 export type MailboxesDeleteLabel401 = UnauthorizedError;
@@ -2505,10 +2562,8 @@ export type MailboxesUpdateLabelPathParams = {
   readonly id: MailboxId;
   readonly labelId: MailboxLabelId;
 };
-export const MailboxesUpdateLabelPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  labelId: MailboxLabelId,
-});
+export const MailboxesUpdateLabelPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, labelId: MailboxLabelId }))();
 export type MailboxesUpdateLabelRequestJson = {
   readonly displayName?: string | null;
   readonly color?:
@@ -2521,25 +2576,26 @@ export type MailboxesUpdateLabelRequestJson = {
     | null
     | null;
 };
-export const MailboxesUpdateLabelRequestJson = /* @__PURE__ */ Schema.Struct({
-  displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  color: Schema.optionalKey(
-    Schema.Union([
+export const MailboxesUpdateLabelRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Literal("billing"),
-          Schema.Literal("domain"),
-          Schema.Literal("agent"),
-          Schema.Literal("routing"),
-          Schema.Literal("important"),
-          Schema.Literal("neutral"),
+          Schema.Union([
+            Schema.Literal("billing"),
+            Schema.Literal("domain"),
+            Schema.Literal("agent"),
+            Schema.Literal("routing"),
+            Schema.Literal("important"),
+            Schema.Literal("neutral"),
+          ]),
+          Schema.Null,
         ]),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+  }))();
 export type MailboxesUpdateLabel200 = MailboxLabel;
 export const MailboxesUpdateLabel200 = MailboxLabel;
 export type MailboxesUpdateLabel401 = UnauthorizedError;
@@ -2555,23 +2611,25 @@ export const MailboxesUpdateLabel500 = InternalError;
 export type MailboxesUpdateLabel504 = GatewayTimeoutError;
 export const MailboxesUpdateLabel504 = GatewayTimeoutError;
 export type MailboxesSendMessagePathParams = { readonly id: MailboxId };
-export const MailboxesSendMessagePathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesSendMessagePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesSendMessageHeaders = { readonly "idempotency-key"?: string | null };
-export const MailboxesSendMessageHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-      }).check(
-        Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesSendMessageHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+        }).check(
+          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
+            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesSendMessageRequestJson = {
   readonly channel?: "email" | null;
   readonly to: readonly [string, ...Array<string>];
@@ -2583,26 +2641,27 @@ export type MailboxesSendMessageRequestJson = {
   readonly html?: string | null;
   readonly attachments?: ReadonlyArray<EmailAttachment> | null;
 };
-export const MailboxesSendMessageRequestJson = /* @__PURE__ */ Schema.Struct({
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-  cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  subject: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  attachments: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(EmailAttachment).check(
-        Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesSendMessageRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    subject: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(EmailAttachment).check(
+          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesSendMessage200 = MailboxSendReceipt;
 export const MailboxesSendMessage200 = MailboxSendReceipt;
 export type MailboxesSendMessage202 = MailboxPendingSendReceipt;
@@ -2616,19 +2675,18 @@ export type MailboxesSendMessage403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesSendMessage403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesSendMessage403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesSendMessage404 = ResourceNotFoundError;
 export const MailboxesSendMessage404 = ResourceNotFoundError;
 export type MailboxesSendMessage409 = MailboxSendConflictError | ConflictError;
-export const MailboxesSendMessage409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesSendMessage409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesSendMessage422 = ValidationError;
 export const MailboxesSendMessage422 = ValidationError;
 export type MailboxesSendMessage429 = RateLimitedError;
@@ -2645,10 +2703,8 @@ export type MailboxesGetMessagePathParams = {
   readonly id: MailboxId;
   readonly messageId: MessageId;
 };
-export const MailboxesGetMessagePathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesGetMessagePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesGetMessage200 = MailboxMessage;
 export const MailboxesGetMessage200 = MailboxMessage;
 export type MailboxesGetMessage401 = UnauthorizedError;
@@ -2668,11 +2724,8 @@ export type MailboxesGetMessageAttachmentPathParams = {
   readonly messageId: MessageId;
   readonly attachmentId: AttachmentId;
 };
-export const MailboxesGetMessageAttachmentPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-  attachmentId: AttachmentId,
-});
+export const MailboxesGetMessageAttachmentPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId, attachmentId: AttachmentId }))();
 export type MailboxesGetMessageAttachment200 = MailboxDownloadUrl;
 export const MailboxesGetMessageAttachment200 = MailboxDownloadUrl;
 export type MailboxesGetMessageAttachment401 = UnauthorizedError;
@@ -2692,11 +2745,8 @@ export type MailboxesCopyMessageAttachmentPathParams = {
   readonly messageId: MessageId;
   readonly attachmentId: AttachmentId;
 };
-export const MailboxesCopyMessageAttachmentPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-  attachmentId: AttachmentId,
-});
+export const MailboxesCopyMessageAttachmentPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId, attachmentId: AttachmentId }))();
 export type MailboxesCopyMessageAttachment201 = MailboxCopiedAttachment;
 export const MailboxesCopyMessageAttachment201 = MailboxCopiedAttachment;
 export type MailboxesCopyMessageAttachment401 = UnauthorizedError;
@@ -2717,10 +2767,8 @@ export type MailboxesDiscardMessagePathParams = {
   readonly id: MailboxId;
   readonly messageId: MessageId;
 };
-export const MailboxesDiscardMessagePathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesDiscardMessagePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesDiscardMessage200 = MailboxQuarantinedMessage;
 export const MailboxesDiscardMessage200 = MailboxQuarantinedMessage;
 export type MailboxesDiscardMessage401 = UnauthorizedError;
@@ -2740,26 +2788,25 @@ export const MailboxesDiscardMessage502 = BillingProviderError;
 export type MailboxesDiscardMessage504 = GatewayTimeoutError;
 export const MailboxesDiscardMessage504 = GatewayTimeoutError;
 export type MailboxesForwardPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
-export const MailboxesForwardPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesForwardPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesForwardHeaders = { readonly "idempotency-key"?: string | null };
-export const MailboxesForwardHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-      }).check(
-        Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesForwardHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+        }).check(
+          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
+            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesForwardRequestJson = {
   readonly to: readonly [string, ...Array<string>];
   readonly cc?: ReadonlyArray<string> | null;
@@ -2768,21 +2815,22 @@ export type MailboxesForwardRequestJson = {
   readonly html?: string | null;
   readonly attachments?: ReadonlyArray<EmailAttachment> | null;
 };
-export const MailboxesForwardRequestJson = /* @__PURE__ */ Schema.Struct({
-  to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-  cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  attachments: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(EmailAttachment).check(
-        Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesForwardRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(EmailAttachment).check(
+          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesForward200 = MailboxSendReceipt;
 export const MailboxesForward200 = MailboxSendReceipt;
 export type MailboxesForward202 = MailboxPendingSendReceipt;
@@ -2796,19 +2844,18 @@ export type MailboxesForward403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesForward403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesForward403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesForward404 = ResourceNotFoundError;
 export const MailboxesForward404 = ResourceNotFoundError;
 export type MailboxesForward409 = MailboxSendConflictError | ConflictError;
-export const MailboxesForward409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesForward409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesForward422 = ValidationError;
 export const MailboxesForward422 = ValidationError;
 export type MailboxesForward429 = RateLimitedError;
@@ -2825,10 +2872,8 @@ export type MailboxesGetMessageRawPathParams = {
   readonly id: MailboxId;
   readonly messageId: MessageId;
 };
-export const MailboxesGetMessageRawPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesGetMessageRawPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesGetMessageRaw200 = MailboxDownloadUrl;
 export const MailboxesGetMessageRaw200 = MailboxDownloadUrl;
 export type MailboxesGetMessageRaw401 = UnauthorizedError;
@@ -2847,10 +2892,8 @@ export type MailboxesReleaseMessagePathParams = {
   readonly id: MailboxId;
   readonly messageId: MessageId;
 };
-export const MailboxesReleaseMessagePathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesReleaseMessagePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesReleaseMessage200 = MailboxQuarantinedMessage;
 export const MailboxesReleaseMessage200 = MailboxQuarantinedMessage;
 export type MailboxesReleaseMessage401 = UnauthorizedError;
@@ -2868,26 +2911,25 @@ export const MailboxesReleaseMessage500 = InternalError;
 export type MailboxesReleaseMessage504 = GatewayTimeoutError;
 export const MailboxesReleaseMessage504 = GatewayTimeoutError;
 export type MailboxesReplyPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
-export const MailboxesReplyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesReplyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesReplyHeaders = { readonly "idempotency-key"?: string | null };
-export const MailboxesReplyHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-      }).check(
-        Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesReplyHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+        }).check(
+          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
+            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesReplyRequestJson = {
   readonly channel?: "email" | null;
   readonly cc?: ReadonlyArray<string> | null;
@@ -2896,21 +2938,22 @@ export type MailboxesReplyRequestJson = {
   readonly html?: string | null;
   readonly attachments?: ReadonlyArray<EmailAttachment> | null;
 };
-export const MailboxesReplyRequestJson = /* @__PURE__ */ Schema.Struct({
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  attachments: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(EmailAttachment).check(
-        Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesReplyRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(EmailAttachment).check(
+          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesReply200 = MailboxSendReceipt;
 export const MailboxesReply200 = MailboxSendReceipt;
 export type MailboxesReply202 = MailboxPendingSendReceipt;
@@ -2924,19 +2967,18 @@ export type MailboxesReply403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesReply403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesReply403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesReply404 = ResourceNotFoundError;
 export const MailboxesReply404 = ResourceNotFoundError;
 export type MailboxesReply409 = MailboxSendConflictError | ConflictError;
-export const MailboxesReply409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesReply409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesReply422 = ValidationError;
 export const MailboxesReply422 = ValidationError;
 export type MailboxesReply429 = RateLimitedError;
@@ -2950,26 +2992,25 @@ export const MailboxesReply503 = SenderNotReadyError;
 export type MailboxesReply504 = GatewayTimeoutError;
 export const MailboxesReply504 = GatewayTimeoutError;
 export type MailboxesReplyAllPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
-export const MailboxesReplyAllPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  messageId: MessageId,
-});
+export const MailboxesReplyAllPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesReplyAllHeaders = { readonly "idempotency-key"?: string | null };
-export const MailboxesReplyAllHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-      }).check(
-        Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesReplyAllHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+        }).check(
+          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
+            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesReplyAllRequestJson = {
   readonly channel?: "email" | null;
   readonly cc?: ReadonlyArray<string> | null;
@@ -2978,21 +3019,22 @@ export type MailboxesReplyAllRequestJson = {
   readonly html?: string | null;
   readonly attachments?: ReadonlyArray<EmailAttachment> | null;
 };
-export const MailboxesReplyAllRequestJson = /* @__PURE__ */ Schema.Struct({
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  attachments: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(EmailAttachment).check(
-        Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MailboxesReplyAllRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(EmailAttachment).check(
+          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MailboxesReplyAll200 = MailboxSendReceipt;
 export const MailboxesReplyAll200 = MailboxSendReceipt;
 export type MailboxesReplyAll202 = MailboxPendingSendReceipt;
@@ -3006,19 +3048,18 @@ export type MailboxesReplyAll403 =
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
-export const MailboxesReplyAll403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  MailboxSendRefusedError,
-  OnboardingReviewRequiredError,
-  ForbiddenError,
-]);
+export const MailboxesReplyAll403 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    FlagDisabledError,
+    MailboxSendRefusedError,
+    OnboardingReviewRequiredError,
+    ForbiddenError,
+  ]))();
 export type MailboxesReplyAll404 = ResourceNotFoundError;
 export const MailboxesReplyAll404 = ResourceNotFoundError;
 export type MailboxesReplyAll409 = MailboxSendConflictError | ConflictError;
-export const MailboxesReplyAll409 = /* @__PURE__ */ Schema.Union([
-  MailboxSendConflictError,
-  ConflictError,
-]);
+export const MailboxesReplyAll409 = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxSendConflictError, ConflictError]))();
 export type MailboxesReplyAll422 = ValidationError;
 export const MailboxesReplyAll422 = ValidationError;
 export type MailboxesReplyAll429 = RateLimitedError;
@@ -3032,7 +3073,7 @@ export const MailboxesReplyAll503 = SenderNotReadyError;
 export type MailboxesReplyAll504 = GatewayTimeoutError;
 export const MailboxesReplyAll504 = GatewayTimeoutError;
 export type MailboxesPausePathParams = { readonly id: MailboxId };
-export const MailboxesPausePathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesPausePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesPause200 = Mailbox;
 export const MailboxesPause200 = Mailbox;
 export type MailboxesPause401 = UnauthorizedError;
@@ -3048,7 +3089,8 @@ export const MailboxesPause500 = InternalError;
 export type MailboxesPause504 = GatewayTimeoutError;
 export const MailboxesPause504 = GatewayTimeoutError;
 export type MailboxesListPoliciesPathParams = { readonly id: MailboxId };
-export const MailboxesListPoliciesPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListPoliciesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListPolicies200 = MailboxPolicyList;
 export const MailboxesListPolicies200 = MailboxPolicyList;
 export type MailboxesListPolicies401 = UnauthorizedError;
@@ -3064,39 +3106,45 @@ export const MailboxesListPolicies500 = InternalError;
 export type MailboxesListPolicies504 = GatewayTimeoutError;
 export const MailboxesListPolicies504 = GatewayTimeoutError;
 export type MailboxesCreatePolicyPathParams = { readonly id: MailboxId };
-export const MailboxesCreatePolicyPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesCreatePolicyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesCreatePolicyRequestJson = {
   readonly name: string;
   readonly outcome: MailboxPolicyOutcomeKind;
   readonly reason?: string | null;
   readonly enabled?: boolean | null;
 };
-export const MailboxesCreatePolicyRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+export const MailboxesCreatePolicyRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(
-      Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
-        expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
-      }),
-    )
-    .check(Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" })),
-  outcome: MailboxPolicyOutcomeKind,
-  reason: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(512).annotate({ expected: "a string with at most 512 code points" }),
-      ).check(
-        Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+          expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
       ),
-      Schema.Null,
-    ]),
-  ),
-  enabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+    outcome: MailboxPolicyOutcomeKind,
+    reason: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(512).annotate({
+            expected: "a string with at most 512 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    enabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type MailboxesCreatePolicy201 = MailboxPolicy;
 export const MailboxesCreatePolicy201 = MailboxPolicy;
 export type MailboxesCreatePolicy401 = UnauthorizedError;
@@ -3117,10 +3165,8 @@ export type MailboxesGetPolicyPathParams = {
   readonly id: MailboxId;
   readonly policyId: MailboxPolicyId;
 };
-export const MailboxesGetPolicyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  policyId: MailboxPolicyId,
-});
+export const MailboxesGetPolicyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, policyId: MailboxPolicyId }))();
 export type MailboxesGetPolicy200 = MailboxPolicy;
 export const MailboxesGetPolicy200 = MailboxPolicy;
 export type MailboxesGetPolicy401 = UnauthorizedError;
@@ -3139,10 +3185,8 @@ export type MailboxesDeletePolicyPathParams = {
   readonly id: MailboxId;
   readonly policyId: MailboxPolicyId;
 };
-export const MailboxesDeletePolicyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  policyId: MailboxPolicyId,
-});
+export const MailboxesDeletePolicyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, policyId: MailboxPolicyId }))();
 export type MailboxesDeletePolicy200 = SuccessResponse;
 export const MailboxesDeletePolicy200 = SuccessResponse;
 export type MailboxesDeletePolicy401 = UnauthorizedError;
@@ -3161,56 +3205,55 @@ export type MailboxesUpdatePolicyPathParams = {
   readonly id: MailboxId;
   readonly policyId: MailboxPolicyId;
 };
-export const MailboxesUpdatePolicyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  policyId: MailboxPolicyId,
-});
+export const MailboxesUpdatePolicyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, policyId: MailboxPolicyId }))();
 export type MailboxesUpdatePolicyRequestJson = {
   readonly name?: string | null;
   readonly outcome?: MailboxPolicyOutcomeKind | null;
   readonly reason?: string | null | null;
   readonly enabled?: boolean | null;
 };
-export const MailboxesUpdatePolicyRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(128).annotate({
-            expected: "a string with at most 128 code points",
-          }),
-        )
-        .check(
-          Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
-            expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  outcome: Schema.optionalKey(Schema.Union([MailboxPolicyOutcomeKind, Schema.Null])),
-  reason: Schema.optionalKey(
-    Schema.Union([
+export const MailboxesUpdatePolicyRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isMaxCodePoints(512).annotate({
-            expected: "a string with at most 512 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
-        ),
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+              expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  enabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+    ),
+    outcome: Schema.optionalKey(Schema.Union([MailboxPolicyOutcomeKind, Schema.Null])),
+    reason: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(512).annotate({
+              expected: "a string with at most 512 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+          ),
+          Schema.Null,
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    enabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type MailboxesUpdatePolicy200 = MailboxPolicy;
 export const MailboxesUpdatePolicy200 = MailboxPolicy;
 export type MailboxesUpdatePolicy401 = UnauthorizedError;
@@ -3226,31 +3269,33 @@ export const MailboxesUpdatePolicy500 = InternalError;
 export type MailboxesUpdatePolicy504 = GatewayTimeoutError;
 export const MailboxesUpdatePolicy504 = GatewayTimeoutError;
 export type MailboxesListQuarantinePathParams = { readonly id: MailboxId };
-export const MailboxesListQuarantinePathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListQuarantinePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListQuarantineQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const MailboxesListQuarantineQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const MailboxesListQuarantineQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MailboxesListQuarantine200 = MailboxQuarantinePage;
 export const MailboxesListQuarantine200 = MailboxQuarantinePage;
 export type MailboxesListQuarantine401 = UnauthorizedError;
@@ -3266,7 +3311,7 @@ export const MailboxesListQuarantine500 = InternalError;
 export type MailboxesListQuarantine504 = GatewayTimeoutError;
 export const MailboxesListQuarantine504 = GatewayTimeoutError;
 export type MailboxesResumePathParams = { readonly id: MailboxId };
-export const MailboxesResumePathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesResumePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesResume200 = Mailbox;
 export const MailboxesResume200 = Mailbox;
 export type MailboxesResume401 = UnauthorizedError;
@@ -3282,7 +3327,8 @@ export const MailboxesResume500 = InternalError;
 export type MailboxesResume504 = GatewayTimeoutError;
 export const MailboxesResume504 = GatewayTimeoutError;
 export type MailboxesListThreadsPathParams = { readonly id: MailboxId };
-export const MailboxesListThreadsPathParams = /* @__PURE__ */ Schema.Struct({ id: MailboxId });
+export const MailboxesListThreadsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
 export type MailboxesListThreadsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -3295,30 +3341,31 @@ export type MailboxesListThreadsQuery = {
   readonly starred?: boolean | null;
   readonly snoozed?: boolean | null;
 };
-export const MailboxesListThreadsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  q: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
-  label: Schema.optionalKey(Schema.Union([MailboxLabelId, Schema.Null])),
-  unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    q: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
+    label: Schema.optionalKey(Schema.Union([MailboxLabelId, Schema.Null])),
+    unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type MailboxesListThreads200 = MailboxThreadPage;
 export const MailboxesListThreads200 = MailboxThreadPage;
 export type MailboxesListThreads401 = UnauthorizedError;
@@ -3337,10 +3384,8 @@ export type MailboxesGetThreadPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesGetThreadPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesGetThreadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesGetThread200 = MailboxThread;
 export const MailboxesGetThread200 = MailboxThread;
 export type MailboxesGetThread401 = UnauthorizedError;
@@ -3359,10 +3404,8 @@ export type MailboxesUpdateThreadPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesUpdateThreadPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesUpdateThreadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesUpdateThreadRequestJson = {
   readonly folder?: MailboxThreadFolder | null;
   readonly priority?: MailboxThreadPriority | null;
@@ -3370,15 +3413,16 @@ export type MailboxesUpdateThreadRequestJson = {
   readonly starred?: boolean | null;
   readonly snoozedUntil?: string | null | null;
 };
-export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ Schema.Struct({
-  folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
-  priority: Schema.optionalKey(Schema.Union([MailboxThreadPriority, Schema.Null])),
-  read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  snoozedUntil: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-});
+export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
+    priority: Schema.optionalKey(Schema.Union([MailboxThreadPriority, Schema.Null])),
+    read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    snoozedUntil: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+  }))();
 export type MailboxesUpdateThread200 = MailboxThreadState;
 export const MailboxesUpdateThread200 = MailboxThreadState;
 export type MailboxesUpdateThread401 = UnauthorizedError;
@@ -3397,30 +3441,29 @@ export type MailboxesGetThreadContentPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesGetThreadContentPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesGetThreadContentPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesGetThreadContentQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const MailboxesGetThreadContentQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const MailboxesGetThreadContentQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type MailboxesGetThreadContent200 = MailboxThreadContentPage;
 export const MailboxesGetThreadContent200 = MailboxThreadContentPage;
 export type MailboxesGetThreadContent401 = UnauthorizedError;
@@ -3439,16 +3482,15 @@ export type MailboxesAddThreadLabelsPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesAddThreadLabelsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesAddThreadLabelsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesAddThreadLabelsRequestJson = {
   readonly labels: readonly [MailboxLabelId, ...Array<MailboxLabelId>];
 };
-export const MailboxesAddThreadLabelsRequestJson = /* @__PURE__ */ Schema.Struct({
-  labels: Schema.TupleWithRest(Schema.Tuple([MailboxLabelId]), [MailboxLabelId]),
-});
+export const MailboxesAddThreadLabelsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    labels: Schema.TupleWithRest(Schema.Tuple([MailboxLabelId]), [MailboxLabelId]),
+  }))();
 export type MailboxesAddThreadLabels200 = MailboxThreadState;
 export const MailboxesAddThreadLabels200 = MailboxThreadState;
 export type MailboxesAddThreadLabels401 = UnauthorizedError;
@@ -3467,16 +3509,15 @@ export type MailboxesRemoveThreadLabelsPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesRemoveThreadLabelsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesRemoveThreadLabelsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesRemoveThreadLabelsRequestJson = {
   readonly labels: readonly [MailboxLabelId, ...Array<MailboxLabelId>];
 };
-export const MailboxesRemoveThreadLabelsRequestJson = /* @__PURE__ */ Schema.Struct({
-  labels: Schema.TupleWithRest(Schema.Tuple([MailboxLabelId]), [MailboxLabelId]),
-});
+export const MailboxesRemoveThreadLabelsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    labels: Schema.TupleWithRest(Schema.Tuple([MailboxLabelId]), [MailboxLabelId]),
+  }))();
 export type MailboxesRemoveThreadLabels200 = MailboxThreadState;
 export const MailboxesRemoveThreadLabels200 = MailboxThreadState;
 export type MailboxesRemoveThreadLabels401 = UnauthorizedError;
@@ -3495,30 +3536,29 @@ export type MailboxesListThreadMessagesPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesListThreadMessagesPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesListThreadMessagesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesListThreadMessagesQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const MailboxesListThreadMessagesQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const MailboxesListThreadMessagesQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type MailboxesListThreadMessages200 = MailboxMessagePage;
 export const MailboxesListThreadMessages200 = MailboxMessagePage;
 export type MailboxesListThreadMessages401 = UnauthorizedError;
@@ -3537,30 +3577,29 @@ export type MailboxesListThreadNotesPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesListThreadNotesPathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesListThreadNotesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesListThreadNotesQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const MailboxesListThreadNotesQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const MailboxesListThreadNotesQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type MailboxesListThreadNotes200 = MailboxNotePage;
 export const MailboxesListThreadNotes200 = MailboxNotePage;
 export type MailboxesListThreadNotes401 = UnauthorizedError;
@@ -3579,22 +3618,21 @@ export type MailboxesCreateNotePathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
 };
-export const MailboxesCreateNotePathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-});
+export const MailboxesCreateNotePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesCreateNoteRequestJson = {
   readonly body: string;
   readonly color?: string | null | null;
   readonly pinned?: boolean | null;
 };
-export const MailboxesCreateNoteRequestJson = /* @__PURE__ */ Schema.Struct({
-  body: Schema.String,
-  color: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+export const MailboxesCreateNoteRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    body: Schema.String,
+    color: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type MailboxesCreateNote201 = MailboxNote;
 export const MailboxesCreateNote201 = MailboxNote;
 export type MailboxesCreateNote401 = UnauthorizedError;
@@ -3614,11 +3652,8 @@ export type MailboxesDeleteNotePathParams = {
   readonly threadId: MailboxThreadId;
   readonly noteId: MailboxNoteId;
 };
-export const MailboxesDeleteNotePathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-  noteId: MailboxNoteId,
-});
+export const MailboxesDeleteNotePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId, noteId: MailboxNoteId }))();
 export type MailboxesDeleteNote200 = SuccessResponse;
 export const MailboxesDeleteNote200 = SuccessResponse;
 export type MailboxesDeleteNote401 = UnauthorizedError;
@@ -3638,23 +3673,21 @@ export type MailboxesUpdateNotePathParams = {
   readonly threadId: MailboxThreadId;
   readonly noteId: MailboxNoteId;
 };
-export const MailboxesUpdateNotePathParams = /* @__PURE__ */ Schema.Struct({
-  id: MailboxId,
-  threadId: MailboxThreadId,
-  noteId: MailboxNoteId,
-});
+export const MailboxesUpdateNotePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId, noteId: MailboxNoteId }))();
 export type MailboxesUpdateNoteRequestJson = {
   readonly body?: string | null;
   readonly color?: string | null | null;
   readonly pinned?: boolean | null;
 };
-export const MailboxesUpdateNoteRequestJson = /* @__PURE__ */ Schema.Struct({
-  body: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  color: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+export const MailboxesUpdateNoteRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    body: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    color: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type MailboxesUpdateNote200 = MailboxNote;
 export const MailboxesUpdateNote200 = MailboxNote;
 export type MailboxesUpdateNote401 = UnauthorizedError;

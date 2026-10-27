@@ -764,6 +764,34 @@ import type {
   TopicFormsUpdateErrors,
   TopicFormsUpdateResponses,
   TopicId,
+  TopicIssuesCheckErrors,
+  TopicIssuesCheckResponses,
+  TopicIssuesCreateErrors,
+  TopicIssuesCreateResponses,
+  TopicIssuesGetErrors,
+  TopicIssuesGetResponses,
+  TopicIssuesHeadErrors,
+  TopicIssuesHeadResponses,
+  TopicIssuesHistoryErrors,
+  TopicIssuesHistoryResponses,
+  TopicIssuesListErrors,
+  TopicIssuesListResponses,
+  TopicIssuesOpenErrors,
+  TopicIssuesOpenResponses,
+  TopicIssuesRemoveErrors,
+  TopicIssuesRemoveResponses,
+  TopicIssuesRenderErrors,
+  TopicIssuesRenderResponses,
+  TopicIssuesSaveErrors,
+  TopicIssuesSaveResponses,
+  TopicIssuesUpdateErrors,
+  TopicIssuesUpdateResponses,
+  TopicPublicationDomainsAddErrors,
+  TopicPublicationDomainsAddResponses,
+  TopicPublicationDomainsGetErrors,
+  TopicPublicationDomainsGetResponses,
+  TopicPublicationDomainsRemoveErrors,
+  TopicPublicationDomainsRemoveResponses,
   TopicsCheckSubscriptionErrors,
   TopicsCheckSubscriptionResponses,
   TopicsCreateErrors,
@@ -7769,6 +7797,8 @@ export class Topics {
       description?: string | null | null | undefined;
       namespaceId?: NamespaceId | null | null | undefined;
       default?: "opt_out" | "opt_in" | null | undefined;
+      archiveEnabled?: boolean | null | undefined;
+      publicationSlug?: string | null | null | undefined;
       defaultSenderId?: EmailSenderId | null | null | undefined;
       replyMailboxId?: MailboxId | null | null | undefined;
       templateId?: TemplateId | null | null | undefined;
@@ -7784,6 +7814,8 @@ export class Topics {
             { in: "body", key: "description" },
             { in: "body", key: "namespaceId" },
             { in: "body", key: "default" },
+            { in: "body", key: "archiveEnabled" },
+            { in: "body", key: "publicationSlug" },
             { in: "body", key: "defaultSenderId" },
             { in: "body", key: "replyMailboxId" },
             { in: "body", key: "templateId" },
@@ -7907,6 +7939,8 @@ export class Topics {
       name?: string | null | undefined;
       description?: string | null | null | undefined;
       default?: "opt_out" | "opt_in" | null | undefined;
+      archiveEnabled?: boolean | null | undefined;
+      publicationSlug?: string | null | null | undefined;
       defaultSenderId?: EmailSenderId | null | null | undefined;
       replyMailboxId?: MailboxId | null | null | undefined;
       templateId?: TemplateId | null | null | undefined;
@@ -7922,6 +7956,8 @@ export class Topics {
             { in: "body", key: "name" },
             { in: "body", key: "description" },
             { in: "body", key: "default" },
+            { in: "body", key: "archiveEnabled" },
+            { in: "body", key: "publicationSlug" },
             { in: "body", key: "defaultSenderId" },
             { in: "body", key: "replyMailboxId" },
             { in: "body", key: "templateId" },
@@ -8266,6 +8302,565 @@ export class TopicForms {
 
 export class TopicForms2 {
   static topicForms = TopicForms;
+}
+
+export class TopicIssues {
+  /**
+   * List topic issues
+   *
+   * Lists the Markdown issues in the topic's shared Git workspace with each draft's title and its latest campaign send. An uninitialized topic returns null projectId and revision. Requires issueContent and email.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesListResponses, TopicIssuesListErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? client).get<
+      TopicIssuesListResponses,
+      TopicIssuesListErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Update a topic issue
+   *
+   * Replaces the complete Markdown file under a revision fence. Save separately to create a Git commit. Requires issueContent and email.
+   */
+  public static update<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      path: string;
+      content: string;
+      idempotencyKey: string;
+      expectedRevision: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesUpdateResponses, TopicIssuesUpdateErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "path" },
+            { in: "body", key: "content" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).patch<
+      TopicIssuesUpdateResponses,
+      TopicIssuesUpdateErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Create a topic issue
+   *
+   * Creates an unsaved Markdown file. The first request provisions the topic's project and layout; omit expectedRevision only for that first request or its retry. Further creates require the current revision. No template entry is registered. Requires issueContent and email.
+   */
+  public static create<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      path: string;
+      content: string;
+      idempotencyKey: string;
+      expectedRevision?: string | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesCreateResponses, TopicIssuesCreateErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "path" },
+            { in: "body", key: "content" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).post<
+      TopicIssuesCreateResponses,
+      TopicIssuesCreateErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Open the topic issue workspace
+   *
+   * Returns the existing project workspace and pulls saved Git changes. Does not create a repository. Requires issueContent and email.
+   */
+  public static open<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesOpenResponses, TopicIssuesOpenErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? client).get<
+      TopicIssuesOpenResponses,
+      TopicIssuesOpenErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/workspace",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Read a topic issue
+   *
+   * Reads one issues*.md file at the requested workspace revision. Requires issueContent and email.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      path: string;
+      expectedRevision: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesGetResponses, TopicIssuesGetErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "path" },
+            { in: "query", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).get<
+      TopicIssuesGetResponses,
+      TopicIssuesGetErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/document",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Remove a topic issue
+   *
+   * Removes one Markdown file from the draft under a revision fence. The project default issue must remain. Saved commits remain readable. Requires issueContent and email.
+   */
+  public static remove<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      path: string;
+      idempotencyKey: string;
+      expectedRevision: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesRemoveResponses, TopicIssuesRemoveErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "path" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).post<
+      TopicIssuesRemoveResponses,
+      TopicIssuesRemoveErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/remove",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Save topic issues
+   *
+   * Validates the project and saves its draft as a Git commit with revision and branch-head fences. Issue sends pin the resulting commit and issue path. Requires issueContent and email.
+   */
+  public static save<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      expectedRevision: string;
+      expectedHead: string;
+      message: string;
+      idempotencyKey: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesSaveResponses, TopicIssuesSaveErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "expectedRevision" },
+            { in: "body", key: "expectedHead" },
+            { in: "body", key: "message" },
+            { in: "body", key: "idempotencyKey" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).post<
+      TopicIssuesSaveResponses,
+      TopicIssuesSaveErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/save",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Check a topic issue
+   *
+   * Compiles the issue in its layout at the requested revision and returns diagnostics and declared fixtures. Requires issueContent and email.
+   */
+  public static check<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      path: string;
+      expectedRevision: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesCheckResponses, TopicIssuesCheckErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "path" },
+            { in: "body", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).post<
+      TopicIssuesCheckResponses,
+      TopicIssuesCheckErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/check",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Render a topic issue fixture
+   *
+   * Renders a fixture declared by the layout to email or web at the requested revision. The web render is the publication page readers get, with the subscribe wall position marked. Requires issueContent and email.
+   */
+  public static render<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      path: string;
+      expectedRevision: string;
+      fixture: string;
+      target: "email" | "web";
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesRenderResponses, TopicIssuesRenderErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "path" },
+            { in: "body", key: "expectedRevision" },
+            { in: "body", key: "fixture" },
+            { in: "body", key: "target" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).post<
+      TopicIssuesRenderResponses,
+      TopicIssuesRenderErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/render",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Read the topic issue head
+   *
+   * Reads the current workspace revision and repository branch head. Requires issueContent and email.
+   */
+  public static head<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesHeadResponses, TopicIssuesHeadErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? client).get<
+      TopicIssuesHeadResponses,
+      TopicIssuesHeadErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/head",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Read topic issue history
+   *
+   * Lists saved commits in the topic repository, newest first. Requires issueContent and email.
+   */
+  public static history<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      limit?: number | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TopicIssuesHistoryResponses, TopicIssuesHistoryErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "limit" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).get<
+      TopicIssuesHistoryResponses,
+      TopicIssuesHistoryErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/issues/history",
+      ...options,
+      ...params,
+    });
+  }
+}
+
+export class TopicIssues2 {
+  static topicIssues = TopicIssues;
+}
+
+export class TopicPublicationDomains {
+  /**
+   * Add a publication domain
+   *
+   * Claims a hostname for an opt-in topic with its public archive enabled and published. Requires issueWeb. Reuse the UUID idempotencyKey when retrying. The hostname serves no publication until Cloudflare confirms both ownership and SSL are active.
+   */
+  public static add<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      hostname: string;
+      idempotencyKey: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TopicPublicationDomainsAddResponses,
+    TopicPublicationDomainsAddErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "hostname" },
+            { in: "body", key: "idempotencyKey" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).post<
+      TopicPublicationDomainsAddResponses,
+      TopicPublicationDomainsAddErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/publication/domains",
+      ...options,
+      ...params,
+      body: params.body ?? {},
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Remove a publication domain
+   *
+   * Revokes publication lookup before removing the Cloudflare hostname. Reuse the UUID idempotencyKey query value on retries. Pending provider teardown is reported as removing. Removal remains available after the topic archive is disabled.
+   */
+  public static remove<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      hostname: string;
+      idempotencyKey: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TopicPublicationDomainsRemoveResponses,
+    TopicPublicationDomainsRemoveErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "hostname" },
+            { in: "query", key: "idempotencyKey" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).delete<
+      TopicPublicationDomainsRemoveResponses,
+      TopicPublicationDomainsRemoveErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/publication/domains/{hostname}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Get a publication domain
+   *
+   * Rechecks ownership and certificate status, returning DNS verification records. Domains outside this topic's organization or namespace return 404.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TopicId;
+      hostname: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TopicPublicationDomainsGetResponses,
+    TopicPublicationDomainsGetErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "hostname" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? client).get<
+      TopicPublicationDomainsGetResponses,
+      TopicPublicationDomainsGetErrors,
+      ThrowOnError
+    >({
+      security: [{ name: "x-api-key", type: "apiKey" }],
+      url: "/v1/topics/{id}/publication/domains/{hostname}",
+      ...options,
+      ...params,
+    });
+  }
+}
+
+export class PublicationDomains {
+  static topicPublicationDomains = TopicPublicationDomains;
 }
 
 export class Analytics {

@@ -126,6 +126,8 @@ const fetch: typeof globalThis.fetch = async (input: URL | RequestInfo) => {
   const request = input as Request;
   requestPath = new URL(request.url).pathname;
   clientAttribution = request.headers.get("x-samva-client");
+  if (requestPath.endsWith("/issues")) return Response.json({ projectId: null, revision: null, items: [] });
+  if (requestPath.includes("/publication/domains/")) return Response.json({ _tag: "FlagDisabledError", flag: "issueWeb", message: "Publication is unavailable" }, { status: 403 });
   return new Response(JSON.stringify({ contact: { id: "contact_test" }, created: true }), {
     status: 201,
     headers: { "content-type": "application/json" },
@@ -145,6 +147,20 @@ const raw = await client.raw.contacts.findOrCreate({ lookup: { type: "email", va
 if (raw.data?.contact.id !== "contact_test" || raw.response?.status !== 201) {
   await Promise.reject(new Error("Promise packed raw-envelope proof failed"));
 }
+
+const issues = await client.topicIssues.list({ id: "unsub_1234567890abcdef" });
+if (issues.projectId !== null || issues.revision !== null || issues.items.length !== 0) {
+  throw new Error("Packed Promise topic issues proof failed");
+}
+
+await client.topicPublicationDomains.get({ id: "unsub_1234567890abcdef", hostname: "news.example.com" }).then(
+  () => { throw new Error("Packed Promise publication domains accepted a disabled feature"); },
+  (error: unknown) => {
+    if (!(error instanceof Error) || error.name !== "FlagDisabledError") {
+      throw new Error("Packed Promise publication domains lost the tagged error");
+    }
+  },
+);
 
 const narrow = (event: SamvaWebhookEvent): string | undefined => {
   if (event.type === "message.bounced") {
@@ -243,7 +259,8 @@ process.stdout.write(
 const effectDirectory = join(temporaryRoot, "effect");
 await writeConsumer(
   effectDirectory,
-  `import { Effect, Redacted, Schema, Stream } from "effect";
+  `import { Effect, Layer, Redacted, Schema, Stream } from "effect";
+import { FetchHttpClient } from "effect/http";
 import { MessageBouncedEventSchema } from "samva/webhooks/effect";
 import * as ApiKeys from "samva/effect/api-keys";
 import * as Client from "samva/effect/client";
@@ -254,7 +271,28 @@ import * as PromiseSdk from "samva";
 import * as Organizations from "samva/effect/organizations";
 import * as Retry from "samva/effect/retry";
 import * as Templates from "samva/effect/templates";
+import * as TopicIssues from "samva/effect/topic-issues";
+import * as TopicPublicationDomains from "samva/effect/publication-domains";
 import * as Webhooks from "samva/effect/webhooks";
+
+const issueFetch: typeof globalThis.fetch = async () => Response.json({ projectId: null, revision: null, items: [] });
+const issues = await Effect.runPromise(TopicIssues.list({ id: "unsub_1234567890abcdef" }).pipe(
+  Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
+  Effect.provide(Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, issueFetch))),
+));
+if (issues.projectId !== null || issues.revision !== null || issues.items.length !== 0 || EffectSdk.TopicIssues.list !== TopicIssues.list) {
+  throw new Error("Packed Effect topic issues proof failed");
+}
+
+const publicationFetch: typeof globalThis.fetch = async () => Response.json({ _tag: "FlagDisabledError", flag: "issueWeb", message: "Publication is unavailable" }, { status: 403 });
+const publicationFailure = await Effect.runPromise(TopicPublicationDomains.get({ id: "unsub_1234567890abcdef", hostname: "news.example.com" }).pipe(
+  Effect.catchTag("FlagDisabledError", Effect.succeed),
+  Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
+  Effect.provide(Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, publicationFetch))),
+));
+if (!(publicationFailure instanceof Errors.FlagDisabledError) || publicationFailure.flag !== "issueWeb" || EffectSdk.TopicPublicationDomains.get !== TopicPublicationDomains.get) {
+  throw new Error("Packed Effect publication domains proof failed");
+}
 
 const templateResponses = ${await readFile(join(sdkRoot, "tests/parity/template-responses.json"), "utf8")};
 

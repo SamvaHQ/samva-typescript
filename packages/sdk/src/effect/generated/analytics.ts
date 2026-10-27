@@ -18,10 +18,11 @@ export type AnalyticsGetChannelStatsQuery = {
   readonly after?: __SamvaRuntimeAbsoluteInstant | null;
   readonly before?: __SamvaRuntimeAbsoluteInstant | null;
 };
-export const AnalyticsGetChannelStatsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-});
+export const AnalyticsGetChannelStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+  }))();
 export type AnalyticsGetChannelStats200 = {
   readonly email: {
     readonly sent: number;
@@ -35,77 +36,82 @@ export type AnalyticsGetChannelStats200 = {
     readonly bounceRate: number;
   };
 };
-export const AnalyticsGetChannelStats200 = /* @__PURE__ */ Schema.Struct({
-  email: Schema.Struct({
-    sent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
+export const AnalyticsGetChannelStats200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.Struct({
+      sent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      deliveryRate: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
       ),
-    deliveryRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    uniqueOpenedMessages: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
+      uniqueOpenedMessages: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      openTrackingEligibleDeliveredMessages: Schema.Finite.check(
+        Schema.isInt().annotate({ expected: "an integer" }),
       )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      uniqueMessageOpenRate: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
       ),
-    openTrackingEligibleDeliveredMessages: Schema.Finite.check(
-      Schema.isInt().annotate({ expected: "an integer" }),
-    )
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
+      uniqueClickedMessages: Schema.Finite.check(
+        Schema.isInt().annotate({ expected: "an integer" }),
       )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    uniqueMessageOpenRate: Schema.Finite.check(
-      Schema.isFinite().annotate({ expected: "a finite number" }),
-    ),
-    uniqueClickedMessages: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      clickTrackingEligibleDeliveredMessages: Schema.Finite.check(
+        Schema.isInt().annotate({ expected: "an integer" }),
       )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      uniqueMessageClickRate: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
       ),
-    clickTrackingEligibleDeliveredMessages: Schema.Finite.check(
-      Schema.isInt().annotate({ expected: "an integer" }),
-    )
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    uniqueMessageClickRate: Schema.Finite.check(
-      Schema.isFinite().annotate({ expected: "a finite number" }),
-    ),
-    bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  }),
-});
+      bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    }),
+  }))();
 export type AnalyticsGetChannelStats400 = AnalyticsQueryError;
 export const AnalyticsGetChannelStats400 = AnalyticsQueryError;
 export type AnalyticsGetChannelStats401 = UnauthorizedError;
@@ -123,25 +129,27 @@ export type AnalyticsGetDeliveryMetricsQuery = {
   readonly before?: __SamvaRuntimeAbsoluteInstant | null;
   readonly channel?: "email" | null;
 };
-export const AnalyticsGetDeliveryMetricsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-});
+export const AnalyticsGetDeliveryMetricsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+  }))();
 export type AnalyticsGetDeliveryMetrics200 = {
   readonly deliveredRate: number;
   readonly failedRate: number;
   readonly pendingRate: number;
   readonly avgDeliveryTimeMs: number;
 };
-export const AnalyticsGetDeliveryMetrics200 = /* @__PURE__ */ Schema.Struct({
-  deliveredRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  failedRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  pendingRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  avgDeliveryTimeMs: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-});
+export const AnalyticsGetDeliveryMetrics200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    deliveredRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    failedRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    pendingRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    avgDeliveryTimeMs: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+  }))();
 export type AnalyticsGetDeliveryMetrics400 = AnalyticsQueryError;
 export const AnalyticsGetDeliveryMetrics400 = AnalyticsQueryError;
 export type AnalyticsGetDeliveryMetrics401 = UnauthorizedError;
@@ -160,26 +168,24 @@ export type AnalyticsExportDataRequestJson = {
   readonly format?: "csv" | "json" | null;
   readonly includeChannels?: ReadonlyArray<"email"> | null;
 };
-export const AnalyticsExportDataRequestJson = /* @__PURE__ */ Schema.Struct({
-  after: __SamvaRuntimeAbsoluteInstant,
-  before: __SamvaRuntimeAbsoluteInstant,
-  format: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Literal("csv"), Schema.Literal("json")]), Schema.Null]),
-  ),
-  includeChannels: Schema.optionalKey(
-    Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
-  ),
-});
+export const AnalyticsExportDataRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: __SamvaRuntimeAbsoluteInstant,
+    before: __SamvaRuntimeAbsoluteInstant,
+    format: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Literal("csv"), Schema.Literal("json")]), Schema.Null]),
+    ),
+    includeChannels: Schema.optionalKey(
+      Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+    ),
+  }))();
 export type AnalyticsExportData200 = {
   readonly content: string;
   readonly mimeType: string;
   readonly filename: string;
 };
-export const AnalyticsExportData200 = /* @__PURE__ */ Schema.Struct({
-  content: Schema.String,
-  mimeType: Schema.String,
-  filename: Schema.String,
-});
+export const AnalyticsExportData200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ content: Schema.String, mimeType: Schema.String, filename: Schema.String }))();
 export type AnalyticsExportData400 = AnalyticsQueryError;
 export const AnalyticsExportData400 = AnalyticsQueryError;
 export type AnalyticsExportData401 = UnauthorizedError;
@@ -196,30 +202,32 @@ export type AnalyticsGetHourlyDistributionQuery = {
   readonly after?: __SamvaRuntimeAbsoluteInstant | null;
   readonly before?: __SamvaRuntimeAbsoluteInstant | null;
 };
-export const AnalyticsGetHourlyDistributionQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-});
+export const AnalyticsGetHourlyDistributionQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+  }))();
 export type AnalyticsGetHourlyDistribution200 = ReadonlyArray<{
   readonly hour: string;
   readonly count: number;
 }>;
-export const AnalyticsGetHourlyDistribution200 = /* @__PURE__ */ Schema.Array(
-  Schema.Struct({
-    hour: Schema.String,
-    count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-);
+export const AnalyticsGetHourlyDistribution200 = /* @__PURE__ */ (() =>
+  Schema.Array(
+    Schema.Struct({
+      hour: Schema.String,
+      count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+  ))();
 export type AnalyticsGetHourlyDistribution400 = AnalyticsQueryError;
 export const AnalyticsGetHourlyDistribution400 = AnalyticsQueryError;
 export type AnalyticsGetHourlyDistribution401 = UnauthorizedError;
@@ -238,38 +246,40 @@ export type AnalyticsGetStatsQuery = {
   readonly groupBy?: "day" | "week" | "month" | null;
   readonly channel?: "email" | null;
 };
-export const AnalyticsGetStatsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  groupBy: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("day"), Schema.Literal("week"), Schema.Literal("month")]),
-      Schema.Null,
-    ]),
-  ),
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-});
+export const AnalyticsGetStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    groupBy: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("day"), Schema.Literal("week"), Schema.Literal("month")]),
+        Schema.Null,
+      ]),
+    ),
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+  }))();
 export type AnalyticsGetStats200 = {
   readonly volumeHistory: ReadonlyArray<{ readonly date: string; readonly email: number }>;
 };
-export const AnalyticsGetStats200 = /* @__PURE__ */ Schema.Struct({
-  volumeHistory: Schema.Array(
-    Schema.Struct({
-      date: Schema.String,
-      email: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-    }),
-  ),
-});
+export const AnalyticsGetStats200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    volumeHistory: Schema.Array(
+      Schema.Struct({
+        date: Schema.String,
+        email: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+      }),
+    ),
+  }))();
 export type AnalyticsGetStats400 = AnalyticsQueryError;
 export const AnalyticsGetStats400 = AnalyticsQueryError;
 export type AnalyticsGetStats401 = UnauthorizedError;
@@ -288,28 +298,29 @@ export type AnalyticsGetTopContactsQuery = {
   readonly limit?: number | null;
   readonly sortBy?: "sent" | "received" | "total" | null;
 };
-export const AnalyticsGetTopContactsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  sortBy: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("sent"), Schema.Literal("received"), Schema.Literal("total")]),
-      Schema.Null,
-    ]),
-  ),
-});
+export const AnalyticsGetTopContactsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    sortBy: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("sent"), Schema.Literal("received"), Schema.Literal("total")]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type AnalyticsGetTopContacts200 = ReadonlyArray<{
   readonly id: string;
   readonly name: string | null;
@@ -317,25 +328,26 @@ export type AnalyticsGetTopContacts200 = ReadonlyArray<{
   readonly phone: string | null;
   readonly messageCount: number;
 }>;
-export const AnalyticsGetTopContacts200 = /* @__PURE__ */ Schema.Array(
-  Schema.Struct({
-    id: Schema.String,
-    name: Schema.Union([Schema.String, Schema.Null]),
-    email: Schema.Union([Schema.String, Schema.Null]),
-    phone: Schema.Union([Schema.String, Schema.Null]),
-    messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-);
+export const AnalyticsGetTopContacts200 = /* @__PURE__ */ (() =>
+  Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      name: Schema.Union([Schema.String, Schema.Null]),
+      email: Schema.Union([Schema.String, Schema.Null]),
+      phone: Schema.Union([Schema.String, Schema.Null]),
+      messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+  ))();
 export type AnalyticsGetTopContacts400 = AnalyticsQueryError;
 export const AnalyticsGetTopContacts400 = AnalyticsQueryError;
 export type AnalyticsGetTopContacts401 = UnauthorizedError;

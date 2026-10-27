@@ -32,74 +32,88 @@ export type WebhookDeliveryCounts = {
   readonly exhausted: number;
   readonly cancelled: number;
 };
-export const WebhookDeliveryCounts = /* @__PURE__ */ Schema.Struct({
-  total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  pending: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  delivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  exhausted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  cancelled: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "WebhookDeliveryCounts" });
+export const WebhookDeliveryCounts = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    pending: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    delivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    exhausted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    cancelled: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "WebhookDeliveryCounts" }))();
 export type WebhookDeliveryId = string & EffectBrand.Brand<"WebhookDeliveryId">;
-export const WebhookDeliveryId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^whdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^whdel_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "WebhookDeliveryId",
-  }),
-).pipe(Schema.brand("WebhookDeliveryId"));
+export const WebhookDeliveryId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^whdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^whdel_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WebhookDeliveryId",
+    }),
+  ).pipe(Schema.brand("WebhookDeliveryId")))();
 export type WebhookAttemptId = string & EffectBrand.Brand<"WebhookAttemptId">;
-export const WebhookAttemptId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^whatt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^whatt_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "WebhookAttemptId",
-  }),
-).pipe(Schema.brand("WebhookAttemptId"));
+export const WebhookAttemptId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^whatt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^whatt_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WebhookAttemptId",
+    }),
+  ).pipe(Schema.brand("WebhookAttemptId")))();
 export type WebhookEventId = string & EffectBrand.Brand<"WebhookEventId">;
-export const WebhookEventId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^whevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^whevt_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "WebhookEventId",
-  }),
-).pipe(Schema.brand("WebhookEventId"));
+export const WebhookEventId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^whevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^whevt_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WebhookEventId",
+    }),
+  ).pipe(Schema.brand("WebhookEventId")))();
 export type WebhookDailyDeliveries = {
   readonly date: string;
   readonly pending: number;
@@ -107,55 +121,65 @@ export type WebhookDailyDeliveries = {
   readonly exhausted: number;
   readonly cancelled: number;
 };
-export const WebhookDailyDeliveries = /* @__PURE__ */ Schema.Struct({
-  date: Schema.String,
-  pending: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  delivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  exhausted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  cancelled: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "WebhookDailyDeliveries" });
+export const WebhookDailyDeliveries = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    date: Schema.String,
+    pending: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    delivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    exhausted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    cancelled: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "WebhookDailyDeliveries" }))();
 export type WebhookSigningSecret = {
   readonly secret: __SamvaRuntimeSensitiveString;
   readonly createdAt: string;
   readonly previousExpiresAt: string | null;
 };
-export const WebhookSigningSecret = /* @__PURE__ */ Schema.Struct({
-  secret: __SamvaRuntimeSensitiveString,
-  createdAt: Schema.String,
-  previousExpiresAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "WebhookSigningSecret" });
+export const WebhookSigningSecret = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    secret: __SamvaRuntimeSensitiveString,
+    createdAt: Schema.String,
+    previousExpiresAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "WebhookSigningSecret" }))();
 export type WebhookEndpoint = {
   readonly id: WebhookEndpointId;
   readonly name: string;
@@ -211,63 +235,64 @@ export type WebhookEndpoint = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const WebhookEndpoint = /* @__PURE__ */ Schema.Struct({
-  id: WebhookEndpointId,
-  name: Schema.String,
-  url: Schema.String,
-  eventTypes: Schema.Array(
-    Schema.Union([
-      Schema.Literal("message.sent"),
-      Schema.Literal("message.delivered"),
-      Schema.Literal("message.read"),
-      Schema.Literal("message.failed"),
-      Schema.Literal("message.bounced"),
-      Schema.Literal("message.complained"),
-      Schema.Literal("message.received"),
-      Schema.Literal("message.opened"),
-      Schema.Literal("message.clicked"),
-      Schema.Literal("contact.created"),
-      Schema.Literal("contact.updated"),
-      Schema.Literal("contact.deleted"),
-      Schema.Literal("contact.subscribed"),
-      Schema.Literal("contact.unsubscribed"),
-      Schema.Literal("contact.resubscribed"),
-      Schema.Literal("contact.consent_changed"),
-      Schema.Literal("conversation.created"),
-      Schema.Literal("conversation.updated"),
-      Schema.Literal("conversation.archived"),
-      Schema.Literal("webhook.created"),
-      Schema.Literal("webhook.updated"),
-      Schema.Literal("webhook.deleted"),
-      Schema.Literal("webhook.test"),
-      Schema.Literal("domain.updated"),
-      Schema.Literal("domain.warming.updated"),
-      Schema.Literal("template.registration.updated"),
-      Schema.Literal("flow.registration.updated"),
-      Schema.Literal("whatsapp.number.connected"),
-      Schema.Literal("mailbox.message.received"),
-      Schema.Literal("mailbox.message.sent"),
-      Schema.Literal("mailbox.action.pending_approval"),
-      Schema.Literal("mailbox.action.resolved"),
-      Schema.Literal("mailbox.message.quarantined"),
-      Schema.Literal("mailbox.message.released"),
-      Schema.Literal("mailbox.message.discarded"),
-      Schema.Literal("mailbox.message.delivered"),
-      Schema.Literal("mailbox.message.read"),
-      Schema.Literal("mailbox.message.failed"),
-      Schema.Literal("journey.webhook"),
-    ]),
-  ),
-  channels: Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
-  mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-  hasCustomHeaders: Schema.Boolean,
-  failureStartedAt: Schema.Union([Schema.String, Schema.Null]),
-  lastSucceededAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "WebhookEndpoint" });
+export const WebhookEndpoint = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: WebhookEndpointId,
+    name: Schema.String,
+    url: Schema.String,
+    eventTypes: Schema.Array(
+      Schema.Union([
+        Schema.Literal("message.sent"),
+        Schema.Literal("message.delivered"),
+        Schema.Literal("message.read"),
+        Schema.Literal("message.failed"),
+        Schema.Literal("message.bounced"),
+        Schema.Literal("message.complained"),
+        Schema.Literal("message.received"),
+        Schema.Literal("message.opened"),
+        Schema.Literal("message.clicked"),
+        Schema.Literal("contact.created"),
+        Schema.Literal("contact.updated"),
+        Schema.Literal("contact.deleted"),
+        Schema.Literal("contact.subscribed"),
+        Schema.Literal("contact.unsubscribed"),
+        Schema.Literal("contact.resubscribed"),
+        Schema.Literal("contact.consent_changed"),
+        Schema.Literal("conversation.created"),
+        Schema.Literal("conversation.updated"),
+        Schema.Literal("conversation.archived"),
+        Schema.Literal("webhook.created"),
+        Schema.Literal("webhook.updated"),
+        Schema.Literal("webhook.deleted"),
+        Schema.Literal("webhook.test"),
+        Schema.Literal("domain.updated"),
+        Schema.Literal("domain.warming.updated"),
+        Schema.Literal("template.registration.updated"),
+        Schema.Literal("flow.registration.updated"),
+        Schema.Literal("whatsapp.number.connected"),
+        Schema.Literal("mailbox.message.received"),
+        Schema.Literal("mailbox.message.sent"),
+        Schema.Literal("mailbox.action.pending_approval"),
+        Schema.Literal("mailbox.action.resolved"),
+        Schema.Literal("mailbox.message.quarantined"),
+        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.message.delivered"),
+        Schema.Literal("mailbox.message.read"),
+        Schema.Literal("mailbox.message.failed"),
+        Schema.Literal("journey.webhook"),
+      ]),
+    ),
+    channels: Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+    mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+    hasCustomHeaders: Schema.Boolean,
+    failureStartedAt: Schema.Union([Schema.String, Schema.Null]),
+    lastSucceededAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "WebhookEndpoint" }))();
 export type WebhookEndpointListItem = {
   readonly id: WebhookEndpointId;
   readonly name: string;
@@ -324,64 +349,65 @@ export type WebhookEndpointListItem = {
   readonly updatedAt: string;
   readonly deliveries: WebhookDeliveryCounts;
 };
-export const WebhookEndpointListItem = /* @__PURE__ */ Schema.Struct({
-  id: WebhookEndpointId,
-  name: Schema.String,
-  url: Schema.String,
-  eventTypes: Schema.Array(
-    Schema.Union([
-      Schema.Literal("message.sent"),
-      Schema.Literal("message.delivered"),
-      Schema.Literal("message.read"),
-      Schema.Literal("message.failed"),
-      Schema.Literal("message.bounced"),
-      Schema.Literal("message.complained"),
-      Schema.Literal("message.received"),
-      Schema.Literal("message.opened"),
-      Schema.Literal("message.clicked"),
-      Schema.Literal("contact.created"),
-      Schema.Literal("contact.updated"),
-      Schema.Literal("contact.deleted"),
-      Schema.Literal("contact.subscribed"),
-      Schema.Literal("contact.unsubscribed"),
-      Schema.Literal("contact.resubscribed"),
-      Schema.Literal("contact.consent_changed"),
-      Schema.Literal("conversation.created"),
-      Schema.Literal("conversation.updated"),
-      Schema.Literal("conversation.archived"),
-      Schema.Literal("webhook.created"),
-      Schema.Literal("webhook.updated"),
-      Schema.Literal("webhook.deleted"),
-      Schema.Literal("webhook.test"),
-      Schema.Literal("domain.updated"),
-      Schema.Literal("domain.warming.updated"),
-      Schema.Literal("template.registration.updated"),
-      Schema.Literal("flow.registration.updated"),
-      Schema.Literal("whatsapp.number.connected"),
-      Schema.Literal("mailbox.message.received"),
-      Schema.Literal("mailbox.message.sent"),
-      Schema.Literal("mailbox.action.pending_approval"),
-      Schema.Literal("mailbox.action.resolved"),
-      Schema.Literal("mailbox.message.quarantined"),
-      Schema.Literal("mailbox.message.released"),
-      Schema.Literal("mailbox.message.discarded"),
-      Schema.Literal("mailbox.message.delivered"),
-      Schema.Literal("mailbox.message.read"),
-      Schema.Literal("mailbox.message.failed"),
-      Schema.Literal("journey.webhook"),
-    ]),
-  ),
-  channels: Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
-  mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-  status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-  hasCustomHeaders: Schema.Boolean,
-  failureStartedAt: Schema.Union([Schema.String, Schema.Null]),
-  lastSucceededAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  deliveries: WebhookDeliveryCounts,
-}).annotate({ identifier: "WebhookEndpointListItem" });
+export const WebhookEndpointListItem = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: WebhookEndpointId,
+    name: Schema.String,
+    url: Schema.String,
+    eventTypes: Schema.Array(
+      Schema.Union([
+        Schema.Literal("message.sent"),
+        Schema.Literal("message.delivered"),
+        Schema.Literal("message.read"),
+        Schema.Literal("message.failed"),
+        Schema.Literal("message.bounced"),
+        Schema.Literal("message.complained"),
+        Schema.Literal("message.received"),
+        Schema.Literal("message.opened"),
+        Schema.Literal("message.clicked"),
+        Schema.Literal("contact.created"),
+        Schema.Literal("contact.updated"),
+        Schema.Literal("contact.deleted"),
+        Schema.Literal("contact.subscribed"),
+        Schema.Literal("contact.unsubscribed"),
+        Schema.Literal("contact.resubscribed"),
+        Schema.Literal("contact.consent_changed"),
+        Schema.Literal("conversation.created"),
+        Schema.Literal("conversation.updated"),
+        Schema.Literal("conversation.archived"),
+        Schema.Literal("webhook.created"),
+        Schema.Literal("webhook.updated"),
+        Schema.Literal("webhook.deleted"),
+        Schema.Literal("webhook.test"),
+        Schema.Literal("domain.updated"),
+        Schema.Literal("domain.warming.updated"),
+        Schema.Literal("template.registration.updated"),
+        Schema.Literal("flow.registration.updated"),
+        Schema.Literal("whatsapp.number.connected"),
+        Schema.Literal("mailbox.message.received"),
+        Schema.Literal("mailbox.message.sent"),
+        Schema.Literal("mailbox.action.pending_approval"),
+        Schema.Literal("mailbox.action.resolved"),
+        Schema.Literal("mailbox.message.quarantined"),
+        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.message.delivered"),
+        Schema.Literal("mailbox.message.read"),
+        Schema.Literal("mailbox.message.failed"),
+        Schema.Literal("journey.webhook"),
+      ]),
+    ),
+    channels: Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+    mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+    hasCustomHeaders: Schema.Boolean,
+    failureStartedAt: Schema.Union([Schema.String, Schema.Null]),
+    lastSucceededAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    deliveries: WebhookDeliveryCounts,
+  }).annotate({ identifier: "WebhookEndpointListItem" }))();
 export type WebhookDeliveryPage = {
   readonly items: ReadonlyArray<{
     readonly id: WebhookDeliveryId;
@@ -412,87 +438,93 @@ export type WebhookDeliveryPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const WebhookDeliveryPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: WebhookDeliveryId,
-      eventId: WebhookEventId,
-      eventType: Schema.String,
-      occurredAt: Schema.String,
-      endpointId: WebhookEndpointId,
-      status: Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("delivered"),
-        Schema.Literal("exhausted"),
-        Schema.Literal("cancelled"),
-      ]),
-      automaticAttempts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      nextAttemptAt: Schema.Union([Schema.String, Schema.Null]),
-      completedAt: Schema.Union([Schema.String, Schema.Null]),
-      createdAt: Schema.String,
-      updatedAt: Schema.String,
-      attempts: Schema.Array(
-        Schema.Struct({
-          id: WebhookAttemptId,
-          deliveryId: WebhookDeliveryId,
-          kind: Schema.Union([Schema.Literal("automatic"), Schema.Literal("manual")]),
-          attemptNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            )
-            .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-          classification: Schema.Union([
-            Schema.Literal("success"),
-            Schema.Literal("http-error"),
-            Schema.Literal("network-error"),
-            Schema.Literal("timeout"),
-            Schema.Literal("cancelled"),
-          ]),
-          attemptedAt: Schema.String,
-          responseStatus: Schema.Union([
-            Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
+export const WebhookDeliveryPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: WebhookDeliveryId,
+        eventId: WebhookEventId,
+        eventType: Schema.String,
+        occurredAt: Schema.String,
+        endpointId: WebhookEndpointId,
+        status: Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("delivered"),
+          Schema.Literal("exhausted"),
+          Schema.Literal("cancelled"),
+        ]),
+        automaticAttempts: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        nextAttemptAt: Schema.Union([Schema.String, Schema.Null]),
+        completedAt: Schema.Union([Schema.String, Schema.Null]),
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
+        attempts: Schema.Array(
+          Schema.Struct({
+            id: WebhookAttemptId,
+            deliveryId: WebhookDeliveryId,
+            kind: Schema.Union([Schema.Literal("automatic"), Schema.Literal("manual")]),
+            attemptNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
               .check(
                 Schema.isLessThanOrEqualTo(9007199254740991).annotate({
                   expected: "a value less than or equal to 9007199254740991",
                 }),
+              )
+              .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+            classification: Schema.Union([
+              Schema.Literal("success"),
+              Schema.Literal("http-error"),
+              Schema.Literal("network-error"),
+              Schema.Literal("timeout"),
+              Schema.Literal("cancelled"),
+            ]),
+            attemptedAt: Schema.String,
+            responseStatus: Schema.Union([
+              Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                    expected: "a value greater than or equal to -9007199254740991",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              Schema.Null,
+            ]),
+            responseHeaders: Schema.Union([
+              Schema.Record(Schema.String, Schema.String),
+              Schema.Null,
+            ]),
+            durationMs: Schema.Union([
+              Schema.Finite.check(
+                Schema.isFinite().annotate({ expected: "a finite number" }),
+              ).check(
+                Schema.isGreaterThanOrEqualTo(0).annotate({
+                  expected: "a value greater than or equal to 0",
+                }),
               ),
-            Schema.Null,
-          ]),
-          responseHeaders: Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
-          durationMs: Schema.Union([
-            Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-              Schema.isGreaterThanOrEqualTo(0).annotate({
-                expected: "a value greater than or equal to 0",
-              }),
-            ),
-            Schema.Null,
-          ]),
-          errorCode: Schema.Union([Schema.String, Schema.Null]),
-          errorMessage: Schema.Union([Schema.String, Schema.Null]),
-          createdAt: Schema.String,
-        }),
-      ),
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "WebhookDeliveryPage" });
+              Schema.Null,
+            ]),
+            errorCode: Schema.Union([Schema.String, Schema.Null]),
+            errorMessage: Schema.Union([Schema.String, Schema.Null]),
+            createdAt: Schema.String,
+          }),
+        ),
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "WebhookDeliveryPage" }))();
 export type WebhookStatsResponse = {
   readonly total: number;
   readonly pending: number;
@@ -501,91 +533,104 @@ export type WebhookStatsResponse = {
   readonly cancelled: number;
   readonly daily: ReadonlyArray<WebhookDailyDeliveries>;
 };
-export const WebhookStatsResponse = /* @__PURE__ */ Schema.Struct({
-  total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  pending: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  delivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  exhausted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  cancelled: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  daily: Schema.Array(WebhookDailyDeliveries),
-}).annotate({ identifier: "WebhookStatsResponse" });
+export const WebhookStatsResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    pending: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    delivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    exhausted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    cancelled: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    daily: Schema.Array(WebhookDailyDeliveries),
+  }).annotate({ identifier: "WebhookStatsResponse" }))();
 export type WebhookEndpointPage = {
   readonly items: ReadonlyArray<WebhookEndpointListItem>;
   readonly nextCursor: string | null;
 };
-export const WebhookEndpointPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(WebhookEndpointListItem),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "WebhookEndpointPage" });
+export const WebhookEndpointPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(WebhookEndpointListItem),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "WebhookEndpointPage" }))();
 export type WebhooksListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly search?: string | null;
   readonly status?: "active" | "disabled" | null;
 };
-export const WebhooksListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-      Schema.Null,
-    ]),
-  ),
-});
+export const WebhooksListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type WebhooksList200 = WebhookEndpointPage;
 export const WebhooksList200 = WebhookEndpointPage;
 export type WebhooksList401 = UnauthorizedError;
@@ -648,88 +693,89 @@ export type WebhooksCreateRequestJson = {
   readonly headers?: { readonly [x: string]: string } | null;
   readonly status?: "active" | "disabled" | null;
 };
-export const WebhooksCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+export const WebhooksCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" })),
-  url: Schema.String,
-  eventTypes: Schema.Array(
-    Schema.Union([
-      Schema.Literal("message.sent"),
-      Schema.Literal("message.delivered"),
-      Schema.Literal("message.read"),
-      Schema.Literal("message.failed"),
-      Schema.Literal("message.bounced"),
-      Schema.Literal("message.complained"),
-      Schema.Literal("message.received"),
-      Schema.Literal("message.opened"),
-      Schema.Literal("message.clicked"),
-      Schema.Literal("contact.created"),
-      Schema.Literal("contact.updated"),
-      Schema.Literal("contact.deleted"),
-      Schema.Literal("contact.subscribed"),
-      Schema.Literal("contact.unsubscribed"),
-      Schema.Literal("contact.resubscribed"),
-      Schema.Literal("contact.consent_changed"),
-      Schema.Literal("conversation.created"),
-      Schema.Literal("conversation.updated"),
-      Schema.Literal("conversation.archived"),
-      Schema.Literal("webhook.created"),
-      Schema.Literal("webhook.updated"),
-      Schema.Literal("webhook.deleted"),
-      Schema.Literal("webhook.test"),
-      Schema.Literal("domain.updated"),
-      Schema.Literal("domain.warming.updated"),
-      Schema.Literal("template.registration.updated"),
-      Schema.Literal("flow.registration.updated"),
-      Schema.Literal("whatsapp.number.connected"),
-      Schema.Literal("mailbox.message.received"),
-      Schema.Literal("mailbox.message.sent"),
-      Schema.Literal("mailbox.action.pending_approval"),
-      Schema.Literal("mailbox.action.resolved"),
-      Schema.Literal("mailbox.message.quarantined"),
-      Schema.Literal("mailbox.message.released"),
-      Schema.Literal("mailbox.message.discarded"),
-      Schema.Literal("mailbox.message.delivered"),
-      Schema.Literal("mailbox.message.read"),
-      Schema.Literal("mailbox.message.failed"),
-      Schema.Literal("journey.webhook"),
-    ]),
-  ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
-  channels: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(Schema.Literal("email")).check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      .check(
+        Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
       ),
-      Schema.Null,
-    ]),
-  ),
-  mailboxIds: Schema.optionalKey(
-    Schema.Union([Schema.TupleWithRest(Schema.Tuple([MailboxId]), [MailboxId]), Schema.Null]),
-  ),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-  headers: Schema.optionalKey(
-    Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
-  ),
-  status: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-      Schema.Null,
-    ]),
-  ),
-});
+    url: Schema.String,
+    eventTypes: Schema.Array(
+      Schema.Union([
+        Schema.Literal("message.sent"),
+        Schema.Literal("message.delivered"),
+        Schema.Literal("message.read"),
+        Schema.Literal("message.failed"),
+        Schema.Literal("message.bounced"),
+        Schema.Literal("message.complained"),
+        Schema.Literal("message.received"),
+        Schema.Literal("message.opened"),
+        Schema.Literal("message.clicked"),
+        Schema.Literal("contact.created"),
+        Schema.Literal("contact.updated"),
+        Schema.Literal("contact.deleted"),
+        Schema.Literal("contact.subscribed"),
+        Schema.Literal("contact.unsubscribed"),
+        Schema.Literal("contact.resubscribed"),
+        Schema.Literal("contact.consent_changed"),
+        Schema.Literal("conversation.created"),
+        Schema.Literal("conversation.updated"),
+        Schema.Literal("conversation.archived"),
+        Schema.Literal("webhook.created"),
+        Schema.Literal("webhook.updated"),
+        Schema.Literal("webhook.deleted"),
+        Schema.Literal("webhook.test"),
+        Schema.Literal("domain.updated"),
+        Schema.Literal("domain.warming.updated"),
+        Schema.Literal("template.registration.updated"),
+        Schema.Literal("flow.registration.updated"),
+        Schema.Literal("whatsapp.number.connected"),
+        Schema.Literal("mailbox.message.received"),
+        Schema.Literal("mailbox.message.sent"),
+        Schema.Literal("mailbox.action.pending_approval"),
+        Schema.Literal("mailbox.action.resolved"),
+        Schema.Literal("mailbox.message.quarantined"),
+        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.message.delivered"),
+        Schema.Literal("mailbox.message.read"),
+        Schema.Literal("mailbox.message.failed"),
+        Schema.Literal("journey.webhook"),
+      ]),
+    ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
+    channels: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(Schema.Literal("email")).check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    mailboxIds: Schema.optionalKey(
+      Schema.Union([Schema.TupleWithRest(Schema.Tuple([MailboxId]), [MailboxId]), Schema.Null]),
+    ),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    headers: Schema.optionalKey(
+      Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
+    ),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type WebhooksCreate201 = {
   readonly endpoint: WebhookEndpoint;
   readonly secret: __SamvaRuntimeSensitiveString;
 };
-export const WebhooksCreate201 = /* @__PURE__ */ Schema.Struct({
-  endpoint: WebhookEndpoint,
-  secret: __SamvaRuntimeSensitiveString,
-});
+export const WebhooksCreate201 = /* @__PURE__ */ (() =>
+  Schema.Struct({ endpoint: WebhookEndpoint, secret: __SamvaRuntimeSensitiveString }))();
 export type WebhooksCreate401 = UnauthorizedError;
 export const WebhooksCreate401 = UnauthorizedError;
 export type WebhooksCreate402 = PaymentRequiredError;
@@ -749,7 +795,8 @@ export const WebhooksCreate502 = BillingProviderError;
 export type WebhooksCreate504 = GatewayTimeoutError;
 export const WebhooksCreate504 = GatewayTimeoutError;
 export type WebhooksGetPathParams = { readonly id: WebhookEndpointId };
-export const WebhooksGetPathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksGetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksGet200 = WebhookEndpoint;
 export const WebhooksGet200 = WebhookEndpoint;
 export type WebhooksGet401 = UnauthorizedError;
@@ -765,7 +812,8 @@ export const WebhooksGet500 = InternalError;
 export type WebhooksGet504 = GatewayTimeoutError;
 export const WebhooksGet504 = GatewayTimeoutError;
 export type WebhooksRemovePathParams = { readonly id: WebhookEndpointId };
-export const WebhooksRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksRemove200 = SuccessResponse;
 export const WebhooksRemove200 = SuccessResponse;
 export type WebhooksRemove401 = UnauthorizedError;
@@ -783,7 +831,8 @@ export const WebhooksRemove502 = BillingProviderError;
 export type WebhooksRemove504 = GatewayTimeoutError;
 export const WebhooksRemove504 = GatewayTimeoutError;
 export type WebhooksUpdatePathParams = { readonly id: WebhookEndpointId };
-export const WebhooksUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksUpdateRequestJson = {
   readonly name?: string | null;
   readonly url?: string | null;
@@ -834,102 +883,105 @@ export type WebhooksUpdateRequestJson = {
   readonly headers?: { readonly [x: string]: string } | null;
   readonly status?: "active" | "disabled" | null;
 };
-export const WebhooksUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(100).annotate({
-            expected: "a string with at most 100 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  url: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  eventTypes: Schema.optionalKey(
-    Schema.Union([
-      Schema.Array(
-        Schema.Union([
-          Schema.Literal("message.sent"),
-          Schema.Literal("message.delivered"),
-          Schema.Literal("message.read"),
-          Schema.Literal("message.failed"),
-          Schema.Literal("message.bounced"),
-          Schema.Literal("message.complained"),
-          Schema.Literal("message.received"),
-          Schema.Literal("message.opened"),
-          Schema.Literal("message.clicked"),
-          Schema.Literal("contact.created"),
-          Schema.Literal("contact.updated"),
-          Schema.Literal("contact.deleted"),
-          Schema.Literal("contact.subscribed"),
-          Schema.Literal("contact.unsubscribed"),
-          Schema.Literal("contact.resubscribed"),
-          Schema.Literal("contact.consent_changed"),
-          Schema.Literal("conversation.created"),
-          Schema.Literal("conversation.updated"),
-          Schema.Literal("conversation.archived"),
-          Schema.Literal("webhook.created"),
-          Schema.Literal("webhook.updated"),
-          Schema.Literal("webhook.deleted"),
-          Schema.Literal("webhook.test"),
-          Schema.Literal("domain.updated"),
-          Schema.Literal("domain.warming.updated"),
-          Schema.Literal("template.registration.updated"),
-          Schema.Literal("flow.registration.updated"),
-          Schema.Literal("whatsapp.number.connected"),
-          Schema.Literal("mailbox.message.received"),
-          Schema.Literal("mailbox.message.sent"),
-          Schema.Literal("mailbox.action.pending_approval"),
-          Schema.Literal("mailbox.action.resolved"),
-          Schema.Literal("mailbox.message.quarantined"),
-          Schema.Literal("mailbox.message.released"),
-          Schema.Literal("mailbox.message.discarded"),
-          Schema.Literal("mailbox.message.delivered"),
-          Schema.Literal("mailbox.message.read"),
-          Schema.Literal("mailbox.message.failed"),
-          Schema.Literal("journey.webhook"),
-        ]),
-      ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
-      Schema.Null,
-    ]),
-  ),
-  channels: Schema.optionalKey(
-    Schema.Union([
+export const WebhooksUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(
       Schema.Union([
-        Schema.Array(Schema.Literal("email")).check(
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(100).annotate({
+              expected: "a string with at most 100 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    url: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    eventTypes: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("message.sent"),
+            Schema.Literal("message.delivered"),
+            Schema.Literal("message.read"),
+            Schema.Literal("message.failed"),
+            Schema.Literal("message.bounced"),
+            Schema.Literal("message.complained"),
+            Schema.Literal("message.received"),
+            Schema.Literal("message.opened"),
+            Schema.Literal("message.clicked"),
+            Schema.Literal("contact.created"),
+            Schema.Literal("contact.updated"),
+            Schema.Literal("contact.deleted"),
+            Schema.Literal("contact.subscribed"),
+            Schema.Literal("contact.unsubscribed"),
+            Schema.Literal("contact.resubscribed"),
+            Schema.Literal("contact.consent_changed"),
+            Schema.Literal("conversation.created"),
+            Schema.Literal("conversation.updated"),
+            Schema.Literal("conversation.archived"),
+            Schema.Literal("webhook.created"),
+            Schema.Literal("webhook.updated"),
+            Schema.Literal("webhook.deleted"),
+            Schema.Literal("webhook.test"),
+            Schema.Literal("domain.updated"),
+            Schema.Literal("domain.warming.updated"),
+            Schema.Literal("template.registration.updated"),
+            Schema.Literal("flow.registration.updated"),
+            Schema.Literal("whatsapp.number.connected"),
+            Schema.Literal("mailbox.message.received"),
+            Schema.Literal("mailbox.message.sent"),
+            Schema.Literal("mailbox.action.pending_approval"),
+            Schema.Literal("mailbox.action.resolved"),
+            Schema.Literal("mailbox.message.quarantined"),
+            Schema.Literal("mailbox.message.released"),
+            Schema.Literal("mailbox.message.discarded"),
+            Schema.Literal("mailbox.message.delivered"),
+            Schema.Literal("mailbox.message.read"),
+            Schema.Literal("mailbox.message.failed"),
+            Schema.Literal("journey.webhook"),
+          ]),
+        ).check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         ),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  mailboxIds: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.TupleWithRest(Schema.Tuple([MailboxId]), [MailboxId]), Schema.Null]),
-      Schema.Null,
-    ]),
-  ),
-  namespaceId: Schema.optionalKey(
-    Schema.Union([Schema.Union([NamespaceId, Schema.Null]), Schema.Null]),
-  ),
-  headers: Schema.optionalKey(
-    Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
-  ),
-  status: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+    channels: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Array(Schema.Literal("email")).check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+          Schema.Null,
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    mailboxIds: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.TupleWithRest(Schema.Tuple([MailboxId]), [MailboxId]), Schema.Null]),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([Schema.Union([NamespaceId, Schema.Null]), Schema.Null]),
+    ),
+    headers: Schema.optionalKey(
+      Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
+    ),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type WebhooksUpdate200 = WebhookEndpoint;
 export const WebhooksUpdate200 = WebhookEndpoint;
 export type WebhooksUpdate401 = UnauthorizedError;
@@ -950,22 +1002,21 @@ export type WebhooksRetryDeliveryPathParams = {
   readonly id: WebhookEndpointId;
   readonly deliveryId: WebhookDeliveryId;
 };
-export const WebhooksRetryDeliveryPathParams = /* @__PURE__ */ Schema.Struct({
-  id: WebhookEndpointId,
-  deliveryId: WebhookDeliveryId,
-});
+export const WebhooksRetryDeliveryPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId, deliveryId: WebhookDeliveryId }))();
 export type WebhooksRetryDelivery200 = {
   readonly accepted: true;
   readonly deliveryId: WebhookDeliveryId;
   readonly attemptId: WebhookAttemptId;
   readonly outcome: "succeeded" | "failed";
 };
-export const WebhooksRetryDelivery200 = /* @__PURE__ */ Schema.Struct({
-  accepted: Schema.Literal(true),
-  deliveryId: WebhookDeliveryId,
-  attemptId: WebhookAttemptId,
-  outcome: Schema.Union([Schema.Literal("succeeded"), Schema.Literal("failed")]),
-});
+export const WebhooksRetryDelivery200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    accepted: Schema.Literal(true),
+    deliveryId: WebhookDeliveryId,
+    attemptId: WebhookAttemptId,
+    outcome: Schema.Union([Schema.Literal("succeeded"), Schema.Literal("failed")]),
+  }))();
 export type WebhooksRetryDelivery401 = UnauthorizedError;
 export const WebhooksRetryDelivery401 = UnauthorizedError;
 export type WebhooksRetryDelivery403 = ForbiddenError;
@@ -981,27 +1032,29 @@ export const WebhooksRetryDelivery500 = InternalError;
 export type WebhooksRetryDelivery504 = GatewayTimeoutError;
 export const WebhooksRetryDelivery504 = GatewayTimeoutError;
 export type WebhooksGetLogsPathParams = { readonly id: WebhookEndpointId };
-export const WebhooksGetLogsPathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksGetLogsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksGetLogsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const WebhooksGetLogsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const WebhooksGetLogsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type WebhooksGetLogs200 = WebhookDeliveryPage;
 export const WebhooksGetLogs200 = WebhookDeliveryPage;
 export type WebhooksGetLogs401 = UnauthorizedError;
@@ -1017,13 +1070,11 @@ export const WebhooksGetLogs500 = InternalError;
 export type WebhooksGetLogs504 = GatewayTimeoutError;
 export const WebhooksGetLogs504 = GatewayTimeoutError;
 export type WebhooksRegenerateSecretPathParams = { readonly id: WebhookEndpointId };
-export const WebhooksRegenerateSecretPathParams = /* @__PURE__ */ Schema.Struct({
-  id: WebhookEndpointId,
-});
+export const WebhooksRegenerateSecretPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksRegenerateSecret200 = { readonly secret: __SamvaRuntimeSensitiveString };
-export const WebhooksRegenerateSecret200 = /* @__PURE__ */ Schema.Struct({
-  secret: __SamvaRuntimeSensitiveString,
-});
+export const WebhooksRegenerateSecret200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ secret: __SamvaRuntimeSensitiveString }))();
 export type WebhooksRegenerateSecret401 = UnauthorizedError;
 export const WebhooksRegenerateSecret401 = UnauthorizedError;
 export type WebhooksRegenerateSecret403 = ForbiddenError;
@@ -1037,7 +1088,8 @@ export const WebhooksRegenerateSecret500 = InternalError;
 export type WebhooksRegenerateSecret504 = GatewayTimeoutError;
 export const WebhooksRegenerateSecret504 = GatewayTimeoutError;
 export type WebhooksGetSecretPathParams = { readonly id: WebhookEndpointId };
-export const WebhooksGetSecretPathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksGetSecretPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksGetSecret200 = WebhookSigningSecret;
 export const WebhooksGetSecret200 = WebhookSigningSecret;
 export type WebhooksGetSecret401 = UnauthorizedError;
@@ -1053,15 +1105,17 @@ export const WebhooksGetSecret500 = InternalError;
 export type WebhooksGetSecret504 = GatewayTimeoutError;
 export const WebhooksGetSecret504 = GatewayTimeoutError;
 export type WebhooksGetStatsPathParams = { readonly id: WebhookEndpointId };
-export const WebhooksGetStatsPathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksGetStatsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksGetStatsQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const WebhooksGetStatsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const WebhooksGetStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type WebhooksGetStats200 = WebhookStatsResponse;
 export const WebhooksGetStats200 = WebhookStatsResponse;
 export type WebhooksGetStats401 = UnauthorizedError;
@@ -1077,23 +1131,26 @@ export const WebhooksGetStats500 = InternalError;
 export type WebhooksGetStats504 = GatewayTimeoutError;
 export const WebhooksGetStats504 = GatewayTimeoutError;
 export type WebhooksTestPathParams = { readonly id: WebhookEndpointId };
-export const WebhooksTestPathParams = /* @__PURE__ */ Schema.Struct({ id: WebhookEndpointId });
+export const WebhooksTestPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksTestRequestJson = {
   readonly data?: { readonly [x: string]: JsonValue } | null;
 };
-export const WebhooksTestRequestJson = /* @__PURE__ */ Schema.Struct({
-  data: Schema.optionalKey(Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null])),
-});
+export const WebhooksTestRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    data: Schema.optionalKey(Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null])),
+  }))();
 export type WebhooksTest202 = {
   readonly accepted: true;
   readonly eventId: WebhookEventId;
   readonly deliveryId: WebhookDeliveryId;
 };
-export const WebhooksTest202 = /* @__PURE__ */ Schema.Struct({
-  accepted: Schema.Literal(true),
-  eventId: WebhookEventId,
-  deliveryId: WebhookDeliveryId,
-});
+export const WebhooksTest202 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    accepted: Schema.Literal(true),
+    eventId: WebhookEventId,
+    deliveryId: WebhookDeliveryId,
+  }))();
 export type WebhooksTest401 = UnauthorizedError;
 export const WebhooksTest401 = UnauthorizedError;
 export type WebhooksTest403 = ForbiddenError;

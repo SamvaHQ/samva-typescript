@@ -19,12 +19,13 @@ import {
 } from "./shared";
 
 export type BrandId = string & EffectBrand.Brand<"BrandId">;
-export const BrandId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^brand_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^brand_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "BrandId",
-  }),
-).pipe(Schema.brand("BrandId"));
+export const BrandId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^brand_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^brand_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "BrandId",
+    }),
+  ).pipe(Schema.brand("BrandId")))();
 export type Brand = {
   readonly id: BrandId;
   readonly slug: string;
@@ -37,36 +38,36 @@ export type Brand = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const Brand = /* @__PURE__ */ Schema.Struct({
-  id: BrandId,
-  slug: Schema.String.annotate({
-    description: "The brand's handle, unique in the organization; `samva:brand/<slug>` names it.",
-  }).check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+export const Brand = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: BrandId,
+    slug: Schema.String.annotate({
+      description: "The brand's handle, unique in the organization; `samva:brand/<slug>` names it.",
+    }).check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+    name: Schema.String,
+    isDefault: Schema.Boolean.annotate({
+      description: "Whether bare `samva:brand` and domains without a brand resolve to this brand.",
     }),
-  ),
-  name: Schema.String,
-  isDefault: Schema.Boolean.annotate({
-    description: "Whether bare `samva:brand` and domains without a brand resolve to this brand.",
-  }),
-  css: Schema.String.annotate({
-    description:
-      "Brand theme CSS: `@theme` variables, one dark-mode `@theme` of colors, and `@font-face` rules with https WOFF2 sources.",
-  }),
-  assets: BrandAssets,
-  footer: BrandFooter,
-  digest: Schema.String.annotate({
-    description:
-      "SHA-256 of the brand's css, assets and footer. A publication built against a different digest predates the brand's current content.",
-  }),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Brand" });
+    css: Schema.String.annotate({
+      description:
+        "Brand theme CSS: `@theme` variables, one dark-mode `@theme` of colors, and `@font-face` rules with https WOFF2 sources.",
+    }),
+    assets: BrandAssets,
+    footer: BrandFooter,
+    digest: Schema.String.annotate({
+      description:
+        "SHA-256 of the brand's css, assets and footer. A publication built against a different digest predates the brand's current content.",
+    }),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Brand" }))();
 export type BrandList = { readonly items: ReadonlyArray<Brand> };
-export const BrandList = /* @__PURE__ */ Schema.Struct({ items: Schema.Array(Brand) }).annotate({
-  identifier: "BrandList",
-});
+export const BrandList = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(Brand) }).annotate({ identifier: "BrandList" }))();
 export type BrandsList200 = BrandList;
 export const BrandsList200 = BrandList;
 export type BrandsList401 = UnauthorizedError;
@@ -87,35 +88,40 @@ export type BrandsCreateRequestJson = {
   readonly footer?: BrandFooter | null;
   readonly isDefault?: boolean | null;
 };
-export const BrandsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-    }),
-  ),
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+export const BrandsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
-  css: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(32768).annotate({
-          expected: "a string with at most 32768 code points",
-        }),
-      ).check(
-        Schema.isMaxLength(32768).annotate({ expected: "a value with a length of at most 32768" }),
+      .check(
+        Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
       ),
-      Schema.Null,
-    ]),
-  ),
-  assets: Schema.optionalKey(Schema.Union([BrandAssets, Schema.Null])),
-  footer: Schema.optionalKey(Schema.Union([BrandFooter, Schema.Null])),
-  isDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+    css: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(32768).annotate({
+            expected: "a string with at most 32768 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(32768).annotate({
+            expected: "a value with a length of at most 32768",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    assets: Schema.optionalKey(Schema.Union([BrandAssets, Schema.Null])),
+    footer: Schema.optionalKey(Schema.Union([BrandFooter, Schema.Null])),
+    isDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type BrandsCreate201 = Brand;
 export const BrandsCreate201 = Brand;
 export type BrandsCreate401 = UnauthorizedError;
@@ -131,13 +137,14 @@ export const BrandsCreate500 = InternalError;
 export type BrandsCreate504 = GatewayTimeoutError;
 export const BrandsCreate504 = GatewayTimeoutError;
 export type BrandsGetPathParams = { readonly slug: string };
-export const BrandsGetPathParams = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-    }),
-  ),
-});
+export const BrandsGetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+  }))();
 export type BrandsGet200 = Brand;
 export const BrandsGet200 = Brand;
 export type BrandsGet401 = UnauthorizedError;
@@ -153,13 +160,14 @@ export const BrandsGet500 = InternalError;
 export type BrandsGet504 = GatewayTimeoutError;
 export const BrandsGet504 = GatewayTimeoutError;
 export type BrandsRemovePathParams = { readonly slug: string };
-export const BrandsRemovePathParams = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-    }),
-  ),
-});
+export const BrandsRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+  }))();
 export type BrandsRemove200 = SuccessResponse;
 export const BrandsRemove200 = SuccessResponse;
 export type BrandsRemove401 = UnauthorizedError;
@@ -177,13 +185,14 @@ export const BrandsRemove500 = InternalError;
 export type BrandsRemove504 = GatewayTimeoutError;
 export const BrandsRemove504 = GatewayTimeoutError;
 export type BrandsUpdatePathParams = { readonly slug: string };
-export const BrandsUpdatePathParams = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-    }),
-  ),
-});
+export const BrandsUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+  }))();
 export type BrandsUpdateRequestJson = {
   readonly newSlug?: string | null;
   readonly name?: string | null;
@@ -191,51 +200,54 @@ export type BrandsUpdateRequestJson = {
   readonly assets?: BrandAssets | null;
   readonly footer?: BrandFooter | null;
 };
-export const BrandsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  newSlug: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Renames the brand. Projects importing `samva:brand/<old slug>` stop building until they import the new slug.",
-      }).check(
-        Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(120).annotate({
-            expected: "a string with at most 120 code points",
+export const BrandsUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    newSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Renames the brand. Projects importing `samva:brand/<old slug>` stop building until they import the new slug.",
+        }).check(
+          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
           }),
-        )
-        .check(
-          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
         ),
-      Schema.Null,
-    ]),
-  ),
-  css: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(32768).annotate({
-          expected: "a string with at most 32768 code points",
-        }),
-      ).check(
-        Schema.isMaxLength(32768).annotate({ expected: "a value with a length of at most 32768" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  assets: Schema.optionalKey(Schema.Union([BrandAssets, Schema.Null])),
-  footer: Schema.optionalKey(Schema.Union([BrandFooter, Schema.Null])),
-});
+        Schema.Null,
+      ]),
+    ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    css: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(32768).annotate({
+            expected: "a string with at most 32768 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(32768).annotate({
+            expected: "a value with a length of at most 32768",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    assets: Schema.optionalKey(Schema.Union([BrandAssets, Schema.Null])),
+    footer: Schema.optionalKey(Schema.Union([BrandFooter, Schema.Null])),
+  }))();
 export type BrandsUpdate200 = Brand;
 export const BrandsUpdate200 = Brand;
 export type BrandsUpdate401 = UnauthorizedError;
@@ -253,13 +265,14 @@ export const BrandsUpdate500 = InternalError;
 export type BrandsUpdate504 = GatewayTimeoutError;
 export const BrandsUpdate504 = GatewayTimeoutError;
 export type BrandsSetDefaultPathParams = { readonly slug: string };
-export const BrandsSetDefaultPathParams = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-    }),
-  ),
-});
+export const BrandsSetDefaultPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+  }))();
 export type BrandsSetDefault200 = Brand;
 export const BrandsSetDefault200 = Brand;
 export type BrandsSetDefault401 = UnauthorizedError;

@@ -28,6 +28,8 @@ import {
   Templates,
   Topics,
   TopicForms,
+  TopicIssues,
+  TopicPublicationDomains,
   Webhooks,
   Whoami,
 } from "../../src/effect";
@@ -73,6 +75,8 @@ const effectModules = {
   templates: Templates,
   topics: Topics,
   topicForms: TopicForms,
+  topicIssues: TopicIssues,
+  topicPublicationDomains: TopicPublicationDomains,
   webhooks: Webhooks,
   whoami: Whoami,
 } satisfies Record<keyof typeof SDK_SERVICE_OPERATIONS, object>;

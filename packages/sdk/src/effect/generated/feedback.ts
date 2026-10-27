@@ -15,54 +15,58 @@ import {
 } from "./shared";
 
 export type FeedbackId = string & EffectBrand.Brand<"FeedbackId">;
-export const FeedbackId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "FeedbackId",
-  }),
-).pipe(Schema.brand("FeedbackId"));
+export const FeedbackId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "FeedbackId",
+    }),
+  ).pipe(Schema.brand("FeedbackId")))();
 export type FeedbackReceipt = { readonly id: FeedbackId; readonly createdAt: string };
-export const FeedbackReceipt = /* @__PURE__ */ Schema.Struct({
-  id: FeedbackId,
-  createdAt: Schema.String,
-}).annotate({ identifier: "FeedbackReceipt" });
+export const FeedbackReceipt = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: FeedbackId, createdAt: Schema.String }).annotate({
+    identifier: "FeedbackReceipt",
+  }))();
 export type FeedbackSendRequestJson = {
   readonly message: string;
   readonly category?: "bug" | "confusing" | "missing" | "other" | null;
   readonly context?: FeedbackContext | null;
 };
-export const FeedbackSendRequestJson = /* @__PURE__ */ Schema.Struct({
-  message: Schema.String.annotate({
-    description:
-      "What happened and what you expected, in plain language (at most 4000 characters).",
-  })
-    .check(
-      Schema.isMaxCodePoints(4000).annotate({ expected: "a string with at most 4000 code points" }),
-    )
-    .check(
-      Schema.isPattern(new RegExp("\\S", "u")).annotate({
-        expected: "a string matching the RegExp \\S",
-      }),
-    )
-    .check(
-      Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
-    ),
-  category: Schema.optionalKey(
-    Schema.Union([
+export const FeedbackSendRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    message: Schema.String.annotate({
+      description:
+        "What happened and what you expected, in plain language (at most 4000 characters).",
+    })
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isPattern(new RegExp("\\S", "u")).annotate({
+          expected: "a string matching the RegExp \\S",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+    category: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("bug"),
-        Schema.Literal("confusing"),
-        Schema.Literal("missing"),
-        Schema.Literal("other"),
-      ]).annotate({
-        description:
-          "`bug`: the API behaved wrongly. `confusing`: a response, error, or doc was hard to act on. `missing`: a capability or field you needed does not exist. `other`: anything else.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-  context: Schema.optionalKey(Schema.Union([FeedbackContext, Schema.Null])),
-});
+        Schema.Union([
+          Schema.Literal("bug"),
+          Schema.Literal("confusing"),
+          Schema.Literal("missing"),
+          Schema.Literal("other"),
+        ]).annotate({
+          description:
+            "`bug`: the API behaved wrongly. `confusing`: a response, error, or doc was hard to act on. `missing`: a capability or field you needed does not exist. `other`: anything else.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    context: Schema.optionalKey(Schema.Union([FeedbackContext, Schema.Null])),
+  }))();
 export type FeedbackSend201 = FeedbackReceipt;
 export const FeedbackSend201 = FeedbackReceipt;
 export type FeedbackSend401 = UnauthorizedError;

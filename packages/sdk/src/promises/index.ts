@@ -63,6 +63,8 @@ import {
   Templates as templates,
   Topics as topics,
   TopicForms as topicForms,
+  TopicIssues as topicIssues,
+  TopicPublicationDomains as topicPublicationDomains,
   Webhooks as webhooks,
   Whoami as whoami,
 } from "../client/sdk.gen";
@@ -503,6 +505,8 @@ export interface SamvaRawClient {
   readonly subscriptions: typeof subscriptions;
   readonly topics: typeof topics;
   readonly topicForms: typeof topicForms;
+  readonly topicIssues: typeof topicIssues;
+  readonly topicPublicationDomains: typeof topicPublicationDomains;
   readonly agents: typeof agents;
   readonly analytics: typeof analytics;
   readonly feedback: typeof feedback;
@@ -546,6 +550,8 @@ export interface SamvaClient {
   readonly subscriptions: DirectService<typeof subscriptions>;
   readonly topics: DirectService<typeof topics>;
   readonly topicForms: DirectService<typeof topicForms>;
+  readonly topicIssues: DirectService<typeof topicIssues>;
+  readonly topicPublicationDomains: DirectService<typeof topicPublicationDomains>;
   readonly agents: DirectService<typeof agents>;
   readonly analytics: DirectService<typeof analytics>;
   readonly feedback: DirectService<typeof feedback>;
@@ -604,6 +610,8 @@ export function createClient(config: SamvaClientConfig): SamvaClient {
     subscriptions: createBoundService(subscriptions, clientInstance),
     topics: createBoundService(topics, clientInstance),
     topicForms: createBoundService(topicForms, clientInstance),
+    topicIssues: createBoundService(topicIssues, clientInstance),
+    topicPublicationDomains: createBoundService(topicPublicationDomains, clientInstance),
     agents: createBoundService(agents, clientInstance),
     analytics: createBoundService(analytics, clientInstance),
     feedback: createBoundService(feedback, clientInstance),
@@ -650,6 +658,8 @@ export function createClient(config: SamvaClientConfig): SamvaClient {
     subscriptions: createDirectService(raw.subscriptions),
     topics: createDirectService(raw.topics),
     topicForms: createDirectService(raw.topicForms),
+    topicIssues: createDirectService(raw.topicIssues),
+    topicPublicationDomains: createDirectService(raw.topicPublicationDomains),
     agents: createDirectService(raw.agents),
     analytics: createDirectService(raw.analytics),
     feedback: createDirectService(raw.feedback),

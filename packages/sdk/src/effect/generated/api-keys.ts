@@ -23,11 +23,10 @@ import {
 } from "./shared";
 
 export type ApiKeyOwner = { readonly id: string; readonly name: string; readonly email: string };
-export const ApiKeyOwner = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  name: Schema.String,
-  email: Schema.String,
-}).annotate({ identifier: "ApiKeyOwner" });
+export const ApiKeyOwner = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: Schema.String, name: Schema.String, email: Schema.String }).annotate({
+    identifier: "ApiKeyOwner",
+  }))();
 export type ApiKeyActivityPage = {
   readonly items: ReadonlyArray<{
     readonly id: string;
@@ -39,39 +38,41 @@ export type ApiKeyActivityPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const ApiKeyActivityPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: Schema.String,
-      timestamp: Schema.String,
-      method: Schema.String,
-      endpoint: Schema.String,
-      statusCode: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(100).annotate({
-            expected: "a value greater than or equal to 100",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(599).annotate({
-            expected: "a value less than or equal to 599",
+export const ApiKeyActivityPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: Schema.String,
+        timestamp: Schema.String,
+        method: Schema.String,
+        endpoint: Schema.String,
+        statusCode: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(100).annotate({
+              expected: "a value greater than or equal to 100",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(599).annotate({
+              expected: "a value less than or equal to 599",
+            }),
+          ),
+        latency: Schema.Finite.check(
+          Schema.isFinite().annotate({ expected: "a finite number" }),
+        ).check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
           }),
         ),
-      latency: Schema.Finite.check(
-        Schema.isFinite().annotate({ expected: "a finite number" }),
-      ).check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      ),
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ApiKeyActivityPage" });
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ApiKeyActivityPage" }))();
 export type ApiKeyMailboxAccessUpdate = { readonly sendMode: MailboxSendMode };
-export const ApiKeyMailboxAccessUpdate = /* @__PURE__ */ Schema.Struct({
-  sendMode: MailboxSendMode,
-}).annotate({ identifier: "ApiKeyMailboxAccessUpdate" });
+export const ApiKeyMailboxAccessUpdate = /* @__PURE__ */ (() =>
+  Schema.Struct({ sendMode: MailboxSendMode }).annotate({
+    identifier: "ApiKeyMailboxAccessUpdate",
+  }))();
 export type ApiKey = {
   readonly id: string;
   readonly name: string;
@@ -86,20 +87,21 @@ export type ApiKey = {
   readonly access: ApiKeyAccess;
   readonly owner: ApiKeyOwner | null;
 };
-export const ApiKey = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  name: Schema.String,
-  key: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  start: Schema.Union([Schema.String, Schema.Null]),
-  end: Schema.Union([Schema.String, Schema.Null]),
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  createdAt: Schema.String,
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  access: ApiKeyAccess,
-  owner: Schema.Union([ApiKeyOwner, Schema.Null]),
-}).annotate({ identifier: "ApiKey" });
+export const ApiKey = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    name: Schema.String,
+    key: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    start: Schema.Union([Schema.String, Schema.Null]),
+    end: Schema.Union([Schema.String, Schema.Null]),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    createdAt: Schema.String,
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    access: ApiKeyAccess,
+    owner: Schema.Union([ApiKeyOwner, Schema.Null]),
+  }).annotate({ identifier: "ApiKey" }))();
 export type ApiKeyWithSecret = {
   readonly id: string;
   readonly name: string;
@@ -114,57 +116,60 @@ export type ApiKeyWithSecret = {
   readonly access: ApiKeyAccess;
   readonly owner: ApiKeyOwner | null;
 };
-export const ApiKeyWithSecret = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  name: Schema.String,
-  key: __SamvaRuntimeSensitiveString,
-  start: Schema.Union([Schema.String, Schema.Null]),
-  end: Schema.Union([Schema.String, Schema.Null]),
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  createdAt: Schema.String,
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  access: ApiKeyAccess,
-  owner: Schema.Union([ApiKeyOwner, Schema.Null]),
-}).annotate({ identifier: "ApiKeyWithSecret" });
+export const ApiKeyWithSecret = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    name: Schema.String,
+    key: __SamvaRuntimeSensitiveString,
+    start: Schema.Union([Schema.String, Schema.Null]),
+    end: Schema.Union([Schema.String, Schema.Null]),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    createdAt: Schema.String,
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    access: ApiKeyAccess,
+    owner: Schema.Union([ApiKeyOwner, Schema.Null]),
+  }).annotate({ identifier: "ApiKeyWithSecret" }))();
 export type ApiKeyPage = {
   readonly items: ReadonlyArray<ApiKey>;
   readonly nextCursor: string | null;
 };
-export const ApiKeyPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ApiKey),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ApiKeyPage" });
+export const ApiKeyPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ApiKey),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ApiKeyPage" }))();
 export type ApiKeysListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly status?: "active" | "revoked" | null;
   readonly search?: string | null;
 };
-export const ApiKeysListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("active"), Schema.Literal("revoked")]),
-      Schema.Null,
-    ]),
-  ),
-  search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ApiKeysListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("active"), Schema.Literal("revoked")]),
+        Schema.Null,
+      ]),
+    ),
+    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ApiKeysList200 = ApiKeyPage;
 export const ApiKeysList200 = ApiKeyPage;
 export type ApiKeysList401 = UnauthorizedError;
@@ -183,23 +188,24 @@ export type ApiKeysCreateRequestJson = {
   readonly expiresAt?: string | null;
   readonly access?: ApiKeyAccess | null;
 };
-export const ApiKeysCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(32).annotate({ expected: "a string with at most 32 code points" }),
+export const ApiKeysCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" })),
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  access: Schema.optionalKey(
-    Schema.Union([ApiKeyAccess, Schema.Null]).annotate({
-      description:
-        "Defaults to full access. A restricted API key creating a key defaults to its own grants and cannot issue full access.",
-    }),
-  ),
-});
+      .check(
+        Schema.isMaxCodePoints(32).annotate({ expected: "a string with at most 32 code points" }),
+      )
+      .check(Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" })),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    access: Schema.optionalKey(
+      Schema.Union([ApiKeyAccess, Schema.Null]).annotate({
+        description:
+          "Defaults to full access. A restricted API key creating a key defaults to its own grants and cannot issue full access.",
+      }),
+    ),
+  }))();
 export type ApiKeysCreate201 = ApiKeyWithSecret;
 export const ApiKeysCreate201 = ApiKeyWithSecret;
 export type ApiKeysCreate401 = UnauthorizedError;
@@ -221,7 +227,7 @@ export const ApiKeysCreate502 = BillingProviderError;
 export type ApiKeysCreate504 = GatewayTimeoutError;
 export const ApiKeysCreate504 = GatewayTimeoutError;
 export type ApiKeysGetPathParams = { readonly id: ApiKeyId };
-export const ApiKeysGetPathParams = /* @__PURE__ */ Schema.Struct({ id: ApiKeyId });
+export const ApiKeysGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysGet200 = ApiKey;
 export const ApiKeysGet200 = ApiKey;
 export type ApiKeysGet401 = UnauthorizedError;
@@ -237,35 +243,38 @@ export const ApiKeysGet500 = InternalError;
 export type ApiKeysGet504 = GatewayTimeoutError;
 export const ApiKeysGet504 = GatewayTimeoutError;
 export type ApiKeysUpdatePathParams = { readonly id: ApiKeyId };
-export const ApiKeysUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: ApiKeyId });
+export const ApiKeysUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysUpdateRequestJson = {
   readonly name?: string | null;
   readonly description?: string | null;
   readonly mailboxes?: ApiKeyMailboxAccessUpdate | null;
 };
-export const ApiKeysUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(32).annotate({ expected: "a string with at most 32 code points" }),
+export const ApiKeysUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         )
-        .check(
-          Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  mailboxes: Schema.optionalKey(
-    Schema.Union([ApiKeyMailboxAccessUpdate, Schema.Null]).annotate({
-      description:
-        "Changes the mailbox send mode of a key that holds mailbox access. Only a person can change it; the change applies to the key's next request.",
-    }),
-  ),
-});
+          .check(
+            Schema.isMaxCodePoints(32).annotate({
+              expected: "a string with at most 32 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    mailboxes: Schema.optionalKey(
+      Schema.Union([ApiKeyMailboxAccessUpdate, Schema.Null]).annotate({
+        description:
+          "Changes the mailbox send mode of a key that holds mailbox access. Only a person can change it; the change applies to the key's next request.",
+      }),
+    ),
+  }))();
 export type ApiKeysUpdate200 = ApiKey;
 export const ApiKeysUpdate200 = ApiKey;
 export type ApiKeysUpdate401 = UnauthorizedError;
@@ -281,27 +290,29 @@ export const ApiKeysUpdate500 = InternalError;
 export type ApiKeysUpdate504 = GatewayTimeoutError;
 export const ApiKeysUpdate504 = GatewayTimeoutError;
 export type ApiKeysGetActivityPathParams = { readonly id: ApiKeyId };
-export const ApiKeysGetActivityPathParams = /* @__PURE__ */ Schema.Struct({ id: ApiKeyId });
+export const ApiKeysGetActivityPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysGetActivityQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const ApiKeysGetActivityQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const ApiKeysGetActivityQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type ApiKeysGetActivity200 = ApiKeyActivityPage;
 export const ApiKeysGetActivity200 = ApiKeyActivityPage;
 export type ApiKeysGetActivity401 = UnauthorizedError;
@@ -317,7 +328,7 @@ export const ApiKeysGetActivity500 = InternalError;
 export type ApiKeysGetActivity504 = GatewayTimeoutError;
 export const ApiKeysGetActivity504 = GatewayTimeoutError;
 export type ApiKeysRevokePathParams = { readonly id: ApiKeyId };
-export const ApiKeysRevokePathParams = /* @__PURE__ */ Schema.Struct({ id: ApiKeyId });
+export const ApiKeysRevokePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysRevoke200 = SuccessResponse;
 export const ApiKeysRevoke200 = SuccessResponse;
 export type ApiKeysRevoke401 = UnauthorizedError;
@@ -335,7 +346,7 @@ export const ApiKeysRevoke502 = BillingProviderError;
 export type ApiKeysRevoke504 = GatewayTimeoutError;
 export const ApiKeysRevoke504 = GatewayTimeoutError;
 export type ApiKeysRotatePathParams = { readonly id: ApiKeyId };
-export const ApiKeysRotatePathParams = /* @__PURE__ */ Schema.Struct({ id: ApiKeyId });
+export const ApiKeysRotatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysRotate200 = ApiKeyWithSecret;
 export const ApiKeysRotate200 = ApiKeyWithSecret;
 export type ApiKeysRotate401 = UnauthorizedError;
@@ -351,66 +362,74 @@ export const ApiKeysRotate500 = InternalError;
 export type ApiKeysRotate504 = GatewayTimeoutError;
 export const ApiKeysRotate504 = GatewayTimeoutError;
 export type ApiKeysGetStatsPathParams = { readonly id: ApiKeyId };
-export const ApiKeysGetStatsPathParams = /* @__PURE__ */ Schema.Struct({ id: ApiKeyId });
+export const ApiKeysGetStatsPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysGetStatsQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const ApiKeysGetStatsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ApiKeysGetStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ApiKeysGetStats200 = {
   readonly totalRequests: number;
   readonly successfulRequests: number;
   readonly failedRequests: number;
   readonly dailyVolume: ReadonlyArray<{ readonly date: string; readonly requests: number }>;
 };
-export const ApiKeysGetStats200 = /* @__PURE__ */ Schema.Struct({
-  totalRequests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
+export const ApiKeysGetStats200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    totalRequests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    successfulRequests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    failedRequests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    dailyVolume: Schema.Array(
+      Schema.Struct({
+        date: Schema.String,
+        requests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
       }),
     ),
-  successfulRequests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  failedRequests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  dailyVolume: Schema.Array(
-    Schema.Struct({
-      date: Schema.String,
-      requests: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-    }),
-  ),
-});
+  }))();
 export type ApiKeysGetStats401 = UnauthorizedError;
 export const ApiKeysGetStats401 = UnauthorizedError;
 export type ApiKeysGetStats403 = ForbiddenError;

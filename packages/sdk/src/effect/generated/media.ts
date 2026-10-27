@@ -22,17 +22,18 @@ export type MediaUploadInstruction = {
   readonly headers: { readonly [x: string]: string };
   readonly expiresAt: string;
 };
-export const MediaUploadInstruction = /* @__PURE__ */ Schema.Struct({
-  url: Schema.String,
-  method: Schema.Literal("PUT"),
-  headers: Schema.Record(Schema.String, Schema.String),
-  expiresAt: Schema.String,
-}).annotate({ identifier: "MediaUploadInstruction" });
+export const MediaUploadInstruction = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    url: Schema.String,
+    method: Schema.Literal("PUT"),
+    headers: Schema.Record(Schema.String, Schema.String),
+    expiresAt: Schema.String,
+  }).annotate({ identifier: "MediaUploadInstruction" }))();
 export type MediaDownloadUrl = { readonly url: string; readonly expiresAt: string };
-export const MediaDownloadUrl = /* @__PURE__ */ Schema.Struct({
-  url: Schema.String,
-  expiresAt: Schema.String,
-}).annotate({ identifier: "MediaDownloadUrl" });
+export const MediaDownloadUrl = /* @__PURE__ */ (() =>
+  Schema.Struct({ url: Schema.String, expiresAt: Schema.String }).annotate({
+    identifier: "MediaDownloadUrl",
+  }))();
 export type Media = {
   readonly id: MediaId;
   readonly organizationId: OrganizationId;
@@ -49,50 +50,55 @@ export type Media = {
   readonly createdAt: string;
   readonly confirmedAt: string | null;
 };
-export const Media = /* @__PURE__ */ Schema.Struct({
-  id: MediaId,
-  organizationId: OrganizationId,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("uploading"),
-    Schema.Literal("processing"),
-    Schema.Literal("ready"),
-    Schema.Literal("failed"),
-    Schema.Literal("deleted"),
-  ]),
-  filename: Schema.String,
-  contentType: Schema.String,
-  sizeBytes: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-    Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-  ),
-  width: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-      Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
-    ),
-    Schema.Null,
-  ]),
-  height: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-      Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
-    ),
-    Schema.Null,
-  ]),
-  durationMs: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+export const Media = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MediaId,
+    organizationId: OrganizationId,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("uploading"),
+      Schema.Literal("processing"),
+      Schema.Literal("ready"),
+      Schema.Literal("failed"),
+      Schema.Literal("deleted"),
+    ]),
+    filename: Schema.String,
+    contentType: Schema.String,
+    sizeBytes: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ).check(
       Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
     ),
-    Schema.Null,
-  ]),
-  purpose: Schema.Union([
-    Schema.Literal("attachment"),
-    Schema.Literal("avatar"),
-    Schema.Literal("review_evidence"),
-  ]),
-  checksumSha256: Schema.Union([Schema.String, Schema.Null]),
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  confirmedAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "Media" });
+    width: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
+      ),
+      Schema.Null,
+    ]),
+    height: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
+      ),
+      Schema.Null,
+    ]),
+    durationMs: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      ),
+      Schema.Null,
+    ]),
+    purpose: Schema.Union([
+      Schema.Literal("attachment"),
+      Schema.Literal("avatar"),
+      Schema.Literal("review_evidence"),
+    ]),
+    checksumSha256: Schema.Union([Schema.String, Schema.Null]),
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    confirmedAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "Media" }))();
 export type CreatedMedia = {
   readonly id: MediaId;
   readonly organizationId: OrganizationId;
@@ -110,56 +116,61 @@ export type CreatedMedia = {
   readonly confirmedAt: string | null;
   readonly upload: MediaUploadInstruction;
 };
-export const CreatedMedia = /* @__PURE__ */ Schema.Struct({
-  id: MediaId,
-  organizationId: OrganizationId,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("uploading"),
-    Schema.Literal("processing"),
-    Schema.Literal("ready"),
-    Schema.Literal("failed"),
-    Schema.Literal("deleted"),
-  ]),
-  filename: Schema.String,
-  contentType: Schema.String,
-  sizeBytes: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-    Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-  ),
-  width: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-      Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
-    ),
-    Schema.Null,
-  ]),
-  height: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-      Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
-    ),
-    Schema.Null,
-  ]),
-  durationMs: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+export const CreatedMedia = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MediaId,
+    organizationId: OrganizationId,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("uploading"),
+      Schema.Literal("processing"),
+      Schema.Literal("ready"),
+      Schema.Literal("failed"),
+      Schema.Literal("deleted"),
+    ]),
+    filename: Schema.String,
+    contentType: Schema.String,
+    sizeBytes: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ).check(
       Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
     ),
-    Schema.Null,
-  ]),
-  purpose: Schema.Union([
-    Schema.Literal("attachment"),
-    Schema.Literal("avatar"),
-    Schema.Literal("review_evidence"),
-  ]),
-  checksumSha256: Schema.Union([Schema.String, Schema.Null]),
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  confirmedAt: Schema.Union([Schema.String, Schema.Null]),
-  upload: MediaUploadInstruction,
-}).annotate({ identifier: "CreatedMedia" });
+    width: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
+      ),
+      Schema.Null,
+    ]),
+    height: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" }),
+      ),
+      Schema.Null,
+    ]),
+    durationMs: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      ),
+      Schema.Null,
+    ]),
+    purpose: Schema.Union([
+      Schema.Literal("attachment"),
+      Schema.Literal("avatar"),
+      Schema.Literal("review_evidence"),
+    ]),
+    checksumSha256: Schema.Union([Schema.String, Schema.Null]),
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    confirmedAt: Schema.Union([Schema.String, Schema.Null]),
+    upload: MediaUploadInstruction,
+  }).annotate({ identifier: "CreatedMedia" }))();
 export type CompletedMedia = { readonly media: Media; readonly downloadUrl: string };
-export const CompletedMedia = /* @__PURE__ */ Schema.Struct({
-  media: Media,
-  downloadUrl: Schema.String,
-}).annotate({ identifier: "CompletedMedia" });
+export const CompletedMedia = /* @__PURE__ */ (() =>
+  Schema.Struct({ media: Media, downloadUrl: Schema.String }).annotate({
+    identifier: "CompletedMedia",
+  }))();
 export type MediaCreateRequestJson = {
   readonly filename: string;
   readonly contentType: string;
@@ -167,35 +178,40 @@ export type MediaCreateRequestJson = {
   readonly purpose: "attachment" | "avatar" | "review_evidence";
   readonly checksumSha256?: string | null;
 };
-export const MediaCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  filename: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+export const MediaCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    filename: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-  contentType: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(127).annotate({ expected: "a string with at most 127 code points" }),
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+    contentType: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(127).annotate({ expected: "a value with a length of at most 127" })),
-  sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(26214400).annotate({
-        expected: "a value less than or equal to 26214400",
-      }),
-    )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-  purpose: Schema.Union([
-    Schema.Literal("attachment"),
-    Schema.Literal("avatar"),
-    Schema.Literal("review_evidence"),
-  ]),
-  checksumSha256: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+      .check(
+        Schema.isMaxCodePoints(127).annotate({ expected: "a string with at most 127 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(127).annotate({ expected: "a value with a length of at most 127" }),
+      ),
+    sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(26214400).annotate({
+          expected: "a value less than or equal to 26214400",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    purpose: Schema.Union([
+      Schema.Literal("attachment"),
+      Schema.Literal("avatar"),
+      Schema.Literal("review_evidence"),
+    ]),
+    checksumSha256: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MediaCreate201 = CreatedMedia;
 export const MediaCreate201 = CreatedMedia;
 export type MediaCreate401 = UnauthorizedError;
@@ -209,7 +225,7 @@ export const MediaCreate500 = InternalError;
 export type MediaCreate504 = GatewayTimeoutError;
 export const MediaCreate504 = GatewayTimeoutError;
 export type MediaGetByIdPathParams = { readonly id: MediaId };
-export const MediaGetByIdPathParams = /* @__PURE__ */ Schema.Struct({ id: MediaId });
+export const MediaGetByIdPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaGetById200 = Media;
 export const MediaGetById200 = Media;
 export type MediaGetById401 = UnauthorizedError;
@@ -225,7 +241,7 @@ export const MediaGetById500 = InternalError;
 export type MediaGetById504 = GatewayTimeoutError;
 export const MediaGetById504 = GatewayTimeoutError;
 export type MediaRemovePathParams = { readonly id: MediaId };
-export const MediaRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: MediaId });
+export const MediaRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaRemove200 = SuccessResponse;
 export const MediaRemove200 = SuccessResponse;
 export type MediaRemove401 = UnauthorizedError;
@@ -241,7 +257,7 @@ export const MediaRemove500 = InternalError;
 export type MediaRemove504 = GatewayTimeoutError;
 export const MediaRemove504 = GatewayTimeoutError;
 export type MediaCompletePathParams = { readonly id: MediaId };
-export const MediaCompletePathParams = /* @__PURE__ */ Schema.Struct({ id: MediaId });
+export const MediaCompletePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaComplete200 = CompletedMedia;
 export const MediaComplete200 = CompletedMedia;
 export type MediaComplete401 = UnauthorizedError;
@@ -257,7 +273,7 @@ export const MediaComplete500 = InternalError;
 export type MediaComplete504 = GatewayTimeoutError;
 export const MediaComplete504 = GatewayTimeoutError;
 export type MediaDownloadUrlPathParams = { readonly id: MediaId };
-export const MediaDownloadUrlPathParams = /* @__PURE__ */ Schema.Struct({ id: MediaId });
+export const MediaDownloadUrlPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaDownloadUrl200 = MediaDownloadUrl;
 export const MediaDownloadUrl200 = MediaDownloadUrl;
 export type MediaDownloadUrl401 = UnauthorizedError;

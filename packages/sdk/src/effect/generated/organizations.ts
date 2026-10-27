@@ -20,14 +20,15 @@ import {
 } from "./shared";
 
 export type PhoneRegion = string;
-export const PhoneRegion = /* @__PURE__ */ Schema.String.annotate({
-  description: "An ISO 3166-1 alpha-2 region code, such as US or IN.",
-}).check(
-  Schema.isPattern(new RegExp("^[A-Z]{2}$", "u")).annotate({
-    expected: "a string matching the RegExp ^[A-Z]{2}$",
-    identifier: "PhoneRegion",
-  }),
-);
+export const PhoneRegion = /* @__PURE__ */ (() =>
+  Schema.String.annotate({
+    description: "An ISO 3166-1 alpha-2 region code, such as US or IN.",
+  }).check(
+    Schema.isPattern(new RegExp("^[A-Z]{2}$", "u")).annotate({
+      expected: "a string matching the RegExp ^[A-Z]{2}$",
+      identifier: "PhoneRegion",
+    }),
+  ))();
 export type Organization = {
   readonly id: string;
   readonly billingAccountId: string;
@@ -52,43 +53,45 @@ export type Organization = {
   readonly teamMembersUsed: number;
   readonly messagesResetAt: string | null;
 };
-export const Organization = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  billingAccountId: Schema.String,
-  name: Schema.String,
-  slug: Schema.String,
-  avatarUrl: Schema.Union([Schema.String, Schema.Null]).annotate({
-    description:
-      "URL of the organization's avatar image, hosted by Samva. Null when no avatar is set.",
-  }),
-  defaultRegion: Schema.Union([PhoneRegion, Schema.Null]),
-  timezone: Schema.String,
-  plan: Schema.String,
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  metadata: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  replyToDefault: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  emailFooterEnabledDefault: Schema.Union([Schema.Boolean, Schema.Null]),
-  messagesUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  messagesUsedThisMonth: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  emailUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  emailUsedThisMonth: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  contactsUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  conversationsUsed: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  teamMembersUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  messagesResetAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "Organization" });
+export const Organization = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    billingAccountId: Schema.String,
+    name: Schema.String,
+    slug: Schema.String,
+    avatarUrl: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "URL of the organization's avatar image, hosted by Samva. Null when no avatar is set.",
+    }),
+    defaultRegion: Schema.Union([PhoneRegion, Schema.Null]),
+    timezone: Schema.String,
+    plan: Schema.String,
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    metadata: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    replyToDefault: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    emailFooterEnabledDefault: Schema.Union([Schema.Boolean, Schema.Null]),
+    messagesUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    messagesUsedThisMonth: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    emailUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    emailUsedThisMonth: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    contactsUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    conversationsUsed: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    teamMembersUsed: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    messagesResetAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "Organization" }))();
 export type OrganizationsCreateRequestJson = { readonly name: string };
-export const OrganizationsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String,
-});
+export const OrganizationsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ name: Schema.String }))();
 export type OrganizationsCreate200 = Organization;
 export const OrganizationsCreate200 = Organization;
 export type OrganizationsCreate401 = UnauthorizedError;
@@ -130,33 +133,34 @@ export type OrganizationsUpdateRequestJson = {
   readonly replyToDefault?: ReadonlyArray<string> | null | null;
   readonly emailFooterEnabledDefault?: boolean | null | null;
 };
-export const OrganizationsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  avatarUrl: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.String, Schema.Null]).annotate({
-        description:
-          "The `src` returned by an avatar upload (see `POST /v1/organizations/current/avatar-upload`). Null removes the avatar.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-  defaultRegion: Schema.optionalKey(
-    Schema.Union([Schema.Union([PhoneRegion, Schema.Null]), Schema.Null]),
-  ),
-  timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  metadata: Schema.optionalKey(
-    Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  ),
-  replyToDefault: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-  ),
-  emailFooterEnabledDefault: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-  ),
-});
+export const OrganizationsUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    avatarUrl: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.String, Schema.Null]).annotate({
+          description:
+            "The `src` returned by an avatar upload (see `POST /v1/organizations/current/avatar-upload`). Null removes the avatar.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    defaultRegion: Schema.optionalKey(
+      Schema.Union([Schema.Union([PhoneRegion, Schema.Null]), Schema.Null]),
+    ),
+    timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    metadata: Schema.optionalKey(
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    ),
+    replyToDefault: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+    ),
+    emailFooterEnabledDefault: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
+    ),
+  }))();
 export type OrganizationsUpdate200 = Organization;
 export const OrganizationsUpdate200 = Organization;
 export type OrganizationsUpdate401 = UnauthorizedError;
@@ -176,15 +180,16 @@ export type OrganizationsCreateAvatarUpload200 = {
   readonly maxBytes: number;
   readonly contentTypes: ReadonlyArray<string>;
 };
-export const OrganizationsCreateAvatarUpload200 = /* @__PURE__ */ Schema.Struct({
-  uploadUrl: Schema.String.annotate({ description: "The URL to PUT the image bytes to." }),
-  maxBytes: Schema.Finite.annotate({
-    description: "The largest image the upload accepts, in bytes.",
-  }).check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  contentTypes: Schema.Array(Schema.String).annotate({
-    description: "The image content types the upload accepts.",
-  }),
-});
+export const OrganizationsCreateAvatarUpload200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    uploadUrl: Schema.String.annotate({ description: "The URL to PUT the image bytes to." }),
+    maxBytes: Schema.Finite.annotate({
+      description: "The largest image the upload accepts, in bytes.",
+    }).check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    contentTypes: Schema.Array(Schema.String).annotate({
+      description: "The image content types the upload accepts.",
+    }),
+  }))();
 export type OrganizationsCreateAvatarUpload401 = UnauthorizedError;
 export const OrganizationsCreateAvatarUpload401 = UnauthorizedError;
 export type OrganizationsCreateAvatarUpload403 = ForbiddenError;
@@ -200,11 +205,12 @@ export type OrganizationsGetProfile200 = {
   readonly name: string;
   readonly nickname: string;
 };
-export const OrganizationsGetProfile200 = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String.annotate({ description: "Opaque identity for your organization membership" }),
-  name: Schema.String.annotate({ description: "Your display name" }),
-  nickname: Schema.String.annotate({ description: "Your display name and organization name" }),
-});
+export const OrganizationsGetProfile200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String.annotate({ description: "Opaque identity for your organization membership" }),
+    name: Schema.String.annotate({ description: "Your display name" }),
+    nickname: Schema.String.annotate({ description: "Your display name and organization name" }),
+  }))();
 export type OrganizationsGetProfile401 = UnauthorizedError;
 export const OrganizationsGetProfile401 = UnauthorizedError;
 export type OrganizationsGetProfile403 = ForbiddenError;
@@ -216,19 +222,21 @@ export const OrganizationsGetProfile500 = InternalError;
 export type OrganizationsGetProfile504 = GatewayTimeoutError;
 export const OrganizationsGetProfile504 = GatewayTimeoutError;
 export type OrganizationsDeleteHeaders = { readonly "idempotency-key": string };
-export const OrganizationsDeleteHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+export const OrganizationsDeleteHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type OrganizationsDeleteRequestJson = { readonly confirmationName: string };
-export const OrganizationsDeleteRequestJson = /* @__PURE__ */ Schema.Struct({
-  confirmationName: Schema.String,
-});
+export const OrganizationsDeleteRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ confirmationName: Schema.String }))();
 export type OrganizationsDelete202 = OperationAccepted;
 export const OrganizationsDelete202 = OperationAccepted;
 export type OrganizationsDelete401 = UnauthorizedError;
@@ -275,71 +283,80 @@ export type OrganizationsGetTrustTier200 = {
     >;
   } | null;
 };
-export const OrganizationsGetTrustTier200 = /* @__PURE__ */ Schema.Struct({
-  tier: Schema.Union([
-    Schema.Literal("screened"),
-    Schema.Literal("probation"),
-    Schema.Literal("established"),
-  ]),
-  changedAt: Schema.String,
-  sendingLimits: Schema.Struct({
-    sendsPerSecond: Schema.Finite.check(
-      Schema.isFinite().annotate({ expected: "a finite number" }),
-    ),
-    dailySends: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    probation: Schema.Union([
+export const OrganizationsGetTrustTier200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    tier: Schema.Union([
+      Schema.Literal("screened"),
+      Schema.Literal("probation"),
+      Schema.Literal("established"),
+    ]),
+    changedAt: Schema.String,
+    sendingLimits: Schema.Struct({
+      sendsPerSecond: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
+      ),
+      dailySends: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      probation: Schema.Union([
+        Schema.Struct({
+          hourlyRecipients: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+          dailyRecipients: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+          domainShare: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+          domainShareFloor: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    }),
+    graduation: Schema.Union([
       Schema.Struct({
-        hourlyRecipients: Schema.Finite.check(
+        firstSentAt: Schema.Union([Schema.String, Schema.Null]),
+        elapsedDays: Schema.Finite.check(
           Schema.isFinite().annotate({ expected: "a finite number" }),
         ),
-        dailyRecipients: Schema.Finite.check(
+        sent: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        delivered: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        hardBounces: Schema.Finite.check(
           Schema.isFinite().annotate({ expected: "a finite number" }),
         ),
-        domainShare: Schema.Finite.check(
+        hardBounceRate: Schema.Union([
+          Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+          Schema.Null,
+        ]),
+        complaints: Schema.Finite.check(
           Schema.isFinite().annotate({ expected: "a finite number" }),
         ),
-        domainShareFloor: Schema.Finite.check(
-          Schema.isFinite().annotate({ expected: "a finite number" }),
+        holds: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        requirements: Schema.Struct({
+          minimumDays: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+          delivered: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+          maximumHardBounceRate: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
+          ),
+        }),
+        blockers: Schema.Array(
+          Schema.Union([
+            Schema.Literal("too_recent"),
+            Schema.Literal("too_few_delivered"),
+            Schema.Literal("held"),
+            Schema.Literal("complaints"),
+            Schema.Literal("bounce_rate"),
+          ]),
         ),
       }),
       Schema.Null,
     ]),
-  }),
-  graduation: Schema.Union([
-    Schema.Struct({
-      firstSentAt: Schema.Union([Schema.String, Schema.Null]),
-      elapsedDays: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      sent: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      delivered: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      hardBounces: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      hardBounceRate: Schema.Union([
-        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-        Schema.Null,
-      ]),
-      complaints: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      holds: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      requirements: Schema.Struct({
-        minimumDays: Schema.Finite.check(
-          Schema.isFinite().annotate({ expected: "a finite number" }),
-        ),
-        delivered: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-        maximumHardBounceRate: Schema.Finite.check(
-          Schema.isFinite().annotate({ expected: "a finite number" }),
-        ),
-      }),
-      blockers: Schema.Array(
-        Schema.Union([
-          Schema.Literal("too_recent"),
-          Schema.Literal("too_few_delivered"),
-          Schema.Literal("held"),
-          Schema.Literal("complaints"),
-          Schema.Literal("bounce_rate"),
-        ]),
-      ),
-    }),
-    Schema.Null,
-  ]),
-});
+  }))();
 export type OrganizationsGetTrustTier401 = UnauthorizedError;
 export const OrganizationsGetTrustTier401 = UnauthorizedError;
 export type OrganizationsGetTrustTier403 = ForbiddenError;
@@ -358,10 +375,11 @@ export type OrganizationsGetUsageQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const OrganizationsGetUsageQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const OrganizationsGetUsageQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type OrganizationsGetUsage200 = {
   readonly usage: {
     readonly periodStart: string;
@@ -385,56 +403,59 @@ export type OrganizationsGetUsage200 = {
     readonly creditsResetsAt: string | null;
   };
 };
-export const OrganizationsGetUsage200 = /* @__PURE__ */ Schema.Struct({
-  usage: Schema.Struct({
-    periodStart: Schema.String,
-    periodEnd: Schema.String,
-    emailCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    totalMessages: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  }),
-  billing: Schema.Struct({
-    currency: Schema.String,
-    planName: Schema.Union([Schema.String, Schema.Null]),
-    includedCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    usedCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    overageCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    overageCost: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    includedAiCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    usedAiCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    overageAiCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    overageAiCost: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    aiPackCredits: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    aiResetsAt: Schema.Union([Schema.String, Schema.Null]),
-    creditsResetsAt: Schema.Union([Schema.String, Schema.Null]),
-  }),
-});
+export const OrganizationsGetUsage200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    usage: Schema.Struct({
+      periodStart: Schema.String,
+      periodEnd: Schema.String,
+      emailCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      totalMessages: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
+      ),
+    }),
+    billing: Schema.Struct({
+      currency: Schema.String,
+      planName: Schema.Union([Schema.String, Schema.Null]),
+      includedCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      usedCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      overageCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      overageCost: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      includedAiCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      usedAiCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      overageAiCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      overageAiCost: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      aiPackCredits: Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+      aiResetsAt: Schema.Union([Schema.String, Schema.Null]),
+      creditsResetsAt: Schema.Union([Schema.String, Schema.Null]),
+    }),
+  }))();
 export type OrganizationsGetUsage401 = UnauthorizedError;
 export const OrganizationsGetUsage401 = UnauthorizedError;
 export type OrganizationsGetUsage403 = ForbiddenError;

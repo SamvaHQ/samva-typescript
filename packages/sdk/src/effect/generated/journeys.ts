@@ -26,39 +26,44 @@ import {
 } from "./shared";
 
 export type JourneyStatus = "draft" | "active" | "paused" | "archived";
-export const JourneyStatus = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("draft"),
-  Schema.Literal("active"),
-  Schema.Literal("paused"),
-  Schema.Literal("archived"),
-]).annotate({ identifier: "JourneyStatus" });
+export const JourneyStatus = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("draft"),
+    Schema.Literal("active"),
+    Schema.Literal("paused"),
+    Schema.Literal("archived"),
+  ]).annotate({ identifier: "JourneyStatus" }))();
 export type JourneyId = string & EffectBrand.Brand<"JourneyId">;
-export const JourneyId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "JourneyId",
-  }),
-).pipe(Schema.brand("JourneyId"));
+export const JourneyId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "JourneyId",
+    }),
+  ).pipe(Schema.brand("JourneyId")))();
 export type JourneyRunStatus = "active" | "paused" | "exited" | "failed";
-export const JourneyRunStatus = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("active"),
-  Schema.Literal("paused"),
-  Schema.Literal("exited"),
-  Schema.Literal("failed"),
-]).annotate({ identifier: "JourneyRunStatus" });
+export const JourneyRunStatus = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("active"),
+    Schema.Literal("paused"),
+    Schema.Literal("exited"),
+    Schema.Literal("failed"),
+  ]).annotate({ identifier: "JourneyRunStatus" }))();
 export type JourneyRunId = string & EffectBrand.Brand<"JourneyRunId">;
-export const JourneyRunId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^jrun_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "JourneyRunId",
-  }),
-).pipe(Schema.brand("JourneyRunId"));
+export const JourneyRunId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^jrun_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "JourneyRunId",
+    }),
+  ).pipe(Schema.brand("JourneyRunId")))();
 export type JourneyRunExitReason = "completed" | "goal" | "archived";
-export const JourneyRunExitReason = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("completed"),
-  Schema.Literal("goal"),
-  Schema.Literal("archived"),
-]).annotate({ identifier: "JourneyRunExitReason" });
+export const JourneyRunExitReason = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("completed"),
+    Schema.Literal("goal"),
+    Schema.Literal("archived"),
+  ]).annotate({ identifier: "JourneyRunExitReason" }))();
 export type JourneyRunStepOutcome =
   | "completed"
   | "matched"
@@ -66,91 +71,24 @@ export type JourneyRunStepOutcome =
   | "goal"
   | "archived"
   | "failed";
-export const JourneyRunStepOutcome = /* @__PURE__ */ Schema.Union([
-  Schema.Literal("completed"),
-  Schema.Literal("matched"),
-  Schema.Literal("timed_out"),
-  Schema.Literal("goal"),
-  Schema.Literal("archived"),
-  Schema.Literal("failed"),
-]).annotate({ identifier: "JourneyRunStepOutcome" });
+export const JourneyRunStepOutcome = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("completed"),
+    Schema.Literal("matched"),
+    Schema.Literal("timed_out"),
+    Schema.Literal("goal"),
+    Schema.Literal("archived"),
+    Schema.Literal("failed"),
+  ]).annotate({ identifier: "JourneyRunStepOutcome" }))();
 export type JourneyRunCounts = {
   readonly active: number;
   readonly paused: number;
   readonly exited: number;
   readonly failed: number;
 };
-export const JourneyRunCounts = /* @__PURE__ */ Schema.Struct({
-  active: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  paused: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  exited: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "JourneyRunCounts" });
-export type JourneyRunTrigger = {
-  readonly eventId: string;
-  readonly eventName: string;
-  readonly properties: JsonObject;
-};
-export const JourneyRunTrigger = /* @__PURE__ */ Schema.Struct({
-  eventId: Schema.String,
-  eventName: Schema.String,
-  properties: JsonObject,
-}).annotate({ identifier: "JourneyRunTrigger" });
-export type JourneyListItem = {
-  readonly id: JourneyId;
-  readonly name: string;
-  readonly status: JourneyStatus;
-  readonly publishedVersion: number | null;
-  readonly publishedAt: string | null;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-};
-export const JourneyListItem = /* @__PURE__ */ Schema.Struct({
-  id: JourneyId,
-  name: Schema.String,
-  status: JourneyStatus,
-  publishedVersion: Schema.Union([
-    Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const JourneyRunCounts = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    active: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
           expected: "a value greater than or equal to -9007199254740991",
@@ -161,47 +99,119 @@ export const JourneyListItem = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-    Schema.Null,
-  ]),
-  publishedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "JourneyListItem" });
+    paused: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    exited: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "JourneyRunCounts" }))();
+export type JourneyRunTrigger = {
+  readonly eventId: string;
+  readonly eventName: string;
+  readonly properties: JsonObject;
+};
+export const JourneyRunTrigger = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    eventId: Schema.String,
+    eventName: Schema.String,
+    properties: JsonObject,
+  }).annotate({ identifier: "JourneyRunTrigger" }))();
+export type JourneyListItem = {
+  readonly id: JourneyId;
+  readonly name: string;
+  readonly status: JourneyStatus;
+  readonly publishedVersion: number | null;
+  readonly publishedAt: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+export const JourneyListItem = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: JourneyId,
+    name: Schema.String,
+    status: JourneyStatus,
+    publishedVersion: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "JourneyListItem" }))();
 export type DeleteJourneyResponse = { readonly id: JourneyId; readonly deleted: true };
-export const DeleteJourneyResponse = /* @__PURE__ */ Schema.Struct({
-  id: JourneyId,
-  deleted: Schema.Literal(true),
-}).annotate({ identifier: "DeleteJourneyResponse" });
+export const DeleteJourneyResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: JourneyId, deleted: Schema.Literal(true) }).annotate({
+    identifier: "DeleteJourneyResponse",
+  }))();
 export type JourneyNodeStats = {
   readonly nodeId: JourneyNodeId;
   readonly current: number;
   readonly entered: number;
 };
-export const JourneyNodeStats = /* @__PURE__ */ Schema.Struct({
-  nodeId: JourneyNodeId,
-  current: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  entered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "JourneyNodeStats" });
+export const JourneyNodeStats = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    nodeId: JourneyNodeId,
+    current: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    entered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "JourneyNodeStats" }))();
 export type JourneyRunStep = {
   readonly nodeId: JourneyNodeId;
   readonly type: string;
@@ -212,16 +222,17 @@ export type JourneyRunStep = {
   readonly messageId: MessageId | null;
   readonly error: string | null;
 };
-export const JourneyRunStep = /* @__PURE__ */ Schema.Struct({
-  nodeId: JourneyNodeId,
-  type: Schema.String,
-  enteredAt: Schema.String,
-  completedAt: Schema.Union([Schema.String, Schema.Null]),
-  outcome: Schema.Union([JourneyRunStepOutcome, Schema.Null]),
-  nextNodeId: Schema.Union([JourneyNodeId, Schema.Null]),
-  messageId: Schema.Union([MessageId, Schema.Null]),
-  error: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "JourneyRunStep" });
+export const JourneyRunStep = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    nodeId: JourneyNodeId,
+    type: Schema.String,
+    enteredAt: Schema.String,
+    completedAt: Schema.Union([Schema.String, Schema.Null]),
+    outcome: Schema.Union([JourneyRunStepOutcome, Schema.Null]),
+    nextNodeId: Schema.Union([JourneyNodeId, Schema.Null]),
+    messageId: Schema.Union([MessageId, Schema.Null]),
+    error: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "JourneyRunStep" }))();
 export type JourneyRun = {
   readonly id: JourneyRunId;
   readonly journeyId: JourneyId;
@@ -237,61 +248,64 @@ export type JourneyRun = {
   readonly enteredAt: string;
   readonly endedAt: string | null;
 };
-export const JourneyRun = /* @__PURE__ */ Schema.Struct({
-  id: JourneyRunId,
-  journeyId: JourneyId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  contactId: ContactId,
-  status: JourneyRunStatus,
-  exitReason: Schema.Union([JourneyRunExitReason, Schema.Null]),
-  failureReason: Schema.Union([Schema.String, Schema.Null]),
-  currentNodeId: Schema.Union([JourneyNodeId, Schema.Null]),
-  holdReason: Schema.Union([Schema.String, Schema.Null]),
-  holdUntil: Schema.Union([Schema.String, Schema.Null]),
-  trigger: JourneyRunTrigger,
-  enteredAt: Schema.String,
-  endedAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "JourneyRun" });
+export const JourneyRun = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: JourneyRunId,
+    journeyId: JourneyId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    contactId: ContactId,
+    status: JourneyRunStatus,
+    exitReason: Schema.Union([JourneyRunExitReason, Schema.Null]),
+    failureReason: Schema.Union([Schema.String, Schema.Null]),
+    currentNodeId: Schema.Union([JourneyNodeId, Schema.Null]),
+    holdReason: Schema.Union([Schema.String, Schema.Null]),
+    holdUntil: Schema.Union([Schema.String, Schema.Null]),
+    trigger: JourneyRunTrigger,
+    enteredAt: Schema.String,
+    endedAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "JourneyRun" }))();
 export type JourneyPage = {
   readonly items: ReadonlyArray<JourneyListItem>;
   readonly nextCursor: string | null;
 };
-export const JourneyPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(JourneyListItem),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "JourneyPage" });
+export const JourneyPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(JourneyListItem),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "JourneyPage" }))();
 export type JourneyStats = {
   readonly journeyId: JourneyId;
   readonly version: number;
   readonly runs: JourneyRunCounts;
   readonly nodes: ReadonlyArray<JourneyNodeStats>;
 };
-export const JourneyStats = /* @__PURE__ */ Schema.Struct({
-  journeyId: JourneyId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  runs: JourneyRunCounts,
-  nodes: Schema.Array(JourneyNodeStats),
-}).annotate({ identifier: "JourneyStats" });
+export const JourneyStats = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    journeyId: JourneyId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    runs: JourneyRunCounts,
+    nodes: Schema.Array(JourneyNodeStats),
+  }).annotate({ identifier: "JourneyStats" }))();
 export type JourneyRunDetail = {
   readonly id: JourneyRunId;
   readonly journeyId: JourneyId;
@@ -308,40 +322,42 @@ export type JourneyRunDetail = {
   readonly endedAt: string | null;
   readonly steps: ReadonlyArray<JourneyRunStep>;
 };
-export const JourneyRunDetail = /* @__PURE__ */ Schema.Struct({
-  id: JourneyRunId,
-  journeyId: JourneyId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  contactId: ContactId,
-  status: JourneyRunStatus,
-  exitReason: Schema.Union([JourneyRunExitReason, Schema.Null]),
-  failureReason: Schema.Union([Schema.String, Schema.Null]),
-  currentNodeId: Schema.Union([JourneyNodeId, Schema.Null]),
-  holdReason: Schema.Union([Schema.String, Schema.Null]),
-  holdUntil: Schema.Union([Schema.String, Schema.Null]),
-  trigger: JourneyRunTrigger,
-  enteredAt: Schema.String,
-  endedAt: Schema.Union([Schema.String, Schema.Null]),
-  steps: Schema.Array(JourneyRunStep),
-}).annotate({ identifier: "JourneyRunDetail" });
+export const JourneyRunDetail = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: JourneyRunId,
+    journeyId: JourneyId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    contactId: ContactId,
+    status: JourneyRunStatus,
+    exitReason: Schema.Union([JourneyRunExitReason, Schema.Null]),
+    failureReason: Schema.Union([Schema.String, Schema.Null]),
+    currentNodeId: Schema.Union([JourneyNodeId, Schema.Null]),
+    holdReason: Schema.Union([Schema.String, Schema.Null]),
+    holdUntil: Schema.Union([Schema.String, Schema.Null]),
+    trigger: JourneyRunTrigger,
+    enteredAt: Schema.String,
+    endedAt: Schema.Union([Schema.String, Schema.Null]),
+    steps: Schema.Array(JourneyRunStep),
+  }).annotate({ identifier: "JourneyRunDetail" }))();
 export type JourneyRunPage = {
   readonly items: ReadonlyArray<JourneyRun>;
   readonly nextCursor: string | null;
 };
-export const JourneyRunPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(JourneyRun),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "JourneyRunPage" });
+export const JourneyRunPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(JourneyRun),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "JourneyRunPage" }))();
 export type Journey = {
   readonly id: JourneyId;
   readonly name: string;
@@ -353,14 +369,41 @@ export type Journey = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const Journey = /* @__PURE__ */ Schema.Struct({
-  id: JourneyId,
-  name: Schema.String,
-  status: JourneyStatus,
-  revision: Schema.String,
-  draft: JourneyDefinition,
-  publishedVersion: Schema.Union([
-    Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const Journey = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: JourneyId,
+    name: Schema.String,
+    status: JourneyStatus,
+    revision: Schema.String,
+    draft: JourneyDefinition,
+    publishedVersion: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Journey" }))();
+export type JourneyVersion = {
+  readonly journeyId: JourneyId;
+  readonly version: number;
+  readonly definition: JourneyDefinition;
+  readonly publishedAt: string;
+};
+export const JourneyVersion = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    journeyId: JourneyId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
           expected: "a value greater than or equal to -9007199254740991",
@@ -371,56 +414,32 @@ export const Journey = /* @__PURE__ */ Schema.Struct({
           expected: "a value less than or equal to 9007199254740991",
         }),
       ),
-    Schema.Null,
-  ]),
-  publishedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Journey" });
-export type JourneyVersion = {
-  readonly journeyId: JourneyId;
-  readonly version: number;
-  readonly definition: JourneyDefinition;
-  readonly publishedAt: string;
-};
-export const JourneyVersion = /* @__PURE__ */ Schema.Struct({
-  journeyId: JourneyId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  definition: JourneyDefinition,
-  publishedAt: Schema.String,
-}).annotate({ identifier: "JourneyVersion" });
+    definition: JourneyDefinition,
+    publishedAt: Schema.String,
+  }).annotate({ identifier: "JourneyVersion" }))();
 export type JourneysListQuery = {
   readonly status?: JourneyStatus | null;
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const JourneysListQuery = /* @__PURE__ */ Schema.Struct({
-  status: Schema.optionalKey(Schema.Union([JourneyStatus, Schema.Null])),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const JourneysListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.optionalKey(Schema.Union([JourneyStatus, Schema.Null])),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type JourneysList200 = JourneyPage;
 export const JourneysList200 = JourneyPage;
 export type JourneysList401 = UnauthorizedError;
@@ -437,10 +456,8 @@ export type JourneysCreateRequestJson = {
   readonly name: JourneyName;
   readonly definition: JourneyDefinition;
 };
-export const JourneysCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: JourneyName,
-  definition: JourneyDefinition,
-});
+export const JourneysCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ name: JourneyName, definition: JourneyDefinition }))();
 export type JourneysCreate201 = Journey;
 export const JourneysCreate201 = Journey;
 export type JourneysCreate401 = UnauthorizedError;
@@ -448,7 +465,8 @@ export const JourneysCreate401 = UnauthorizedError;
 export type JourneysCreate402 = PaymentRequiredError;
 export const JourneysCreate402 = PaymentRequiredError;
 export type JourneysCreate403 = FlagDisabledError | ForbiddenError;
-export const JourneysCreate403 = /* @__PURE__ */ Schema.Union([FlagDisabledError, ForbiddenError]);
+export const JourneysCreate403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type JourneysCreate404 = ResourceNotFoundError;
 export const JourneysCreate404 = ResourceNotFoundError;
 export type JourneysCreate409 = ConflictError;
@@ -462,7 +480,7 @@ export const JourneysCreate502 = BillingProviderError;
 export type JourneysCreate504 = GatewayTimeoutError;
 export const JourneysCreate504 = GatewayTimeoutError;
 export type JourneysGetPathParams = { readonly id: JourneyId };
-export const JourneysGetPathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysGet200 = Journey;
 export const JourneysGet200 = Journey;
 export type JourneysGet401 = UnauthorizedError;
@@ -478,7 +496,7 @@ export const JourneysGet500 = InternalError;
 export type JourneysGet504 = GatewayTimeoutError;
 export const JourneysGet504 = GatewayTimeoutError;
 export type JourneysRemovePathParams = { readonly id: JourneyId };
-export const JourneysRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysRemove200 = DeleteJourneyResponse;
 export const JourneysRemove200 = DeleteJourneyResponse;
 export type JourneysRemove401 = UnauthorizedError;
@@ -496,9 +514,10 @@ export const JourneysRemove500 = InternalError;
 export type JourneysRemove504 = GatewayTimeoutError;
 export const JourneysRemove504 = GatewayTimeoutError;
 export type JourneysUpdatePathParams = { readonly id: JourneyId };
-export const JourneysUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysUpdateRequestJson = { readonly name: JourneyName };
-export const JourneysUpdateRequestJson = /* @__PURE__ */ Schema.Struct({ name: JourneyName });
+export const JourneysUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ name: JourneyName }))();
 export type JourneysUpdate200 = Journey;
 export const JourneysUpdate200 = Journey;
 export type JourneysUpdate401 = UnauthorizedError;
@@ -514,7 +533,7 @@ export const JourneysUpdate500 = InternalError;
 export type JourneysUpdate504 = GatewayTimeoutError;
 export const JourneysUpdate504 = GatewayTimeoutError;
 export type JourneysArchivePathParams = { readonly id: JourneyId };
-export const JourneysArchivePathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysArchivePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysArchive200 = Journey;
 export const JourneysArchive200 = Journey;
 export type JourneysArchive401 = UnauthorizedError;
@@ -532,17 +551,19 @@ export const JourneysArchive500 = InternalError;
 export type JourneysArchive504 = GatewayTimeoutError;
 export const JourneysArchive504 = GatewayTimeoutError;
 export type JourneysReplaceDraftPathParams = { readonly id: JourneyId };
-export const JourneysReplaceDraftPathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysReplaceDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: JourneyId }))();
 export type JourneysReplaceDraftRequestJson = {
   readonly revision: string;
   readonly definition: JourneyDefinition;
 };
-export const JourneysReplaceDraftRequestJson = /* @__PURE__ */ Schema.Struct({
-  revision: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-  definition: JourneyDefinition,
-});
+export const JourneysReplaceDraftRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    revision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    definition: JourneyDefinition,
+  }))();
 export type JourneysReplaceDraft200 = Journey;
 export const JourneysReplaceDraft200 = Journey;
 export type JourneysReplaceDraft401 = UnauthorizedError;
@@ -550,10 +571,8 @@ export const JourneysReplaceDraft401 = UnauthorizedError;
 export type JourneysReplaceDraft402 = PaymentRequiredError;
 export const JourneysReplaceDraft402 = PaymentRequiredError;
 export type JourneysReplaceDraft403 = FlagDisabledError | ForbiddenError;
-export const JourneysReplaceDraft403 = /* @__PURE__ */ Schema.Union([
-  FlagDisabledError,
-  ForbiddenError,
-]);
+export const JourneysReplaceDraft403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type JourneysReplaceDraft404 = ResourceNotFoundError;
 export const JourneysReplaceDraft404 = ResourceNotFoundError;
 export type JourneysReplaceDraft409 = ConflictError;
@@ -567,7 +586,7 @@ export const JourneysReplaceDraft502 = BillingProviderError;
 export type JourneysReplaceDraft504 = GatewayTimeoutError;
 export const JourneysReplaceDraft504 = GatewayTimeoutError;
 export type JourneysPausePathParams = { readonly id: JourneyId };
-export const JourneysPausePathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysPausePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysPause200 = Journey;
 export const JourneysPause200 = Journey;
 export type JourneysPause401 = UnauthorizedError;
@@ -585,13 +604,14 @@ export const JourneysPause500 = InternalError;
 export type JourneysPause504 = GatewayTimeoutError;
 export const JourneysPause504 = GatewayTimeoutError;
 export type JourneysPublishPathParams = { readonly id: JourneyId };
-export const JourneysPublishPathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysPublishPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysPublishRequestJson = { readonly revision: string };
-export const JourneysPublishRequestJson = /* @__PURE__ */ Schema.Struct({
-  revision: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-});
+export const JourneysPublishRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    revision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+  }))();
 export type JourneysPublish200 = Journey;
 export const JourneysPublish200 = Journey;
 export type JourneysPublish401 = UnauthorizedError;
@@ -599,7 +619,8 @@ export const JourneysPublish401 = UnauthorizedError;
 export type JourneysPublish402 = PaymentRequiredError;
 export const JourneysPublish402 = PaymentRequiredError;
 export type JourneysPublish403 = FlagDisabledError | ForbiddenError;
-export const JourneysPublish403 = /* @__PURE__ */ Schema.Union([FlagDisabledError, ForbiddenError]);
+export const JourneysPublish403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type JourneysPublish404 = ResourceNotFoundError;
 export const JourneysPublish404 = ResourceNotFoundError;
 export type JourneysPublish409 = ConflictError;
@@ -613,7 +634,7 @@ export const JourneysPublish502 = BillingProviderError;
 export type JourneysPublish504 = GatewayTimeoutError;
 export const JourneysPublish504 = GatewayTimeoutError;
 export type JourneysResumePathParams = { readonly id: JourneyId };
-export const JourneysResumePathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysResumePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysResume200 = Journey;
 export const JourneysResume200 = Journey;
 export type JourneysResume401 = UnauthorizedError;
@@ -621,7 +642,8 @@ export const JourneysResume401 = UnauthorizedError;
 export type JourneysResume402 = PaymentRequiredError;
 export const JourneysResume402 = PaymentRequiredError;
 export type JourneysResume403 = FlagDisabledError | ForbiddenError;
-export const JourneysResume403 = /* @__PURE__ */ Schema.Union([FlagDisabledError, ForbiddenError]);
+export const JourneysResume403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type JourneysResume404 = ResourceNotFoundError;
 export const JourneysResume404 = ResourceNotFoundError;
 export type JourneysResume409 = ConflictError;
@@ -635,31 +657,33 @@ export const JourneysResume502 = BillingProviderError;
 export type JourneysResume504 = GatewayTimeoutError;
 export const JourneysResume504 = GatewayTimeoutError;
 export type JourneysListRunsPathParams = { readonly id: JourneyId };
-export const JourneysListRunsPathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysListRunsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: JourneyId }))();
 export type JourneysListRunsQuery = {
   readonly status?: JourneyRunStatus | null;
   readonly contactId?: ContactId | null;
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const JourneysListRunsQuery = /* @__PURE__ */ Schema.Struct({
-  status: Schema.optionalKey(Schema.Union([JourneyRunStatus, Schema.Null])),
-  contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const JourneysListRunsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.optionalKey(Schema.Union([JourneyRunStatus, Schema.Null])),
+    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type JourneysListRuns200 = JourneyRunPage;
 export const JourneysListRuns200 = JourneyRunPage;
 export type JourneysListRuns401 = UnauthorizedError;
@@ -675,10 +699,8 @@ export const JourneysListRuns500 = InternalError;
 export type JourneysListRuns504 = GatewayTimeoutError;
 export const JourneysListRuns504 = GatewayTimeoutError;
 export type JourneysGetRunPathParams = { readonly id: JourneyId; readonly runId: JourneyRunId };
-export const JourneysGetRunPathParams = /* @__PURE__ */ Schema.Struct({
-  id: JourneyId,
-  runId: JourneyRunId,
-});
+export const JourneysGetRunPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: JourneyId, runId: JourneyRunId }))();
 export type JourneysGetRun200 = JourneyRunDetail;
 export const JourneysGetRun200 = JourneyRunDetail;
 export type JourneysGetRun401 = UnauthorizedError;
@@ -694,22 +716,23 @@ export const JourneysGetRun500 = InternalError;
 export type JourneysGetRun504 = GatewayTimeoutError;
 export const JourneysGetRun504 = GatewayTimeoutError;
 export type JourneysStatsPathParams = { readonly id: JourneyId };
-export const JourneysStatsPathParams = /* @__PURE__ */ Schema.Struct({ id: JourneyId });
+export const JourneysStatsPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysStatsQuery = { readonly version?: number | null };
-export const JourneysStatsQuery = /* @__PURE__ */ Schema.Struct({
-  version: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-});
+export const JourneysStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    version: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type JourneysStats200 = JourneyStats;
 export const JourneysStats200 = JourneyStats;
 export type JourneysStats401 = UnauthorizedError;
@@ -725,10 +748,8 @@ export const JourneysStats500 = InternalError;
 export type JourneysStats504 = GatewayTimeoutError;
 export const JourneysStats504 = GatewayTimeoutError;
 export type JourneysGetVersionPathParams = { readonly id: JourneyId; readonly version: string };
-export const JourneysGetVersionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: JourneyId,
-  version: Schema.String,
-});
+export const JourneysGetVersionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: JourneyId, version: Schema.String }))();
 export type JourneysGetVersion200 = JourneyVersion;
 export const JourneysGetVersion200 = JourneyVersion;
 export type JourneysGetVersion401 = UnauthorizedError;

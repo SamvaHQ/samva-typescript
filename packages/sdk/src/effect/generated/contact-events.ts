@@ -20,32 +20,35 @@ export type ContactEventPage = {
   readonly items: ReadonlyArray<ContactEvent>;
   readonly nextCursor: string | null;
 };
-export const ContactEventPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ContactEvent),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ContactEventPage" });
+export const ContactEventPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ContactEvent),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ContactEventPage" }))();
 export type ContactEventsListEventsPathParams = { readonly id: ContactId };
-export const ContactEventsListEventsPathParams = /* @__PURE__ */ Schema.Struct({ id: ContactId });
+export const ContactEventsListEventsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
 export type ContactEventsListEventsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const ContactEventsListEventsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const ContactEventsListEventsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type ContactEventsListEvents200 = ContactEventPage;
 export const ContactEventsListEvents200 = ContactEventPage;
 export type ContactEventsListEvents401 = UnauthorizedError;

@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.28.1",
+  "version": "0.29.0",
   "description": "TypeScript SDK for the Samva email API",
   "keywords": [
     "api-client",
@@ -147,6 +147,10 @@
       "types": "./dist/effect/organizations.d.ts",
       "import": "./dist/effect/organizations.js"
     },
+    "./effect/publication-domains": {
+      "types": "./dist/effect/publication-domains.d.ts",
+      "import": "./dist/effect/publication-domains.js"
+    },
     "./effect/retry": {
       "types": "./dist/effect/retry.d.ts",
       "import": "./dist/effect/retry.js"
@@ -187,7 +191,11 @@
       "types": "./dist/webhooks/effect.d.ts",
       "import": "./dist/webhooks/effect.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./effect/topic-issues": {
+      "types": "./dist/effect/topic-issues.d.ts",
+      "import": "./dist/effect/topic-issues.js"
+    }
   },
   "publishConfig": {
     "access": "public"
@@ -208,7 +216,7 @@
     "typecheck": "tsc-rs --noEmit && tsc-rs --noEmit -p codegen/tsconfig.json && tsc-rs --noEmit -p tests/tsconfig.json && tsc-rs --noEmit --project tests/parity/tsconfig.json"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.28.1"
+    "@samva/webhooks": "workspace:0.29.0"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",

@@ -24,11 +24,10 @@ export type NamespaceSummary = {
   readonly name: string;
   readonly createdAt: string;
 };
-export const NamespaceSummary = /* @__PURE__ */ Schema.Struct({
-  id: NamespaceId,
-  name: Schema.String,
-  createdAt: Schema.String,
-}).annotate({ identifier: "NamespaceSummary" });
+export const NamespaceSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId, name: Schema.String, createdAt: Schema.String }).annotate({
+    identifier: "NamespaceSummary",
+  }))();
 export type NamespaceUsage = {
   readonly namespaceId: NamespaceId;
   readonly periodStart: string;
@@ -36,13 +35,14 @@ export type NamespaceUsage = {
   readonly emailCount: number;
   readonly totalMessages: number;
 };
-export const NamespaceUsage = /* @__PURE__ */ Schema.Struct({
-  namespaceId: NamespaceId,
-  periodStart: Schema.String,
-  periodEnd: Schema.String,
-  emailCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  totalMessages: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-}).annotate({ identifier: "NamespaceUsage" });
+export const NamespaceUsage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    namespaceId: NamespaceId,
+    periodStart: Schema.String,
+    periodEnd: Schema.String,
+    emailCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    totalMessages: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+  }).annotate({ identifier: "NamespaceUsage" }))();
 export type Namespace = {
   readonly id: NamespaceId;
   readonly name: string;
@@ -50,55 +50,59 @@ export type Namespace = {
   readonly metadata: NamespaceMetadata;
   readonly updatedAt: string;
 };
-export const Namespace = /* @__PURE__ */ Schema.Struct({
-  id: NamespaceId,
-  name: Schema.String,
-  createdAt: Schema.String,
-  metadata: NamespaceMetadata,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Namespace" });
+export const Namespace = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: NamespaceId,
+    name: Schema.String,
+    createdAt: Schema.String,
+    metadata: NamespaceMetadata,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Namespace" }))();
 export type NamespaceResource = {
   readonly type: NamespaceResourceType;
   readonly id: string;
   readonly namespaceId: NamespaceId | null;
 };
-export const NamespaceResource = /* @__PURE__ */ Schema.Struct({
-  type: NamespaceResourceType,
-  id: Schema.String,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-}).annotate({ identifier: "NamespaceResource" });
+export const NamespaceResource = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: NamespaceResourceType,
+    id: Schema.String,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+  }).annotate({ identifier: "NamespaceResource" }))();
 export type NamespacePage = {
   readonly items: ReadonlyArray<NamespaceSummary>;
   readonly nextCursor: string | null;
 };
-export const NamespacePage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(NamespaceSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "NamespacePage" });
+export const NamespacePage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(NamespaceSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "NamespacePage" }))();
 export type NamespacesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const NamespacesListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const NamespacesListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type NamespacesList200 = NamespacePage;
 export const NamespacesList200 = NamespacePage;
 export type NamespacesList401 = UnauthorizedError;
@@ -115,21 +119,24 @@ export type NamespacesCreateRequestJson = {
   readonly name: string;
   readonly metadata?: NamespaceMetadata | null;
 };
-export const NamespacesCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+export const NamespacesCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(
-      Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
-        expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
-      }),
-    )
-    .check(Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" })),
-  metadata: Schema.optionalKey(Schema.Union([NamespaceMetadata, Schema.Null])),
-});
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+          expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+    metadata: Schema.optionalKey(Schema.Union([NamespaceMetadata, Schema.Null])),
+  }))();
 export type NamespacesCreate201 = Namespace;
 export const NamespacesCreate201 = Namespace;
 export type NamespacesCreate401 = UnauthorizedError;
@@ -145,7 +152,7 @@ export const NamespacesCreate500 = InternalError;
 export type NamespacesCreate504 = GatewayTimeoutError;
 export const NamespacesCreate504 = GatewayTimeoutError;
 export type NamespacesGetPathParams = { readonly id: NamespaceId };
-export const NamespacesGetPathParams = /* @__PURE__ */ Schema.Struct({ id: NamespaceId });
+export const NamespacesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: NamespaceId }))();
 export type NamespacesGet200 = Namespace;
 export const NamespacesGet200 = Namespace;
 export type NamespacesGet401 = UnauthorizedError;
@@ -161,7 +168,8 @@ export const NamespacesGet500 = InternalError;
 export type NamespacesGet504 = GatewayTimeoutError;
 export const NamespacesGet504 = GatewayTimeoutError;
 export type NamespacesRemovePathParams = { readonly id: NamespaceId };
-export const NamespacesRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: NamespaceId });
+export const NamespacesRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId }))();
 export type NamespacesRemove200 = SuccessResponse;
 export const NamespacesRemove200 = SuccessResponse;
 export type NamespacesRemove401 = UnauthorizedError;
@@ -179,40 +187,42 @@ export const NamespacesRemove500 = InternalError;
 export type NamespacesRemove504 = GatewayTimeoutError;
 export const NamespacesRemove504 = GatewayTimeoutError;
 export type NamespacesUpdatePathParams = { readonly id: NamespaceId };
-export const NamespacesUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: NamespaceId });
+export const NamespacesUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId }))();
 export type NamespacesUpdateRequestJson = {
   readonly name?: string | null;
   readonly metadata?: { readonly [x: string]: string | null } | null;
 };
-export const NamespacesUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(128).annotate({
-            expected: "a string with at most 128 code points",
-          }),
+export const NamespacesUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         )
-        .check(
-          Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
-            expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  metadata: Schema.optionalKey(
-    Schema.Union([
-      Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-      Schema.Null,
-    ]),
-  ),
-});
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+              expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    metadata: Schema.optionalKey(
+      Schema.Union([
+        Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type NamespacesUpdate200 = Namespace;
 export const NamespacesUpdate200 = Namespace;
 export type NamespacesUpdate401 = UnauthorizedError;
@@ -230,19 +240,19 @@ export const NamespacesUpdate500 = InternalError;
 export type NamespacesUpdate504 = GatewayTimeoutError;
 export const NamespacesUpdate504 = GatewayTimeoutError;
 export type NamespacesAssignResourcePathParams = { readonly id: NamespaceId };
-export const NamespacesAssignResourcePathParams = /* @__PURE__ */ Schema.Struct({
-  id: NamespaceId,
-});
+export const NamespacesAssignResourcePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId }))();
 export type NamespacesAssignResourceRequestJson = {
   readonly type: NamespaceResourceType;
   readonly resourceId: string;
 };
-export const NamespacesAssignResourceRequestJson = /* @__PURE__ */ Schema.Struct({
-  type: NamespaceResourceType,
-  resourceId: Schema.String.annotate({
-    description: "The resource's id, such as `dom_...` for a domain.",
-  }),
-});
+export const NamespacesAssignResourceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: NamespaceResourceType,
+    resourceId: Schema.String.annotate({
+      description: "The resource's id, such as `dom_...` for a domain.",
+    }),
+  }))();
 export type NamespacesAssignResource200 = NamespaceResource;
 export const NamespacesAssignResource200 = NamespaceResource;
 export type NamespacesAssignResource401 = UnauthorizedError;
@@ -264,11 +274,8 @@ export type NamespacesRemoveResourcePathParams = {
   readonly type: NamespaceResourceType;
   readonly resourceId: string;
 };
-export const NamespacesRemoveResourcePathParams = /* @__PURE__ */ Schema.Struct({
-  id: NamespaceId,
-  type: NamespaceResourceType,
-  resourceId: Schema.String,
-});
+export const NamespacesRemoveResourcePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId, type: NamespaceResourceType, resourceId: Schema.String }))();
 export type NamespacesRemoveResource200 = NamespaceResource;
 export const NamespacesRemoveResource200 = NamespaceResource;
 export type NamespacesRemoveResource401 = UnauthorizedError;
@@ -286,15 +293,17 @@ export const NamespacesRemoveResource500 = InternalError;
 export type NamespacesRemoveResource504 = GatewayTimeoutError;
 export const NamespacesRemoveResource504 = GatewayTimeoutError;
 export type NamespacesGetUsagePathParams = { readonly id: NamespaceId };
-export const NamespacesGetUsagePathParams = /* @__PURE__ */ Schema.Struct({ id: NamespaceId });
+export const NamespacesGetUsagePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId }))();
 export type NamespacesGetUsageQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const NamespacesGetUsageQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const NamespacesGetUsageQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type NamespacesGetUsage200 = NamespaceUsage;
 export const NamespacesGetUsage200 = NamespaceUsage;
 export type NamespacesGetUsage401 = UnauthorizedError;

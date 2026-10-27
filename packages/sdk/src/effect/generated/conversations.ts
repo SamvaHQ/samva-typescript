@@ -20,9 +20,8 @@ import {
 } from "./shared";
 
 export type UnknownRecord = { readonly [x: string]: JsonValue };
-export const UnknownRecord = /* @__PURE__ */ Schema.Record(Schema.String, JsonValue).annotate({
-  identifier: "UnknownRecord",
-});
+export const UnknownRecord = /* @__PURE__ */ (() =>
+  Schema.Record(Schema.String, JsonValue).annotate({ identifier: "UnknownRecord" }))();
 export type ConversationSummary = {
   readonly id: ConversationId;
   readonly title: string | null;
@@ -38,48 +37,53 @@ export type ConversationSummary = {
   readonly lastActivityAt: string;
   readonly createdAt: string;
 };
-export const ConversationSummary = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-  title: Schema.Union([Schema.String, Schema.Null]),
-  externalId: Schema.Union([Schema.String, Schema.Null]),
-  status: Schema.Union([
-    Schema.Literal("active"),
-    Schema.Literal("waiting"),
-    Schema.Literal("resolved"),
-    Schema.Literal("escalated"),
-    Schema.Literal("archived"),
-  ]),
-  primaryChannel: Schema.Literal("email"),
-  channels: Schema.Array(Schema.Literal("email")),
-  priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  urgency: Schema.Union([
-    Schema.Literal("low"),
-    Schema.Literal("medium"),
-    Schema.Literal("high"),
-    Schema.Literal("critical"),
-  ]),
-  tags: Schema.Array(Schema.String),
-  isTest: Schema.Boolean,
-  messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastActivityAt: Schema.String,
-  createdAt: Schema.String,
-}).annotate({ identifier: "ConversationSummary" });
+export const ConversationSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ConversationId,
+    title: Schema.Union([Schema.String, Schema.Null]),
+    externalId: Schema.Union([Schema.String, Schema.Null]),
+    status: Schema.Union([
+      Schema.Literal("active"),
+      Schema.Literal("waiting"),
+      Schema.Literal("resolved"),
+      Schema.Literal("escalated"),
+      Schema.Literal("archived"),
+    ]),
+    primaryChannel: Schema.Literal("email"),
+    channels: Schema.Array(Schema.Literal("email")),
+    priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    urgency: Schema.Union([
+      Schema.Literal("low"),
+      Schema.Literal("medium"),
+      Schema.Literal("high"),
+      Schema.Literal("critical"),
+    ]),
+    tags: Schema.Array(Schema.String),
+    isTest: Schema.Boolean,
+    messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastActivityAt: Schema.String,
+    createdAt: Schema.String,
+  }).annotate({ identifier: "ConversationSummary" }))();
 export type ConversationContact = {
   readonly id: ContactId;
   readonly name: string;
@@ -90,18 +94,19 @@ export type ConversationContact = {
     readonly verified: boolean;
   }>;
 };
-export const ConversationContact = /* @__PURE__ */ Schema.Struct({
-  id: ContactId,
-  name: Schema.String,
-  displayName: Schema.Union([Schema.String, Schema.Null]),
-  identities: Schema.Array(
-    Schema.Struct({
-      type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
-      identifier: Schema.String,
-      verified: Schema.Boolean,
-    }),
-  ),
-}).annotate({ identifier: "ConversationContact" });
+export const ConversationContact = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactId,
+    name: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    identities: Schema.Array(
+      Schema.Struct({
+        type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
+        identifier: Schema.String,
+        verified: Schema.Boolean,
+      }),
+    ),
+  }).annotate({ identifier: "ConversationContact" }))();
 export type ConversationContext = {
   readonly customerData?: UnknownRecord | null;
   readonly previousConversations?: ReadonlyArray<string> | null;
@@ -113,34 +118,38 @@ export type ConversationContext = {
     readonly workflowData?: UnknownRecord | null;
   } | null;
 };
-export const ConversationContext = /* @__PURE__ */ Schema.Struct({
-  customerData: Schema.optionalKey(Schema.Union([UnknownRecord, Schema.Null])),
-  previousConversations: Schema.optionalKey(
-    Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  ),
-  sessionVariables: Schema.optionalKey(Schema.Union([UnknownRecord, Schema.Null])),
-  workflowState: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        currentStep: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        completedSteps: Schema.optionalKey(
-          Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-        ),
-        pendingSteps: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-        workflowData: Schema.optionalKey(Schema.Union([UnknownRecord, Schema.Null])),
-      }),
-      Schema.Null,
-    ]),
-  ),
-}).annotate({ identifier: "ConversationContext" });
+export const ConversationContext = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    customerData: Schema.optionalKey(Schema.Union([UnknownRecord, Schema.Null])),
+    previousConversations: Schema.optionalKey(
+      Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    ),
+    sessionVariables: Schema.optionalKey(Schema.Union([UnknownRecord, Schema.Null])),
+    workflowState: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          currentStep: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          completedSteps: Schema.optionalKey(
+            Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+          ),
+          pendingSteps: Schema.optionalKey(
+            Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+          ),
+          workflowData: Schema.optionalKey(Schema.Union([UnknownRecord, Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "ConversationContext" }))();
 export type ConversationPage = {
   readonly items: ReadonlyArray<ConversationSummary>;
   readonly nextCursor: string | null;
 };
-export const ConversationPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ConversationSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ConversationPage" });
+export const ConversationPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ConversationSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ConversationPage" }))();
 export type Conversation = {
   readonly id: ConversationId;
   readonly title: string | null;
@@ -179,78 +188,83 @@ export type Conversation = {
   readonly resolutionNotes: string | null;
   readonly updatedAt: string;
 };
-export const Conversation = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-  title: Schema.Union([Schema.String, Schema.Null]),
-  externalId: Schema.Union([Schema.String, Schema.Null]),
-  status: Schema.Union([
-    Schema.Literal("active"),
-    Schema.Literal("waiting"),
-    Schema.Literal("resolved"),
-    Schema.Literal("escalated"),
-    Schema.Literal("archived"),
-  ]),
-  primaryChannel: Schema.Literal("email"),
-  channels: Schema.Array(Schema.Literal("email")),
-  priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  urgency: Schema.Union([
-    Schema.Literal("low"),
-    Schema.Literal("medium"),
-    Schema.Literal("high"),
-    Schema.Literal("critical"),
-  ]),
-  tags: Schema.Array(Schema.String),
-  isTest: Schema.Boolean,
-  messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastActivityAt: Schema.String,
-  createdAt: Schema.String,
-  description: Schema.Union([Schema.String, Schema.Null]),
-  parentConversationId: Schema.Union([ConversationId, Schema.Null]),
-  statusReason: Schema.Union([Schema.String, Schema.Null]),
-  complexity: Schema.Union([
-    Schema.Literal("simple"),
-    Schema.Literal("moderate"),
-    Schema.Literal("complex"),
-  ]),
-  categories: Schema.Array(Schema.String),
-  metadata: Schema.Union([JsonObject, Schema.Null]),
-  context: Schema.Union([ConversationContext, Schema.Null]),
-  isInternal: Schema.Boolean,
-  isPrivate: Schema.Boolean,
-  contacts: Schema.Array(ConversationContact),
-  startedAt: Schema.String,
-  lastHumanActivityAt: Schema.Union([Schema.String, Schema.Null]),
-  resolvedAt: Schema.Union([Schema.String, Schema.Null]),
-  archivedAt: Schema.Union([Schema.String, Schema.Null]),
-  resolutionType: Schema.Union([
-    Schema.Union([
-      Schema.Literal("automated"),
-      Schema.Literal("human_assisted"),
+export const Conversation = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ConversationId,
+    title: Schema.Union([Schema.String, Schema.Null]),
+    externalId: Schema.Union([Schema.String, Schema.Null]),
+    status: Schema.Union([
+      Schema.Literal("active"),
+      Schema.Literal("waiting"),
+      Schema.Literal("resolved"),
       Schema.Literal("escalated"),
-      Schema.Literal("abandoned"),
-      Schema.Literal("timeout"),
+      Schema.Literal("archived"),
     ]),
-    Schema.Null,
-  ]),
-  resolutionNotes: Schema.Union([Schema.String, Schema.Null]),
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Conversation" });
+    primaryChannel: Schema.Literal("email"),
+    channels: Schema.Array(Schema.Literal("email")),
+    priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    urgency: Schema.Union([
+      Schema.Literal("low"),
+      Schema.Literal("medium"),
+      Schema.Literal("high"),
+      Schema.Literal("critical"),
+    ]),
+    tags: Schema.Array(Schema.String),
+    isTest: Schema.Boolean,
+    messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastActivityAt: Schema.String,
+    createdAt: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    parentConversationId: Schema.Union([ConversationId, Schema.Null]),
+    statusReason: Schema.Union([Schema.String, Schema.Null]),
+    complexity: Schema.Union([
+      Schema.Literal("simple"),
+      Schema.Literal("moderate"),
+      Schema.Literal("complex"),
+    ]),
+    categories: Schema.Array(Schema.String),
+    metadata: Schema.Union([JsonObject, Schema.Null]),
+    context: Schema.Union([ConversationContext, Schema.Null]),
+    isInternal: Schema.Boolean,
+    isPrivate: Schema.Boolean,
+    contacts: Schema.Array(ConversationContact),
+    startedAt: Schema.String,
+    lastHumanActivityAt: Schema.Union([Schema.String, Schema.Null]),
+    resolvedAt: Schema.Union([Schema.String, Schema.Null]),
+    archivedAt: Schema.Union([Schema.String, Schema.Null]),
+    resolutionType: Schema.Union([
+      Schema.Union([
+        Schema.Literal("automated"),
+        Schema.Literal("human_assisted"),
+        Schema.Literal("escalated"),
+        Schema.Literal("abandoned"),
+        Schema.Literal("timeout"),
+      ]),
+      Schema.Null,
+    ]),
+    resolutionNotes: Schema.Union([Schema.String, Schema.Null]),
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Conversation" }))();
 export type ConversationsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -260,38 +274,39 @@ export type ConversationsListQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const ConversationsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ConversationsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("active"),
-        Schema.Literal("waiting"),
-        Schema.Literal("resolved"),
-        Schema.Literal("escalated"),
-        Schema.Literal("archived"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("active"),
+          Schema.Literal("waiting"),
+          Schema.Literal("resolved"),
+          Schema.Literal("escalated"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ConversationsList200 = ConversationPage;
 export const ConversationsList200 = ConversationPage;
 export type ConversationsList401 = UnauthorizedError;
@@ -324,73 +339,74 @@ export type ConversationsCreateRequestJson = {
   readonly isInternal?: boolean | null;
   readonly isPrivate?: boolean | null;
 };
-export const ConversationsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  parentConversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-  channels: Schema.Array(Schema.Literal("email")),
-  primaryChannel: Schema.Literal("email"),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ConversationsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    parentConversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    channels: Schema.Array(Schema.Literal("email")),
+    primaryChannel: Schema.Literal("email"),
+    status: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("active"),
-        Schema.Literal("waiting"),
-        Schema.Literal("resolved"),
-        Schema.Literal("escalated"),
-        Schema.Literal("archived"),
+        Schema.Union([
+          Schema.Literal("active"),
+          Schema.Literal("waiting"),
+          Schema.Literal("resolved"),
+          Schema.Literal("escalated"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  statusReason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  priority: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  urgency: Schema.optionalKey(
-    Schema.Union([
+    ),
+    statusReason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    priority: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("low"),
-        Schema.Literal("medium"),
-        Schema.Literal("high"),
-        Schema.Literal("critical"),
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  complexity: Schema.optionalKey(
-    Schema.Union([
+    ),
+    urgency: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("simple"),
-        Schema.Literal("moderate"),
-        Schema.Literal("complex"),
+        Schema.Union([
+          Schema.Literal("low"),
+          Schema.Literal("medium"),
+          Schema.Literal("high"),
+          Schema.Literal("critical"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-  context: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationContext, Schema.Null]), Schema.Null]),
-  ),
-  tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  categories: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  isTest: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  isInternal: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  isPrivate: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+    ),
+    complexity: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("simple"),
+          Schema.Literal("moderate"),
+          Schema.Literal("complex"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+    context: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationContext, Schema.Null]), Schema.Null]),
+    ),
+    tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    categories: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    isTest: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    isInternal: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    isPrivate: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ConversationsCreate201 = Conversation;
 export const ConversationsCreate201 = Conversation;
 export type ConversationsCreate401 = UnauthorizedError;
@@ -404,7 +420,8 @@ export const ConversationsCreate500 = InternalError;
 export type ConversationsCreate504 = GatewayTimeoutError;
 export const ConversationsCreate504 = GatewayTimeoutError;
 export type ConversationsGetByIdPathParams = { readonly id: ConversationId };
-export const ConversationsGetByIdPathParams = /* @__PURE__ */ Schema.Struct({ id: ConversationId });
+export const ConversationsGetByIdPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsGetById200 = Conversation;
 export const ConversationsGetById200 = Conversation;
 export type ConversationsGetById401 = UnauthorizedError;
@@ -420,7 +437,8 @@ export const ConversationsGetById500 = InternalError;
 export type ConversationsGetById504 = GatewayTimeoutError;
 export const ConversationsGetById504 = GatewayTimeoutError;
 export type ConversationsUpdatePathParams = { readonly id: ConversationId };
-export const ConversationsUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: ConversationId });
+export const ConversationsUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsUpdateRequestJson = {
   readonly title?: string | null;
   readonly description?: string | null | null;
@@ -438,78 +456,79 @@ export type ConversationsUpdateRequestJson = {
   readonly isInternal?: boolean | null;
   readonly isPrivate?: boolean | null;
 };
-export const ConversationsUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  description: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  externalId: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  parentConversationId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-  ),
-  primaryChannel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const ConversationsUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    description: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    externalId: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    parentConversationId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
+    ),
+    primaryChannel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    status: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("active"),
-        Schema.Literal("waiting"),
-        Schema.Literal("resolved"),
-        Schema.Literal("escalated"),
-        Schema.Literal("archived"),
+        Schema.Union([
+          Schema.Literal("active"),
+          Schema.Literal("waiting"),
+          Schema.Literal("resolved"),
+          Schema.Literal("escalated"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  statusReason: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  priority: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  urgency: Schema.optionalKey(
-    Schema.Union([
+    ),
+    statusReason: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    priority: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("low"),
-        Schema.Literal("medium"),
-        Schema.Literal("high"),
-        Schema.Literal("critical"),
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  complexity: Schema.optionalKey(
-    Schema.Union([
+    ),
+    urgency: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("simple"),
-        Schema.Literal("moderate"),
-        Schema.Literal("complex"),
+        Schema.Union([
+          Schema.Literal("low"),
+          Schema.Literal("medium"),
+          Schema.Literal("high"),
+          Schema.Literal("critical"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  context: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationContext, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-  isTest: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  isInternal: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  isPrivate: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+    ),
+    complexity: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("simple"),
+          Schema.Literal("moderate"),
+          Schema.Literal("complex"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    context: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationContext, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+    isTest: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    isInternal: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    isPrivate: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type ConversationsUpdate200 = Conversation;
 export const ConversationsUpdate200 = Conversation;
 export type ConversationsUpdate401 = UnauthorizedError;
@@ -525,15 +544,15 @@ export const ConversationsUpdate500 = InternalError;
 export type ConversationsUpdate504 = GatewayTimeoutError;
 export const ConversationsUpdate504 = GatewayTimeoutError;
 export type ConversationsAddCategoriesPathParams = { readonly id: ConversationId };
-export const ConversationsAddCategoriesPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsAddCategoriesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsAddCategoriesRequestJson = {
   readonly categories: readonly [string, ...Array<string>];
 };
-export const ConversationsAddCategoriesRequestJson = /* @__PURE__ */ Schema.Struct({
-  categories: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ConversationsAddCategoriesRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    categories: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+  }))();
 export type ConversationsAddCategories200 = Conversation;
 export const ConversationsAddCategories200 = Conversation;
 export type ConversationsAddCategories401 = UnauthorizedError;
@@ -549,15 +568,15 @@ export const ConversationsAddCategories500 = InternalError;
 export type ConversationsAddCategories504 = GatewayTimeoutError;
 export const ConversationsAddCategories504 = GatewayTimeoutError;
 export type ConversationsRemoveCategoriesPathParams = { readonly id: ConversationId };
-export const ConversationsRemoveCategoriesPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsRemoveCategoriesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsRemoveCategoriesRequestJson = {
   readonly categories: readonly [string, ...Array<string>];
 };
-export const ConversationsRemoveCategoriesRequestJson = /* @__PURE__ */ Schema.Struct({
-  categories: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ConversationsRemoveCategoriesRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    categories: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+  }))();
 export type ConversationsRemoveCategories200 = Conversation;
 export const ConversationsRemoveCategories200 = Conversation;
 export type ConversationsRemoveCategories401 = UnauthorizedError;
@@ -573,17 +592,17 @@ export const ConversationsRemoveCategories500 = InternalError;
 export type ConversationsRemoveCategories504 = GatewayTimeoutError;
 export const ConversationsRemoveCategories504 = GatewayTimeoutError;
 export type ConversationsAddChannelsPathParams = { readonly id: ConversationId };
-export const ConversationsAddChannelsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsAddChannelsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsAddChannelsRequestJson = {
   readonly channels: readonly ["email", ...Array<"email">];
 };
-export const ConversationsAddChannelsRequestJson = /* @__PURE__ */ Schema.Struct({
-  channels: Schema.TupleWithRest(Schema.Tuple([Schema.Literal("email")]), [
-    Schema.Literal("email"),
-  ]),
-});
+export const ConversationsAddChannelsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channels: Schema.TupleWithRest(Schema.Tuple([Schema.Literal("email")]), [
+      Schema.Literal("email"),
+    ]),
+  }))();
 export type ConversationsAddChannels200 = Conversation;
 export const ConversationsAddChannels200 = Conversation;
 export type ConversationsAddChannels401 = UnauthorizedError;
@@ -599,17 +618,17 @@ export const ConversationsAddChannels500 = InternalError;
 export type ConversationsAddChannels504 = GatewayTimeoutError;
 export const ConversationsAddChannels504 = GatewayTimeoutError;
 export type ConversationsRemoveChannelsPathParams = { readonly id: ConversationId };
-export const ConversationsRemoveChannelsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsRemoveChannelsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsRemoveChannelsRequestJson = {
   readonly channels: readonly ["email", ...Array<"email">];
 };
-export const ConversationsRemoveChannelsRequestJson = /* @__PURE__ */ Schema.Struct({
-  channels: Schema.TupleWithRest(Schema.Tuple([Schema.Literal("email")]), [
-    Schema.Literal("email"),
-  ]),
-});
+export const ConversationsRemoveChannelsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channels: Schema.TupleWithRest(Schema.Tuple([Schema.Literal("email")]), [
+      Schema.Literal("email"),
+    ]),
+  }))();
 export type ConversationsRemoveChannels200 = Conversation;
 export const ConversationsRemoveChannels200 = Conversation;
 export type ConversationsRemoveChannels401 = UnauthorizedError;
@@ -625,17 +644,17 @@ export const ConversationsRemoveChannels500 = InternalError;
 export type ConversationsRemoveChannels504 = GatewayTimeoutError;
 export const ConversationsRemoveChannels504 = GatewayTimeoutError;
 export type ConversationsAddContactsPathParams = { readonly id: ConversationId };
-export const ConversationsAddContactsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsAddContactsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsAddContactsRequestJson = {
   readonly contactIds: readonly [ContactId, ...Array<ContactId>];
 };
-export const ConversationsAddContactsRequestJson = /* @__PURE__ */ Schema.Struct({
-  contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-});
+export const ConversationsAddContactsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+  }))();
 export type ConversationsAddContacts200 = Conversation;
 export const ConversationsAddContacts200 = Conversation;
 export type ConversationsAddContacts401 = UnauthorizedError;
@@ -651,17 +670,17 @@ export const ConversationsAddContacts500 = InternalError;
 export type ConversationsAddContacts504 = GatewayTimeoutError;
 export const ConversationsAddContacts504 = GatewayTimeoutError;
 export type ConversationsRemoveContactsPathParams = { readonly id: ConversationId };
-export const ConversationsRemoveContactsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsRemoveContactsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsRemoveContactsRequestJson = {
   readonly contactIds: readonly [ContactId, ...Array<ContactId>];
 };
-export const ConversationsRemoveContactsRequestJson = /* @__PURE__ */ Schema.Struct({
-  contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-    Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-  ),
-});
+export const ConversationsRemoveContactsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+  }))();
 export type ConversationsRemoveContacts200 = Conversation;
 export const ConversationsRemoveContacts200 = Conversation;
 export type ConversationsRemoveContacts401 = UnauthorizedError;
@@ -677,33 +696,33 @@ export const ConversationsRemoveContacts500 = InternalError;
 export type ConversationsRemoveContacts504 = GatewayTimeoutError;
 export const ConversationsRemoveContacts504 = GatewayTimeoutError;
 export type ConversationsListMessagesPathParams = { readonly id: ConversationId };
-export const ConversationsListMessagesPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsListMessagesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsListMessagesQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const ConversationsListMessagesQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ConversationsListMessagesQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ConversationsListMessages200 = MessagePage;
 export const ConversationsListMessages200 = MessagePage;
 export type ConversationsListMessages401 = UnauthorizedError;
@@ -719,13 +738,13 @@ export const ConversationsListMessages500 = InternalError;
 export type ConversationsListMessages504 = GatewayTimeoutError;
 export const ConversationsListMessages504 = GatewayTimeoutError;
 export type ConversationsAddTagsPathParams = { readonly id: ConversationId };
-export const ConversationsAddTagsPathParams = /* @__PURE__ */ Schema.Struct({ id: ConversationId });
+export const ConversationsAddTagsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsAddTagsRequestJson = {
   readonly tags: readonly [string, ...Array<string>];
 };
-export const ConversationsAddTagsRequestJson = /* @__PURE__ */ Schema.Struct({
-  tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ConversationsAddTagsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ConversationsAddTags200 = Conversation;
 export const ConversationsAddTags200 = Conversation;
 export type ConversationsAddTags401 = UnauthorizedError;
@@ -741,15 +760,13 @@ export const ConversationsAddTags500 = InternalError;
 export type ConversationsAddTags504 = GatewayTimeoutError;
 export const ConversationsAddTags504 = GatewayTimeoutError;
 export type ConversationsRemoveTagsPathParams = { readonly id: ConversationId };
-export const ConversationsRemoveTagsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: ConversationId,
-});
+export const ConversationsRemoveTagsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ConversationId }))();
 export type ConversationsRemoveTagsRequestJson = {
   readonly tags: readonly [string, ...Array<string>];
 };
-export const ConversationsRemoveTagsRequestJson = /* @__PURE__ */ Schema.Struct({
-  tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-});
+export const ConversationsRemoveTagsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ConversationsRemoveTags200 = Conversation;
 export const ConversationsRemoveTags200 = Conversation;
 export type ConversationsRemoveTags401 = UnauthorizedError;

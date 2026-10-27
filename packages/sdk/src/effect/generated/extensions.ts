@@ -19,20 +19,21 @@ import {
 } from "./shared";
 
 export type ExtensionBundle = { readonly sha256: string; readonly sizeBytes: number };
-export const ExtensionBundle = /* @__PURE__ */ Schema.Struct({
-  sha256: Schema.String,
-  sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "ExtensionBundle" });
+export const ExtensionBundle = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    sha256: Schema.String,
+    sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "ExtensionBundle" }))();
 export type ExtensionVersion = {
   readonly id: ExtensionVersionId;
   readonly version: string;
@@ -57,67 +58,70 @@ export type ExtensionVersion = {
     readonly permissions: ReadonlyArray<"read" | "update" | "send" | "quarantine.read">;
   };
 };
-export const ExtensionVersion = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionVersionId,
-  version: Schema.String,
-  runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-  bundle: Schema.Union([ExtensionBundle, Schema.Null]),
-  publishedAt: Schema.String,
-  manifest: Schema.Struct({
-    name: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-z][a-z0-9-]{1,62}[a-z0-9]$",
-      }),
-    ),
-    displayName: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(80).annotate({ expected: "a string with at most 80 code points" }),
-      )
-      .check(Schema.isMaxLength(80).annotate({ expected: "a value with a length of at most 80" })),
-    description: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMaxCodePoints(500).annotate({
-            expected: "a string with at most 500 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    version: Schema.String.check(
-      Schema.isPattern(
-        new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
-      }),
-    ),
+export const ExtensionVersion = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ExtensionVersionId,
+    version: Schema.String,
     runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-    events: Schema.Array(
-      Schema.Union([
-        Schema.Literal("mailbox.message.received"),
-        Schema.Literal("mailbox.message.sent"),
-        Schema.Literal("mailbox.action.pending_approval"),
-        Schema.Literal("mailbox.action.resolved"),
-        Schema.Literal("mailbox.message.quarantined"),
-        Schema.Literal("mailbox.message.released"),
-        Schema.Literal("mailbox.message.discarded"),
-      ]),
-    ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
-    permissions: Schema.Array(
-      Schema.Union([
-        Schema.Literal("read"),
-        Schema.Literal("update"),
-        Schema.Literal("send"),
-        Schema.Literal("quarantine.read"),
-      ]),
-    ),
-  }),
-}).annotate({ identifier: "ExtensionVersion" });
+    bundle: Schema.Union([ExtensionBundle, Schema.Null]),
+    publishedAt: Schema.String,
+    manifest: Schema.Struct({
+      name: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-z][a-z0-9-]{1,62}[a-z0-9]$",
+        }),
+      ),
+      displayName: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(80).annotate({ expected: "a string with at most 80 code points" }),
+        )
+        .check(
+          Schema.isMaxLength(80).annotate({ expected: "a value with a length of at most 80" }),
+        ),
+      description: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(500).annotate({
+              expected: "a string with at most 500 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      version: Schema.String.check(
+        Schema.isPattern(
+          new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
+        }),
+      ),
+      runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
+      events: Schema.Array(
+        Schema.Union([
+          Schema.Literal("mailbox.message.received"),
+          Schema.Literal("mailbox.message.sent"),
+          Schema.Literal("mailbox.action.pending_approval"),
+          Schema.Literal("mailbox.action.resolved"),
+          Schema.Literal("mailbox.message.quarantined"),
+          Schema.Literal("mailbox.message.released"),
+          Schema.Literal("mailbox.message.discarded"),
+        ]),
+      ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
+      permissions: Schema.Array(
+        Schema.Union([
+          Schema.Literal("read"),
+          Schema.Literal("update"),
+          Schema.Literal("send"),
+          Schema.Literal("quarantine.read"),
+        ]),
+      ),
+    }),
+  }).annotate({ identifier: "ExtensionVersion" }))();
 export type ExtensionVersionSummary = {
   readonly id: ExtensionVersionId;
   readonly version: string;
@@ -125,13 +129,14 @@ export type ExtensionVersionSummary = {
   readonly bundle: ExtensionBundle | null;
   readonly publishedAt: string;
 };
-export const ExtensionVersionSummary = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionVersionId,
-  version: Schema.String,
-  runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-  bundle: Schema.Union([ExtensionBundle, Schema.Null]),
-  publishedAt: Schema.String,
-}).annotate({ identifier: "ExtensionVersionSummary" });
+export const ExtensionVersionSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ExtensionVersionId,
+    version: Schema.String,
+    runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
+    bundle: Schema.Union([ExtensionBundle, Schema.Null]),
+    publishedAt: Schema.String,
+  }).annotate({ identifier: "ExtensionVersionSummary" }))();
 export type Extension = {
   readonly id: ExtensionId;
   readonly name: string;
@@ -142,64 +147,68 @@ export type Extension = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const Extension = /* @__PURE__ */ Schema.Struct({
-  id: ExtensionId,
-  name: Schema.String,
-  displayName: Schema.String,
-  description: Schema.Union([Schema.String, Schema.Null]),
-  runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-  latestVersion: ExtensionVersionRef,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Extension" });
+export const Extension = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ExtensionId,
+    name: Schema.String,
+    displayName: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
+    latestVersion: ExtensionVersionRef,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Extension" }))();
 export type ExtensionVersionPage = {
   readonly items: ReadonlyArray<ExtensionVersionSummary>;
   readonly nextCursor: string | null;
 };
-export const ExtensionVersionPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(ExtensionVersionSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ExtensionVersionPage" });
+export const ExtensionVersionPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ExtensionVersionSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ExtensionVersionPage" }))();
 export type ExtensionPage = {
   readonly items: ReadonlyArray<Extension>;
   readonly nextCursor: string | null;
 };
-export const ExtensionPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(Extension),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ExtensionPage" });
+export const ExtensionPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(Extension),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ExtensionPage" }))();
 export type PublishExtensionVersionResponse = {
   readonly extension: Extension;
   readonly version: ExtensionVersion;
 };
-export const PublishExtensionVersionResponse = /* @__PURE__ */ Schema.Struct({
-  extension: Extension,
-  version: ExtensionVersion,
-}).annotate({ identifier: "PublishExtensionVersionResponse" });
+export const PublishExtensionVersionResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({ extension: Extension, version: ExtensionVersion }).annotate({
+    identifier: "PublishExtensionVersionResponse",
+  }))();
 export type ExtensionsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const ExtensionsListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const ExtensionsListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ExtensionsList200 = ExtensionPage;
 export const ExtensionsList200 = ExtensionPage;
 export type ExtensionsList401 = UnauthorizedError;
@@ -234,63 +243,66 @@ export type ExtensionsPublishRequestJson = {
   };
   readonly bundle?: string | null;
 };
-export const ExtensionsPublishRequestJson = /* @__PURE__ */ Schema.Struct({
-  manifest: Schema.Struct({
-    name: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-z][a-z0-9-]{1,62}[a-z0-9]$",
-      }),
-    ),
-    displayName: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(80).annotate({ expected: "a string with at most 80 code points" }),
+export const ExtensionsPublishRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    manifest: Schema.Struct({
+      name: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-z][a-z0-9-]{1,62}[a-z0-9]$",
+        }),
+      ),
+      displayName: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
       )
-      .check(Schema.isMaxLength(80).annotate({ expected: "a value with a length of at most 80" })),
-    description: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMaxCodePoints(500).annotate({
-            expected: "a string with at most 500 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+        .check(
+          Schema.isMaxCodePoints(80).annotate({ expected: "a string with at most 80 code points" }),
+        )
+        .check(
+          Schema.isMaxLength(80).annotate({ expected: "a value with a length of at most 80" }),
         ),
-        Schema.Null,
-      ]),
-    ),
-    version: Schema.String.check(
-      Schema.isPattern(
-        new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
-      }),
-    ),
-    runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
-    events: Schema.Array(
-      Schema.Union([
-        Schema.Literal("mailbox.message.received"),
-        Schema.Literal("mailbox.message.sent"),
-        Schema.Literal("mailbox.action.pending_approval"),
-        Schema.Literal("mailbox.action.resolved"),
-        Schema.Literal("mailbox.message.quarantined"),
-        Schema.Literal("mailbox.message.released"),
-        Schema.Literal("mailbox.message.discarded"),
-      ]),
-    ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
-    permissions: Schema.Array(
-      Schema.Union([
-        Schema.Literal("read"),
-        Schema.Literal("update"),
-        Schema.Literal("send"),
-        Schema.Literal("quarantine.read"),
-      ]),
-    ),
-  }),
-  bundle: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+      description: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(500).annotate({
+              expected: "a string with at most 500 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      version: Schema.String.check(
+        Schema.isPattern(
+          new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
+        }),
+      ),
+      runtime: Schema.Union([Schema.Literal("hosted"), Schema.Literal("webhook")]),
+      events: Schema.Array(
+        Schema.Union([
+          Schema.Literal("mailbox.message.received"),
+          Schema.Literal("mailbox.message.sent"),
+          Schema.Literal("mailbox.action.pending_approval"),
+          Schema.Literal("mailbox.action.resolved"),
+          Schema.Literal("mailbox.message.quarantined"),
+          Schema.Literal("mailbox.message.released"),
+          Schema.Literal("mailbox.message.discarded"),
+        ]),
+      ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
+      permissions: Schema.Array(
+        Schema.Union([
+          Schema.Literal("read"),
+          Schema.Literal("update"),
+          Schema.Literal("send"),
+          Schema.Literal("quarantine.read"),
+        ]),
+      ),
+    }),
+    bundle: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type ExtensionsPublish201 = PublishExtensionVersionResponse;
 export const ExtensionsPublish201 = PublishExtensionVersionResponse;
 export type ExtensionsPublish401 = UnauthorizedError;
@@ -308,14 +320,15 @@ export const ExtensionsPublish500 = InternalError;
 export type ExtensionsPublish504 = GatewayTimeoutError;
 export const ExtensionsPublish504 = GatewayTimeoutError;
 export type ExtensionsGetPathParams = { readonly id: string };
-export const ExtensionsGetPathParams = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String.annotate({ description: "The extension's id (`ext_…`) or its name." })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
-    )
-    .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
-});
+export const ExtensionsGetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String.annotate({ description: "The extension's id (`ext_…`) or its name." })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+      )
+      .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
+  }))();
 export type ExtensionsGet200 = Extension;
 export const ExtensionsGet200 = Extension;
 export type ExtensionsGet401 = UnauthorizedError;
@@ -331,34 +344,36 @@ export const ExtensionsGet500 = InternalError;
 export type ExtensionsGet504 = GatewayTimeoutError;
 export const ExtensionsGet504 = GatewayTimeoutError;
 export type ExtensionsListVersionsPathParams = { readonly id: string };
-export const ExtensionsListVersionsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String.annotate({ description: "The extension's id (`ext_…`) or its name." })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
-    )
-    .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
-});
+export const ExtensionsListVersionsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String.annotate({ description: "The extension's id (`ext_…`) or its name." })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+      )
+      .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
+  }))();
 export type ExtensionsListVersionsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const ExtensionsListVersionsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const ExtensionsListVersionsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type ExtensionsListVersions200 = ExtensionVersionPage;
 export const ExtensionsListVersions200 = ExtensionVersionPage;
 export type ExtensionsListVersions401 = UnauthorizedError;
@@ -374,22 +389,23 @@ export const ExtensionsListVersions500 = InternalError;
 export type ExtensionsListVersions504 = GatewayTimeoutError;
 export const ExtensionsListVersions504 = GatewayTimeoutError;
 export type ExtensionsGetVersionPathParams = { readonly id: string; readonly versionId: string };
-export const ExtensionsGetVersionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String.annotate({ description: "The extension's id (`ext_…`) or its name." })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
-    )
-    .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
-  versionId: Schema.String.annotate({
-    description: "The version's id (`extver_…`) or its version string, such as `1.0.0`.",
-  })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(85).annotate({ expected: "a string with at most 85 code points" }),
-    )
-    .check(Schema.isMaxLength(85).annotate({ expected: "a value with a length of at most 85" })),
-});
+export const ExtensionsGetVersionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String.annotate({ description: "The extension's id (`ext_…`) or its name." })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+      )
+      .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
+    versionId: Schema.String.annotate({
+      description: "The version's id (`extver_…`) or its version string, such as `1.0.0`.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(85).annotate({ expected: "a string with at most 85 code points" }),
+      )
+      .check(Schema.isMaxLength(85).annotate({ expected: "a value with a length of at most 85" })),
+  }))();
 export type ExtensionsGetVersion200 = ExtensionVersion;
 export const ExtensionsGetVersion200 = ExtensionVersion;
 export type ExtensionsGetVersion401 = UnauthorizedError;

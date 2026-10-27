@@ -1042,8 +1042,8 @@ const renderTypeAndSchema = (
     brand === undefined
       ? code.runtime
       : `${code.runtime}.pipe(Schema.brand(${JSON.stringify(brand)}))`;
-  // Schema construction is pure; unused retained components need not survive bundling.
-  const initializer = runtime.includes("(") ? `/* @__PURE__ */ ${runtime}` : runtime;
+  // Mark the whole construction pure, including chained checks and brand calls.
+  const initializer = runtime.includes("(") ? `/* @__PURE__ */ (() => ${runtime})()` : runtime;
   return `export type ${name} = ${Type}\nexport const ${name} = ${initializer}`;
 };
 

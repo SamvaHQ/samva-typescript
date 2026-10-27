@@ -23,6 +23,7 @@ import {
   TemplateFromDefault,
   TemplateId,
   TemplateInputContractId,
+  TemplateProjectId,
   TemplatePublicationId,
   TemplateSourceError,
   TemplateTrackingDefault,
@@ -32,73 +33,72 @@ import {
   VersionCursor,
 } from "./shared";
 
-export type TemplateProjectId = string & EffectBrand.Brand<"TemplateProjectId">;
-export const TemplateProjectId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^tproj_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^tproj_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "TemplateProjectId",
-  }),
-).pipe(Schema.brand("TemplateProjectId"));
 export type TemplatePublicationBrand = {
   readonly slug: string;
   readonly digest: string;
   readonly stale: boolean;
 };
-export const TemplatePublicationBrand = /* @__PURE__ */ Schema.Struct({
-  slug: Schema.String.annotate({ description: "The brand the publication imports." }).check(
-    Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+export const TemplatePublicationBrand = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    slug: Schema.String.annotate({ description: "The brand the publication imports." }).check(
+      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      }),
+    ),
+    digest: Schema.String.annotate({
+      description: "The brand's digest when the publication was built.",
     }),
-  ),
-  digest: Schema.String.annotate({
-    description: "The brand's digest when the publication was built.",
-  }),
-  stale: Schema.Boolean.annotate({
-    description:
-      "Whether the brand has changed since this publication was built. Publishing the same commit again picks up the change.",
-  }),
-}).annotate({ identifier: "TemplatePublicationBrand" });
+    stale: Schema.Boolean.annotate({
+      description:
+        "Whether the brand has changed since this publication was built. Publishing the same commit again picks up the change.",
+    }),
+  }).annotate({ identifier: "TemplatePublicationBrand" }))();
 export type TemplateFamilyId = string & EffectBrand.Brand<"TemplateFamilyId">;
-export const TemplateFamilyId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^tfam_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^tfam_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "TemplateFamilyId",
-  }),
-).pipe(Schema.brand("TemplateFamilyId"));
+export const TemplateFamilyId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^tfam_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^tfam_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "TemplateFamilyId",
+    }),
+  ).pipe(Schema.brand("TemplateFamilyId")))();
 export type BrandRenderedFooter = {
   readonly html: string;
   readonly text: string;
   readonly headCss: string;
 };
-export const BrandRenderedFooter = /* @__PURE__ */ Schema.Struct({
-  html: Schema.String,
-  text: Schema.String,
-  headCss: Schema.String,
-}).annotate({ identifier: "BrandRenderedFooter" });
+export const BrandRenderedFooter = /* @__PURE__ */ (() =>
+  Schema.Struct({ html: Schema.String, text: Schema.String, headCss: Schema.String }).annotate({
+    identifier: "BrandRenderedFooter",
+  }))();
 export type TemplatePublicationRender = {
   readonly subject: string;
   readonly preheader?: string;
   readonly html: string;
   readonly text: string;
 };
-export const TemplatePublicationRender = /* @__PURE__ */ Schema.Struct({
-  subject: Schema.String,
-  preheader: Schema.optionalKey(Schema.String),
-  html: Schema.String.check(
-    Schema.isMaxCodePoints(2097152).annotate({
-      expected: "a string with at most 2097152 code points",
-    }),
-  ).check(
-    Schema.isMaxLength(2097152).annotate({ expected: "a value with a length of at most 2097152" }),
-  ),
-  text: Schema.String.check(
-    Schema.isMaxCodePoints(2097152).annotate({
-      expected: "a string with at most 2097152 code points",
-    }),
-  ).check(
-    Schema.isMaxLength(2097152).annotate({ expected: "a value with a length of at most 2097152" }),
-  ),
-}).annotate({ identifier: "TemplatePublicationRender" });
+export const TemplatePublicationRender = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    subject: Schema.String,
+    preheader: Schema.optionalKey(Schema.String),
+    html: Schema.String.check(
+      Schema.isMaxCodePoints(2097152).annotate({
+        expected: "a string with at most 2097152 code points",
+      }),
+    ).check(
+      Schema.isMaxLength(2097152).annotate({
+        expected: "a value with a length of at most 2097152",
+      }),
+    ),
+    text: Schema.String.check(
+      Schema.isMaxCodePoints(2097152).annotate({
+        expected: "a string with at most 2097152 code points",
+      }),
+    ).check(
+      Schema.isMaxLength(2097152).annotate({
+        expected: "a value with a length of at most 2097152",
+      }),
+    ),
+  }).annotate({ identifier: "TemplatePublicationRender" }))();
 export type TemplateInputContractPage = {
   readonly items: ReadonlyArray<{
     readonly id: TemplateInputContractId;
@@ -111,34 +111,35 @@ export type TemplateInputContractPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const TemplateInputContractPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: TemplateInputContractId,
-      organizationId: OrganizationId,
-      templateId: TemplateId,
-      version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(1).annotate({
-            expected: "a value greater than or equal to 1",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+export const TemplateInputContractPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: TemplateInputContractId,
+        organizationId: OrganizationId,
+        templateId: TemplateId,
+        version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        validationDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
-      validationDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-      schema: Schema.Record(Schema.String, JsonValue),
-      createdAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "TemplateInputContractPage" });
+        schema: Schema.Record(Schema.String, JsonValue),
+        createdAt: Schema.String,
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "TemplateInputContractPage" }))();
 export type TemplateFamilyMember = {
   readonly id: TemplateId;
   readonly name: string;
@@ -149,23 +150,24 @@ export type TemplateFamilyMember = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const TemplateFamilyMember = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  name: Schema.String,
-  slug: Schema.String,
-  channel: Schema.Literal("email"),
-  status: Schema.Union([
-    Schema.Literal("draft"),
-    Schema.Literal("pending"),
-    Schema.Literal("approved"),
-    Schema.Literal("published"),
-    Schema.Literal("rejected"),
-    Schema.Literal("archived"),
-  ]),
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "TemplateFamilyMember" });
+export const TemplateFamilyMember = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateId,
+    name: Schema.String,
+    slug: Schema.String,
+    channel: Schema.Literal("email"),
+    status: Schema.Union([
+      Schema.Literal("draft"),
+      Schema.Literal("pending"),
+      Schema.Literal("approved"),
+      Schema.Literal("published"),
+      Schema.Literal("rejected"),
+      Schema.Literal("archived"),
+    ]),
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "TemplateFamilyMember" }))();
 export type TemplateSummary = {
   readonly id: TemplateId;
   readonly slug: string;
@@ -185,62 +187,65 @@ export type TemplateSummary = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const TemplateSummary = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  slug: Schema.String,
-  name: Schema.String,
-  channel: Schema.Literal("email"),
-  projectId: TemplateProjectId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
-    description:
-      "The namespace the template's project belongs to; every entry in a project shares it. Null at organization level. A namespace-scoped key reaches only its own namespace's templates and shared ones.",
-  }),
-  shared: Schema.Boolean.annotate({
-    description:
-      "Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.",
-  }),
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-      }),
+export const TemplateSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateId,
+    slug: Schema.String,
+    name: Schema.String,
+    channel: Schema.Literal("email"),
+    projectId: TemplateProjectId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+      description:
+        "The namespace the template's project belongs to; every entry in a project shares it. Null at organization level. A namespace-scoped key reaches only its own namespace's templates and shared ones.",
+    }),
+    shared: Schema.Boolean.annotate({
+      description:
+        "Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.",
+    }),
+    entryPath: Schema.String.check(
+      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
     )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-    ),
-  status: Schema.Union([
-    Schema.Literal("draft"),
-    Schema.Literal("pending"),
-    Schema.Literal("approved"),
-    Schema.Literal("published"),
-    Schema.Literal("rejected"),
-    Schema.Literal("archived"),
-  ]),
-  isActive: Schema.Boolean,
-  publishedAt: Schema.Union([Schema.String, Schema.Null]),
-  brand: Schema.Union([TemplatePublicationBrand, Schema.Null]),
-  fromDefault: Schema.Union([TemplateFromDefault, Schema.Null]),
-  usageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "TemplateSummary" });
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+    status: Schema.Union([
+      Schema.Literal("draft"),
+      Schema.Literal("pending"),
+      Schema.Literal("approved"),
+      Schema.Literal("published"),
+      Schema.Literal("rejected"),
+      Schema.Literal("archived"),
+    ]),
+    isActive: Schema.Boolean,
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    brand: Schema.Union([TemplatePublicationBrand, Schema.Null]),
+    fromDefault: Schema.Union([TemplateFromDefault, Schema.Null]),
+    usageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "TemplateSummary" }))();
 export type Template = {
   readonly id: TemplateId;
   readonly slug: string;
@@ -281,89 +286,92 @@ export type Template = {
   readonly inputContractId: TemplateInputContractId | null;
   readonly inputSchema: { readonly [x: string]: JsonValue } | null;
 };
-export const Template = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  slug: Schema.String,
-  name: Schema.String,
-  channel: Schema.Literal("email"),
-  projectId: TemplateProjectId,
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
-    description:
-      "The namespace the template's project belongs to; every entry in a project shares it. Null at organization level. A namespace-scoped key reaches only its own namespace's templates and shared ones.",
-  }),
-  shared: Schema.Boolean.annotate({
-    description:
-      "Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.",
-  }),
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-      }),
-    )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-    ),
-  status: Schema.Union([
-    Schema.Literal("draft"),
-    Schema.Literal("pending"),
-    Schema.Literal("approved"),
-    Schema.Literal("published"),
-    Schema.Literal("rejected"),
-    Schema.Literal("archived"),
-  ]),
-  isActive: Schema.Boolean,
-  publishedAt: Schema.Union([Schema.String, Schema.Null]),
-  brand: Schema.Union([TemplatePublicationBrand, Schema.Null]),
-  fromDefault: Schema.Union([TemplateFromDefault, Schema.Null]),
-  usageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  familyId: Schema.Union([TemplateFamilyId, Schema.Null]),
-  description: Schema.Union([Schema.String, Schema.Null]),
-  category: Schema.Union([
-    Schema.Union([
-      Schema.Literal("transactional"),
-      Schema.Literal("marketing"),
-      Schema.Literal("support"),
-      Schema.Literal("notification"),
-      Schema.Literal("verification"),
-      Schema.Literal("reminder"),
-      Schema.Literal("alert"),
-    ]),
-    Schema.Null,
-  ]),
-  replyToDefault: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  trackingDefault: Schema.Union([TemplateTrackingDefault, Schema.Null]),
-  email: Schema.Union([
-    Schema.Struct({
-      subject: Schema.String,
-      preheader: Schema.Union([Schema.String, Schema.Null]),
-      headers: Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
+export const Template = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateId,
+    slug: Schema.String,
+    name: Schema.String,
+    channel: Schema.Literal("email"),
+    projectId: TemplateProjectId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+      description:
+        "The namespace the template's project belongs to; every entry in a project shares it. Null at organization level. A namespace-scoped key reaches only its own namespace's templates and shared ones.",
     }),
-    Schema.Null,
-  ]),
-  publicationId: Schema.Union([TemplatePublicationId, Schema.Null]),
-  inputContractId: Schema.Union([TemplateInputContractId, Schema.Null]),
-  inputSchema: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-}).annotate({ identifier: "Template" });
+    shared: Schema.Boolean.annotate({
+      description:
+        "Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.",
+    }),
+    entryPath: Schema.String.check(
+      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
+    )
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+    status: Schema.Union([
+      Schema.Literal("draft"),
+      Schema.Literal("pending"),
+      Schema.Literal("approved"),
+      Schema.Literal("published"),
+      Schema.Literal("rejected"),
+      Schema.Literal("archived"),
+    ]),
+    isActive: Schema.Boolean,
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    brand: Schema.Union([TemplatePublicationBrand, Schema.Null]),
+    fromDefault: Schema.Union([TemplateFromDefault, Schema.Null]),
+    usageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    familyId: Schema.Union([TemplateFamilyId, Schema.Null]),
+    description: Schema.Union([Schema.String, Schema.Null]),
+    category: Schema.Union([
+      Schema.Union([
+        Schema.Literal("transactional"),
+        Schema.Literal("marketing"),
+        Schema.Literal("support"),
+        Schema.Literal("notification"),
+        Schema.Literal("verification"),
+        Schema.Literal("reminder"),
+        Schema.Literal("alert"),
+      ]),
+      Schema.Null,
+    ]),
+    replyToDefault: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    trackingDefault: Schema.Union([TemplateTrackingDefault, Schema.Null]),
+    email: Schema.Union([
+      Schema.Struct({
+        subject: Schema.String,
+        preheader: Schema.Union([Schema.String, Schema.Null]),
+        headers: Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
+      }),
+      Schema.Null,
+    ]),
+    publicationId: Schema.Union([TemplatePublicationId, Schema.Null]),
+    inputContractId: Schema.Union([TemplateInputContractId, Schema.Null]),
+    inputSchema: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+  }).annotate({ identifier: "Template" }))();
 export type TemplateFamily = {
   readonly id: TemplateFamilyId;
   readonly name: string;
@@ -371,45 +379,49 @@ export type TemplateFamily = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const TemplateFamily = /* @__PURE__ */ Schema.Struct({
-  id: TemplateFamilyId,
-  name: Schema.String,
-  members: Schema.Array(TemplateFamilyMember),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "TemplateFamily" });
+export const TemplateFamily = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateFamilyId,
+    name: Schema.String,
+    members: Schema.Array(TemplateFamilyMember),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "TemplateFamily" }))();
 export type TemplatePage = {
   readonly items: ReadonlyArray<TemplateSummary>;
   readonly nextCursor: string | null;
 };
-export const TemplatePage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(TemplateSummary),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "TemplatePage" });
+export const TemplatePage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(TemplateSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "TemplatePage" }))();
 export type TemplateFromWebsite = {
   readonly template: Template;
   readonly website: { readonly url: string; readonly host: string };
   readonly ask: string;
 };
-export const TemplateFromWebsite = /* @__PURE__ */ Schema.Struct({
-  template: Template,
-  website: Schema.Struct({
-    url: Schema.String.annotate({ description: "The address Samva checked, normalized." }),
-    host: Schema.String,
-  }),
-  ask: Schema.String.annotate({
-    description:
-      "The request to send the template assistant in the editor. The assistant reads the site, rebuilds the project's theme and blocks to match it, and proposes a brand that changes nothing until the customer applies it.",
-  }),
-}).annotate({ identifier: "TemplateFromWebsite" });
+export const TemplateFromWebsite = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    template: Template,
+    website: Schema.Struct({
+      url: Schema.String.annotate({ description: "The address Samva checked, normalized." }),
+      host: Schema.String,
+    }),
+    ask: Schema.String.annotate({
+      description:
+        "The request to send the template assistant in the editor. The assistant reads the site, rebuilds the project's theme and blocks to match it, and proposes a brand that changes nothing until the customer applies it.",
+    }),
+  }).annotate({ identifier: "TemplateFromWebsite" }))();
 export type TemplateFamilyPage = {
   readonly items: ReadonlyArray<TemplateFamily>;
   readonly nextCursor: string | null;
 };
-export const TemplateFamilyPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(TemplateFamily),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "TemplateFamilyPage" });
+export const TemplateFamilyPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(TemplateFamily),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "TemplateFamilyPage" }))();
 export type TemplatesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -429,64 +441,65 @@ export type TemplatesListQuery = {
   readonly namespaceId?: NamespaceId | null;
   readonly shared?: boolean | null;
 };
-export const TemplatesListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  category: Schema.optionalKey(
-    Schema.Union([
+export const TemplatesListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("transactional"),
-        Schema.Literal("marketing"),
-        Schema.Literal("support"),
-        Schema.Literal("notification"),
-        Schema.Literal("verification"),
-        Schema.Literal("reminder"),
-        Schema.Literal("alert"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    category: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("draft"),
-        Schema.Literal("pending"),
-        Schema.Literal("approved"),
-        Schema.Literal("published"),
-        Schema.Literal("rejected"),
-        Schema.Literal("archived"),
+        Schema.Union([
+          Schema.Literal("transactional"),
+          Schema.Literal("marketing"),
+          Schema.Literal("support"),
+          Schema.Literal("notification"),
+          Schema.Literal("verification"),
+          Schema.Literal("reminder"),
+          Schema.Literal("alert"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  projectId: Schema.optionalKey(Schema.Union([TemplateProjectId, Schema.Null])),
-  namespaceId: Schema.optionalKey(
-    Schema.Union([NamespaceId, Schema.Null]).annotate({
-      description:
-        "Only the templates this namespace uses: its own and those shared with every namespace (add `shared=false` for its own only). A namespace-scoped key lists its own namespace's and shared templates.",
-    }),
-  ),
-  shared: Schema.optionalKey(
-    Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-      description:
-        "Only templates whose project is shared with every namespace (true), or only unshared ones (false).",
-    }),
-  ),
-});
+    ),
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("draft"),
+          Schema.Literal("pending"),
+          Schema.Literal("approved"),
+          Schema.Literal("published"),
+          Schema.Literal("rejected"),
+          Schema.Literal("archived"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    projectId: Schema.optionalKey(Schema.Union([TemplateProjectId, Schema.Null])),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "Only the templates this namespace uses: its own and those shared with every namespace (add `shared=false` for its own only). A namespace-scoped key lists its own namespace's and shared templates.",
+      }),
+    ),
+    shared: Schema.optionalKey(
+      Schema.Union([Schema.Boolean, Schema.Null]).annotate({
+        description:
+          "Only templates whose project is shared with every namespace (true), or only unshared ones (false).",
+      }),
+    ),
+  }))();
 export type TemplatesList200 = TemplatePage;
 export const TemplatesList200 = TemplatePage;
 export type TemplatesList401 = UnauthorizedError;
@@ -521,185 +534,33 @@ export type TemplatesCreateRequestJson = {
   readonly shared?: boolean | null;
   readonly idempotencyKey: string;
 };
-export const TemplatesCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
+export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" })),
-  projectName: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      .check(
+        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
       )
-        .check(
-          Schema.isMaxCodePoints(200).annotate({
-            expected: "a string with at most 200 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  slug: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-          expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
-        }),
+      .check(
+        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
       ),
-      Schema.Null,
-    ]),
-  ),
-  galleryTemplateId: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(128).annotate({
-            expected: "a string with at most 128 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  useBrand: Schema.optionalKey(
-    Schema.Union([
-      Schema.Boolean.annotate({
-        description:
-          "With `galleryTemplateId`: whether the new project's `theme.css` imports the organization's default brand (`@import \"samva:brand\";`) over the starter's look. Defaults to false.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-  description: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  category: Schema.optionalKey(
-    Schema.Union([
+    projectName: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("transactional"),
-          Schema.Literal("marketing"),
-          Schema.Literal("support"),
-          Schema.Literal("notification"),
-          Schema.Literal("verification"),
-          Schema.Literal("reminder"),
-          Schema.Literal("alert"),
-        ]),
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  namespaceId: Schema.optionalKey(
-    Schema.Union([NamespaceId, Schema.Null]).annotate({
-      description:
-        "The namespace the new template project belongs to; the project and every entry added to it share it. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
-    }),
-  ),
-  shared: Schema.optionalKey(
-    Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-      description:
-        "Share the new organization-level project with every namespace: namespace-scoped keys read and send its entries but cannot change them. Defaults to false. Not with `namespaceId`, and not from a namespace-scoped key.",
-    }),
-  ),
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesCreate201 = Template;
-export const TemplatesCreate201 = Template;
-export type TemplatesCreate401 = UnauthorizedError;
-export const TemplatesCreate401 = UnauthorizedError;
-export type TemplatesCreate403 = ForbiddenError;
-export const TemplatesCreate403 = ForbiddenError;
-export type TemplatesCreate404 = ResourceNotFoundError;
-export const TemplatesCreate404 = ResourceNotFoundError;
-export type TemplatesCreate409 = ConflictError;
-export const TemplatesCreate409 = ConflictError;
-export type TemplatesCreate422 = TemplateSourceError | ValidationError;
-export const TemplatesCreate422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesCreate500 = InternalError;
-export const TemplatesCreate500 = InternalError;
-export type TemplatesCreate504 = GatewayTimeoutError;
-export const TemplatesCreate504 = GatewayTimeoutError;
-export type TemplatesGetByIdPathParams = { readonly id: TemplateId };
-export const TemplatesGetByIdPathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
-export type TemplatesGetById200 = Template;
-export const TemplatesGetById200 = Template;
-export type TemplatesGetById401 = UnauthorizedError;
-export const TemplatesGetById401 = UnauthorizedError;
-export type TemplatesGetById403 = ForbiddenError;
-export const TemplatesGetById403 = ForbiddenError;
-export type TemplatesGetById404 = ResourceNotFoundError;
-export const TemplatesGetById404 = ResourceNotFoundError;
-export type TemplatesGetById422 = ValidationError;
-export const TemplatesGetById422 = ValidationError;
-export type TemplatesGetById500 = InternalError;
-export const TemplatesGetById500 = InternalError;
-export type TemplatesGetById504 = GatewayTimeoutError;
-export const TemplatesGetById504 = GatewayTimeoutError;
-export type TemplatesRemovePathParams = { readonly id: TemplateId };
-export const TemplatesRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
-export type TemplatesRemove200 = SuccessResponse;
-export const TemplatesRemove200 = SuccessResponse;
-export type TemplatesRemove401 = UnauthorizedError;
-export const TemplatesRemove401 = UnauthorizedError;
-export type TemplatesRemove403 = ForbiddenError;
-export const TemplatesRemove403 = ForbiddenError;
-export type TemplatesRemove404 = ResourceNotFoundError;
-export const TemplatesRemove404 = ResourceNotFoundError;
-export type TemplatesRemove422 = ValidationError;
-export const TemplatesRemove422 = ValidationError;
-export type TemplatesRemove500 = InternalError;
-export const TemplatesRemove500 = InternalError;
-export type TemplatesRemove504 = GatewayTimeoutError;
-export const TemplatesRemove504 = GatewayTimeoutError;
-export type TemplatesUpdatePathParams = { readonly id: TemplateId };
-export const TemplatesUpdatePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
-export type TemplatesUpdateRequestJson = {
-  readonly data: {
-    readonly name?: string | null;
-    readonly slug?: string | null;
-    readonly entryPath?: string | null;
-    readonly description?: string | null | null;
-    readonly category?:
-      | "transactional"
-      | "marketing"
-      | "support"
-      | "notification"
-      | "verification"
-      | "reminder"
-      | "alert"
-      | null
-      | null;
-    readonly fromDefault?: TemplateFromDefault | null | null;
-    readonly replyToDefault?: ReadonlyArray<string> | null | null;
-    readonly trackingDefault?: TemplateTrackingDefault | null | null;
-    readonly isActive?: boolean | null;
-    readonly shared?: boolean | null;
-  };
-};
-export const TemplatesUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
-  data: Schema.Struct({
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    ),
     slug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
@@ -710,29 +571,28 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
         Schema.Null,
       ]),
     ),
-    entryPath: Schema.optionalKey(
+    galleryTemplateId: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isMaxCodePoints(1024).annotate({
-            expected: "a string with at most 1024 code points",
-          }),
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         )
           .check(
-            Schema.isPattern(
-              new RegExp(
-                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
             }),
           )
           .check(
-            Schema.isMaxLength(1024).annotate({
-              expected: "a value with a length of at most 1024",
-            }),
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
           ),
+        Schema.Null,
+      ]),
+    ),
+    useBrand: Schema.optionalKey(
+      Schema.Union([
+        Schema.Boolean.annotate({
+          description:
+            "With `galleryTemplateId`: whether the new project's `theme.css` imports the organization's default brand (`@import \"samva:brand\";`) over the starter's look. Defaults to false.",
+        }),
         Schema.Null,
       ]),
     ),
@@ -756,27 +616,187 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ Schema.Struct({
         Schema.Null,
       ]),
     ),
-    fromDefault: Schema.optionalKey(
-      Schema.Union([Schema.Union([TemplateFromDefault, Schema.Null]), Schema.Null]),
-    ),
-    replyToDefault: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
-    trackingDefault: Schema.optionalKey(
-      Schema.Union([Schema.Union([TemplateTrackingDefault, Schema.Null]), Schema.Null]).annotate({
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
         description:
-          "Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.",
+          "The namespace the new template project belongs to; the project and every entry added to it share it. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
       }),
     ),
-    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     shared: Schema.optionalKey(
       Schema.Union([Schema.Boolean, Schema.Null]).annotate({
         description:
-          "Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.",
+          "Share the new organization-level project with every namespace: namespace-scoped keys read and send its entries but cannot change them. Defaults to false. Not with `namespaceId`, and not from a namespace-scoped key.",
       }),
     ),
-  }),
-});
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesCreate201 = Template;
+export const TemplatesCreate201 = Template;
+export type TemplatesCreate401 = UnauthorizedError;
+export const TemplatesCreate401 = UnauthorizedError;
+export type TemplatesCreate403 = ForbiddenError;
+export const TemplatesCreate403 = ForbiddenError;
+export type TemplatesCreate404 = ResourceNotFoundError;
+export const TemplatesCreate404 = ResourceNotFoundError;
+export type TemplatesCreate409 = ConflictError;
+export const TemplatesCreate409 = ConflictError;
+export type TemplatesCreate422 = TemplateSourceError | ValidationError;
+export const TemplatesCreate422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesCreate500 = InternalError;
+export const TemplatesCreate500 = InternalError;
+export type TemplatesCreate504 = GatewayTimeoutError;
+export const TemplatesCreate504 = GatewayTimeoutError;
+export type TemplatesGetByIdPathParams = { readonly id: TemplateId };
+export const TemplatesGetByIdPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesGetById200 = Template;
+export const TemplatesGetById200 = Template;
+export type TemplatesGetById401 = UnauthorizedError;
+export const TemplatesGetById401 = UnauthorizedError;
+export type TemplatesGetById403 = ForbiddenError;
+export const TemplatesGetById403 = ForbiddenError;
+export type TemplatesGetById404 = ResourceNotFoundError;
+export const TemplatesGetById404 = ResourceNotFoundError;
+export type TemplatesGetById422 = ValidationError;
+export const TemplatesGetById422 = ValidationError;
+export type TemplatesGetById500 = InternalError;
+export const TemplatesGetById500 = InternalError;
+export type TemplatesGetById504 = GatewayTimeoutError;
+export const TemplatesGetById504 = GatewayTimeoutError;
+export type TemplatesRemovePathParams = { readonly id: TemplateId };
+export const TemplatesRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesRemove200 = SuccessResponse;
+export const TemplatesRemove200 = SuccessResponse;
+export type TemplatesRemove401 = UnauthorizedError;
+export const TemplatesRemove401 = UnauthorizedError;
+export type TemplatesRemove403 = ForbiddenError;
+export const TemplatesRemove403 = ForbiddenError;
+export type TemplatesRemove404 = ResourceNotFoundError;
+export const TemplatesRemove404 = ResourceNotFoundError;
+export type TemplatesRemove422 = ValidationError;
+export const TemplatesRemove422 = ValidationError;
+export type TemplatesRemove500 = InternalError;
+export const TemplatesRemove500 = InternalError;
+export type TemplatesRemove504 = GatewayTimeoutError;
+export const TemplatesRemove504 = GatewayTimeoutError;
+export type TemplatesUpdatePathParams = { readonly id: TemplateId };
+export const TemplatesUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesUpdateRequestJson = {
+  readonly data: {
+    readonly name?: string | null;
+    readonly slug?: string | null;
+    readonly entryPath?: string | null;
+    readonly description?: string | null | null;
+    readonly category?:
+      | "transactional"
+      | "marketing"
+      | "support"
+      | "notification"
+      | "verification"
+      | "reminder"
+      | "alert"
+      | null
+      | null;
+    readonly fromDefault?: TemplateFromDefault | null | null;
+    readonly replyToDefault?: ReadonlyArray<string> | null | null;
+    readonly trackingDefault?: TemplateTrackingDefault | null | null;
+    readonly isActive?: boolean | null;
+    readonly shared?: boolean | null;
+  };
+};
+export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    data: Schema.Struct({
+      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      slug: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      entryPath: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(1024).annotate({
+                expected: "a value with a length of at most 1024",
+              }),
+            ),
+          Schema.Null,
+        ]),
+      ),
+      description: Schema.optionalKey(
+        Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+      ),
+      category: Schema.optionalKey(
+        Schema.Union([
+          Schema.Union([
+            Schema.Union([
+              Schema.Literal("transactional"),
+              Schema.Literal("marketing"),
+              Schema.Literal("support"),
+              Schema.Literal("notification"),
+              Schema.Literal("verification"),
+              Schema.Literal("reminder"),
+              Schema.Literal("alert"),
+            ]),
+            Schema.Null,
+          ]),
+          Schema.Null,
+        ]),
+      ),
+      fromDefault: Schema.optionalKey(
+        Schema.Union([Schema.Union([TemplateFromDefault, Schema.Null]), Schema.Null]),
+      ),
+      replyToDefault: Schema.optionalKey(
+        Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+      ),
+      trackingDefault: Schema.optionalKey(
+        Schema.Union([Schema.Union([TemplateTrackingDefault, Schema.Null]), Schema.Null]).annotate({
+          description:
+            "Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.",
+        }),
+      ),
+      isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+      shared: Schema.optionalKey(
+        Schema.Union([Schema.Boolean, Schema.Null]).annotate({
+          description:
+            "Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.",
+        }),
+      ),
+    }),
+  }))();
 export type TemplatesUpdate200 = Template;
 export const TemplatesUpdate200 = Template;
 export type TemplatesUpdate401 = UnauthorizedError;
@@ -794,29 +814,29 @@ export const TemplatesUpdate500 = InternalError;
 export type TemplatesUpdate504 = GatewayTimeoutError;
 export const TemplatesUpdate504 = GatewayTimeoutError;
 export type TemplatesListInputContractsPathParams = { readonly id: TemplateId };
-export const TemplatesListInputContractsPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
+export const TemplatesListInputContractsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
 export type TemplatesListInputContractsQuery = {
   readonly limit?: number | null;
   readonly cursor?: VersionCursor | null;
 };
-export const TemplatesListInputContractsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([VersionCursor, Schema.Null])),
-});
+export const TemplatesListInputContractsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([VersionCursor, Schema.Null])),
+  }))();
 export type TemplatesListInputContracts200 = TemplateInputContractPage;
 export const TemplatesListInputContracts200 = TemplateInputContractPage;
 export type TemplatesListInputContracts401 = UnauthorizedError;
@@ -835,10 +855,8 @@ export type TemplatesGetInputContractPathParams = {
   readonly id: TemplateId;
   readonly inputContractId: TemplateInputContractId;
 };
-export const TemplatesGetInputContractPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  inputContractId: TemplateInputContractId,
-});
+export const TemplatesGetInputContractPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId, inputContractId: TemplateInputContractId }))();
 export type TemplatesGetInputContract200 = {
   readonly id: TemplateInputContractId;
   readonly organizationId: OrganizationId;
@@ -848,27 +866,30 @@ export type TemplatesGetInputContract200 = {
   readonly schema: { readonly [x: string]: JsonValue };
   readonly createdAt: string;
 };
-export const TemplatesGetInputContract200 = /* @__PURE__ */ Schema.Struct({
-  id: TemplateInputContractId,
-  organizationId: OrganizationId,
-  templateId: TemplateId,
-  version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(1).annotate({ expected: "a value greater than or equal to 1" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
+export const TemplatesGetInputContract200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateInputContractId,
+    organizationId: OrganizationId,
+    templateId: TemplateId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    validationDigest: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
       }),
     ),
-  validationDigest: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  schema: Schema.Record(Schema.String, JsonValue),
-  createdAt: Schema.String,
-});
+    schema: Schema.Record(Schema.String, JsonValue),
+    createdAt: Schema.String,
+  }))();
 export type TemplatesGetInputContract401 = UnauthorizedError;
 export const TemplatesGetInputContract401 = UnauthorizedError;
 export type TemplatesGetInputContract403 = ForbiddenError;
@@ -882,7 +903,8 @@ export const TemplatesGetInputContract500 = InternalError;
 export type TemplatesGetInputContract504 = GatewayTimeoutError;
 export const TemplatesGetInputContract504 = GatewayTimeoutError;
 export type TemplatesPublishPathParams = { readonly id: TemplateId };
-export const TemplatesPublishPathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
+export const TemplatesPublishPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
 export type TemplatesPublishRequestJson = {
   readonly projectId: TemplateProjectId;
   readonly commitSha: string;
@@ -890,35 +912,36 @@ export type TemplatesPublishRequestJson = {
   readonly expectedWorkspaceRevision: string;
   readonly ifCurrentPublicationId?: TemplatePublicationId | null;
 };
-export const TemplatesPublishRequestJson = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  commitSha: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+export const TemplatesPublishRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    commitSha: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
-    )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
     ),
-  expectedWorkspaceRevision: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-  ifCurrentPublicationId: Schema.optionalKey(Schema.Union([TemplatePublicationId, Schema.Null])),
-});
+    entryPath: Schema.String.check(
+      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
+    )
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+    expectedWorkspaceRevision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    ifCurrentPublicationId: Schema.optionalKey(Schema.Union([TemplatePublicationId, Schema.Null])),
+  }))();
 export type TemplatesPublish201 = {
   readonly id: TemplatePublicationId;
   readonly organizationId: OrganizationId;
@@ -952,7 +975,7 @@ export type TemplatesPublish201 = {
     readonly source: {
       readonly commitSha: string;
       readonly treeSha: string;
-      readonly entryPath: string;
+      readonly entryPath: string | string;
       readonly treeDigest: string;
     };
     readonly brand?: {
@@ -1029,106 +1052,174 @@ export type TemplatesPublish201 = {
   readonly publishedBy: string | null;
   readonly createdAt: string;
 };
-export const TemplatesPublish201 = /* @__PURE__ */ Schema.Struct({
-  id: TemplatePublicationId,
-  organizationId: OrganizationId,
-  projectId: TemplateProjectId,
-  templateId: TemplateId,
-  inputContractId: TemplateInputContractId,
-  commitSha: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  treeSha: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+export const TemplatesPublish201 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplatePublicationId,
+    organizationId: OrganizationId,
+    projectId: TemplateProjectId,
+    templateId: TemplateId,
+    inputContractId: TemplateInputContractId,
+    commitSha: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
+    ),
+    treeSha: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    entryPath: Schema.String.check(
+      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
     )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+    buildIdentity: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+      }),
     ),
-  buildIdentity: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  manifest: Schema.Struct({
-    templateKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    compiled: Schema.Struct({
-      version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(1).annotate({
-            expected: "a value greater than or equal to 1",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+    manifest: Schema.Struct({
+      templateKey: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+      compiled: Schema.Struct({
+        version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        digest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
-      digest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
+        bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+      }),
+      compiler: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
       ),
-      bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+      input: Schema.Struct({
+        schemaDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
-    }),
-    compiler: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    input: Schema.Struct({
-      schemaDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-      contractDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-    }),
-    assets: Schema.Struct({
-      base: Schema.String.check(
-        Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
-          expected: "a string matching the RegExp ^https?:\\/\\/",
-        }),
-      ),
-      entries: Schema.Array(
-        Schema.Struct({
-          path: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        contractDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+      }),
+      assets: Schema.Struct({
+        base: Schema.String.check(
+          Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
+            expected: "a string matching the RegExp ^https?:\\/\\/",
+          }),
+        ),
+        entries: Schema.Array(
+          Schema.Struct({
+            path: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(1024).annotate({
+                  expected: "a string with at most 1024 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(1024).annotate({
+                  expected: "a value with a length of at most 1024",
+                }),
+              ),
+            fileName: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
+              }),
+            ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(0).annotate({
+                  expected: "a value greater than or equal to 0",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            contentType: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            ),
+            url: Schema.String.check(
+              Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
+                expected: "a string matching the RegExp ^https?:\\/\\/",
+              }),
+            ),
+          }),
+        ).check(
+          Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" }),
+        ),
+      }),
+      source: Schema.Struct({
+        commitSha: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        treeSha: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        entryPath: Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
           )
             .check(
-              Schema.isMaxCodePoints(1024).annotate({
-                expected: "a string with at most 1024 code points",
+              Schema.isPattern(
+                new RegExp(
+                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
               }),
             )
             .check(
@@ -1136,341 +1227,307 @@ export const TemplatesPublish201 = /* @__PURE__ */ Schema.Struct({
                 expected: "a value with a length of at most 1024",
               }),
             ),
-          fileName: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
+          Schema.String.check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(1024).annotate({
+                expected: "a value with a length of at most 1024",
+              }),
+            ),
+        ]),
+        treeDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+      }),
+      brand: Schema.optionalKey(
+        Schema.Struct({
+          slug: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
             }),
           ),
+          css: Schema.String,
+          assets: BrandAssets,
+          footer: BrandFooter,
+          renderedFooter: BrandRenderedFooter,
           digest: Schema.String.check(
             Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{64}$",
             }),
           ),
-          bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(0).annotate({
-                expected: "a value greater than or equal to 0",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          contentType: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          ),
-          url: Schema.String.check(
-            Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
-              expected: "a string matching the RegExp ^https?:\\/\\/",
-            }),
-          ),
-        }),
-      ).check(Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" })),
-    }),
-    source: Schema.Struct({
-      commitSha: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      treeSha: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      entryPath: Schema.String.check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
-        .check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-              "u",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-        ),
-      treeDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          rendersFooter: Schema.Union([
+            Schema.Literal("every"),
+            Schema.Literal("some"),
+            Schema.Literal("none"),
+          ]),
         }),
       ),
     }),
-    brand: Schema.optionalKey(
-      Schema.Struct({
-        slug: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-          }),
-        ),
-        css: Schema.String,
-        assets: BrandAssets,
-        footer: BrandFooter,
-        renderedFooter: BrandRenderedFooter,
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        rendersFooter: Schema.Union([
-          Schema.Literal("every"),
-          Schema.Literal("some"),
-          Schema.Literal("none"),
-        ]),
-      }),
-    ),
-  }),
-  compiled: Schema.Struct({
-    key: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    digest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-  }),
-  assets: Schema.Array(
-    Schema.Struct({
-      path: Schema.String.check(
+    compiled: Schema.Struct({
+      key: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(1024).annotate({
-            expected: "a string with at most 1024 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-        ),
-      fileName: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
-        }),
       ),
       digest: Schema.String.check(
         Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
         }),
       ),
-      bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
+    }),
+    assets: Schema.Array(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+          .check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(1024).annotate({
+              expected: "a value with a length of at most 1024",
+            }),
+          ),
+        fileName: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
           }),
         ),
-      contentType: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      ),
-      url: Schema.String.check(
-        Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
-          expected: "a string matching the RegExp ^https?:\\/\\/",
-        }),
-      ),
-    }),
-  ),
-  warnings: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
+        digest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-  incompatibilities: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
+        ),
+        bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
           ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
+        contentType: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        url: Schema.String.check(
+          Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
+            expected: "a string matching the RegExp ^https?:\\/\\/",
           }),
-          Schema.Null,
+        ),
+      }),
+    ),
+    warnings: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
         ]),
-      ),
-    }),
-  ),
-  status: Schema.String,
-  publishedAt: Schema.String,
-  publishedBy: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-});
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    incompatibilities: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
+        ]),
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    status: Schema.String,
+    publishedAt: Schema.String,
+    publishedBy: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }))();
 export type TemplatesPublish401 = UnauthorizedError;
 export const TemplatesPublish401 = UnauthorizedError;
 export type TemplatesPublish403 = ForbiddenError;
@@ -1480,10 +1537,8 @@ export const TemplatesPublish404 = ResourceNotFoundError;
 export type TemplatesPublish409 = ConflictError;
 export const TemplatesPublish409 = ConflictError;
 export type TemplatesPublish422 = TemplateSourceError | ValidationError;
-export const TemplatesPublish422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
+export const TemplatesPublish422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesPublish500 = InternalError;
 export const TemplatesPublish500 = InternalError;
 export type TemplatesPublish504 = GatewayTimeoutError;
@@ -1492,10 +1547,8 @@ export type TemplatesGetPublicationPathParams = {
   readonly id: TemplateId;
   readonly publicationId: TemplatePublicationId;
 };
-export const TemplatesGetPublicationPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  publicationId: TemplatePublicationId,
-});
+export const TemplatesGetPublicationPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId, publicationId: TemplatePublicationId }))();
 export type TemplatesGetPublication200 = {
   readonly id: TemplatePublicationId;
   readonly organizationId: OrganizationId;
@@ -1529,7 +1582,7 @@ export type TemplatesGetPublication200 = {
     readonly source: {
       readonly commitSha: string;
       readonly treeSha: string;
-      readonly entryPath: string;
+      readonly entryPath: string | string;
       readonly treeDigest: string;
     };
     readonly brand?: {
@@ -1606,106 +1659,174 @@ export type TemplatesGetPublication200 = {
   readonly publishedBy: string | null;
   readonly createdAt: string;
 };
-export const TemplatesGetPublication200 = /* @__PURE__ */ Schema.Struct({
-  id: TemplatePublicationId,
-  organizationId: OrganizationId,
-  projectId: TemplateProjectId,
-  templateId: TemplateId,
-  inputContractId: TemplateInputContractId,
-  commitSha: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  treeSha: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+export const TemplatesGetPublication200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplatePublicationId,
+    organizationId: OrganizationId,
+    projectId: TemplateProjectId,
+    templateId: TemplateId,
+    inputContractId: TemplateInputContractId,
+    commitSha: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
+    ),
+    treeSha: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    entryPath: Schema.String.check(
+      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
     )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+    buildIdentity: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+      }),
     ),
-  buildIdentity: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  manifest: Schema.Struct({
-    templateKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    compiled: Schema.Struct({
-      version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(1).annotate({
-            expected: "a value greater than or equal to 1",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+    manifest: Schema.Struct({
+      templateKey: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+      compiled: Schema.Struct({
+        version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        digest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
-      digest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
+        bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+      }),
+      compiler: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
       ),
-      bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+      input: Schema.Struct({
+        schemaDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
-    }),
-    compiler: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    input: Schema.Struct({
-      schemaDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-      contractDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-    }),
-    assets: Schema.Struct({
-      base: Schema.String.check(
-        Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
-          expected: "a string matching the RegExp ^https?:\\/\\/",
-        }),
-      ),
-      entries: Schema.Array(
-        Schema.Struct({
-          path: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        contractDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+      }),
+      assets: Schema.Struct({
+        base: Schema.String.check(
+          Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
+            expected: "a string matching the RegExp ^https?:\\/\\/",
+          }),
+        ),
+        entries: Schema.Array(
+          Schema.Struct({
+            path: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(1024).annotate({
+                  expected: "a string with at most 1024 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(1024).annotate({
+                  expected: "a value with a length of at most 1024",
+                }),
+              ),
+            fileName: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
+              }),
+            ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(0).annotate({
+                  expected: "a value greater than or equal to 0",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            contentType: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            ),
+            url: Schema.String.check(
+              Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
+                expected: "a string matching the RegExp ^https?:\\/\\/",
+              }),
+            ),
+          }),
+        ).check(
+          Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" }),
+        ),
+      }),
+      source: Schema.Struct({
+        commitSha: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        treeSha: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        entryPath: Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
           )
             .check(
-              Schema.isMaxCodePoints(1024).annotate({
-                expected: "a string with at most 1024 code points",
+              Schema.isPattern(
+                new RegExp(
+                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
               }),
             )
             .check(
@@ -1713,341 +1834,307 @@ export const TemplatesGetPublication200 = /* @__PURE__ */ Schema.Struct({
                 expected: "a value with a length of at most 1024",
               }),
             ),
-          fileName: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
+          Schema.String.check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(1024).annotate({
+                expected: "a value with a length of at most 1024",
+              }),
+            ),
+        ]),
+        treeDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+      }),
+      brand: Schema.optionalKey(
+        Schema.Struct({
+          slug: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
             }),
           ),
+          css: Schema.String,
+          assets: BrandAssets,
+          footer: BrandFooter,
+          renderedFooter: BrandRenderedFooter,
           digest: Schema.String.check(
             Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{64}$",
             }),
           ),
-          bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(0).annotate({
-                expected: "a value greater than or equal to 0",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          contentType: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          ),
-          url: Schema.String.check(
-            Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
-              expected: "a string matching the RegExp ^https?:\\/\\/",
-            }),
-          ),
-        }),
-      ).check(Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" })),
-    }),
-    source: Schema.Struct({
-      commitSha: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      treeSha: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      entryPath: Schema.String.check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
-        .check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-              "u",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-        ),
-      treeDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          rendersFooter: Schema.Union([
+            Schema.Literal("every"),
+            Schema.Literal("some"),
+            Schema.Literal("none"),
+          ]),
         }),
       ),
     }),
-    brand: Schema.optionalKey(
-      Schema.Struct({
-        slug: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-          }),
-        ),
-        css: Schema.String,
-        assets: BrandAssets,
-        footer: BrandFooter,
-        renderedFooter: BrandRenderedFooter,
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        rendersFooter: Schema.Union([
-          Schema.Literal("every"),
-          Schema.Literal("some"),
-          Schema.Literal("none"),
-        ]),
-      }),
-    ),
-  }),
-  compiled: Schema.Struct({
-    key: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    digest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-  }),
-  assets: Schema.Array(
-    Schema.Struct({
-      path: Schema.String.check(
+    compiled: Schema.Struct({
+      key: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(1024).annotate({
-            expected: "a string with at most 1024 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-        ),
-      fileName: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
-        }),
       ),
       digest: Schema.String.check(
         Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
         }),
       ),
-      bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
+    }),
+    assets: Schema.Array(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
+          .check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(1024).annotate({
+              expected: "a value with a length of at most 1024",
+            }),
+          ),
+        fileName: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}(?:\\.[A-Za-z0-9]+)?$",
           }),
         ),
-      contentType: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      ),
-      url: Schema.String.check(
-        Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
-          expected: "a string matching the RegExp ^https?:\\/\\/",
-        }),
-      ),
-    }),
-  ),
-  warnings: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
+        digest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-  incompatibilities: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
+        ),
+        bytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
           ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
+        contentType: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        url: Schema.String.check(
+          Schema.isPattern(new RegExp("^https?:\\/\\/", "u")).annotate({
+            expected: "a string matching the RegExp ^https?:\\/\\/",
           }),
-          Schema.Null,
+        ),
+      }),
+    ),
+    warnings: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
         ]),
-      ),
-    }),
-  ),
-  status: Schema.String,
-  publishedAt: Schema.String,
-  publishedBy: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-});
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    incompatibilities: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
+        ]),
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    status: Schema.String,
+    publishedAt: Schema.String,
+    publishedBy: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }))();
 export type TemplatesGetPublication401 = UnauthorizedError;
 export const TemplatesGetPublication401 = UnauthorizedError;
 export type TemplatesGetPublication403 = ForbiddenError;
@@ -2064,22 +2151,21 @@ export type TemplatesRenderPublicationPathParams = {
   readonly id: TemplateId;
   readonly publicationId: TemplatePublicationId;
 };
-export const TemplatesRenderPublicationPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  publicationId: TemplatePublicationId,
-});
+export const TemplatesRenderPublicationPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId, publicationId: TemplatePublicationId }))();
 export type TemplatesRenderPublicationRequestJson = {
   readonly data: { readonly [x: string]: JsonValue };
   readonly locale?: RenderLocale;
   readonly timeZone?: RenderTimeZone;
 };
-export const TemplatesRenderPublicationRequestJson = /* @__PURE__ */ Schema.Struct({
-  data: Schema.Record(Schema.String, JsonValue).annotate({
-    description: "The input to render with, validated against the publication's input schema.",
-  }),
-  locale: Schema.optionalKey(RenderLocale),
-  timeZone: Schema.optionalKey(RenderTimeZone),
-});
+export const TemplatesRenderPublicationRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    data: Schema.Record(Schema.String, JsonValue).annotate({
+      description: "The input to render with, validated against the publication's input schema.",
+    }),
+    locale: Schema.optionalKey(RenderLocale),
+    timeZone: Schema.optionalKey(RenderTimeZone),
+  }))();
 export type TemplatesRenderPublication200 = TemplatePublicationRender;
 export const TemplatesRenderPublication200 = TemplatePublicationRender;
 export type TemplatesRenderPublication401 = UnauthorizedError;
@@ -2097,27 +2183,29 @@ export const TemplatesRenderPublication500 = InternalError;
 export type TemplatesRenderPublication504 = GatewayTimeoutError;
 export const TemplatesRenderPublication504 = GatewayTimeoutError;
 export type TemplatesGetGitRepositoryPathParams = { readonly id: TemplateId };
-export const TemplatesGetGitRepositoryPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
+export const TemplatesGetGitRepositoryPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
 export type TemplatesGetGitRepository200 = {
   readonly remote: string;
   readonly defaultBranch: string;
 };
-export const TemplatesGetGitRepository200 = /* @__PURE__ */ Schema.Struct({
-  remote: Schema.String.check(
-    Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
-      expected: "a string matching the RegExp ^https:\\/\\/",
-    }),
-  ),
-  defaultBranch: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+export const TemplatesGetGitRepository200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    remote: Schema.String.check(
+      Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+        expected: "a string matching the RegExp ^https:\\/\\/",
+      }),
+    ),
+    defaultBranch: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesGetGitRepository401 = UnauthorizedError;
 export const TemplatesGetGitRepository401 = UnauthorizedError;
 export type TemplatesGetGitRepository403 = ForbiddenError;
@@ -2127,40 +2215,37 @@ export const TemplatesGetGitRepository404 = ResourceNotFoundError;
 export type TemplatesGetGitRepository409 = ConflictError;
 export const TemplatesGetGitRepository409 = ConflictError;
 export type TemplatesGetGitRepository422 = TemplateSourceError | ValidationError;
-export const TemplatesGetGitRepository422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
+export const TemplatesGetGitRepository422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesGetGitRepository500 = InternalError;
 export const TemplatesGetGitRepository500 = InternalError;
 export type TemplatesGetGitRepository504 = GatewayTimeoutError;
 export const TemplatesGetGitRepository504 = GatewayTimeoutError;
 export type TemplatesIssueGitCredentialPathParams = { readonly id: TemplateId };
-export const TemplatesIssueGitCredentialPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
+export const TemplatesIssueGitCredentialPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
 export type TemplatesIssueGitCredentialRequestJson = { readonly scope: "read" | "write" };
-export const TemplatesIssueGitCredentialRequestJson = /* @__PURE__ */ Schema.Struct({
-  scope: Schema.Union([Schema.Literal("read"), Schema.Literal("write")]),
-});
+export const TemplatesIssueGitCredentialRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ scope: Schema.Union([Schema.Literal("read"), Schema.Literal("write")]) }))();
 export type TemplatesIssueGitCredential200 = {
   readonly remote: string;
   readonly username: "x-access-token";
   readonly password: string;
   readonly expiresAt: string;
 };
-export const TemplatesIssueGitCredential200 = /* @__PURE__ */ Schema.Struct({
-  remote: Schema.String.check(
-    Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
-      expected: "a string matching the RegExp ^https:\\/\\/",
-    }),
-  ),
-  username: Schema.Literal("x-access-token"),
-  password: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-  expiresAt: Schema.String,
-});
+export const TemplatesIssueGitCredential200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    remote: Schema.String.check(
+      Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+        expected: "a string matching the RegExp ^https:\\/\\/",
+      }),
+    ),
+    username: Schema.Literal("x-access-token"),
+    password: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    expiresAt: Schema.String,
+  }))();
 export type TemplatesIssueGitCredential401 = UnauthorizedError;
 export const TemplatesIssueGitCredential401 = UnauthorizedError;
 export type TemplatesIssueGitCredential403 = ForbiddenError;
@@ -2170,16 +2255,15 @@ export const TemplatesIssueGitCredential404 = ResourceNotFoundError;
 export type TemplatesIssueGitCredential409 = ConflictError;
 export const TemplatesIssueGitCredential409 = ConflictError;
 export type TemplatesIssueGitCredential422 = TemplateSourceError | ValidationError;
-export const TemplatesIssueGitCredential422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
+export const TemplatesIssueGitCredential422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesIssueGitCredential500 = InternalError;
 export const TemplatesIssueGitCredential500 = InternalError;
 export type TemplatesIssueGitCredential504 = GatewayTimeoutError;
 export const TemplatesIssueGitCredential504 = GatewayTimeoutError;
 export type TemplatesOpenWorkspacePathParams = { readonly id: TemplateId };
-export const TemplatesOpenWorkspacePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
+export const TemplatesOpenWorkspacePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
 export type TemplatesOpenWorkspace200 = {
   readonly workspace: {
     readonly projectId: TemplateProjectId;
@@ -2252,3891 +2336,8 @@ export type TemplatesOpenWorkspace200 = {
   };
   readonly files: { readonly [x: string]: string };
 };
-export const TemplatesOpenWorkspace200 = /* @__PURE__ */ Schema.Struct({
-  workspace: Schema.Struct({
-    projectId: TemplateProjectId,
-    organizationId: Schema.Union([OrganizationId, Schema.Null]),
-    ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    repositoryName: Schema.String.check(
-      Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-      }),
-    ),
-    defaultBranch: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
-    baseCommit: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    remoteHead: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    pendingRemoteHead: Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-    revision: Schema.String,
-    overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-    assetChanges: Schema.Array(
-      Schema.Struct({
-        path: Schema.String,
-        status: Schema.Union([
-          Schema.Literal("added"),
-          Schema.Literal("modified"),
-          Schema.Literal("deleted"),
-        ]),
-      }),
-    ),
-    conflicts: Schema.Array(
-      Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
-        base: Schema.Union([Schema.String, Schema.Null]),
-        draft: Schema.Union([Schema.String, Schema.Null]),
-        main: Schema.Union([Schema.String, Schema.Null]),
-      }),
-    ),
-    provenance: Schema.Struct({
-      references: Schema.Array(
-        Schema.Struct({
-          kind: Schema.String,
-          digest: Schema.String,
-          locator: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    }),
-    mounts: Schema.Array(
-      Schema.Union([
-        Schema.Struct({
-          kind: Schema.Literal("project"),
-          root: Schema.Literal("/project"),
-          access: Schema.Literal("read-write"),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("started-from"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("resource"),
-          access: Schema.Literal("read-only"),
-          resourceId: Schema.String.check(
-            Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("library-template"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-      ]),
-    ),
-    libraryManifestDigest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-    createdBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-    updatedBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-  }),
-  files: Schema.Record(Schema.String, Schema.String),
-});
-export type TemplatesOpenWorkspace401 = UnauthorizedError;
-export const TemplatesOpenWorkspace401 = UnauthorizedError;
-export type TemplatesOpenWorkspace403 = ForbiddenError;
-export const TemplatesOpenWorkspace403 = ForbiddenError;
-export type TemplatesOpenWorkspace404 = ResourceNotFoundError;
-export const TemplatesOpenWorkspace404 = ResourceNotFoundError;
-export type TemplatesOpenWorkspace409 = ConflictError;
-export const TemplatesOpenWorkspace409 = ConflictError;
-export type TemplatesOpenWorkspace422 = TemplateSourceError | ValidationError;
-export const TemplatesOpenWorkspace422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesOpenWorkspace500 = InternalError;
-export const TemplatesOpenWorkspace500 = InternalError;
-export type TemplatesOpenWorkspace504 = GatewayTimeoutError;
-export const TemplatesOpenWorkspace504 = GatewayTimeoutError;
-export type TemplatesPatchWorkspacePathParams = { readonly id: TemplateId };
-export const TemplatesPatchWorkspacePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
-export type TemplatesPatchWorkspaceRequestJson = {
-  readonly expectedRevision: string;
-  readonly patches: ReadonlyArray<{ readonly path: string; readonly content: string | null }>;
-  readonly idempotencyKey: string;
-};
-export const TemplatesPatchWorkspaceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  patches: Schema.Array(
-    Schema.Struct({
-      path: Schema.String.check(
-        Schema.isPattern(
-          new RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        }),
-      ),
-      content: Schema.Union([
-        Schema.String.check(
-          Schema.isMaxCodePoints(1048576).annotate({
-            expected: "a string with at most 1048576 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(1048576).annotate({
-            expected: "a value with a length of at most 1048576",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    }),
-  )
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" })),
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesPatchWorkspace200 = {
-  readonly workspace: {
-    readonly projectId: TemplateProjectId;
-    readonly organizationId: OrganizationId | null;
-    readonly ownerEpoch: number;
-    readonly repositoryName: string;
-    readonly defaultBranch: string;
-    readonly baseCommit: string;
-    readonly remoteHead: string;
-    readonly pendingRemoteHead: string | null;
-    readonly revision: string;
-    readonly overlay: { readonly [x: string]: string | null };
-    readonly assetChanges: ReadonlyArray<{
-      readonly path: string;
-      readonly status: "added" | "modified" | "deleted";
-    }>;
-    readonly conflicts: ReadonlyArray<{
-      readonly path: string;
-      readonly base: string | null;
-      readonly draft: string | null;
-      readonly main: string | null;
-    }>;
-    readonly provenance: {
-      readonly references: ReadonlyArray<{
-        readonly kind: string;
-        readonly digest: string;
-        readonly locator?: string;
-      }>;
-    };
-    readonly mounts: ReadonlyArray<
-      | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "started-from";
-          readonly access: "read-only";
-          readonly templateId: string;
-          readonly slug: string;
-          readonly name: string;
-        }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "resource";
-          readonly access: "read-only";
-          readonly resourceId: string;
-          readonly name: string;
-        }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "library-template";
-          readonly access: "read-only";
-          readonly templateId: string;
-          readonly slug: string;
-          readonly name: string;
-        }
-    >;
-    readonly libraryManifestDigest: string;
-    readonly createdAt: string;
-    readonly updatedAt: string;
-    readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-    readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-  };
-  readonly files: { readonly [x: string]: string };
-};
-export const TemplatesPatchWorkspace200 = /* @__PURE__ */ Schema.Struct({
-  workspace: Schema.Struct({
-    projectId: TemplateProjectId,
-    organizationId: Schema.Union([OrganizationId, Schema.Null]),
-    ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    repositoryName: Schema.String.check(
-      Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-      }),
-    ),
-    defaultBranch: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
-    baseCommit: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    remoteHead: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    pendingRemoteHead: Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-    revision: Schema.String,
-    overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-    assetChanges: Schema.Array(
-      Schema.Struct({
-        path: Schema.String,
-        status: Schema.Union([
-          Schema.Literal("added"),
-          Schema.Literal("modified"),
-          Schema.Literal("deleted"),
-        ]),
-      }),
-    ),
-    conflicts: Schema.Array(
-      Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
-        base: Schema.Union([Schema.String, Schema.Null]),
-        draft: Schema.Union([Schema.String, Schema.Null]),
-        main: Schema.Union([Schema.String, Schema.Null]),
-      }),
-    ),
-    provenance: Schema.Struct({
-      references: Schema.Array(
-        Schema.Struct({
-          kind: Schema.String,
-          digest: Schema.String,
-          locator: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    }),
-    mounts: Schema.Array(
-      Schema.Union([
-        Schema.Struct({
-          kind: Schema.Literal("project"),
-          root: Schema.Literal("/project"),
-          access: Schema.Literal("read-write"),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("started-from"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("resource"),
-          access: Schema.Literal("read-only"),
-          resourceId: Schema.String.check(
-            Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("library-template"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-      ]),
-    ),
-    libraryManifestDigest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-    createdBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-    updatedBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-  }),
-  files: Schema.Record(Schema.String, Schema.String),
-});
-export type TemplatesPatchWorkspace401 = UnauthorizedError;
-export const TemplatesPatchWorkspace401 = UnauthorizedError;
-export type TemplatesPatchWorkspace403 = ForbiddenError;
-export const TemplatesPatchWorkspace403 = ForbiddenError;
-export type TemplatesPatchWorkspace404 = ResourceNotFoundError;
-export const TemplatesPatchWorkspace404 = ResourceNotFoundError;
-export type TemplatesPatchWorkspace409 = ConflictError;
-export const TemplatesPatchWorkspace409 = ConflictError;
-export type TemplatesPatchWorkspace422 = TemplateSourceError | ValidationError;
-export const TemplatesPatchWorkspace422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesPatchWorkspace500 = InternalError;
-export const TemplatesPatchWorkspace500 = InternalError;
-export type TemplatesPatchWorkspace504 = GatewayTimeoutError;
-export const TemplatesPatchWorkspace504 = GatewayTimeoutError;
-export type TemplatesPutWorkspaceAssetPathParams = { readonly id: TemplateId };
-export const TemplatesPutWorkspaceAssetPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
-export type TemplatesPutWorkspaceAssetRequestJson = {
-  readonly expectedRevision: string;
-  readonly path: string;
-  readonly contentBase64: string;
-  readonly replace: boolean;
-  readonly idempotencyKey: string;
-};
-export const TemplatesPutWorkspaceAssetRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  path: Schema.String.check(
-    Schema.isPattern(
-      new RegExp(
-        "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-      ),
-    ).annotate({
-      expected:
-        "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-    }),
-  ),
-  contentBase64: Schema.String,
-  replace: Schema.Boolean,
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesPutWorkspaceAsset200 = {
-  readonly workspace: {
-    readonly projectId: TemplateProjectId;
-    readonly organizationId: OrganizationId | null;
-    readonly ownerEpoch: number;
-    readonly repositoryName: string;
-    readonly defaultBranch: string;
-    readonly baseCommit: string;
-    readonly remoteHead: string;
-    readonly pendingRemoteHead: string | null;
-    readonly revision: string;
-    readonly overlay: { readonly [x: string]: string | null };
-    readonly assetChanges: ReadonlyArray<{
-      readonly path: string;
-      readonly status: "added" | "modified" | "deleted";
-    }>;
-    readonly conflicts: ReadonlyArray<{
-      readonly path: string;
-      readonly base: string | null;
-      readonly draft: string | null;
-      readonly main: string | null;
-    }>;
-    readonly provenance: {
-      readonly references: ReadonlyArray<{
-        readonly kind: string;
-        readonly digest: string;
-        readonly locator?: string;
-      }>;
-    };
-    readonly mounts: ReadonlyArray<
-      | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "started-from";
-          readonly access: "read-only";
-          readonly templateId: string;
-          readonly slug: string;
-          readonly name: string;
-        }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "resource";
-          readonly access: "read-only";
-          readonly resourceId: string;
-          readonly name: string;
-        }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "library-template";
-          readonly access: "read-only";
-          readonly templateId: string;
-          readonly slug: string;
-          readonly name: string;
-        }
-    >;
-    readonly libraryManifestDigest: string;
-    readonly createdAt: string;
-    readonly updatedAt: string;
-    readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-    readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-  };
-  readonly files: { readonly [x: string]: string };
-};
-export const TemplatesPutWorkspaceAsset200 = /* @__PURE__ */ Schema.Struct({
-  workspace: Schema.Struct({
-    projectId: TemplateProjectId,
-    organizationId: Schema.Union([OrganizationId, Schema.Null]),
-    ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    repositoryName: Schema.String.check(
-      Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-      }),
-    ),
-    defaultBranch: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
-    baseCommit: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    remoteHead: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    pendingRemoteHead: Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-    revision: Schema.String,
-    overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-    assetChanges: Schema.Array(
-      Schema.Struct({
-        path: Schema.String,
-        status: Schema.Union([
-          Schema.Literal("added"),
-          Schema.Literal("modified"),
-          Schema.Literal("deleted"),
-        ]),
-      }),
-    ),
-    conflicts: Schema.Array(
-      Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
-        base: Schema.Union([Schema.String, Schema.Null]),
-        draft: Schema.Union([Schema.String, Schema.Null]),
-        main: Schema.Union([Schema.String, Schema.Null]),
-      }),
-    ),
-    provenance: Schema.Struct({
-      references: Schema.Array(
-        Schema.Struct({
-          kind: Schema.String,
-          digest: Schema.String,
-          locator: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    }),
-    mounts: Schema.Array(
-      Schema.Union([
-        Schema.Struct({
-          kind: Schema.Literal("project"),
-          root: Schema.Literal("/project"),
-          access: Schema.Literal("read-write"),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("started-from"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("resource"),
-          access: Schema.Literal("read-only"),
-          resourceId: Schema.String.check(
-            Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("library-template"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-      ]),
-    ),
-    libraryManifestDigest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-    createdBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-    updatedBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-  }),
-  files: Schema.Record(Schema.String, Schema.String),
-});
-export type TemplatesPutWorkspaceAsset401 = UnauthorizedError;
-export const TemplatesPutWorkspaceAsset401 = UnauthorizedError;
-export type TemplatesPutWorkspaceAsset403 = ForbiddenError;
-export const TemplatesPutWorkspaceAsset403 = ForbiddenError;
-export type TemplatesPutWorkspaceAsset404 = ResourceNotFoundError;
-export const TemplatesPutWorkspaceAsset404 = ResourceNotFoundError;
-export type TemplatesPutWorkspaceAsset409 = ConflictError;
-export const TemplatesPutWorkspaceAsset409 = ConflictError;
-export type TemplatesPutWorkspaceAsset422 = TemplateSourceError | ValidationError;
-export const TemplatesPutWorkspaceAsset422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesPutWorkspaceAsset500 = InternalError;
-export const TemplatesPutWorkspaceAsset500 = InternalError;
-export type TemplatesPutWorkspaceAsset504 = GatewayTimeoutError;
-export const TemplatesPutWorkspaceAsset504 = GatewayTimeoutError;
-export type TemplatesCheckWorkspacePathParams = { readonly id: TemplateId };
-export const TemplatesCheckWorkspacePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
-export type TemplatesCheckWorkspaceRequestJson = { readonly expectedRevision: string };
-export const TemplatesCheckWorkspaceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-});
-export type TemplatesCheckWorkspace200 = {
-  readonly projectId: TemplateProjectId;
-  readonly revision: string;
-  readonly entryPath: string;
-  readonly declaration: {
-    readonly codeDigest: string;
-    readonly templateId: string;
-    readonly input: {
-      readonly schema: { readonly [x: string]: JsonValue };
-      readonly schemaDigest: string;
-      readonly contractDigest: string;
-    };
-    readonly fixtures: ReadonlyArray<string>;
-  } | null;
-  readonly diagnostics: ReadonlyArray<{
-    readonly code: string;
-    readonly severity: "error" | "warning" | "info";
-    readonly message: string;
-    readonly origins: ReadonlyArray<{
-      readonly fileName: string;
-      readonly lineNumber: number;
-      readonly columnNumber: number;
-    }>;
-    readonly clients?: ReadonlyArray<string> | null;
-    readonly notes?: string | null;
-    readonly provenance?: string | null;
-    readonly fixtures?: ReadonlyArray<string> | null;
-    readonly occurrences?: ReadonlyArray<
-      ReadonlyArray<{
-        readonly fileName: string;
-        readonly lineNumber: number;
-        readonly columnNumber: number;
-      }>
-    > | null;
-    readonly compatibility?: {
-      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
-      readonly title: string;
-    } | null;
-  }>;
-  readonly incompatibilities: ReadonlyArray<{
-    readonly code: string;
-    readonly severity: "error" | "warning" | "info";
-    readonly message: string;
-    readonly origins: ReadonlyArray<{
-      readonly fileName: string;
-      readonly lineNumber: number;
-      readonly columnNumber: number;
-    }>;
-    readonly clients?: ReadonlyArray<string> | null;
-    readonly notes?: string | null;
-    readonly provenance?: string | null;
-    readonly fixtures?: ReadonlyArray<string> | null;
-    readonly occurrences?: ReadonlyArray<
-      ReadonlyArray<{
-        readonly fileName: string;
-        readonly lineNumber: number;
-        readonly columnNumber: number;
-      }>
-    > | null;
-    readonly compatibility?: {
-      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
-      readonly title: string;
-    } | null;
-  }>;
-};
-export const TemplatesCheckWorkspace200 = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  revision: Schema.String,
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-      }),
-    )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-    ),
-  declaration: Schema.Union([
-    Schema.Struct({
-      codeDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-      templateId: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(128).annotate({
-            expected: "a string with at most 128 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-        ),
-      input: Schema.Struct({
-        schema: Schema.Record(Schema.String, JsonValue),
-        schemaDigest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        contractDigest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-      }),
-      fixtures: Schema.Array(
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-      ),
-    }),
-    Schema.Null,
-  ]),
-  diagnostics: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
-          }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-  incompatibilities: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
-          }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-});
-export type TemplatesCheckWorkspace401 = UnauthorizedError;
-export const TemplatesCheckWorkspace401 = UnauthorizedError;
-export type TemplatesCheckWorkspace403 = ForbiddenError;
-export const TemplatesCheckWorkspace403 = ForbiddenError;
-export type TemplatesCheckWorkspace404 = ResourceNotFoundError;
-export const TemplatesCheckWorkspace404 = ResourceNotFoundError;
-export type TemplatesCheckWorkspace409 = ConflictError;
-export const TemplatesCheckWorkspace409 = ConflictError;
-export type TemplatesCheckWorkspace422 = TemplateSourceError | ValidationError;
-export const TemplatesCheckWorkspace422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesCheckWorkspace500 = InternalError;
-export const TemplatesCheckWorkspace500 = InternalError;
-export type TemplatesCheckWorkspace504 = GatewayTimeoutError;
-export const TemplatesCheckWorkspace504 = GatewayTimeoutError;
-export type TemplatesResolveWorkspaceConflictPathParams = { readonly id: TemplateId };
-export const TemplatesResolveWorkspaceConflictPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
-export type TemplatesResolveWorkspaceConflictRequestJson = {
-  readonly expectedRevision: string;
-  readonly path: string;
-  readonly resolution: "draft" | "main" | { readonly content: string | null };
-  readonly idempotencyKey: string;
-};
-export const TemplatesResolveWorkspaceConflictRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  path: Schema.String.check(
-    Schema.isPattern(
-      new RegExp(
-        "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-      ),
-    ).annotate({
-      expected:
-        "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-    }),
-  ),
-  resolution: Schema.Union([
-    Schema.Literal("draft"),
-    Schema.Literal("main"),
-    Schema.Struct({ content: Schema.Union([Schema.String, Schema.Null]) }),
-  ]),
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesResolveWorkspaceConflict200 = {
-  readonly workspace: {
-    readonly projectId: TemplateProjectId;
-    readonly organizationId: OrganizationId | null;
-    readonly ownerEpoch: number;
-    readonly repositoryName: string;
-    readonly defaultBranch: string;
-    readonly baseCommit: string;
-    readonly remoteHead: string;
-    readonly pendingRemoteHead: string | null;
-    readonly revision: string;
-    readonly overlay: { readonly [x: string]: string | null };
-    readonly assetChanges: ReadonlyArray<{
-      readonly path: string;
-      readonly status: "added" | "modified" | "deleted";
-    }>;
-    readonly conflicts: ReadonlyArray<{
-      readonly path: string;
-      readonly base: string | null;
-      readonly draft: string | null;
-      readonly main: string | null;
-    }>;
-    readonly provenance: {
-      readonly references: ReadonlyArray<{
-        readonly kind: string;
-        readonly digest: string;
-        readonly locator?: string;
-      }>;
-    };
-    readonly mounts: ReadonlyArray<
-      | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "started-from";
-          readonly access: "read-only";
-          readonly templateId: string;
-          readonly slug: string;
-          readonly name: string;
-        }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "resource";
-          readonly access: "read-only";
-          readonly resourceId: string;
-          readonly name: string;
-        }
-      | {
-          readonly root: string;
-          readonly digest: string;
-          readonly fileCount: number;
-          readonly byteSize: number;
-          readonly kind: "library-template";
-          readonly access: "read-only";
-          readonly templateId: string;
-          readonly slug: string;
-          readonly name: string;
-        }
-    >;
-    readonly libraryManifestDigest: string;
-    readonly createdAt: string;
-    readonly updatedAt: string;
-    readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-    readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-  };
-  readonly files: { readonly [x: string]: string };
-};
-export const TemplatesResolveWorkspaceConflict200 = /* @__PURE__ */ Schema.Struct({
-  workspace: Schema.Struct({
-    projectId: TemplateProjectId,
-    organizationId: Schema.Union([OrganizationId, Schema.Null]),
-    ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    repositoryName: Schema.String.check(
-      Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-      }),
-    ),
-    defaultBranch: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
-    baseCommit: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    remoteHead: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    pendingRemoteHead: Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-    revision: Schema.String,
-    overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-    assetChanges: Schema.Array(
-      Schema.Struct({
-        path: Schema.String,
-        status: Schema.Union([
-          Schema.Literal("added"),
-          Schema.Literal("modified"),
-          Schema.Literal("deleted"),
-        ]),
-      }),
-    ),
-    conflicts: Schema.Array(
-      Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
-        base: Schema.Union([Schema.String, Schema.Null]),
-        draft: Schema.Union([Schema.String, Schema.Null]),
-        main: Schema.Union([Schema.String, Schema.Null]),
-      }),
-    ),
-    provenance: Schema.Struct({
-      references: Schema.Array(
-        Schema.Struct({
-          kind: Schema.String,
-          digest: Schema.String,
-          locator: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    }),
-    mounts: Schema.Array(
-      Schema.Union([
-        Schema.Struct({
-          kind: Schema.Literal("project"),
-          root: Schema.Literal("/project"),
-          access: Schema.Literal("read-write"),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("started-from"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("resource"),
-          access: Schema.Literal("read-only"),
-          resourceId: Schema.String.check(
-            Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-        Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
-            .check(
-              Schema.isPattern(
-                new RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          digest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-            }),
-          ),
-          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          kind: Schema.Literal("library-template"),
-          access: Schema.Literal("read-only"),
-          templateId: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(128).annotate({
-                expected: "a string with at most 128 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(128).annotate({
-                expected: "a value with a length of at most 128",
-              }),
-            ),
-          slug: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-            }),
-          ),
-          name: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-            .check(
-              Schema.isMaxCodePoints(256).annotate({
-                expected: "a string with at most 256 code points",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(256).annotate({
-                expected: "a value with a length of at most 256",
-              }),
-            ),
-        }),
-      ]),
-    ),
-    libraryManifestDigest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-    createdBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-    updatedBy: Schema.Struct({
-      userId: UserId,
-      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-    }),
-  }),
-  files: Schema.Record(Schema.String, Schema.String),
-});
-export type TemplatesResolveWorkspaceConflict401 = UnauthorizedError;
-export const TemplatesResolveWorkspaceConflict401 = UnauthorizedError;
-export type TemplatesResolveWorkspaceConflict403 = ForbiddenError;
-export const TemplatesResolveWorkspaceConflict403 = ForbiddenError;
-export type TemplatesResolveWorkspaceConflict404 = ResourceNotFoundError;
-export const TemplatesResolveWorkspaceConflict404 = ResourceNotFoundError;
-export type TemplatesResolveWorkspaceConflict409 = ConflictError;
-export const TemplatesResolveWorkspaceConflict409 = ConflictError;
-export type TemplatesResolveWorkspaceConflict422 = TemplateSourceError | ValidationError;
-export const TemplatesResolveWorkspaceConflict422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesResolveWorkspaceConflict500 = InternalError;
-export const TemplatesResolveWorkspaceConflict500 = InternalError;
-export type TemplatesResolveWorkspaceConflict504 = GatewayTimeoutError;
-export const TemplatesResolveWorkspaceConflict504 = GatewayTimeoutError;
-export type TemplatesDiffWorkspacePathParams = { readonly id: TemplateId };
-export const TemplatesDiffWorkspacePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
-export type TemplatesDiffWorkspaceRequestJson = { readonly expectedRevision: string };
-export const TemplatesDiffWorkspaceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-});
-export type TemplatesDiffWorkspace200 = {
-  readonly projectId: TemplateProjectId;
-  readonly baseCommit: string;
-  readonly revision: string;
-  readonly changes: ReadonlyArray<{
-    readonly path: string;
-    readonly before: string | null;
-    readonly after: string | null;
-    readonly status: "added" | "modified" | "deleted";
-  }>;
-  readonly assetChanges: ReadonlyArray<{
-    readonly path: string;
-    readonly status: "added" | "modified" | "deleted";
-    readonly digest: string | null;
-  }>;
-};
-export const TemplatesDiffWorkspace200 = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  baseCommit: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  revision: Schema.String,
-  changes: Schema.Array(
-    Schema.Struct({
-      path: Schema.String.check(
-        Schema.isPattern(
-          new RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        }),
-      ),
-      before: Schema.Union([
-        Schema.String.check(
-          Schema.isMaxCodePoints(1048576).annotate({
-            expected: "a string with at most 1048576 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(1048576).annotate({
-            expected: "a value with a length of at most 1048576",
-          }),
-        ),
-        Schema.Null,
-      ]),
-      after: Schema.Union([
-        Schema.String.check(
-          Schema.isMaxCodePoints(1048576).annotate({
-            expected: "a string with at most 1048576 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(1048576).annotate({
-            expected: "a value with a length of at most 1048576",
-          }),
-        ),
-        Schema.Null,
-      ]),
-      status: Schema.Union([
-        Schema.Literal("added"),
-        Schema.Literal("modified"),
-        Schema.Literal("deleted"),
-      ]),
-    }),
-  ),
-  assetChanges: Schema.Array(
-    Schema.Struct({
-      path: Schema.String,
-      status: Schema.Union([
-        Schema.Literal("added"),
-        Schema.Literal("modified"),
-        Schema.Literal("deleted"),
-      ]),
-      digest: Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    }),
-  ),
-});
-export type TemplatesDiffWorkspace401 = UnauthorizedError;
-export const TemplatesDiffWorkspace401 = UnauthorizedError;
-export type TemplatesDiffWorkspace403 = ForbiddenError;
-export const TemplatesDiffWorkspace403 = ForbiddenError;
-export type TemplatesDiffWorkspace404 = ResourceNotFoundError;
-export const TemplatesDiffWorkspace404 = ResourceNotFoundError;
-export type TemplatesDiffWorkspace409 = ConflictError;
-export const TemplatesDiffWorkspace409 = ConflictError;
-export type TemplatesDiffWorkspace422 = TemplateSourceError | ValidationError;
-export const TemplatesDiffWorkspace422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesDiffWorkspace500 = InternalError;
-export const TemplatesDiffWorkspace500 = InternalError;
-export type TemplatesDiffWorkspace504 = GatewayTimeoutError;
-export const TemplatesDiffWorkspace504 = GatewayTimeoutError;
-export type TemplatesRenderWorkspaceFixturePathParams = { readonly id: TemplateId };
-export const TemplatesRenderWorkspaceFixturePathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
-export type TemplatesRenderWorkspaceFixtureRequestJson = {
-  readonly expectedRevision: string;
-  readonly fixture: string;
-};
-export const TemplatesRenderWorkspaceFixtureRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  fixture: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-    )
-    .check(Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" })),
-});
-export type TemplatesRenderWorkspaceFixture200 = {
-  readonly projectId: TemplateProjectId;
-  readonly revision: string;
-  readonly entryPath: string;
-  readonly declaration: {
-    readonly codeDigest: string;
-    readonly templateId: string;
-    readonly input: {
-      readonly schema: { readonly [x: string]: JsonValue };
-      readonly schemaDigest: string;
-      readonly contractDigest: string;
-    };
-    readonly fixtures: ReadonlyArray<string>;
-  } | null;
-  readonly diagnostics: ReadonlyArray<{
-    readonly code: string;
-    readonly severity: "error" | "warning" | "info";
-    readonly message: string;
-    readonly origins: ReadonlyArray<{
-      readonly fileName: string;
-      readonly lineNumber: number;
-      readonly columnNumber: number;
-    }>;
-    readonly clients?: ReadonlyArray<string> | null;
-    readonly notes?: string | null;
-    readonly provenance?: string | null;
-    readonly fixtures?: ReadonlyArray<string> | null;
-    readonly occurrences?: ReadonlyArray<
-      ReadonlyArray<{
-        readonly fileName: string;
-        readonly lineNumber: number;
-        readonly columnNumber: number;
-      }>
-    > | null;
-    readonly compatibility?: {
-      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
-      readonly title: string;
-    } | null;
-  }>;
-  readonly incompatibilities: ReadonlyArray<{
-    readonly code: string;
-    readonly severity: "error" | "warning" | "info";
-    readonly message: string;
-    readonly origins: ReadonlyArray<{
-      readonly fileName: string;
-      readonly lineNumber: number;
-      readonly columnNumber: number;
-    }>;
-    readonly clients?: ReadonlyArray<string> | null;
-    readonly notes?: string | null;
-    readonly provenance?: string | null;
-    readonly fixtures?: ReadonlyArray<string> | null;
-    readonly occurrences?: ReadonlyArray<
-      ReadonlyArray<{
-        readonly fileName: string;
-        readonly lineNumber: number;
-        readonly columnNumber: number;
-      }>
-    > | null;
-    readonly compatibility?: {
-      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
-      readonly title: string;
-    } | null;
-  }>;
-  readonly fixture: string;
-  readonly rendered: {
-    readonly subject: string;
-    readonly preheader?: string;
-    readonly html: string;
-    readonly text: string;
-    readonly selections: ReadonlyArray<{
-      readonly instancePath: string;
-      readonly tag: string;
-      readonly origins: ReadonlyArray<{
-        readonly fileName: string;
-        readonly lineNumber: number;
-        readonly columnNumber: number;
-      }>;
-      readonly authored: boolean;
-      readonly occurrence: number;
-      readonly occurrences: number;
-      readonly parentPath?: string;
-      readonly start: number;
-      readonly end: number;
-    }>;
-    readonly sentBytes: number;
-    readonly previewBytes: number;
-  } | null;
-};
-export const TemplatesRenderWorkspaceFixture200 = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  revision: Schema.String,
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-      }),
-    )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-    ),
-  declaration: Schema.Union([
-    Schema.Struct({
-      codeDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-      templateId: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(128).annotate({
-            expected: "a string with at most 128 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-        ),
-      input: Schema.Struct({
-        schema: Schema.Record(Schema.String, JsonValue),
-        schemaDigest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        contractDigest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-      }),
-      fixtures: Schema.Array(
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-      ),
-    }),
-    Schema.Null,
-  ]),
-  diagnostics: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
-          }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-  incompatibilities: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
-          Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
-          }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-  fixture: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-    )
-    .check(Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" })),
-  rendered: Schema.Union([
-    Schema.Struct({
-      subject: Schema.String,
-      preheader: Schema.optionalKey(Schema.String),
-      html: Schema.String.check(
-        Schema.isMaxCodePoints(2097152).annotate({
-          expected: "a string with at most 2097152 code points",
-        }),
-      ).check(
-        Schema.isMaxLength(2097152).annotate({
-          expected: "a value with a length of at most 2097152",
-        }),
-      ),
-      text: Schema.String.check(
-        Schema.isMaxCodePoints(2097152).annotate({
-          expected: "a string with at most 2097152 code points",
-        }),
-      ).check(
-        Schema.isMaxLength(2097152).annotate({
-          expected: "a value with a length of at most 2097152",
-        }),
-      ),
-      selections: Schema.Array(
-        Schema.Struct({
-          instancePath: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          ),
-          tag: Schema.String.check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          ),
-          origins: Schema.Array(
-            Schema.Struct({
-              fileName: Schema.String,
-              lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                .check(
-                  Schema.isGreaterThanOrEqualTo(1).annotate({
-                    expected: "a value greater than or equal to 1",
-                  }),
-                )
-                .check(
-                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                    expected: "a value less than or equal to 9007199254740991",
-                  }),
-                ),
-              columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                .check(
-                  Schema.isGreaterThanOrEqualTo(1).annotate({
-                    expected: "a value greater than or equal to 1",
-                  }),
-                )
-                .check(
-                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                    expected: "a value less than or equal to 9007199254740991",
-                  }),
-                ),
-            }),
-          ),
-          authored: Schema.Boolean,
-          occurrence: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          occurrences: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          parentPath: Schema.optionalKey(Schema.String),
-          start: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(0).annotate({
-                expected: "a value greater than or equal to 0",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          end: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(0).annotate({
-                expected: "a value greater than or equal to 0",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      sentBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-            expected: "a value greater than or equal to -9007199254740991",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      previewBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-            expected: "a value greater than or equal to -9007199254740991",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-    }),
-    Schema.Null,
-  ]),
-});
-export type TemplatesRenderWorkspaceFixture401 = UnauthorizedError;
-export const TemplatesRenderWorkspaceFixture401 = UnauthorizedError;
-export type TemplatesRenderWorkspaceFixture403 = ForbiddenError;
-export const TemplatesRenderWorkspaceFixture403 = ForbiddenError;
-export type TemplatesRenderWorkspaceFixture404 = ResourceNotFoundError;
-export const TemplatesRenderWorkspaceFixture404 = ResourceNotFoundError;
-export type TemplatesRenderWorkspaceFixture409 = ConflictError;
-export const TemplatesRenderWorkspaceFixture409 = ConflictError;
-export type TemplatesRenderWorkspaceFixture422 = TemplateSourceError | ValidationError;
-export const TemplatesRenderWorkspaceFixture422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesRenderWorkspaceFixture500 = InternalError;
-export const TemplatesRenderWorkspaceFixture500 = InternalError;
-export type TemplatesRenderWorkspaceFixture504 = GatewayTimeoutError;
-export const TemplatesRenderWorkspaceFixture504 = GatewayTimeoutError;
-export type TemplatesWorkspaceHistoryPathParams = { readonly id: TemplateId };
-export const TemplatesWorkspaceHistoryPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
-export type TemplatesWorkspaceHistoryQuery = { readonly limit?: number | null };
-export const TemplatesWorkspaceHistoryQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(1).annotate({
-            expected: "a value greater than or equal to 1",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-});
-export type TemplatesWorkspaceHistory200 = {
-  readonly projectId: TemplateProjectId;
-  readonly head: string;
-  readonly commits: ReadonlyArray<{
-    readonly commit: string;
-    readonly tree: string;
-    readonly parentCommit: string | null;
-    readonly message: string;
-    readonly committedAt: string;
-  }>;
-  readonly publication: { readonly id: TemplatePublicationId; readonly commit: string } | null;
-};
-export const TemplatesWorkspaceHistory200 = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  head: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  commits: Schema.Array(
-    Schema.Struct({
-      commit: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      tree: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-      parentCommit: Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-      message: Schema.String,
-      committedAt: Schema.String,
-    }),
-  ),
-  publication: Schema.Union([
-    Schema.Struct({
-      id: TemplatePublicationId,
-      commit: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-        }),
-      ),
-    }),
-    Schema.Null,
-  ]),
-});
-export type TemplatesWorkspaceHistory401 = UnauthorizedError;
-export const TemplatesWorkspaceHistory401 = UnauthorizedError;
-export type TemplatesWorkspaceHistory403 = ForbiddenError;
-export const TemplatesWorkspaceHistory403 = ForbiddenError;
-export type TemplatesWorkspaceHistory404 = ResourceNotFoundError;
-export const TemplatesWorkspaceHistory404 = ResourceNotFoundError;
-export type TemplatesWorkspaceHistory409 = ConflictError;
-export const TemplatesWorkspaceHistory409 = ConflictError;
-export type TemplatesWorkspaceHistory422 = TemplateSourceError | ValidationError;
-export const TemplatesWorkspaceHistory422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesWorkspaceHistory500 = InternalError;
-export const TemplatesWorkspaceHistory500 = InternalError;
-export type TemplatesWorkspaceHistory504 = GatewayTimeoutError;
-export const TemplatesWorkspaceHistory504 = GatewayTimeoutError;
-export type TemplatesAttachWorkspaceResourcePathParams = { readonly id: TemplateId };
-export const TemplatesAttachWorkspaceResourcePathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
-export type TemplatesAttachWorkspaceResourceRequestJson = {
-  readonly expectedRevision: string;
-  readonly resource: {
-    readonly resourceId: string;
-    readonly name: string;
-    readonly files: ReadonlyArray<{
-      readonly path: string;
-      readonly mediaType: string;
-      readonly contentBase64: string;
-    }>;
-  };
-  readonly idempotencyKey: string;
-};
-export const TemplatesAttachWorkspaceResourceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  resource: Schema.Struct({
-    resourceId: Schema.String.check(
-      Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-      }),
-    ),
-    name: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(256).annotate({ expected: "a string with at most 256 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-      ),
-    files: Schema.Array(
-      Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
-        mediaType: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        contentBase64: Schema.String.check(
-          Schema.isPattern(
-            new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$", "u"),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
-          }),
-        ),
-      }),
-    )
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" })),
-  }),
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesAttachWorkspaceResource200 = {
-  readonly projectId: TemplateProjectId;
-  readonly organizationId: OrganizationId | null;
-  readonly ownerEpoch: number;
-  readonly repositoryName: string;
-  readonly defaultBranch: string;
-  readonly baseCommit: string;
-  readonly remoteHead: string;
-  readonly pendingRemoteHead: string | null;
-  readonly revision: string;
-  readonly overlay: { readonly [x: string]: string | null };
-  readonly assetChanges: ReadonlyArray<{
-    readonly path: string;
-    readonly status: "added" | "modified" | "deleted";
-  }>;
-  readonly conflicts: ReadonlyArray<{
-    readonly path: string;
-    readonly base: string | null;
-    readonly draft: string | null;
-    readonly main: string | null;
-  }>;
-  readonly provenance: {
-    readonly references: ReadonlyArray<{
-      readonly kind: string;
-      readonly digest: string;
-      readonly locator?: string;
-    }>;
-  };
-  readonly mounts: ReadonlyArray<
-    | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
-    | {
-        readonly root: string;
-        readonly digest: string;
-        readonly fileCount: number;
-        readonly byteSize: number;
-        readonly kind: "started-from";
-        readonly access: "read-only";
-        readonly templateId: string;
-        readonly slug: string;
-        readonly name: string;
-      }
-    | {
-        readonly root: string;
-        readonly digest: string;
-        readonly fileCount: number;
-        readonly byteSize: number;
-        readonly kind: "resource";
-        readonly access: "read-only";
-        readonly resourceId: string;
-        readonly name: string;
-      }
-    | {
-        readonly root: string;
-        readonly digest: string;
-        readonly fileCount: number;
-        readonly byteSize: number;
-        readonly kind: "library-template";
-        readonly access: "read-only";
-        readonly templateId: string;
-        readonly slug: string;
-        readonly name: string;
-      }
-  >;
-  readonly libraryManifestDigest: string;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-  readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-};
-export const TemplatesAttachWorkspaceResource200 = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  organizationId: Schema.Union([OrganizationId, Schema.Null]),
-  ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  repositoryName: Schema.String.check(
-    Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-    }),
-  ),
-  defaultBranch: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-  baseCommit: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  remoteHead: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  pendingRemoteHead: Schema.Union([
-    Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    Schema.Null,
-  ]),
-  revision: Schema.String,
-  overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-  assetChanges: Schema.Array(
-    Schema.Struct({
-      path: Schema.String,
-      status: Schema.Union([
-        Schema.Literal("added"),
-        Schema.Literal("modified"),
-        Schema.Literal("deleted"),
-      ]),
-    }),
-  ),
-  conflicts: Schema.Array(
-    Schema.Struct({
-      path: Schema.String.check(
-        Schema.isPattern(
-          new RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        }),
-      ),
-      base: Schema.Union([Schema.String, Schema.Null]),
-      draft: Schema.Union([Schema.String, Schema.Null]),
-      main: Schema.Union([Schema.String, Schema.Null]),
-    }),
-  ),
-  provenance: Schema.Struct({
-    references: Schema.Array(
-      Schema.Struct({
-        kind: Schema.String,
-        digest: Schema.String,
-        locator: Schema.optionalKey(Schema.String),
-      }),
-    ),
-  }),
-  mounts: Schema.Array(
-    Schema.Union([
-      Schema.Struct({
-        kind: Schema.Literal("project"),
-        root: Schema.Literal("/project"),
-        access: Schema.Literal("read-write"),
-      }),
-      Schema.Struct({
-        root: Schema.String.check(
-          Schema.isMaxCodePoints(2048).annotate({
-            expected: "a string with at most 2048 code points",
-          }),
-        )
-          .check(
-            Schema.isPattern(
-              new RegExp(
-                "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(2048).annotate({
-              expected: "a value with a length of at most 2048",
-            }),
-          ),
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        kind: Schema.Literal("started-from"),
-        access: Schema.Literal("read-only"),
-        templateId: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-        slug: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        ),
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(256).annotate({
-              expected: "a string with at most 256 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-          ),
-      }),
-      Schema.Struct({
-        root: Schema.String.check(
-          Schema.isMaxCodePoints(2048).annotate({
-            expected: "a string with at most 2048 code points",
-          }),
-        )
-          .check(
-            Schema.isPattern(
-              new RegExp(
-                "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(2048).annotate({
-              expected: "a value with a length of at most 2048",
-            }),
-          ),
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        kind: Schema.Literal("resource"),
-        access: Schema.Literal("read-only"),
-        resourceId: Schema.String.check(
-          Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-          }),
-        ),
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(256).annotate({
-              expected: "a string with at most 256 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-          ),
-      }),
-      Schema.Struct({
-        root: Schema.String.check(
-          Schema.isMaxCodePoints(2048).annotate({
-            expected: "a string with at most 2048 code points",
-          }),
-        )
-          .check(
-            Schema.isPattern(
-              new RegExp(
-                "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(2048).annotate({
-              expected: "a value with a length of at most 2048",
-            }),
-          ),
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        kind: Schema.Literal("library-template"),
-        access: Schema.Literal("read-only"),
-        templateId: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-        slug: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        ),
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(256).annotate({
-              expected: "a string with at most 256 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-          ),
-      }),
-    ]),
-  ),
-  libraryManifestDigest: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  createdBy: Schema.Struct({
-    userId: UserId,
-    via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-  }),
-  updatedBy: Schema.Struct({
-    userId: UserId,
-    via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-  }),
-});
-export type TemplatesAttachWorkspaceResource401 = UnauthorizedError;
-export const TemplatesAttachWorkspaceResource401 = UnauthorizedError;
-export type TemplatesAttachWorkspaceResource403 = ForbiddenError;
-export const TemplatesAttachWorkspaceResource403 = ForbiddenError;
-export type TemplatesAttachWorkspaceResource404 = ResourceNotFoundError;
-export const TemplatesAttachWorkspaceResource404 = ResourceNotFoundError;
-export type TemplatesAttachWorkspaceResource409 = ConflictError;
-export const TemplatesAttachWorkspaceResource409 = ConflictError;
-export type TemplatesAttachWorkspaceResource422 = TemplateSourceError | ValidationError;
-export const TemplatesAttachWorkspaceResource422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesAttachWorkspaceResource500 = InternalError;
-export const TemplatesAttachWorkspaceResource500 = InternalError;
-export type TemplatesAttachWorkspaceResource504 = GatewayTimeoutError;
-export const TemplatesAttachWorkspaceResource504 = GatewayTimeoutError;
-export type TemplatesRemoveWorkspaceResourcePathParams = {
-  readonly id: TemplateId;
-  readonly resourceId: string;
-};
-export const TemplatesRemoveWorkspaceResourcePathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-  resourceId: Schema.String.check(
-    Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-    }),
-  ),
-});
-export type TemplatesRemoveWorkspaceResourceRequestJson = {
-  readonly expectedRevision: string;
-  readonly idempotencyKey: string;
-};
-export const TemplatesRemoveWorkspaceResourceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesRemoveWorkspaceResource200 = {
-  readonly projectId: TemplateProjectId;
-  readonly organizationId: OrganizationId | null;
-  readonly ownerEpoch: number;
-  readonly repositoryName: string;
-  readonly defaultBranch: string;
-  readonly baseCommit: string;
-  readonly remoteHead: string;
-  readonly pendingRemoteHead: string | null;
-  readonly revision: string;
-  readonly overlay: { readonly [x: string]: string | null };
-  readonly assetChanges: ReadonlyArray<{
-    readonly path: string;
-    readonly status: "added" | "modified" | "deleted";
-  }>;
-  readonly conflicts: ReadonlyArray<{
-    readonly path: string;
-    readonly base: string | null;
-    readonly draft: string | null;
-    readonly main: string | null;
-  }>;
-  readonly provenance: {
-    readonly references: ReadonlyArray<{
-      readonly kind: string;
-      readonly digest: string;
-      readonly locator?: string;
-    }>;
-  };
-  readonly mounts: ReadonlyArray<
-    | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
-    | {
-        readonly root: string;
-        readonly digest: string;
-        readonly fileCount: number;
-        readonly byteSize: number;
-        readonly kind: "started-from";
-        readonly access: "read-only";
-        readonly templateId: string;
-        readonly slug: string;
-        readonly name: string;
-      }
-    | {
-        readonly root: string;
-        readonly digest: string;
-        readonly fileCount: number;
-        readonly byteSize: number;
-        readonly kind: "resource";
-        readonly access: "read-only";
-        readonly resourceId: string;
-        readonly name: string;
-      }
-    | {
-        readonly root: string;
-        readonly digest: string;
-        readonly fileCount: number;
-        readonly byteSize: number;
-        readonly kind: "library-template";
-        readonly access: "read-only";
-        readonly templateId: string;
-        readonly slug: string;
-        readonly name: string;
-      }
-  >;
-  readonly libraryManifestDigest: string;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-  readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-};
-export const TemplatesRemoveWorkspaceResource200 = /* @__PURE__ */ Schema.Struct({
-  projectId: TemplateProjectId,
-  organizationId: Schema.Union([OrganizationId, Schema.Null]),
-  ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  repositoryName: Schema.String.check(
-    Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-    }),
-  ),
-  defaultBranch: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-  baseCommit: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  remoteHead: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  pendingRemoteHead: Schema.Union([
-    Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    Schema.Null,
-  ]),
-  revision: Schema.String,
-  overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
-  assetChanges: Schema.Array(
-    Schema.Struct({
-      path: Schema.String,
-      status: Schema.Union([
-        Schema.Literal("added"),
-        Schema.Literal("modified"),
-        Schema.Literal("deleted"),
-      ]),
-    }),
-  ),
-  conflicts: Schema.Array(
-    Schema.Struct({
-      path: Schema.String.check(
-        Schema.isPattern(
-          new RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        }),
-      ),
-      base: Schema.Union([Schema.String, Schema.Null]),
-      draft: Schema.Union([Schema.String, Schema.Null]),
-      main: Schema.Union([Schema.String, Schema.Null]),
-    }),
-  ),
-  provenance: Schema.Struct({
-    references: Schema.Array(
-      Schema.Struct({
-        kind: Schema.String,
-        digest: Schema.String,
-        locator: Schema.optionalKey(Schema.String),
-      }),
-    ),
-  }),
-  mounts: Schema.Array(
-    Schema.Union([
-      Schema.Struct({
-        kind: Schema.Literal("project"),
-        root: Schema.Literal("/project"),
-        access: Schema.Literal("read-write"),
-      }),
-      Schema.Struct({
-        root: Schema.String.check(
-          Schema.isMaxCodePoints(2048).annotate({
-            expected: "a string with at most 2048 code points",
-          }),
-        )
-          .check(
-            Schema.isPattern(
-              new RegExp(
-                "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(2048).annotate({
-              expected: "a value with a length of at most 2048",
-            }),
-          ),
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        kind: Schema.Literal("started-from"),
-        access: Schema.Literal("read-only"),
-        templateId: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-        slug: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        ),
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(256).annotate({
-              expected: "a string with at most 256 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-          ),
-      }),
-      Schema.Struct({
-        root: Schema.String.check(
-          Schema.isMaxCodePoints(2048).annotate({
-            expected: "a string with at most 2048 code points",
-          }),
-        )
-          .check(
-            Schema.isPattern(
-              new RegExp(
-                "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(2048).annotate({
-              expected: "a value with a length of at most 2048",
-            }),
-          ),
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        kind: Schema.Literal("resource"),
-        access: Schema.Literal("read-only"),
-        resourceId: Schema.String.check(
-          Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
-          }),
-        ),
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(256).annotate({
-              expected: "a string with at most 256 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-          ),
-      }),
-      Schema.Struct({
-        root: Schema.String.check(
-          Schema.isMaxCodePoints(2048).annotate({
-            expected: "a string with at most 2048 code points",
-          }),
-        )
-          .check(
-            Schema.isPattern(
-              new RegExp(
-                "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(2048).annotate({
-              expected: "a value with a length of at most 2048",
-            }),
-          ),
-        digest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-          }),
-        ),
-        fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        kind: Schema.Literal("library-template"),
-        access: Schema.Literal("read-only"),
-        templateId: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-        slug: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        ),
-        name: Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(256).annotate({
-              expected: "a string with at most 256 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-          ),
-      }),
-    ]),
-  ),
-  libraryManifestDigest: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  createdBy: Schema.Struct({
-    userId: UserId,
-    via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-  }),
-  updatedBy: Schema.Struct({
-    userId: UserId,
-    via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
-  }),
-});
-export type TemplatesRemoveWorkspaceResource401 = UnauthorizedError;
-export const TemplatesRemoveWorkspaceResource401 = UnauthorizedError;
-export type TemplatesRemoveWorkspaceResource403 = ForbiddenError;
-export const TemplatesRemoveWorkspaceResource403 = ForbiddenError;
-export type TemplatesRemoveWorkspaceResource404 = ResourceNotFoundError;
-export const TemplatesRemoveWorkspaceResource404 = ResourceNotFoundError;
-export type TemplatesRemoveWorkspaceResource409 = ConflictError;
-export const TemplatesRemoveWorkspaceResource409 = ConflictError;
-export type TemplatesRemoveWorkspaceResource422 = TemplateSourceError | ValidationError;
-export const TemplatesRemoveWorkspaceResource422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
-export type TemplatesRemoveWorkspaceResource500 = InternalError;
-export const TemplatesRemoveWorkspaceResource500 = InternalError;
-export type TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
-export const TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
-export type TemplatesRestoreWorkspacePathParams = { readonly id: TemplateId };
-export const TemplatesRestoreWorkspacePathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateId,
-});
-export type TemplatesRestoreWorkspaceRequestJson = {
-  readonly expectedRevision: string;
-  readonly commit: string;
-  readonly idempotencyKey: string;
-};
-export const TemplatesRestoreWorkspaceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  commit: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
-export type TemplatesRestoreWorkspace200 = {
-  readonly view: {
-    readonly workspace: {
-      readonly projectId: TemplateProjectId;
-      readonly organizationId: OrganizationId | null;
-      readonly ownerEpoch: number;
-      readonly repositoryName: string;
-      readonly defaultBranch: string;
-      readonly baseCommit: string;
-      readonly remoteHead: string;
-      readonly pendingRemoteHead: string | null;
-      readonly revision: string;
-      readonly overlay: { readonly [x: string]: string | null };
-      readonly assetChanges: ReadonlyArray<{
-        readonly path: string;
-        readonly status: "added" | "modified" | "deleted";
-      }>;
-      readonly conflicts: ReadonlyArray<{
-        readonly path: string;
-        readonly base: string | null;
-        readonly draft: string | null;
-        readonly main: string | null;
-      }>;
-      readonly provenance: {
-        readonly references: ReadonlyArray<{
-          readonly kind: string;
-          readonly digest: string;
-          readonly locator?: string;
-        }>;
-      };
-      readonly mounts: ReadonlyArray<
-        | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
-        | {
-            readonly root: string;
-            readonly digest: string;
-            readonly fileCount: number;
-            readonly byteSize: number;
-            readonly kind: "started-from";
-            readonly access: "read-only";
-            readonly templateId: string;
-            readonly slug: string;
-            readonly name: string;
-          }
-        | {
-            readonly root: string;
-            readonly digest: string;
-            readonly fileCount: number;
-            readonly byteSize: number;
-            readonly kind: "resource";
-            readonly access: "read-only";
-            readonly resourceId: string;
-            readonly name: string;
-          }
-        | {
-            readonly root: string;
-            readonly digest: string;
-            readonly fileCount: number;
-            readonly byteSize: number;
-            readonly kind: "library-template";
-            readonly access: "read-only";
-            readonly templateId: string;
-            readonly slug: string;
-            readonly name: string;
-          }
-      >;
-      readonly libraryManifestDigest: string;
-      readonly createdAt: string;
-      readonly updatedAt: string;
-      readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-      readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
-    };
-    readonly files: { readonly [x: string]: string };
-  };
-  readonly source: { readonly digest: string; readonly content: string };
-};
-export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ Schema.Struct({
-  view: Schema.Struct({
+export const TemplatesOpenWorkspace200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
     workspace: Schema.Struct({
       projectId: TemplateProjectId,
       organizationId: Schema.Union([OrganizationId, Schema.Null]),
@@ -6485,24 +2686,4281 @@ export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ Schema.Struct({
       }),
     }),
     files: Schema.Record(Schema.String, Schema.String),
-  }),
-  source: Schema.Struct({
-    digest: Schema.String.check(
+  }))();
+export type TemplatesOpenWorkspace401 = UnauthorizedError;
+export const TemplatesOpenWorkspace401 = UnauthorizedError;
+export type TemplatesOpenWorkspace403 = ForbiddenError;
+export const TemplatesOpenWorkspace403 = ForbiddenError;
+export type TemplatesOpenWorkspace404 = ResourceNotFoundError;
+export const TemplatesOpenWorkspace404 = ResourceNotFoundError;
+export type TemplatesOpenWorkspace409 = ConflictError;
+export const TemplatesOpenWorkspace409 = ConflictError;
+export type TemplatesOpenWorkspace422 = TemplateSourceError | ValidationError;
+export const TemplatesOpenWorkspace422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesOpenWorkspace500 = InternalError;
+export const TemplatesOpenWorkspace500 = InternalError;
+export type TemplatesOpenWorkspace504 = GatewayTimeoutError;
+export const TemplatesOpenWorkspace504 = GatewayTimeoutError;
+export type TemplatesPatchWorkspacePathParams = { readonly id: TemplateId };
+export const TemplatesPatchWorkspacePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesPatchWorkspaceRequestJson = {
+  readonly expectedRevision: string;
+  readonly patches: ReadonlyArray<{ readonly path: string; readonly content: string | null }>;
+  readonly idempotencyKey: string;
+};
+export const TemplatesPatchWorkspaceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    patches: Schema.Array(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+          }),
+        ),
+        content: Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(1048576).annotate({
+              expected: "a string with at most 1048576 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(1048576).annotate({
+              expected: "a value with a length of at most 1048576",
+            }),
+          ),
+          Schema.Null,
+        ]),
+      }),
+    )
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+      ),
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesPatchWorkspace200 = {
+  readonly workspace: {
+    readonly projectId: TemplateProjectId;
+    readonly organizationId: OrganizationId | null;
+    readonly ownerEpoch: number;
+    readonly repositoryName: string;
+    readonly defaultBranch: string;
+    readonly baseCommit: string;
+    readonly remoteHead: string;
+    readonly pendingRemoteHead: string | null;
+    readonly revision: string;
+    readonly overlay: { readonly [x: string]: string | null };
+    readonly assetChanges: ReadonlyArray<{
+      readonly path: string;
+      readonly status: "added" | "modified" | "deleted";
+    }>;
+    readonly conflicts: ReadonlyArray<{
+      readonly path: string;
+      readonly base: string | null;
+      readonly draft: string | null;
+      readonly main: string | null;
+    }>;
+    readonly provenance: {
+      readonly references: ReadonlyArray<{
+        readonly kind: string;
+        readonly digest: string;
+        readonly locator?: string;
+      }>;
+    };
+    readonly mounts: ReadonlyArray<
+      | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "started-from";
+          readonly access: "read-only";
+          readonly templateId: string;
+          readonly slug: string;
+          readonly name: string;
+        }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "resource";
+          readonly access: "read-only";
+          readonly resourceId: string;
+          readonly name: string;
+        }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "library-template";
+          readonly access: "read-only";
+          readonly templateId: string;
+          readonly slug: string;
+          readonly name: string;
+        }
+    >;
+    readonly libraryManifestDigest: string;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+    readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+    readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+  };
+  readonly files: { readonly [x: string]: string };
+};
+export const TemplatesPatchWorkspace200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    workspace: Schema.Struct({
+      projectId: TemplateProjectId,
+      organizationId: Schema.Union([OrganizationId, Schema.Null]),
+      ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      repositoryName: Schema.String.check(
+        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+        }),
+      ),
+      defaultBranch: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
+      baseCommit: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      remoteHead: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      pendingRemoteHead: Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+      revision: Schema.String,
+      overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+      assetChanges: Schema.Array(
+        Schema.Struct({
+          path: Schema.String,
+          status: Schema.Union([
+            Schema.Literal("added"),
+            Schema.Literal("modified"),
+            Schema.Literal("deleted"),
+          ]),
+        }),
+      ),
+      conflicts: Schema.Array(
+        Schema.Struct({
+          path: Schema.String.check(
+            Schema.isPattern(
+              new RegExp(
+                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            }),
+          ),
+          base: Schema.Union([Schema.String, Schema.Null]),
+          draft: Schema.Union([Schema.String, Schema.Null]),
+          main: Schema.Union([Schema.String, Schema.Null]),
+        }),
+      ),
+      provenance: Schema.Struct({
+        references: Schema.Array(
+          Schema.Struct({
+            kind: Schema.String,
+            digest: Schema.String,
+            locator: Schema.optionalKey(Schema.String),
+          }),
+        ),
+      }),
+      mounts: Schema.Array(
+        Schema.Union([
+          Schema.Struct({
+            kind: Schema.Literal("project"),
+            root: Schema.Literal("/project"),
+            access: Schema.Literal("read-write"),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("started-from"),
+            access: Schema.Literal("read-only"),
+            templateId: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(128).annotate({
+                  expected: "a string with at most 128 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(128).annotate({
+                  expected: "a value with a length of at most 128",
+                }),
+              ),
+            slug: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("resource"),
+            access: Schema.Literal("read-only"),
+            resourceId: Schema.String.check(
+              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("library-template"),
+            access: Schema.Literal("read-only"),
+            templateId: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(128).annotate({
+                  expected: "a string with at most 128 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(128).annotate({
+                  expected: "a value with a length of at most 128",
+                }),
+              ),
+            slug: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+        ]),
+      ),
+      libraryManifestDigest: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+        }),
+      ),
+      createdAt: Schema.String,
+      updatedAt: Schema.String,
+      createdBy: Schema.Struct({
+        userId: UserId,
+        via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+      }),
+      updatedBy: Schema.Struct({
+        userId: UserId,
+        via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+      }),
+    }),
+    files: Schema.Record(Schema.String, Schema.String),
+  }))();
+export type TemplatesPatchWorkspace401 = UnauthorizedError;
+export const TemplatesPatchWorkspace401 = UnauthorizedError;
+export type TemplatesPatchWorkspace403 = ForbiddenError;
+export const TemplatesPatchWorkspace403 = ForbiddenError;
+export type TemplatesPatchWorkspace404 = ResourceNotFoundError;
+export const TemplatesPatchWorkspace404 = ResourceNotFoundError;
+export type TemplatesPatchWorkspace409 = ConflictError;
+export const TemplatesPatchWorkspace409 = ConflictError;
+export type TemplatesPatchWorkspace422 = TemplateSourceError | ValidationError;
+export const TemplatesPatchWorkspace422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesPatchWorkspace500 = InternalError;
+export const TemplatesPatchWorkspace500 = InternalError;
+export type TemplatesPatchWorkspace504 = GatewayTimeoutError;
+export const TemplatesPatchWorkspace504 = GatewayTimeoutError;
+export type TemplatesPutWorkspaceAssetPathParams = { readonly id: TemplateId };
+export const TemplatesPutWorkspaceAssetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesPutWorkspaceAssetRequestJson = {
+  readonly expectedRevision: string;
+  readonly path: string;
+  readonly contentBase64: string;
+  readonly replace: boolean;
+  readonly idempotencyKey: string;
+};
+export const TemplatesPutWorkspaceAssetRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    path: Schema.String.check(
+      Schema.isPattern(
+        new RegExp(
+          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+      }),
+    ),
+    contentBase64: Schema.String,
+    replace: Schema.Boolean,
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesPutWorkspaceAsset200 = {
+  readonly workspace: {
+    readonly projectId: TemplateProjectId;
+    readonly organizationId: OrganizationId | null;
+    readonly ownerEpoch: number;
+    readonly repositoryName: string;
+    readonly defaultBranch: string;
+    readonly baseCommit: string;
+    readonly remoteHead: string;
+    readonly pendingRemoteHead: string | null;
+    readonly revision: string;
+    readonly overlay: { readonly [x: string]: string | null };
+    readonly assetChanges: ReadonlyArray<{
+      readonly path: string;
+      readonly status: "added" | "modified" | "deleted";
+    }>;
+    readonly conflicts: ReadonlyArray<{
+      readonly path: string;
+      readonly base: string | null;
+      readonly draft: string | null;
+      readonly main: string | null;
+    }>;
+    readonly provenance: {
+      readonly references: ReadonlyArray<{
+        readonly kind: string;
+        readonly digest: string;
+        readonly locator?: string;
+      }>;
+    };
+    readonly mounts: ReadonlyArray<
+      | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "started-from";
+          readonly access: "read-only";
+          readonly templateId: string;
+          readonly slug: string;
+          readonly name: string;
+        }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "resource";
+          readonly access: "read-only";
+          readonly resourceId: string;
+          readonly name: string;
+        }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "library-template";
+          readonly access: "read-only";
+          readonly templateId: string;
+          readonly slug: string;
+          readonly name: string;
+        }
+    >;
+    readonly libraryManifestDigest: string;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+    readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+    readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+  };
+  readonly files: { readonly [x: string]: string };
+};
+export const TemplatesPutWorkspaceAsset200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    workspace: Schema.Struct({
+      projectId: TemplateProjectId,
+      organizationId: Schema.Union([OrganizationId, Schema.Null]),
+      ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      repositoryName: Schema.String.check(
+        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+        }),
+      ),
+      defaultBranch: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
+      baseCommit: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      remoteHead: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      pendingRemoteHead: Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+      revision: Schema.String,
+      overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+      assetChanges: Schema.Array(
+        Schema.Struct({
+          path: Schema.String,
+          status: Schema.Union([
+            Schema.Literal("added"),
+            Schema.Literal("modified"),
+            Schema.Literal("deleted"),
+          ]),
+        }),
+      ),
+      conflicts: Schema.Array(
+        Schema.Struct({
+          path: Schema.String.check(
+            Schema.isPattern(
+              new RegExp(
+                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            }),
+          ),
+          base: Schema.Union([Schema.String, Schema.Null]),
+          draft: Schema.Union([Schema.String, Schema.Null]),
+          main: Schema.Union([Schema.String, Schema.Null]),
+        }),
+      ),
+      provenance: Schema.Struct({
+        references: Schema.Array(
+          Schema.Struct({
+            kind: Schema.String,
+            digest: Schema.String,
+            locator: Schema.optionalKey(Schema.String),
+          }),
+        ),
+      }),
+      mounts: Schema.Array(
+        Schema.Union([
+          Schema.Struct({
+            kind: Schema.Literal("project"),
+            root: Schema.Literal("/project"),
+            access: Schema.Literal("read-write"),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("started-from"),
+            access: Schema.Literal("read-only"),
+            templateId: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(128).annotate({
+                  expected: "a string with at most 128 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(128).annotate({
+                  expected: "a value with a length of at most 128",
+                }),
+              ),
+            slug: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("resource"),
+            access: Schema.Literal("read-only"),
+            resourceId: Schema.String.check(
+              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("library-template"),
+            access: Schema.Literal("read-only"),
+            templateId: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(128).annotate({
+                  expected: "a string with at most 128 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(128).annotate({
+                  expected: "a value with a length of at most 128",
+                }),
+              ),
+            slug: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+        ]),
+      ),
+      libraryManifestDigest: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+        }),
+      ),
+      createdAt: Schema.String,
+      updatedAt: Schema.String,
+      createdBy: Schema.Struct({
+        userId: UserId,
+        via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+      }),
+      updatedBy: Schema.Struct({
+        userId: UserId,
+        via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+      }),
+    }),
+    files: Schema.Record(Schema.String, Schema.String),
+  }))();
+export type TemplatesPutWorkspaceAsset401 = UnauthorizedError;
+export const TemplatesPutWorkspaceAsset401 = UnauthorizedError;
+export type TemplatesPutWorkspaceAsset403 = ForbiddenError;
+export const TemplatesPutWorkspaceAsset403 = ForbiddenError;
+export type TemplatesPutWorkspaceAsset404 = ResourceNotFoundError;
+export const TemplatesPutWorkspaceAsset404 = ResourceNotFoundError;
+export type TemplatesPutWorkspaceAsset409 = ConflictError;
+export const TemplatesPutWorkspaceAsset409 = ConflictError;
+export type TemplatesPutWorkspaceAsset422 = TemplateSourceError | ValidationError;
+export const TemplatesPutWorkspaceAsset422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesPutWorkspaceAsset500 = InternalError;
+export const TemplatesPutWorkspaceAsset500 = InternalError;
+export type TemplatesPutWorkspaceAsset504 = GatewayTimeoutError;
+export const TemplatesPutWorkspaceAsset504 = GatewayTimeoutError;
+export type TemplatesCheckWorkspacePathParams = { readonly id: TemplateId };
+export const TemplatesCheckWorkspacePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesCheckWorkspaceRequestJson = { readonly expectedRevision: string };
+export const TemplatesCheckWorkspaceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ expectedRevision: Schema.String }))();
+export type TemplatesCheckWorkspace200 = {
+  readonly projectId: TemplateProjectId;
+  readonly revision: string;
+  readonly entryPath: string | string;
+  readonly declaration: {
+    readonly codeDigest: string;
+    readonly templateId: string;
+    readonly input: {
+      readonly schema: { readonly [x: string]: JsonValue };
+      readonly schemaDigest: string;
+      readonly contractDigest: string;
+    };
+    readonly fixtures: ReadonlyArray<string>;
+  } | null;
+  readonly issue?: {
+    readonly path: string;
+    readonly frontmatter: {
+      readonly title: string;
+      readonly slug: string;
+      readonly topic: string;
+      readonly preheader?: string;
+      readonly seo?: {
+        readonly title?: string;
+        readonly description?: string;
+        readonly image?: string;
+      };
+      readonly gate?: { readonly leadIn: number };
+    };
+  };
+  readonly diagnostics: ReadonlyArray<{
+    readonly code: string;
+    readonly severity: "error" | "warning" | "info";
+    readonly message: string;
+    readonly origins: ReadonlyArray<{
+      readonly fileName: string;
+      readonly lineNumber: number;
+      readonly columnNumber: number;
+    }>;
+    readonly clients?: ReadonlyArray<string> | null;
+    readonly notes?: string | null;
+    readonly provenance?: string | null;
+    readonly fixtures?: ReadonlyArray<string> | null;
+    readonly occurrences?: ReadonlyArray<
+      ReadonlyArray<{
+        readonly fileName: string;
+        readonly lineNumber: number;
+        readonly columnNumber: number;
+      }>
+    > | null;
+    readonly compatibility?: {
+      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+      readonly title: string;
+    } | null;
+  }>;
+  readonly incompatibilities: ReadonlyArray<{
+    readonly code: string;
+    readonly severity: "error" | "warning" | "info";
+    readonly message: string;
+    readonly origins: ReadonlyArray<{
+      readonly fileName: string;
+      readonly lineNumber: number;
+      readonly columnNumber: number;
+    }>;
+    readonly clients?: ReadonlyArray<string> | null;
+    readonly notes?: string | null;
+    readonly provenance?: string | null;
+    readonly fixtures?: ReadonlyArray<string> | null;
+    readonly occurrences?: ReadonlyArray<
+      ReadonlyArray<{
+        readonly fileName: string;
+        readonly lineNumber: number;
+        readonly columnNumber: number;
+      }>
+    > | null;
+    readonly compatibility?: {
+      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+      readonly title: string;
+    } | null;
+  }>;
+};
+export const TemplatesCheckWorkspace200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    revision: Schema.String,
+    entryPath: Schema.Union([
+      Schema.String.check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+        .check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              "u",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        ),
+      Schema.String.check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+        .check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              "u",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        ),
+    ]),
+    declaration: Schema.Union([
+      Schema.Struct({
+        codeDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+        templateId: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        input: Schema.Struct({
+          schema: Schema.Record(Schema.String, JsonValue),
+          schemaDigest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          contractDigest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+        }),
+        fixtures: Schema.Array(
+          Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(128).annotate({
+                expected: "a string with at most 128 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(128).annotate({
+                expected: "a value with a length of at most 128",
+              }),
+            ),
+        ),
+      }),
+      Schema.Null,
+    ]),
+    issue: Schema.optionalKey(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
+          }),
+        )
+          .check(
+            Schema.isPattern(
+              new RegExp(
+                "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+                "u",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(1024).annotate({
+              expected: "a value with a length of at most 1024",
+            }),
+          ),
+        frontmatter: Schema.Struct({
+          title: Schema.String,
+          slug: Schema.String,
+          topic: Schema.String,
+          preheader: Schema.optionalKey(Schema.String),
+          seo: Schema.optionalKey(
+            Schema.Struct({
+              title: Schema.optionalKey(Schema.String),
+              description: Schema.optionalKey(Schema.String),
+              image: Schema.optionalKey(Schema.String),
+            }),
+          ),
+          gate: Schema.optionalKey(
+            Schema.Struct({
+              leadIn: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(0).annotate({
+                    expected: "a value greater than or equal to 0",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+            }),
+          ),
+        }),
+      }),
+    ),
+    diagnostics: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
+        ]),
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    incompatibilities: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
+        ]),
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+  }))();
+export type TemplatesCheckWorkspace401 = UnauthorizedError;
+export const TemplatesCheckWorkspace401 = UnauthorizedError;
+export type TemplatesCheckWorkspace403 = ForbiddenError;
+export const TemplatesCheckWorkspace403 = ForbiddenError;
+export type TemplatesCheckWorkspace404 = ResourceNotFoundError;
+export const TemplatesCheckWorkspace404 = ResourceNotFoundError;
+export type TemplatesCheckWorkspace409 = ConflictError;
+export const TemplatesCheckWorkspace409 = ConflictError;
+export type TemplatesCheckWorkspace422 = TemplateSourceError | ValidationError;
+export const TemplatesCheckWorkspace422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesCheckWorkspace500 = InternalError;
+export const TemplatesCheckWorkspace500 = InternalError;
+export type TemplatesCheckWorkspace504 = GatewayTimeoutError;
+export const TemplatesCheckWorkspace504 = GatewayTimeoutError;
+export type TemplatesResolveWorkspaceConflictPathParams = { readonly id: TemplateId };
+export const TemplatesResolveWorkspaceConflictPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesResolveWorkspaceConflictRequestJson = {
+  readonly expectedRevision: string;
+  readonly path: string;
+  readonly resolution: "draft" | "main" | { readonly content: string | null };
+  readonly idempotencyKey: string;
+};
+export const TemplatesResolveWorkspaceConflictRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    path: Schema.String.check(
+      Schema.isPattern(
+        new RegExp(
+          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+      }),
+    ),
+    resolution: Schema.Union([
+      Schema.Literal("draft"),
+      Schema.Literal("main"),
+      Schema.Struct({ content: Schema.Union([Schema.String, Schema.Null]) }),
+    ]),
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesResolveWorkspaceConflict200 = {
+  readonly workspace: {
+    readonly projectId: TemplateProjectId;
+    readonly organizationId: OrganizationId | null;
+    readonly ownerEpoch: number;
+    readonly repositoryName: string;
+    readonly defaultBranch: string;
+    readonly baseCommit: string;
+    readonly remoteHead: string;
+    readonly pendingRemoteHead: string | null;
+    readonly revision: string;
+    readonly overlay: { readonly [x: string]: string | null };
+    readonly assetChanges: ReadonlyArray<{
+      readonly path: string;
+      readonly status: "added" | "modified" | "deleted";
+    }>;
+    readonly conflicts: ReadonlyArray<{
+      readonly path: string;
+      readonly base: string | null;
+      readonly draft: string | null;
+      readonly main: string | null;
+    }>;
+    readonly provenance: {
+      readonly references: ReadonlyArray<{
+        readonly kind: string;
+        readonly digest: string;
+        readonly locator?: string;
+      }>;
+    };
+    readonly mounts: ReadonlyArray<
+      | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "started-from";
+          readonly access: "read-only";
+          readonly templateId: string;
+          readonly slug: string;
+          readonly name: string;
+        }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "resource";
+          readonly access: "read-only";
+          readonly resourceId: string;
+          readonly name: string;
+        }
+      | {
+          readonly root: string;
+          readonly digest: string;
+          readonly fileCount: number;
+          readonly byteSize: number;
+          readonly kind: "library-template";
+          readonly access: "read-only";
+          readonly templateId: string;
+          readonly slug: string;
+          readonly name: string;
+        }
+    >;
+    readonly libraryManifestDigest: string;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+    readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+    readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+  };
+  readonly files: { readonly [x: string]: string };
+};
+export const TemplatesResolveWorkspaceConflict200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    workspace: Schema.Struct({
+      projectId: TemplateProjectId,
+      organizationId: Schema.Union([OrganizationId, Schema.Null]),
+      ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      repositoryName: Schema.String.check(
+        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+        }),
+      ),
+      defaultBranch: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
+      baseCommit: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      remoteHead: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      pendingRemoteHead: Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+      revision: Schema.String,
+      overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+      assetChanges: Schema.Array(
+        Schema.Struct({
+          path: Schema.String,
+          status: Schema.Union([
+            Schema.Literal("added"),
+            Schema.Literal("modified"),
+            Schema.Literal("deleted"),
+          ]),
+        }),
+      ),
+      conflicts: Schema.Array(
+        Schema.Struct({
+          path: Schema.String.check(
+            Schema.isPattern(
+              new RegExp(
+                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            }),
+          ),
+          base: Schema.Union([Schema.String, Schema.Null]),
+          draft: Schema.Union([Schema.String, Schema.Null]),
+          main: Schema.Union([Schema.String, Schema.Null]),
+        }),
+      ),
+      provenance: Schema.Struct({
+        references: Schema.Array(
+          Schema.Struct({
+            kind: Schema.String,
+            digest: Schema.String,
+            locator: Schema.optionalKey(Schema.String),
+          }),
+        ),
+      }),
+      mounts: Schema.Array(
+        Schema.Union([
+          Schema.Struct({
+            kind: Schema.Literal("project"),
+            root: Schema.Literal("/project"),
+            access: Schema.Literal("read-write"),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("started-from"),
+            access: Schema.Literal("read-only"),
+            templateId: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(128).annotate({
+                  expected: "a string with at most 128 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(128).annotate({
+                  expected: "a value with a length of at most 128",
+                }),
+              ),
+            slug: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("resource"),
+            access: Schema.Literal("read-only"),
+            resourceId: Schema.String.check(
+              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+          Schema.Struct({
+            root: Schema.String.check(
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
+              }),
+            )
+              .check(
+                Schema.isPattern(
+                  new RegExp(
+                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                    "u",
+                  ),
+                ).annotate({
+                  expected:
+                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(2048).annotate({
+                  expected: "a value with a length of at most 2048",
+                }),
+              ),
+            digest: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+              }),
+            ),
+            fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            kind: Schema.Literal("library-template"),
+            access: Schema.Literal("read-only"),
+            templateId: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(128).annotate({
+                  expected: "a string with at most 128 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(128).annotate({
+                  expected: "a value with a length of at most 128",
+                }),
+              ),
+            slug: Schema.String.check(
+              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
+            ),
+            name: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+              .check(
+                Schema.isMaxCodePoints(256).annotate({
+                  expected: "a string with at most 256 code points",
+                }),
+              )
+              .check(
+                Schema.isMaxLength(256).annotate({
+                  expected: "a value with a length of at most 256",
+                }),
+              ),
+          }),
+        ]),
+      ),
+      libraryManifestDigest: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+        }),
+      ),
+      createdAt: Schema.String,
+      updatedAt: Schema.String,
+      createdBy: Schema.Struct({
+        userId: UserId,
+        via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+      }),
+      updatedBy: Schema.Struct({
+        userId: UserId,
+        via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+      }),
+    }),
+    files: Schema.Record(Schema.String, Schema.String),
+  }))();
+export type TemplatesResolveWorkspaceConflict401 = UnauthorizedError;
+export const TemplatesResolveWorkspaceConflict401 = UnauthorizedError;
+export type TemplatesResolveWorkspaceConflict403 = ForbiddenError;
+export const TemplatesResolveWorkspaceConflict403 = ForbiddenError;
+export type TemplatesResolveWorkspaceConflict404 = ResourceNotFoundError;
+export const TemplatesResolveWorkspaceConflict404 = ResourceNotFoundError;
+export type TemplatesResolveWorkspaceConflict409 = ConflictError;
+export const TemplatesResolveWorkspaceConflict409 = ConflictError;
+export type TemplatesResolveWorkspaceConflict422 = TemplateSourceError | ValidationError;
+export const TemplatesResolveWorkspaceConflict422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesResolveWorkspaceConflict500 = InternalError;
+export const TemplatesResolveWorkspaceConflict500 = InternalError;
+export type TemplatesResolveWorkspaceConflict504 = GatewayTimeoutError;
+export const TemplatesResolveWorkspaceConflict504 = GatewayTimeoutError;
+export type TemplatesDiffWorkspacePathParams = { readonly id: TemplateId };
+export const TemplatesDiffWorkspacePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesDiffWorkspaceRequestJson = { readonly expectedRevision: string };
+export const TemplatesDiffWorkspaceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ expectedRevision: Schema.String }))();
+export type TemplatesDiffWorkspace200 = {
+  readonly projectId: TemplateProjectId;
+  readonly baseCommit: string;
+  readonly revision: string;
+  readonly changes: ReadonlyArray<{
+    readonly path: string;
+    readonly before: string | null;
+    readonly after: string | null;
+    readonly status: "added" | "modified" | "deleted";
+  }>;
+  readonly assetChanges: ReadonlyArray<{
+    readonly path: string;
+    readonly status: "added" | "modified" | "deleted";
+    readonly digest: string | null;
+  }>;
+};
+export const TemplatesDiffWorkspace200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    baseCommit: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    revision: Schema.String,
+    changes: Schema.Array(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+          }),
+        ),
+        before: Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(1048576).annotate({
+              expected: "a string with at most 1048576 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(1048576).annotate({
+              expected: "a value with a length of at most 1048576",
+            }),
+          ),
+          Schema.Null,
+        ]),
+        after: Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(1048576).annotate({
+              expected: "a string with at most 1048576 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(1048576).annotate({
+              expected: "a value with a length of at most 1048576",
+            }),
+          ),
+          Schema.Null,
+        ]),
+        status: Schema.Union([
+          Schema.Literal("added"),
+          Schema.Literal("modified"),
+          Schema.Literal("deleted"),
+        ]),
+      }),
+    ),
+    assetChanges: Schema.Array(
+      Schema.Struct({
+        path: Schema.String,
+        status: Schema.Union([
+          Schema.Literal("added"),
+          Schema.Literal("modified"),
+          Schema.Literal("deleted"),
+        ]),
+        digest: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          Schema.Null,
+        ]),
+      }),
+    ),
+  }))();
+export type TemplatesDiffWorkspace401 = UnauthorizedError;
+export const TemplatesDiffWorkspace401 = UnauthorizedError;
+export type TemplatesDiffWorkspace403 = ForbiddenError;
+export const TemplatesDiffWorkspace403 = ForbiddenError;
+export type TemplatesDiffWorkspace404 = ResourceNotFoundError;
+export const TemplatesDiffWorkspace404 = ResourceNotFoundError;
+export type TemplatesDiffWorkspace409 = ConflictError;
+export const TemplatesDiffWorkspace409 = ConflictError;
+export type TemplatesDiffWorkspace422 = TemplateSourceError | ValidationError;
+export const TemplatesDiffWorkspace422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesDiffWorkspace500 = InternalError;
+export const TemplatesDiffWorkspace500 = InternalError;
+export type TemplatesDiffWorkspace504 = GatewayTimeoutError;
+export const TemplatesDiffWorkspace504 = GatewayTimeoutError;
+export type TemplatesRenderWorkspaceFixturePathParams = { readonly id: TemplateId };
+export const TemplatesRenderWorkspaceFixturePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesRenderWorkspaceFixtureRequestJson = {
+  readonly expectedRevision: string;
+  readonly fixture: string;
+};
+export const TemplatesRenderWorkspaceFixtureRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    fixture: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+  }))();
+export type TemplatesRenderWorkspaceFixture200 = {
+  readonly projectId: TemplateProjectId;
+  readonly revision: string;
+  readonly entryPath: string | string;
+  readonly declaration: {
+    readonly codeDigest: string;
+    readonly templateId: string;
+    readonly input: {
+      readonly schema: { readonly [x: string]: JsonValue };
+      readonly schemaDigest: string;
+      readonly contractDigest: string;
+    };
+    readonly fixtures: ReadonlyArray<string>;
+  } | null;
+  readonly issue?: {
+    readonly path: string;
+    readonly frontmatter: {
+      readonly title: string;
+      readonly slug: string;
+      readonly topic: string;
+      readonly preheader?: string;
+      readonly seo?: {
+        readonly title?: string;
+        readonly description?: string;
+        readonly image?: string;
+      };
+      readonly gate?: { readonly leadIn: number };
+    };
+  };
+  readonly diagnostics: ReadonlyArray<{
+    readonly code: string;
+    readonly severity: "error" | "warning" | "info";
+    readonly message: string;
+    readonly origins: ReadonlyArray<{
+      readonly fileName: string;
+      readonly lineNumber: number;
+      readonly columnNumber: number;
+    }>;
+    readonly clients?: ReadonlyArray<string> | null;
+    readonly notes?: string | null;
+    readonly provenance?: string | null;
+    readonly fixtures?: ReadonlyArray<string> | null;
+    readonly occurrences?: ReadonlyArray<
+      ReadonlyArray<{
+        readonly fileName: string;
+        readonly lineNumber: number;
+        readonly columnNumber: number;
+      }>
+    > | null;
+    readonly compatibility?: {
+      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+      readonly title: string;
+    } | null;
+  }>;
+  readonly incompatibilities: ReadonlyArray<{
+    readonly code: string;
+    readonly severity: "error" | "warning" | "info";
+    readonly message: string;
+    readonly origins: ReadonlyArray<{
+      readonly fileName: string;
+      readonly lineNumber: number;
+      readonly columnNumber: number;
+    }>;
+    readonly clients?: ReadonlyArray<string> | null;
+    readonly notes?: string | null;
+    readonly provenance?: string | null;
+    readonly fixtures?: ReadonlyArray<string> | null;
+    readonly occurrences?: ReadonlyArray<
+      ReadonlyArray<{
+        readonly fileName: string;
+        readonly lineNumber: number;
+        readonly columnNumber: number;
+      }>
+    > | null;
+    readonly compatibility?: {
+      readonly assessment: "risk" | "degradation" | "unverified" | "not-applicable";
+      readonly title: string;
+    } | null;
+  }>;
+  readonly fixture: string;
+  readonly rendered: {
+    readonly subject: string;
+    readonly preheader?: string;
+    readonly html: string;
+    readonly text: string;
+    readonly selections: ReadonlyArray<{
+      readonly instancePath: string;
+      readonly tag: string;
+      readonly origins: ReadonlyArray<{
+        readonly fileName: string;
+        readonly lineNumber: number;
+        readonly columnNumber: number;
+      }>;
+      readonly authored: boolean;
+      readonly occurrence: number;
+      readonly occurrences: number;
+      readonly parentPath?: string;
+      readonly start: number;
+      readonly end: number;
+    }>;
+    readonly sentBytes: number;
+    readonly previewBytes: number;
+  } | null;
+  readonly page?: {
+    readonly kind: "page";
+    readonly html: string;
+    readonly selections: ReadonlyArray<{
+      readonly instancePath: string;
+      readonly tag: string;
+      readonly origins: ReadonlyArray<{
+        readonly fileName: string;
+        readonly lineNumber: number;
+        readonly columnNumber: number;
+      }>;
+      readonly authored: boolean;
+      readonly occurrence: number;
+      readonly occurrences: number;
+      readonly parentPath?: string;
+      readonly start: number;
+      readonly end: number;
+    }>;
+  } | null;
+};
+export const TemplatesRenderWorkspaceFixture200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    revision: Schema.String,
+    entryPath: Schema.Union([
+      Schema.String.check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+        .check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              "u",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        ),
+      Schema.String.check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+        .check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              "u",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        ),
+    ]),
+    declaration: Schema.Union([
+      Schema.Struct({
+        codeDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+        templateId: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        input: Schema.Struct({
+          schema: Schema.Record(Schema.String, JsonValue),
+          schemaDigest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          contractDigest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+        }),
+        fixtures: Schema.Array(
+          Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(128).annotate({
+                expected: "a string with at most 128 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(128).annotate({
+                expected: "a value with a length of at most 128",
+              }),
+            ),
+        ),
+      }),
+      Schema.Null,
+    ]),
+    issue: Schema.optionalKey(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
+          }),
+        )
+          .check(
+            Schema.isPattern(
+              new RegExp(
+                "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+                "u",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(1024).annotate({
+              expected: "a value with a length of at most 1024",
+            }),
+          ),
+        frontmatter: Schema.Struct({
+          title: Schema.String,
+          slug: Schema.String,
+          topic: Schema.String,
+          preheader: Schema.optionalKey(Schema.String),
+          seo: Schema.optionalKey(
+            Schema.Struct({
+              title: Schema.optionalKey(Schema.String),
+              description: Schema.optionalKey(Schema.String),
+              image: Schema.optionalKey(Schema.String),
+            }),
+          ),
+          gate: Schema.optionalKey(
+            Schema.Struct({
+              leadIn: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(0).annotate({
+                    expected: "a value greater than or equal to 0",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+            }),
+          ),
+        }),
+      }),
+    ),
+    diagnostics: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
+        ]),
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    incompatibilities: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
+        ]),
+        message: Schema.String,
+        origins: Schema.Array(
+          Schema.Struct({
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    fixture: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+    rendered: Schema.Union([
+      Schema.Struct({
+        subject: Schema.String,
+        preheader: Schema.optionalKey(Schema.String),
+        html: Schema.String.check(
+          Schema.isMaxCodePoints(2097152).annotate({
+            expected: "a string with at most 2097152 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(2097152).annotate({
+            expected: "a value with a length of at most 2097152",
+          }),
+        ),
+        text: Schema.String.check(
+          Schema.isMaxCodePoints(2097152).annotate({
+            expected: "a string with at most 2097152 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(2097152).annotate({
+            expected: "a value with a length of at most 2097152",
+          }),
+        ),
+        selections: Schema.Array(
+          Schema.Struct({
+            instancePath: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            ),
+            tag: Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            ),
+            origins: Schema.Array(
+              Schema.Struct({
+                fileName: Schema.String,
+                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                  .check(
+                    Schema.isGreaterThanOrEqualTo(1).annotate({
+                      expected: "a value greater than or equal to 1",
+                    }),
+                  )
+                  .check(
+                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                      expected: "a value less than or equal to 9007199254740991",
+                    }),
+                  ),
+                columnNumber: Schema.Finite.check(
+                  Schema.isInt().annotate({ expected: "an integer" }),
+                )
+                  .check(
+                    Schema.isGreaterThanOrEqualTo(1).annotate({
+                      expected: "a value greater than or equal to 1",
+                    }),
+                  )
+                  .check(
+                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                      expected: "a value less than or equal to 9007199254740991",
+                    }),
+                  ),
+              }),
+            ),
+            authored: Schema.Boolean,
+            occurrence: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            occurrences: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            parentPath: Schema.optionalKey(Schema.String),
+            start: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(0).annotate({
+                  expected: "a value greater than or equal to 0",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            end: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(0).annotate({
+                  expected: "a value greater than or equal to 0",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+          }),
+        ),
+        sentBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+              expected: "a value greater than or equal to -9007199254740991",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        previewBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+              expected: "a value greater than or equal to -9007199254740991",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+      }),
+      Schema.Null,
+    ]),
+    page: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Literal("page"),
+          html: Schema.String,
+          selections: Schema.Array(
+            Schema.Struct({
+              instancePath: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              ),
+              tag: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              ),
+              origins: Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+              authored: Schema.Boolean,
+              occurrence: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              occurrences: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              parentPath: Schema.optionalKey(Schema.String),
+              start: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(0).annotate({
+                    expected: "a value greater than or equal to 0",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              end: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(0).annotate({
+                    expected: "a value greater than or equal to 0",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+            }),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type TemplatesRenderWorkspaceFixture401 = UnauthorizedError;
+export const TemplatesRenderWorkspaceFixture401 = UnauthorizedError;
+export type TemplatesRenderWorkspaceFixture403 = ForbiddenError;
+export const TemplatesRenderWorkspaceFixture403 = ForbiddenError;
+export type TemplatesRenderWorkspaceFixture404 = ResourceNotFoundError;
+export const TemplatesRenderWorkspaceFixture404 = ResourceNotFoundError;
+export type TemplatesRenderWorkspaceFixture409 = ConflictError;
+export const TemplatesRenderWorkspaceFixture409 = ConflictError;
+export type TemplatesRenderWorkspaceFixture422 = TemplateSourceError | ValidationError;
+export const TemplatesRenderWorkspaceFixture422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesRenderWorkspaceFixture500 = InternalError;
+export const TemplatesRenderWorkspaceFixture500 = InternalError;
+export type TemplatesRenderWorkspaceFixture504 = GatewayTimeoutError;
+export const TemplatesRenderWorkspaceFixture504 = GatewayTimeoutError;
+export type TemplatesWorkspaceHistoryPathParams = { readonly id: TemplateId };
+export const TemplatesWorkspaceHistoryPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesWorkspaceHistoryQuery = { readonly limit?: number | null };
+export const TemplatesWorkspaceHistoryQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type TemplatesWorkspaceHistory200 = {
+  readonly projectId: TemplateProjectId;
+  readonly head: string;
+  readonly commits: ReadonlyArray<{
+    readonly commit: string;
+    readonly tree: string;
+    readonly parentCommit: string | null;
+    readonly message: string;
+    readonly committedAt: string;
+  }>;
+  readonly publication: { readonly id: TemplatePublicationId; readonly commit: string } | null;
+};
+export const TemplatesWorkspaceHistory200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    head: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    commits: Schema.Array(
+      Schema.Struct({
+        commit: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        tree: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        parentCommit: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+            }),
+          ),
+          Schema.Null,
+        ]),
+        message: Schema.String,
+        committedAt: Schema.String,
+      }),
+    ),
+    publication: Schema.Union([
+      Schema.Struct({
+        id: TemplatePublicationId,
+        commit: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+      }),
+      Schema.Null,
+    ]),
+  }))();
+export type TemplatesWorkspaceHistory401 = UnauthorizedError;
+export const TemplatesWorkspaceHistory401 = UnauthorizedError;
+export type TemplatesWorkspaceHistory403 = ForbiddenError;
+export const TemplatesWorkspaceHistory403 = ForbiddenError;
+export type TemplatesWorkspaceHistory404 = ResourceNotFoundError;
+export const TemplatesWorkspaceHistory404 = ResourceNotFoundError;
+export type TemplatesWorkspaceHistory409 = ConflictError;
+export const TemplatesWorkspaceHistory409 = ConflictError;
+export type TemplatesWorkspaceHistory422 = TemplateSourceError | ValidationError;
+export const TemplatesWorkspaceHistory422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesWorkspaceHistory500 = InternalError;
+export const TemplatesWorkspaceHistory500 = InternalError;
+export type TemplatesWorkspaceHistory504 = GatewayTimeoutError;
+export const TemplatesWorkspaceHistory504 = GatewayTimeoutError;
+export type TemplatesAttachWorkspaceResourcePathParams = { readonly id: TemplateId };
+export const TemplatesAttachWorkspaceResourcePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesAttachWorkspaceResourceRequestJson = {
+  readonly expectedRevision: string;
+  readonly resource: {
+    readonly resourceId: string;
+    readonly name: string;
+    readonly files: ReadonlyArray<{
+      readonly path: string;
+      readonly mediaType: string;
+      readonly contentBase64: string;
+    }>;
+  };
+  readonly idempotencyKey: string;
+};
+export const TemplatesAttachWorkspaceResourceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    resource: Schema.Struct({
+      resourceId: Schema.String.check(
+        Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+        }),
+      ),
+      name: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(256).annotate({
+            expected: "a string with at most 256 code points",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
+        ),
+      files: Schema.Array(
+        Schema.Struct({
+          path: Schema.String.check(
+            Schema.isPattern(
+              new RegExp(
+                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            }),
+          ),
+          mediaType: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(255).annotate({
+                expected: "a string with at most 255 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(255).annotate({
+                expected: "a value with a length of at most 255",
+              }),
+            ),
+          contentBase64: Schema.String.check(
+            Schema.isPattern(
+              new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$", "u"),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            }),
+          ),
+        }),
+      )
+        .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+        .check(
+          Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" }),
+        ),
+    }),
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesAttachWorkspaceResource200 = {
+  readonly projectId: TemplateProjectId;
+  readonly organizationId: OrganizationId | null;
+  readonly ownerEpoch: number;
+  readonly repositoryName: string;
+  readonly defaultBranch: string;
+  readonly baseCommit: string;
+  readonly remoteHead: string;
+  readonly pendingRemoteHead: string | null;
+  readonly revision: string;
+  readonly overlay: { readonly [x: string]: string | null };
+  readonly assetChanges: ReadonlyArray<{
+    readonly path: string;
+    readonly status: "added" | "modified" | "deleted";
+  }>;
+  readonly conflicts: ReadonlyArray<{
+    readonly path: string;
+    readonly base: string | null;
+    readonly draft: string | null;
+    readonly main: string | null;
+  }>;
+  readonly provenance: {
+    readonly references: ReadonlyArray<{
+      readonly kind: string;
+      readonly digest: string;
+      readonly locator?: string;
+    }>;
+  };
+  readonly mounts: ReadonlyArray<
+    | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
+    | {
+        readonly root: string;
+        readonly digest: string;
+        readonly fileCount: number;
+        readonly byteSize: number;
+        readonly kind: "started-from";
+        readonly access: "read-only";
+        readonly templateId: string;
+        readonly slug: string;
+        readonly name: string;
+      }
+    | {
+        readonly root: string;
+        readonly digest: string;
+        readonly fileCount: number;
+        readonly byteSize: number;
+        readonly kind: "resource";
+        readonly access: "read-only";
+        readonly resourceId: string;
+        readonly name: string;
+      }
+    | {
+        readonly root: string;
+        readonly digest: string;
+        readonly fileCount: number;
+        readonly byteSize: number;
+        readonly kind: "library-template";
+        readonly access: "read-only";
+        readonly templateId: string;
+        readonly slug: string;
+        readonly name: string;
+      }
+  >;
+  readonly libraryManifestDigest: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+  readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+};
+export const TemplatesAttachWorkspaceResource200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    organizationId: Schema.Union([OrganizationId, Schema.Null]),
+    ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    repositoryName: Schema.String.check(
+      Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+      }),
+    ),
+    defaultBranch: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+    baseCommit: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    remoteHead: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    pendingRemoteHead: Schema.Union([
+      Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      Schema.Null,
+    ]),
+    revision: Schema.String,
+    overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+    assetChanges: Schema.Array(
+      Schema.Struct({
+        path: Schema.String,
+        status: Schema.Union([
+          Schema.Literal("added"),
+          Schema.Literal("modified"),
+          Schema.Literal("deleted"),
+        ]),
+      }),
+    ),
+    conflicts: Schema.Array(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+          }),
+        ),
+        base: Schema.Union([Schema.String, Schema.Null]),
+        draft: Schema.Union([Schema.String, Schema.Null]),
+        main: Schema.Union([Schema.String, Schema.Null]),
+      }),
+    ),
+    provenance: Schema.Struct({
+      references: Schema.Array(
+        Schema.Struct({
+          kind: Schema.String,
+          digest: Schema.String,
+          locator: Schema.optionalKey(Schema.String),
+        }),
+      ),
+    }),
+    mounts: Schema.Array(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Literal("project"),
+          root: Schema.Literal("/project"),
+          access: Schema.Literal("read-write"),
+        }),
+        Schema.Struct({
+          root: Schema.String.check(
+            Schema.isMaxCodePoints(2048).annotate({
+              expected: "a string with at most 2048 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(2048).annotate({
+                expected: "a value with a length of at most 2048",
+              }),
+            ),
+          digest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          kind: Schema.Literal("started-from"),
+          access: Schema.Literal("read-only"),
+          templateId: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(128).annotate({
+                expected: "a string with at most 128 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(128).annotate({
+                expected: "a value with a length of at most 128",
+              }),
+            ),
+          slug: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          ),
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(256).annotate({
+                expected: "a string with at most 256 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(256).annotate({
+                expected: "a value with a length of at most 256",
+              }),
+            ),
+        }),
+        Schema.Struct({
+          root: Schema.String.check(
+            Schema.isMaxCodePoints(2048).annotate({
+              expected: "a string with at most 2048 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(2048).annotate({
+                expected: "a value with a length of at most 2048",
+              }),
+            ),
+          digest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          kind: Schema.Literal("resource"),
+          access: Schema.Literal("read-only"),
+          resourceId: Schema.String.check(
+            Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+            }),
+          ),
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(256).annotate({
+                expected: "a string with at most 256 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(256).annotate({
+                expected: "a value with a length of at most 256",
+              }),
+            ),
+        }),
+        Schema.Struct({
+          root: Schema.String.check(
+            Schema.isMaxCodePoints(2048).annotate({
+              expected: "a string with at most 2048 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(2048).annotate({
+                expected: "a value with a length of at most 2048",
+              }),
+            ),
+          digest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          kind: Schema.Literal("library-template"),
+          access: Schema.Literal("read-only"),
+          templateId: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(128).annotate({
+                expected: "a string with at most 128 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(128).annotate({
+                expected: "a value with a length of at most 128",
+              }),
+            ),
+          slug: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          ),
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(256).annotate({
+                expected: "a string with at most 256 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(256).annotate({
+                expected: "a value with a length of at most 256",
+              }),
+            ),
+        }),
+      ]),
+    ),
+    libraryManifestDigest: Schema.String.check(
       Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{64}$",
       }),
     ),
-    content: Schema.String.check(
-      Schema.isMaxCodePoints(2097152).annotate({
-        expected: "a string with at most 2097152 code points",
-      }),
-    ).check(
-      Schema.isMaxLength(2097152).annotate({
-        expected: "a value with a length of at most 2097152",
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    createdBy: Schema.Struct({
+      userId: UserId,
+      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+    }),
+    updatedBy: Schema.Struct({
+      userId: UserId,
+      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+    }),
+  }))();
+export type TemplatesAttachWorkspaceResource401 = UnauthorizedError;
+export const TemplatesAttachWorkspaceResource401 = UnauthorizedError;
+export type TemplatesAttachWorkspaceResource403 = ForbiddenError;
+export const TemplatesAttachWorkspaceResource403 = ForbiddenError;
+export type TemplatesAttachWorkspaceResource404 = ResourceNotFoundError;
+export const TemplatesAttachWorkspaceResource404 = ResourceNotFoundError;
+export type TemplatesAttachWorkspaceResource409 = ConflictError;
+export const TemplatesAttachWorkspaceResource409 = ConflictError;
+export type TemplatesAttachWorkspaceResource422 = TemplateSourceError | ValidationError;
+export const TemplatesAttachWorkspaceResource422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesAttachWorkspaceResource500 = InternalError;
+export const TemplatesAttachWorkspaceResource500 = InternalError;
+export type TemplatesAttachWorkspaceResource504 = GatewayTimeoutError;
+export const TemplatesAttachWorkspaceResource504 = GatewayTimeoutError;
+export type TemplatesRemoveWorkspaceResourcePathParams = {
+  readonly id: TemplateId;
+  readonly resourceId: string;
+};
+export const TemplatesRemoveWorkspaceResourcePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateId,
+    resourceId: Schema.String.check(
+      Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
       }),
     ),
-  }),
-});
+  }))();
+export type TemplatesRemoveWorkspaceResourceRequestJson = {
+  readonly expectedRevision: string;
+  readonly idempotencyKey: string;
+};
+export const TemplatesRemoveWorkspaceResourceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesRemoveWorkspaceResource200 = {
+  readonly projectId: TemplateProjectId;
+  readonly organizationId: OrganizationId | null;
+  readonly ownerEpoch: number;
+  readonly repositoryName: string;
+  readonly defaultBranch: string;
+  readonly baseCommit: string;
+  readonly remoteHead: string;
+  readonly pendingRemoteHead: string | null;
+  readonly revision: string;
+  readonly overlay: { readonly [x: string]: string | null };
+  readonly assetChanges: ReadonlyArray<{
+    readonly path: string;
+    readonly status: "added" | "modified" | "deleted";
+  }>;
+  readonly conflicts: ReadonlyArray<{
+    readonly path: string;
+    readonly base: string | null;
+    readonly draft: string | null;
+    readonly main: string | null;
+  }>;
+  readonly provenance: {
+    readonly references: ReadonlyArray<{
+      readonly kind: string;
+      readonly digest: string;
+      readonly locator?: string;
+    }>;
+  };
+  readonly mounts: ReadonlyArray<
+    | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
+    | {
+        readonly root: string;
+        readonly digest: string;
+        readonly fileCount: number;
+        readonly byteSize: number;
+        readonly kind: "started-from";
+        readonly access: "read-only";
+        readonly templateId: string;
+        readonly slug: string;
+        readonly name: string;
+      }
+    | {
+        readonly root: string;
+        readonly digest: string;
+        readonly fileCount: number;
+        readonly byteSize: number;
+        readonly kind: "resource";
+        readonly access: "read-only";
+        readonly resourceId: string;
+        readonly name: string;
+      }
+    | {
+        readonly root: string;
+        readonly digest: string;
+        readonly fileCount: number;
+        readonly byteSize: number;
+        readonly kind: "library-template";
+        readonly access: "read-only";
+        readonly templateId: string;
+        readonly slug: string;
+        readonly name: string;
+      }
+  >;
+  readonly libraryManifestDigest: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+  readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+};
+export const TemplatesRemoveWorkspaceResource200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    organizationId: Schema.Union([OrganizationId, Schema.Null]),
+    ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    repositoryName: Schema.String.check(
+      Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+      }),
+    ),
+    defaultBranch: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+    baseCommit: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    remoteHead: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    pendingRemoteHead: Schema.Union([
+      Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      Schema.Null,
+    ]),
+    revision: Schema.String,
+    overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+    assetChanges: Schema.Array(
+      Schema.Struct({
+        path: Schema.String,
+        status: Schema.Union([
+          Schema.Literal("added"),
+          Schema.Literal("modified"),
+          Schema.Literal("deleted"),
+        ]),
+      }),
+    ),
+    conflicts: Schema.Array(
+      Schema.Struct({
+        path: Schema.String.check(
+          Schema.isPattern(
+            new RegExp(
+              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+            ),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+          }),
+        ),
+        base: Schema.Union([Schema.String, Schema.Null]),
+        draft: Schema.Union([Schema.String, Schema.Null]),
+        main: Schema.Union([Schema.String, Schema.Null]),
+      }),
+    ),
+    provenance: Schema.Struct({
+      references: Schema.Array(
+        Schema.Struct({
+          kind: Schema.String,
+          digest: Schema.String,
+          locator: Schema.optionalKey(Schema.String),
+        }),
+      ),
+    }),
+    mounts: Schema.Array(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Literal("project"),
+          root: Schema.Literal("/project"),
+          access: Schema.Literal("read-write"),
+        }),
+        Schema.Struct({
+          root: Schema.String.check(
+            Schema.isMaxCodePoints(2048).annotate({
+              expected: "a string with at most 2048 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(2048).annotate({
+                expected: "a value with a length of at most 2048",
+              }),
+            ),
+          digest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          kind: Schema.Literal("started-from"),
+          access: Schema.Literal("read-only"),
+          templateId: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(128).annotate({
+                expected: "a string with at most 128 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(128).annotate({
+                expected: "a value with a length of at most 128",
+              }),
+            ),
+          slug: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          ),
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(256).annotate({
+                expected: "a string with at most 256 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(256).annotate({
+                expected: "a value with a length of at most 256",
+              }),
+            ),
+        }),
+        Schema.Struct({
+          root: Schema.String.check(
+            Schema.isMaxCodePoints(2048).annotate({
+              expected: "a string with at most 2048 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(2048).annotate({
+                expected: "a value with a length of at most 2048",
+              }),
+            ),
+          digest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          kind: Schema.Literal("resource"),
+          access: Schema.Literal("read-only"),
+          resourceId: Schema.String.check(
+            Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+            }),
+          ),
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(256).annotate({
+                expected: "a string with at most 256 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(256).annotate({
+                expected: "a value with a length of at most 256",
+              }),
+            ),
+        }),
+        Schema.Struct({
+          root: Schema.String.check(
+            Schema.isMaxCodePoints(2048).annotate({
+              expected: "a string with at most 2048 code points",
+            }),
+          )
+            .check(
+              Schema.isPattern(
+                new RegExp(
+                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(2048).annotate({
+                expected: "a value with a length of at most 2048",
+              }),
+            ),
+          digest: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+            }),
+          ),
+          fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(1).annotate({
+                expected: "a value greater than or equal to 1",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          kind: Schema.Literal("library-template"),
+          access: Schema.Literal("read-only"),
+          templateId: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(128).annotate({
+                expected: "a string with at most 128 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(128).annotate({
+                expected: "a value with a length of at most 128",
+              }),
+            ),
+          slug: Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          ),
+          name: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+            .check(
+              Schema.isMaxCodePoints(256).annotate({
+                expected: "a string with at most 256 code points",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(256).annotate({
+                expected: "a value with a length of at most 256",
+              }),
+            ),
+        }),
+      ]),
+    ),
+    libraryManifestDigest: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+      }),
+    ),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    createdBy: Schema.Struct({
+      userId: UserId,
+      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+    }),
+    updatedBy: Schema.Struct({
+      userId: UserId,
+      via: Schema.Union([Schema.Literal("api"), Schema.Literal("mcp"), Schema.Literal("agent")]),
+    }),
+  }))();
+export type TemplatesRemoveWorkspaceResource401 = UnauthorizedError;
+export const TemplatesRemoveWorkspaceResource401 = UnauthorizedError;
+export type TemplatesRemoveWorkspaceResource403 = ForbiddenError;
+export const TemplatesRemoveWorkspaceResource403 = ForbiddenError;
+export type TemplatesRemoveWorkspaceResource404 = ResourceNotFoundError;
+export const TemplatesRemoveWorkspaceResource404 = ResourceNotFoundError;
+export type TemplatesRemoveWorkspaceResource409 = ConflictError;
+export const TemplatesRemoveWorkspaceResource409 = ConflictError;
+export type TemplatesRemoveWorkspaceResource422 = TemplateSourceError | ValidationError;
+export const TemplatesRemoveWorkspaceResource422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesRemoveWorkspaceResource500 = InternalError;
+export const TemplatesRemoveWorkspaceResource500 = InternalError;
+export type TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
+export const TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
+export type TemplatesRestoreWorkspacePathParams = { readonly id: TemplateId };
+export const TemplatesRestoreWorkspacePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
+export type TemplatesRestoreWorkspaceRequestJson = {
+  readonly expectedRevision: string;
+  readonly commit: string;
+  readonly idempotencyKey: string;
+};
+export const TemplatesRestoreWorkspaceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    commit: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesRestoreWorkspace200 = {
+  readonly view: {
+    readonly workspace: {
+      readonly projectId: TemplateProjectId;
+      readonly organizationId: OrganizationId | null;
+      readonly ownerEpoch: number;
+      readonly repositoryName: string;
+      readonly defaultBranch: string;
+      readonly baseCommit: string;
+      readonly remoteHead: string;
+      readonly pendingRemoteHead: string | null;
+      readonly revision: string;
+      readonly overlay: { readonly [x: string]: string | null };
+      readonly assetChanges: ReadonlyArray<{
+        readonly path: string;
+        readonly status: "added" | "modified" | "deleted";
+      }>;
+      readonly conflicts: ReadonlyArray<{
+        readonly path: string;
+        readonly base: string | null;
+        readonly draft: string | null;
+        readonly main: string | null;
+      }>;
+      readonly provenance: {
+        readonly references: ReadonlyArray<{
+          readonly kind: string;
+          readonly digest: string;
+          readonly locator?: string;
+        }>;
+      };
+      readonly mounts: ReadonlyArray<
+        | { readonly kind: "project"; readonly root: "/project"; readonly access: "read-write" }
+        | {
+            readonly root: string;
+            readonly digest: string;
+            readonly fileCount: number;
+            readonly byteSize: number;
+            readonly kind: "started-from";
+            readonly access: "read-only";
+            readonly templateId: string;
+            readonly slug: string;
+            readonly name: string;
+          }
+        | {
+            readonly root: string;
+            readonly digest: string;
+            readonly fileCount: number;
+            readonly byteSize: number;
+            readonly kind: "resource";
+            readonly access: "read-only";
+            readonly resourceId: string;
+            readonly name: string;
+          }
+        | {
+            readonly root: string;
+            readonly digest: string;
+            readonly fileCount: number;
+            readonly byteSize: number;
+            readonly kind: "library-template";
+            readonly access: "read-only";
+            readonly templateId: string;
+            readonly slug: string;
+            readonly name: string;
+          }
+      >;
+      readonly libraryManifestDigest: string;
+      readonly createdAt: string;
+      readonly updatedAt: string;
+      readonly createdBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+      readonly updatedBy: { readonly userId: UserId; readonly via: "api" | "mcp" | "agent" };
+    };
+    readonly files: { readonly [x: string]: string };
+  };
+  readonly source: { readonly digest: string; readonly content: string };
+};
+export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    view: Schema.Struct({
+      workspace: Schema.Struct({
+        projectId: TemplateProjectId,
+        organizationId: Schema.Union([OrganizationId, Schema.Null]),
+        ownerEpoch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        repositoryName: Schema.String.check(
+          Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          }),
+        ),
+        defaultBranch: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        baseCommit: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        remoteHead: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+          }),
+        ),
+        pendingRemoteHead: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+            }),
+          ),
+          Schema.Null,
+        ]),
+        revision: Schema.String,
+        overlay: Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Null])),
+        assetChanges: Schema.Array(
+          Schema.Struct({
+            path: Schema.String,
+            status: Schema.Union([
+              Schema.Literal("added"),
+              Schema.Literal("modified"),
+              Schema.Literal("deleted"),
+            ]),
+          }),
+        ),
+        conflicts: Schema.Array(
+          Schema.Struct({
+            path: Schema.String.check(
+              Schema.isPattern(
+                new RegExp(
+                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+              }),
+            ),
+            base: Schema.Union([Schema.String, Schema.Null]),
+            draft: Schema.Union([Schema.String, Schema.Null]),
+            main: Schema.Union([Schema.String, Schema.Null]),
+          }),
+        ),
+        provenance: Schema.Struct({
+          references: Schema.Array(
+            Schema.Struct({
+              kind: Schema.String,
+              digest: Schema.String,
+              locator: Schema.optionalKey(Schema.String),
+            }),
+          ),
+        }),
+        mounts: Schema.Array(
+          Schema.Union([
+            Schema.Struct({
+              kind: Schema.Literal("project"),
+              root: Schema.Literal("/project"),
+              access: Schema.Literal("read-write"),
+            }),
+            Schema.Struct({
+              root: Schema.String.check(
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
+                }),
+              )
+                .check(
+                  Schema.isPattern(
+                    new RegExp(
+                      "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                      "u",
+                    ),
+                  ).annotate({
+                    expected:
+                      "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(2048).annotate({
+                    expected: "a value with a length of at most 2048",
+                  }),
+                ),
+              digest: Schema.String.check(
+                Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                  expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+                }),
+              ),
+              fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              kind: Schema.Literal("started-from"),
+              access: Schema.Literal("read-only"),
+              templateId: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+                .check(
+                  Schema.isMaxCodePoints(128).annotate({
+                    expected: "a string with at most 128 code points",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(128).annotate({
+                    expected: "a value with a length of at most 128",
+                  }),
+                ),
+              slug: Schema.String.check(
+                Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                  expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                }),
+              ),
+              name: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+                .check(
+                  Schema.isMaxCodePoints(256).annotate({
+                    expected: "a string with at most 256 code points",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(256).annotate({
+                    expected: "a value with a length of at most 256",
+                  }),
+                ),
+            }),
+            Schema.Struct({
+              root: Schema.String.check(
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
+                }),
+              )
+                .check(
+                  Schema.isPattern(
+                    new RegExp(
+                      "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                      "u",
+                    ),
+                  ).annotate({
+                    expected:
+                      "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(2048).annotate({
+                    expected: "a value with a length of at most 2048",
+                  }),
+                ),
+              digest: Schema.String.check(
+                Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                  expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+                }),
+              ),
+              fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              kind: Schema.Literal("resource"),
+              access: Schema.Literal("read-only"),
+              resourceId: Schema.String.check(
+                Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+                  expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
+                }),
+              ),
+              name: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+                .check(
+                  Schema.isMaxCodePoints(256).annotate({
+                    expected: "a string with at most 256 code points",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(256).annotate({
+                    expected: "a value with a length of at most 256",
+                  }),
+                ),
+            }),
+            Schema.Struct({
+              root: Schema.String.check(
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
+                }),
+              )
+                .check(
+                  Schema.isPattern(
+                    new RegExp(
+                      "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                      "u",
+                    ),
+                  ).annotate({
+                    expected:
+                      "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(2048).annotate({
+                    expected: "a value with a length of at most 2048",
+                  }),
+                ),
+              digest: Schema.String.check(
+                Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+                  expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+                }),
+              ),
+              fileCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              byteSize: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(1).annotate({
+                    expected: "a value greater than or equal to 1",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              kind: Schema.Literal("library-template"),
+              access: Schema.Literal("read-only"),
+              templateId: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+                .check(
+                  Schema.isMaxCodePoints(128).annotate({
+                    expected: "a string with at most 128 code points",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(128).annotate({
+                    expected: "a value with a length of at most 128",
+                  }),
+                ),
+              slug: Schema.String.check(
+                Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+                  expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                }),
+              ),
+              name: Schema.String.check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+                .check(
+                  Schema.isMaxCodePoints(256).annotate({
+                    expected: "a string with at most 256 code points",
+                  }),
+                )
+                .check(
+                  Schema.isMaxLength(256).annotate({
+                    expected: "a value with a length of at most 256",
+                  }),
+                ),
+            }),
+          ]),
+        ),
+        libraryManifestDigest: Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+          }),
+        ),
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
+        createdBy: Schema.Struct({
+          userId: UserId,
+          via: Schema.Union([
+            Schema.Literal("api"),
+            Schema.Literal("mcp"),
+            Schema.Literal("agent"),
+          ]),
+        }),
+        updatedBy: Schema.Struct({
+          userId: UserId,
+          via: Schema.Union([
+            Schema.Literal("api"),
+            Schema.Literal("mcp"),
+            Schema.Literal("agent"),
+          ]),
+        }),
+      }),
+      files: Schema.Record(Schema.String, Schema.String),
+    }),
+    source: Schema.Struct({
+      digest: Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+        }),
+      ),
+      content: Schema.String.check(
+        Schema.isMaxCodePoints(2097152).annotate({
+          expected: "a string with at most 2097152 code points",
+        }),
+      ).check(
+        Schema.isMaxLength(2097152).annotate({
+          expected: "a value with a length of at most 2097152",
+        }),
+      ),
+    }),
+  }))();
 export type TemplatesRestoreWorkspace401 = UnauthorizedError;
 export const TemplatesRestoreWorkspace401 = UnauthorizedError;
 export type TemplatesRestoreWorkspace403 = ForbiddenError;
@@ -6512,44 +6970,48 @@ export const TemplatesRestoreWorkspace404 = ResourceNotFoundError;
 export type TemplatesRestoreWorkspace409 = ConflictError;
 export const TemplatesRestoreWorkspace409 = ConflictError;
 export type TemplatesRestoreWorkspace422 = TemplateSourceError | ValidationError;
-export const TemplatesRestoreWorkspace422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
+export const TemplatesRestoreWorkspace422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesRestoreWorkspace500 = InternalError;
 export const TemplatesRestoreWorkspace500 = InternalError;
 export type TemplatesRestoreWorkspace504 = GatewayTimeoutError;
 export const TemplatesRestoreWorkspace504 = GatewayTimeoutError;
 export type TemplatesSaveWorkspacePathParams = { readonly id: TemplateId };
-export const TemplatesSaveWorkspacePathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateId });
+export const TemplatesSaveWorkspacePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateId }))();
 export type TemplatesSaveWorkspaceRequestJson = {
   readonly expectedRevision: string;
   readonly expectedHead: string;
   readonly message: string;
   readonly idempotencyKey: string;
 };
-export const TemplatesSaveWorkspaceRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedRevision: Schema.String,
-  expectedHead: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  message: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(512).annotate({ expected: "a string with at most 512 code points" }),
+export const TemplatesSaveWorkspaceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedRevision: Schema.String,
+    expectedHead: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    message: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" })),
-  idempotencyKey: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      .check(
+        Schema.isMaxCodePoints(512).annotate({ expected: "a string with at most 512 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+      ),
+    idempotencyKey: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesSaveWorkspace200 = {
   readonly commit: string;
   readonly parentCommit: string;
@@ -6609,230 +7071,235 @@ export type TemplatesSaveWorkspace200 = {
     } | null;
   }>;
 };
-export const TemplatesSaveWorkspace200 = /* @__PURE__ */ Schema.Struct({
-  commit: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  parentCommit: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  tree: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-    }),
-  ),
-  revision: Schema.String,
-  changedPaths: Schema.Array(
-    Schema.String.check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+export const TemplatesSaveWorkspace200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    commit: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
-  ),
-  sourceDigest: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  buildDigest: Schema.String.check(
-    Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
-      expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-    }),
-  ),
-  warnings: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
+    parentCommit: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    tree: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    revision: Schema.String,
+    changedPaths: Schema.Array(
+      Schema.String.check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
         }),
       ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
-            ),
-          ),
-          Schema.Null,
+    ),
+    sourceDigest: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+      }),
+    ),
+    buildDigest: Schema.String.check(
+      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+      }),
+    ),
+    warnings: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
         ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
+        message: Schema.String,
+        origins: Schema.Array(
           Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
           }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-  incompatibilities: Schema.Array(
-    Schema.Struct({
-      code: Schema.String,
-      severity: Schema.Union([
-        Schema.Literal("error"),
-        Schema.Literal("warning"),
-        Schema.Literal("info"),
-      ]),
-      message: Schema.String,
-      origins: Schema.Array(
-        Schema.Struct({
-          fileName: Schema.String,
-          lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(1).annotate({
-                expected: "a value greater than or equal to 1",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-        }),
-      ),
-      clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-      occurrences: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
             Schema.Array(
-              Schema.Struct({
-                fileName: Schema.String,
-                lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
                   )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-                columnNumber: Schema.Finite.check(
-                  Schema.isInt().annotate({ expected: "an integer" }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(1).annotate({
-                      expected: "a value greater than or equal to 1",
-                    }),
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
                   )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
-              }),
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
             ),
-          ),
-          Schema.Null,
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    incompatibilities: Schema.Array(
+      Schema.Struct({
+        code: Schema.String,
+        severity: Schema.Union([
+          Schema.Literal("error"),
+          Schema.Literal("warning"),
+          Schema.Literal("info"),
         ]),
-      ),
-      compatibility: Schema.optionalKey(
-        Schema.Union([
+        message: Schema.String,
+        origins: Schema.Array(
           Schema.Struct({
-            assessment: Schema.Union([
-              Schema.Literal("risk"),
-              Schema.Literal("degradation"),
-              Schema.Literal("unverified"),
-              Schema.Literal("not-applicable"),
-            ]),
-            title: Schema.String,
+            fileName: Schema.String,
+            lineNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            columnNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(1).annotate({
+                  expected: "a value greater than or equal to 1",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
           }),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ),
-});
+        ),
+        clients: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        provenance: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        fixtures: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+        occurrences: Schema.optionalKey(
+          Schema.Union([
+            Schema.Array(
+              Schema.Array(
+                Schema.Struct({
+                  fileName: Schema.String,
+                  lineNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                  columnNumber: Schema.Finite.check(
+                    Schema.isInt().annotate({ expected: "an integer" }),
+                  )
+                    .check(
+                      Schema.isGreaterThanOrEqualTo(1).annotate({
+                        expected: "a value greater than or equal to 1",
+                      }),
+                    )
+                    .check(
+                      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                        expected: "a value less than or equal to 9007199254740991",
+                      }),
+                    ),
+                }),
+              ),
+            ),
+            Schema.Null,
+          ]),
+        ),
+        compatibility: Schema.optionalKey(
+          Schema.Union([
+            Schema.Struct({
+              assessment: Schema.Union([
+                Schema.Literal("risk"),
+                Schema.Literal("degradation"),
+                Schema.Literal("unverified"),
+                Schema.Literal("not-applicable"),
+              ]),
+              title: Schema.String,
+            }),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+  }))();
 export type TemplatesSaveWorkspace401 = UnauthorizedError;
 export const TemplatesSaveWorkspace401 = UnauthorizedError;
 export type TemplatesSaveWorkspace403 = ForbiddenError;
@@ -6842,10 +7309,8 @@ export const TemplatesSaveWorkspace404 = ResourceNotFoundError;
 export type TemplatesSaveWorkspace409 = ConflictError;
 export const TemplatesSaveWorkspace409 = ConflictError;
 export type TemplatesSaveWorkspace422 = TemplateSourceError | ValidationError;
-export const TemplatesSaveWorkspace422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
+export const TemplatesSaveWorkspace422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesSaveWorkspace500 = InternalError;
 export const TemplatesSaveWorkspace500 = InternalError;
 export type TemplatesSaveWorkspace504 = GatewayTimeoutError;
@@ -6854,22 +7319,23 @@ export type TemplatesListFamiliesQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const TemplatesListFamiliesQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const TemplatesListFamiliesQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type TemplatesListFamilies200 = TemplateFamilyPage;
 export const TemplatesListFamilies200 = TemplateFamilyPage;
 export type TemplatesListFamilies401 = UnauthorizedError;
@@ -6883,11 +7349,12 @@ export const TemplatesListFamilies500 = InternalError;
 export type TemplatesListFamilies504 = GatewayTimeoutError;
 export const TemplatesListFamilies504 = GatewayTimeoutError;
 export type TemplatesCreateFamilyRequestJson = { readonly name: string };
-export const TemplatesCreateFamilyRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-});
+export const TemplatesCreateFamilyRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+  }))();
 export type TemplatesCreateFamily201 = TemplateFamily;
 export const TemplatesCreateFamily201 = TemplateFamily;
 export type TemplatesCreateFamily401 = UnauthorizedError;
@@ -6901,7 +7368,8 @@ export const TemplatesCreateFamily500 = InternalError;
 export type TemplatesCreateFamily504 = GatewayTimeoutError;
 export const TemplatesCreateFamily504 = GatewayTimeoutError;
 export type TemplatesGetFamilyPathParams = { readonly id: TemplateFamilyId };
-export const TemplatesGetFamilyPathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateFamilyId });
+export const TemplatesGetFamilyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateFamilyId }))();
 export type TemplatesGetFamily200 = TemplateFamily;
 export const TemplatesGetFamily200 = TemplateFamily;
 export type TemplatesGetFamily401 = UnauthorizedError;
@@ -6917,9 +7385,8 @@ export const TemplatesGetFamily500 = InternalError;
 export type TemplatesGetFamily504 = GatewayTimeoutError;
 export const TemplatesGetFamily504 = GatewayTimeoutError;
 export type TemplatesDeleteFamilyPathParams = { readonly id: TemplateFamilyId };
-export const TemplatesDeleteFamilyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateFamilyId,
-});
+export const TemplatesDeleteFamilyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateFamilyId }))();
 export type TemplatesDeleteFamily200 = SuccessResponse;
 export const TemplatesDeleteFamily200 = SuccessResponse;
 export type TemplatesDeleteFamily401 = UnauthorizedError;
@@ -6935,15 +7402,15 @@ export const TemplatesDeleteFamily500 = InternalError;
 export type TemplatesDeleteFamily504 = GatewayTimeoutError;
 export const TemplatesDeleteFamily504 = GatewayTimeoutError;
 export type TemplatesRenameFamilyPathParams = { readonly id: TemplateFamilyId };
-export const TemplatesRenameFamilyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateFamilyId,
-});
+export const TemplatesRenameFamilyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateFamilyId }))();
 export type TemplatesRenameFamilyRequestJson = { readonly name: string };
-export const TemplatesRenameFamilyRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-});
+export const TemplatesRenameFamilyRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+  }))();
 export type TemplatesRenameFamily200 = TemplateFamily;
 export const TemplatesRenameFamily200 = TemplateFamily;
 export type TemplatesRenameFamily401 = UnauthorizedError;
@@ -6962,10 +7429,8 @@ export type TemplatesAttachFamilyMemberPathParams = {
   readonly id: TemplateFamilyId;
   readonly templateId: TemplateId;
 };
-export const TemplatesAttachFamilyMemberPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateFamilyId,
-  templateId: TemplateId,
-});
+export const TemplatesAttachFamilyMemberPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateFamilyId, templateId: TemplateId }))();
 export type TemplatesAttachFamilyMember200 = TemplateFamily;
 export const TemplatesAttachFamilyMember200 = TemplateFamily;
 export type TemplatesAttachFamilyMember401 = UnauthorizedError;
@@ -6986,10 +7451,8 @@ export type TemplatesDetachFamilyMemberPathParams = {
   readonly id: TemplateFamilyId;
   readonly templateId: TemplateId;
 };
-export const TemplatesDetachFamilyMemberPathParams = /* @__PURE__ */ Schema.Struct({
-  id: TemplateFamilyId,
-  templateId: TemplateId,
-});
+export const TemplatesDetachFamilyMemberPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateFamilyId, templateId: TemplateId }))();
 export type TemplatesDetachFamilyMember200 = TemplateFamily;
 export const TemplatesDetachFamilyMember200 = TemplateFamily;
 export type TemplatesDetachFamilyMember401 = UnauthorizedError;
@@ -7007,15 +7470,15 @@ export const TemplatesDetachFamilyMember500 = InternalError;
 export type TemplatesDetachFamilyMember504 = GatewayTimeoutError;
 export const TemplatesDetachFamilyMember504 = GatewayTimeoutError;
 export type TemplatesCreateFamilyFromTemplatePathParams = { readonly templateId: TemplateId };
-export const TemplatesCreateFamilyFromTemplatePathParams = /* @__PURE__ */ Schema.Struct({
-  templateId: TemplateId,
-});
+export const TemplatesCreateFamilyFromTemplatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ templateId: TemplateId }))();
 export type TemplatesCreateFamilyFromTemplateRequestJson = { readonly name: string };
-export const TemplatesCreateFamilyFromTemplateRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  ),
-});
+export const TemplatesCreateFamilyFromTemplateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+  }))();
 export type TemplatesCreateFamilyFromTemplate201 = TemplateFamily;
 export const TemplatesCreateFamilyFromTemplate201 = TemplateFamily;
 export type TemplatesCreateFamilyFromTemplate401 = UnauthorizedError;
@@ -7038,50 +7501,55 @@ export type TemplatesCreateFromWebsiteRequestJson = {
   readonly namespaceId?: NamespaceId | null;
   readonly idempotencyKey: string;
 };
-export const TemplatesCreateFromWebsiteRequestJson = /* @__PURE__ */ Schema.Struct({
-  url: Schema.String.annotate({
-    description:
-      "The website whose look the template should match: a public https address, or a bare domain such as `example.com`.",
-  })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(2048).annotate({ expected: "a string with at most 2048 code points" }),
-    )
-    .check(
-      Schema.isMaxLength(2048).annotate({ expected: "a value with a length of at most 2048" }),
-    ),
-  name: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(200).annotate({
-            expected: "a string with at most 200 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  namespaceId: Schema.optionalKey(
-    Schema.Union([NamespaceId, Schema.Null]).annotate({
+export const TemplatesCreateFromWebsiteRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    url: Schema.String.annotate({
       description:
-        "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
-    }),
-  ),
-  idempotencyKey: Schema.String.annotate({
-    description:
-      "Repeating a request with the same key, address, name, and namespace returns the project the first one created, even if the site has since stopped answering. The same key with another address, name, or namespace is refused with a 409.",
-  })
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-    )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
+        "The website whose look the template should match: a public https address, or a bare domain such as `example.com`.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(2048).annotate({
+          expected: "a string with at most 2048 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(2048).annotate({ expected: "a value with a length of at most 2048" }),
+      ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
+      }),
+    ),
+    idempotencyKey: Schema.String.annotate({
+      description:
+        "Repeating a request with the same key, address, name, and namespace returns the project the first one created, even if the site has since stopped answering. The same key with another address, name, or namespace is refused with a 409.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesCreateFromWebsite201 = TemplateFromWebsite;
 export const TemplatesCreateFromWebsite201 = TemplateFromWebsite;
 export type TemplatesCreateFromWebsite401 = UnauthorizedError;
@@ -7093,16 +7561,15 @@ export const TemplatesCreateFromWebsite404 = ResourceNotFoundError;
 export type TemplatesCreateFromWebsite409 = ConflictError;
 export const TemplatesCreateFromWebsite409 = ConflictError;
 export type TemplatesCreateFromWebsite422 = TemplateSourceError | ValidationError;
-export const TemplatesCreateFromWebsite422 = /* @__PURE__ */ Schema.Union([
-  TemplateSourceError,
-  ValidationError,
-]);
+export const TemplatesCreateFromWebsite422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesCreateFromWebsite500 = InternalError;
 export const TemplatesCreateFromWebsite500 = InternalError;
 export type TemplatesCreateFromWebsite504 = GatewayTimeoutError;
 export const TemplatesCreateFromWebsite504 = GatewayTimeoutError;
 export type TemplatesAddEntryPathParams = { readonly id: TemplateProjectId };
-export const TemplatesAddEntryPathParams = /* @__PURE__ */ Schema.Struct({ id: TemplateProjectId });
+export const TemplatesAddEntryPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateProjectId }))();
 export type TemplatesAddEntryRequestJson = {
   readonly entryPath: string;
   readonly name: string;
@@ -7119,57 +7586,60 @@ export type TemplatesAddEntryRequestJson = {
     | null
     | null;
 };
-export const TemplatesAddEntryRequestJson = /* @__PURE__ */ Schema.Struct({
-  entryPath: Schema.String.check(
-    Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-  )
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+export const TemplatesAddEntryRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    entryPath: Schema.String.check(
+      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
+    )
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+      ),
+    slug: Schema.String.check(
+      Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+        expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
       }),
-    )
-    .check(
-      Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
     ),
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
-    )
-    .check(Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" })),
-  slug: Schema.String.check(
-    Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-      expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
-    }),
-  ),
-  description: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-  category: Schema.optionalKey(
-    Schema.Union([
+    description: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    category: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Literal("transactional"),
-          Schema.Literal("marketing"),
-          Schema.Literal("support"),
-          Schema.Literal("notification"),
-          Schema.Literal("verification"),
-          Schema.Literal("reminder"),
-          Schema.Literal("alert"),
+          Schema.Union([
+            Schema.Literal("transactional"),
+            Schema.Literal("marketing"),
+            Schema.Literal("support"),
+            Schema.Literal("notification"),
+            Schema.Literal("verification"),
+            Schema.Literal("reminder"),
+            Schema.Literal("alert"),
+          ]),
+          Schema.Null,
         ]),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+  }))();
 export type TemplatesAddEntry201 = Template;
 export const TemplatesAddEntry201 = Template;
 export type TemplatesAddEntry401 = UnauthorizedError;

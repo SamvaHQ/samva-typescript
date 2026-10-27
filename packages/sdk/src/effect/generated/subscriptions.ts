@@ -27,10 +27,10 @@ import {
 } from "./shared";
 
 export type SubscribeResult = { readonly success: boolean; readonly expiresAt: string };
-export const SubscribeResult = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Boolean,
-  expiresAt: Schema.String,
-}).annotate({ identifier: "SubscribeResult" });
+export const SubscribeResult = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean, expiresAt: Schema.String }).annotate({
+    identifier: "SubscribeResult",
+  }))();
 export type SubscriptionsSubscribeRequestJson = {
   readonly email: string;
   readonly topicId: TopicId;
@@ -39,74 +39,77 @@ export type SubscriptionsSubscribeRequestJson = {
   readonly consentIp?: string | null;
   readonly consentSource?: string | null;
 };
-export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ Schema.Struct({
-  email: Schema.String.annotate({
-    description: "The recipient email address; confirmation proves consent for this address.",
-  })
-    .check(
-      Schema.isMaxCodePoints(320).annotate({ expected: "a string with at most 320 code points" }),
-    )
-    .check(
-      Schema.isPattern(new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
-        expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-      }),
-    )
-    .check(Schema.isMaxLength(320).annotate({ expected: "a value with a length of at most 320" })),
-  topicId: TopicId,
-  from: Schema.Struct({
-    email: Schema.String,
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }).annotate({
-    description:
-      "Your verified email sender. The ordinary send pipeline selects its domain and customer brand.",
-  }),
-  templateSlug: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "A published email template slug receiving confirmUrl. Omit it to send the default confirmation email.",
-      }).check(
-        Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-          expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.String.annotate({
+      description: "The recipient email address; confirmation proves consent for this address.",
+    })
+      .check(
+        Schema.isMaxCodePoints(320).annotate({ expected: "a string with at most 320 code points" }),
+      )
+      .check(
+        Schema.isPattern(new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
+          expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
         }),
+      )
+      .check(
+        Schema.isMaxLength(320).annotate({ expected: "a value with a length of at most 320" }),
       ),
-      Schema.Null,
-    ]),
-  ),
-  consentIp: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description: "The recipient IP recorded by your server when they requested subscription.",
-      })
-        .check(
-          Schema.isMaxCodePoints(128).annotate({
-            expected: "a string with at most 128 code points",
+    topicId: TopicId,
+    from: Schema.Struct({
+      email: Schema.String,
+      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }).annotate({
+      description:
+        "Your verified email sender. The ordinary send pipeline selects its domain and customer brand.",
+    }),
+    templateSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "A published email template slug receiving confirmUrl. Omit it to send the default confirmation email.",
+        }).check(
+          Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
-        )
-        .check(
-          Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
         ),
-      Schema.Null,
-    ]),
-  ),
-  consentSource: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "The signup page or source recorded by your server when consent was requested.",
-      })
-        .check(
-          Schema.isMaxCodePoints(512).annotate({
-            expected: "a string with at most 512 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-});
+        Schema.Null,
+      ]),
+    ),
+    consentIp: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description: "The recipient IP recorded by your server when they requested subscription.",
+        })
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    consentSource: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "The signup page or source recorded by your server when consent was requested.",
+        })
+          .check(
+            Schema.isMaxCodePoints(512).annotate({
+              expected: "a string with at most 512 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type SubscriptionsSubscribe200 = SubscribeResult;
 export const SubscriptionsSubscribe200 = SubscribeResult;
 export type SubscriptionsSubscribe401 = UnauthorizedError;
@@ -117,11 +120,8 @@ export type SubscriptionsSubscribe403 =
   | ForbiddenError
   | OnboardingReviewRequiredError
   | FlagDisabledError;
-export const SubscriptionsSubscribe403 = /* @__PURE__ */ Schema.Union([
-  ForbiddenError,
-  OnboardingReviewRequiredError,
-  FlagDisabledError,
-]);
+export const SubscriptionsSubscribe403 = /* @__PURE__ */ (() =>
+  Schema.Union([ForbiddenError, OnboardingReviewRequiredError, FlagDisabledError]))();
 export type SubscriptionsSubscribe404 = ResourceNotFoundError;
 export const SubscriptionsSubscribe404 = ResourceNotFoundError;
 export type SubscriptionsSubscribe409 = ConflictError;
@@ -131,26 +131,23 @@ export type SubscriptionsSubscribe422 =
   | FromAddressRequiredError
   | BrandAddressRequiredError
   | CampaignFooterRequiredError;
-export const SubscriptionsSubscribe422 = /* @__PURE__ */ Schema.Union([
-  ValidationError,
-  FromAddressRequiredError,
-  BrandAddressRequiredError,
-  CampaignFooterRequiredError,
-]);
+export const SubscriptionsSubscribe422 = /* @__PURE__ */ (() =>
+  Schema.Union([
+    ValidationError,
+    FromAddressRequiredError,
+    BrandAddressRequiredError,
+    CampaignFooterRequiredError,
+  ]))();
 export type SubscriptionsSubscribe429 = RateLimitedError;
 export const SubscriptionsSubscribe429 = RateLimitedError;
 export type SubscriptionsSubscribe500 = InternalError;
 export const SubscriptionsSubscribe500 = InternalError;
 export type SubscriptionsSubscribe502 = BillingProviderError | ExternalServiceError;
-export const SubscriptionsSubscribe502 = /* @__PURE__ */ Schema.Union([
-  BillingProviderError,
-  ExternalServiceError,
-]);
+export const SubscriptionsSubscribe502 = /* @__PURE__ */ (() =>
+  Schema.Union([BillingProviderError, ExternalServiceError]))();
 export type SubscriptionsSubscribe503 = SenderNotReadyError | DeliveryUnavailableError;
-export const SubscriptionsSubscribe503 = /* @__PURE__ */ Schema.Union([
-  SenderNotReadyError,
-  DeliveryUnavailableError,
-]);
+export const SubscriptionsSubscribe503 = /* @__PURE__ */ (() =>
+  Schema.Union([SenderNotReadyError, DeliveryUnavailableError]))();
 export type SubscriptionsSubscribe504 = GatewayTimeoutError;
 export const SubscriptionsSubscribe504 = GatewayTimeoutError;
 

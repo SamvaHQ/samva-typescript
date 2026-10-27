@@ -32,61 +32,74 @@ import {
 } from "./shared";
 
 export type BlockedEmailId = string & EffectBrand.Brand<"BlockedEmailId">;
-export const BlockedEmailId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^blk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^blk_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "BlockedEmailId",
-  }),
-).pipe(Schema.brand("BlockedEmailId"));
+export const BlockedEmailId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^blk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^blk_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "BlockedEmailId",
+    }),
+  ).pipe(Schema.brand("BlockedEmailId")))();
 export type SuccessResult = { readonly success: boolean; readonly message: string };
-export const SuccessResult = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Boolean,
-  message: Schema.String,
-}).annotate({ identifier: "SuccessResult" });
+export const SuccessResult = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean, message: Schema.String }).annotate({
+    identifier: "SuccessResult",
+  }))();
 export type BlockedEmailLogId = string & EffectBrand.Brand<"BlockedEmailLogId">;
-export const BlockedEmailLogId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^blklog_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^blklog_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "BlockedEmailLogId",
-  }),
-).pipe(Schema.brand("BlockedEmailLogId"));
+export const BlockedEmailLogId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^blklog_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^blklog_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "BlockedEmailLogId",
+    }),
+  ).pipe(Schema.brand("BlockedEmailLogId")))();
 export type DeliverabilityFacts = {
   readonly bounceRate: number;
   readonly complaintRate: number;
   readonly windowSends: number;
   readonly sendingStatus: "enabled" | "disabled" | "reinstated" | "unknown";
 };
-export const DeliverabilityFacts = /* @__PURE__ */ Schema.Struct({
-  bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(Schema.isLessThanOrEqualTo(1).annotate({ expected: "a value less than or equal to 1" })),
-  complaintRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(Schema.isLessThanOrEqualTo(1).annotate({ expected: "a value less than or equal to 1" })),
-  windowSends: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  sendingStatus: Schema.Union([
-    Schema.Literal("enabled"),
-    Schema.Literal("disabled"),
-    Schema.Literal("reinstated"),
-    Schema.Literal("unknown"),
-  ]),
-}).annotate({
-  description:
-    "Bounce and complaint rates over the last 24 hours, as fractions between 0 and 1, with `windowSends`, the deliveries they were divided by, plus `sendingStatus`, which says whether the organization can currently send. The window matches the one the sending-pause rule reads. Below 200 sends that rule ignores the window entirely, so a rate over a smaller `windowSends` is a quotient rather than a reading. These are not a lifetime record; an identity with no traffic in the window reports zeroes.",
-  identifier: "DeliverabilityFacts",
-});
+export const DeliverabilityFacts = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(1).annotate({ expected: "a value less than or equal to 1" }),
+      ),
+    complaintRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(1).annotate({ expected: "a value less than or equal to 1" }),
+      ),
+    windowSends: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    sendingStatus: Schema.Union([
+      Schema.Literal("enabled"),
+      Schema.Literal("disabled"),
+      Schema.Literal("reinstated"),
+      Schema.Literal("unknown"),
+    ]),
+  }).annotate({
+    description:
+      "Bounce and complaint rates over the last 24 hours, as fractions between 0 and 1, with `windowSends`, the deliveries they were divided by, plus `sendingStatus`, which says whether the organization can currently send. The window matches the one the sending-pause rule reads. Below 200 sends that rule ignores the window entirely, so a rate over a smaller `windowSends` is a quotient rather than a reading. These are not a lifetime record; an identity with no traffic in the window reports zeroes.",
+    identifier: "DeliverabilityFacts",
+  }))();
 export type CustomTrackingCertificate = {
   readonly reason: {
     readonly code:
@@ -105,183 +118,193 @@ export type CustomTrackingCertificate = {
   readonly lastCheckedAt: string | null;
   readonly nextCheckAt: string | null;
 };
-export const CustomTrackingCertificate = /* @__PURE__ */ Schema.Struct({
-  reason: Schema.Struct({
-    code: Schema.Union([
-      Schema.Literal("initializing"),
-      Schema.Literal("awaiting-hostname"),
-      Schema.Literal("awaiting-dcv"),
-      Schema.Literal("issuing"),
-      Schema.Literal("caa-blocked"),
-      Schema.Literal("validation-error"),
-      Schema.Literal("timed-out"),
-      Schema.Literal("verifying-route"),
-      Schema.Literal("ready"),
-      Schema.Literal("provider-unreachable"),
-    ]),
-    message: Schema.String,
-  }),
-  lastCheckedAt: Schema.Union([Schema.String, Schema.Null]),
-  nextCheckAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "CustomTrackingCertificate" });
+export const CustomTrackingCertificate = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    reason: Schema.Struct({
+      code: Schema.Union([
+        Schema.Literal("initializing"),
+        Schema.Literal("awaiting-hostname"),
+        Schema.Literal("awaiting-dcv"),
+        Schema.Literal("issuing"),
+        Schema.Literal("caa-blocked"),
+        Schema.Literal("validation-error"),
+        Schema.Literal("timed-out"),
+        Schema.Literal("verifying-route"),
+        Schema.Literal("ready"),
+        Schema.Literal("provider-unreachable"),
+      ]),
+      message: Schema.String,
+    }),
+    lastCheckedAt: Schema.Union([Schema.String, Schema.Null]),
+    nextCheckAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "CustomTrackingCertificate" }))();
 export type CustomTrackingDnsRecord = {
   readonly name: string;
   readonly type: string;
   readonly value: string;
 };
-export const CustomTrackingDnsRecord = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String,
-  type: Schema.String,
-  value: Schema.String,
-}).annotate({ identifier: "CustomTrackingDnsRecord" });
+export const CustomTrackingDnsRecord = /* @__PURE__ */ (() =>
+  Schema.Struct({ name: Schema.String, type: Schema.String, value: Schema.String }).annotate({
+    identifier: "CustomTrackingDnsRecord",
+  }))();
 export type DomainConnectEligibility =
   | {
       readonly eligible: false;
       readonly reason: "no-record" | "no-settings" | "no-sync" | "no-template" | "unavailable";
     }
   | { readonly eligible: true; readonly providerName?: string | null };
-export const DomainConnectEligibility = /* @__PURE__ */ Schema.Union([
-  Schema.Struct({
-    eligible: Schema.Literal(false),
-    reason: Schema.Union([
-      Schema.Literal("no-record"),
-      Schema.Literal("no-settings"),
-      Schema.Literal("no-sync"),
-      Schema.Literal("no-template"),
-      Schema.Literal("unavailable"),
-    ]),
-  }),
-  Schema.Struct({
-    eligible: Schema.Literal(true),
-    providerName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }),
-]).annotate({ identifier: "DomainConnectEligibility" });
+export const DomainConnectEligibility = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      eligible: Schema.Literal(false),
+      reason: Schema.Union([
+        Schema.Literal("no-record"),
+        Schema.Literal("no-settings"),
+        Schema.Literal("no-sync"),
+        Schema.Literal("no-template"),
+        Schema.Literal("unavailable"),
+      ]),
+    }),
+    Schema.Struct({
+      eligible: Schema.Literal(true),
+      providerName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+  ]).annotate({ identifier: "DomainConnectEligibility" }))();
 export type DomainConnectApplyUrlResult = { readonly url: string };
-export const DomainConnectApplyUrlResult = /* @__PURE__ */ Schema.Struct({
-  url: Schema.String,
-}).annotate({ identifier: "DomainConnectApplyUrlResult" });
+export const DomainConnectApplyUrlResult = /* @__PURE__ */ (() =>
+  Schema.Struct({ url: Schema.String }).annotate({ identifier: "DomainConnectApplyUrlResult" }))();
 export type CustomTrackingDomainConnectCompleteResult = {
   readonly status: "applied" | "cancelled" | "failed" | "stale" | "invalid";
 };
-export const CustomTrackingDomainConnectCompleteResult = /* @__PURE__ */ Schema.Struct({
-  status: Schema.Union([
-    Schema.Literal("applied"),
-    Schema.Literal("cancelled"),
-    Schema.Literal("failed"),
-    Schema.Literal("stale"),
-    Schema.Literal("invalid"),
-  ]),
-}).annotate({ identifier: "CustomTrackingDomainConnectCompleteResult" });
+export const CustomTrackingDomainConnectCompleteResult = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.Union([
+      Schema.Literal("applied"),
+      Schema.Literal("cancelled"),
+      Schema.Literal("failed"),
+      Schema.Literal("stale"),
+      Schema.Literal("invalid"),
+    ]),
+  }).annotate({ identifier: "CustomTrackingDomainConnectCompleteResult" }))();
 export type DomainConnectCompleteResult = {
   readonly status: "applied" | "cancelled" | "failed" | "invalid";
 };
-export const DomainConnectCompleteResult = /* @__PURE__ */ Schema.Struct({
-  status: Schema.Union([
-    Schema.Literal("applied"),
-    Schema.Literal("cancelled"),
-    Schema.Literal("failed"),
-    Schema.Literal("invalid"),
-  ]),
-}).annotate({ identifier: "DomainConnectCompleteResult" });
+export const DomainConnectCompleteResult = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.Union([
+      Schema.Literal("applied"),
+      Schema.Literal("cancelled"),
+      Schema.Literal("failed"),
+      Schema.Literal("invalid"),
+    ]),
+  }).annotate({ identifier: "DomainConnectCompleteResult" }))();
 export type EmailDomainProvisioningExecution = {
   readonly status: "none" | "running" | "succeeded" | "failed";
   readonly generation: number;
   readonly revision: number;
 };
-export const EmailDomainProvisioningExecution = /* @__PURE__ */ Schema.Struct({
-  status: Schema.Union([
-    Schema.Literal("none"),
-    Schema.Literal("running"),
-    Schema.Literal("succeeded"),
-    Schema.Literal("failed"),
-  ]),
-  generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "EmailDomainProvisioningExecution" });
+export const EmailDomainProvisioningExecution = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.Union([
+      Schema.Literal("none"),
+      Schema.Literal("running"),
+      Schema.Literal("succeeded"),
+      Schema.Literal("failed"),
+    ]),
+    generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "EmailDomainProvisioningExecution" }))();
 export type EmailDomainWarmingPlanId = string & EffectBrand.Brand<"EmailDomainWarmingPlanId">;
-export const EmailDomainWarmingPlanId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^warm_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^warm_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "EmailDomainWarmingPlanId",
-  }),
-).pipe(Schema.brand("EmailDomainWarmingPlanId"));
+export const EmailDomainWarmingPlanId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^warm_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^warm_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "EmailDomainWarmingPlanId",
+    }),
+  ).pipe(Schema.brand("EmailDomainWarmingPlanId")))();
 export type EmailDomainWarmingBatchId = string & EffectBrand.Brand<"EmailDomainWarmingBatchId">;
-export const EmailDomainWarmingBatchId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "EmailDomainWarmingBatchId",
-  }),
-).pipe(Schema.brand("EmailDomainWarmingBatchId"));
+export const EmailDomainWarmingBatchId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "EmailDomainWarmingBatchId",
+    }),
+  ).pipe(Schema.brand("EmailDomainWarmingBatchId")))();
 export type EmailDomainWarmingDecisionId = string &
   EffectBrand.Brand<"EmailDomainWarmingDecisionId">;
-export const EmailDomainWarmingDecisionId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^wdec_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^wdec_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "EmailDomainWarmingDecisionId",
-  }),
-).pipe(Schema.brand("EmailDomainWarmingDecisionId"));
+export const EmailDomainWarmingDecisionId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^wdec_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^wdec_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "EmailDomainWarmingDecisionId",
+    }),
+  ).pipe(Schema.brand("EmailDomainWarmingDecisionId")))();
 export type DomainWarmingWindowHour = {
   readonly sent: number;
   readonly bounced: number;
   readonly complained: number;
 };
-export const DomainWarmingWindowHour = /* @__PURE__ */ Schema.Struct({
-  sent: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  bounced: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  complained: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-}).annotate({ identifier: "DomainWarmingWindowHour" });
+export const DomainWarmingWindowHour = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    sent: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    bounced: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    complained: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+  }).annotate({ identifier: "DomainWarmingWindowHour" }))();
 export type DomainWarmingHolds = {
   readonly workspacePausedAt: string | null;
   readonly workspacePauseReason: string | null;
   readonly sendingStatus: "enabled" | "disabled" | "reinstated" | "unknown";
 };
-export const DomainWarmingHolds = /* @__PURE__ */ Schema.Struct({
-  workspacePausedAt: Schema.Union([Schema.String, Schema.Null]),
-  workspacePauseReason: Schema.Union([Schema.String, Schema.Null]),
-  sendingStatus: Schema.Union([
-    Schema.Literal("enabled"),
-    Schema.Literal("disabled"),
-    Schema.Literal("reinstated"),
-    Schema.Literal("unknown"),
-  ]),
-}).annotate({ identifier: "DomainWarmingHolds" });
+export const DomainWarmingHolds = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    workspacePausedAt: Schema.Union([Schema.String, Schema.Null]),
+    workspacePauseReason: Schema.Union([Schema.String, Schema.Null]),
+    sendingStatus: Schema.Union([
+      Schema.Literal("enabled"),
+      Schema.Literal("disabled"),
+      Schema.Literal("reinstated"),
+      Schema.Literal("unknown"),
+    ]),
+  }).annotate({ identifier: "DomainWarmingHolds" }))();
 export type EmailForwardingRuleId = string & EffectBrand.Brand<"EmailForwardingRuleId">;
-export const EmailForwardingRuleId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^fwd_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^fwd_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "EmailForwardingRuleId",
-  }),
-).pipe(Schema.brand("EmailForwardingRuleId"));
+export const EmailForwardingRuleId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^fwd_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^fwd_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "EmailForwardingRuleId",
+    }),
+  ).pipe(Schema.brand("EmailForwardingRuleId")))();
 export type ForwardingConditions = {
   readonly subjectContains?: ReadonlyArray<string> | null;
   readonly fromContains?: ReadonlyArray<string> | null;
   readonly hasAttachments?: boolean | null;
 };
-export const ForwardingConditions = /* @__PURE__ */ Schema.Struct({
-  subjectContains: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  fromContains: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  hasAttachments: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-}).annotate({ identifier: "ForwardingConditions" });
+export const ForwardingConditions = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    subjectContains: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    fromContains: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    hasAttachments: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }).annotate({ identifier: "ForwardingConditions" }))();
 export type IdentityClearanceStatus = {
   readonly identityId: string;
   readonly decision: "undecided" | "approved" | "rejected";
@@ -305,112 +328,124 @@ export type IdentityClearanceStatus = {
     | null;
   readonly updatedAt: string;
 };
-export const IdentityClearanceStatus = /* @__PURE__ */ Schema.Struct({
-  identityId: Schema.String,
-  decision: Schema.Union([
-    Schema.Literal("undecided"),
-    Schema.Literal("approved"),
-    Schema.Literal("rejected"),
-  ]),
-  generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  canSend: Schema.Boolean,
-  code: Schema.Union([
-    Schema.Union([
-      Schema.Literal("review_required"),
-      Schema.Literal("review_in_progress"),
-      Schema.Literal("information_required"),
-      Schema.Literal("review_rejected"),
-      Schema.Literal("identity_review_required"),
-      Schema.Literal("identity_review_rejected"),
-      Schema.Literal("identity_changed"),
+export const IdentityClearanceStatus = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    identityId: Schema.String,
+    decision: Schema.Union([
+      Schema.Literal("undecided"),
+      Schema.Literal("approved"),
+      Schema.Literal("rejected"),
     ]),
-    Schema.Null,
-  ]),
-  nextAction: Schema.Union([
-    Schema.Union([
-      Schema.Literal("wait_for_review"),
-      Schema.Literal("provide_information"),
-      Schema.Literal("verify_sending_identity"),
-      Schema.Literal("reapply"),
-      Schema.Literal("contact_support"),
+    generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    canSend: Schema.Boolean,
+    code: Schema.Union([
+      Schema.Union([
+        Schema.Literal("review_required"),
+        Schema.Literal("review_in_progress"),
+        Schema.Literal("information_required"),
+        Schema.Literal("review_rejected"),
+        Schema.Literal("identity_review_required"),
+        Schema.Literal("identity_review_rejected"),
+        Schema.Literal("identity_changed"),
+      ]),
+      Schema.Null,
     ]),
-    Schema.Null,
-  ]),
-  updatedAt: Schema.String,
-}).annotate({ identifier: "IdentityClearanceStatus" });
+    nextAction: Schema.Union([
+      Schema.Union([
+        Schema.Literal("wait_for_review"),
+        Schema.Literal("provide_information"),
+        Schema.Literal("verify_sending_identity"),
+        Schema.Literal("reapply"),
+        Schema.Literal("contact_support"),
+      ]),
+      Schema.Null,
+    ]),
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "IdentityClearanceStatus" }))();
 export type SuppressionId = string & EffectBrand.Brand<"SuppressionId">;
-export const SuppressionId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^supp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^supp_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "SuppressionId",
-  }),
-).pipe(Schema.brand("SuppressionId"));
+export const SuppressionId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^supp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^supp_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "SuppressionId",
+    }),
+  ).pipe(Schema.brand("SuppressionId")))();
 export type SuppressionCounts = {
   readonly bounce: number;
   readonly complaint: number;
   readonly unsubscribe: number;
   readonly manual: number;
 };
-export const SuppressionCounts = /* @__PURE__ */ Schema.Struct({
-  bounce: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  complaint: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  unsubscribe: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  manual: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-}).annotate({ identifier: "SuppressionCounts" });
+export const SuppressionCounts = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    bounce: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    complaint: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    unsubscribe: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    manual: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "SuppressionCounts" }))();
 export type EmailTrackingDefaults = { readonly opens: boolean; readonly clicks: boolean };
-export const EmailTrackingDefaults = /* @__PURE__ */ Schema.Struct({
-  opens: Schema.Boolean,
-  clicks: Schema.Boolean,
-}).annotate({ identifier: "EmailTrackingDefaults" });
+export const EmailTrackingDefaults = /* @__PURE__ */ (() =>
+  Schema.Struct({ opens: Schema.Boolean, clicks: Schema.Boolean }).annotate({
+    identifier: "EmailTrackingDefaults",
+  }))();
 export type TrackingRecipientEmail = string;
-export const TrackingRecipientEmail = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
-    expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-    identifier: "TrackingRecipientEmail",
-  }),
-);
+export const TrackingRecipientEmail = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
+      expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+      identifier: "TrackingRecipientEmail",
+    }),
+  ))();
 export type EmailDkimRotation = {
   readonly id: string;
   readonly domainId: EmailDomainId;
@@ -425,36 +460,37 @@ export type EmailDkimRotation = {
   readonly formerRecord: { readonly name: string; readonly type: "TXT"; readonly value: string };
   readonly minimumRetainUntil: string | null;
 };
-export const EmailDkimRotation = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  domainId: EmailDomainId,
-  phase: Schema.Union([
-    Schema.Literal("staged"),
-    Schema.Literal("cutover"),
-    Schema.Literal("complete"),
-  ]),
-  selector: Schema.String,
-  record: Schema.Struct({
-    name: Schema.String,
-    type: Schema.Literal("TXT"),
-    value: Schema.String,
-    ttl: Schema.String,
-  }),
-  formerRecord: Schema.Struct({
-    name: Schema.String,
-    type: Schema.Literal("TXT"),
-    value: Schema.String,
-  }),
-  minimumRetainUntil: Schema.Union([Schema.String, Schema.Null]).annotate({
-    description:
-      "The earliest time the former DKIM record may be removed. Keep it published at least until then so mail signed with the former key still verifies.",
-  }),
-}).annotate({ identifier: "EmailDkimRotation" });
+export const EmailDkimRotation = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    domainId: EmailDomainId,
+    phase: Schema.Union([
+      Schema.Literal("staged"),
+      Schema.Literal("cutover"),
+      Schema.Literal("complete"),
+    ]),
+    selector: Schema.String,
+    record: Schema.Struct({
+      name: Schema.String,
+      type: Schema.Literal("TXT"),
+      value: Schema.String,
+      ttl: Schema.String,
+    }),
+    formerRecord: Schema.Struct({
+      name: Schema.String,
+      type: Schema.Literal("TXT"),
+      value: Schema.String,
+    }),
+    minimumRetainUntil: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The earliest time the former DKIM record may be removed. Keep it published at least until then so mail signed with the former key still verifies.",
+    }),
+  }).annotate({ identifier: "EmailDkimRotation" }))();
 export type DomainWarmingDomainRef = { readonly id: EmailDomainId; readonly domain: string };
-export const DomainWarmingDomainRef = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-  domain: Schema.String,
-}).annotate({ identifier: "DomainWarmingDomainRef" });
+export const DomainWarmingDomainRef = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId, domain: Schema.String }).annotate({
+    identifier: "DomainWarmingDomainRef",
+  }))();
 export type BlockPage = {
   readonly items: ReadonlyArray<{
     readonly id: BlockedEmailId;
@@ -470,33 +506,34 @@ export type BlockPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const BlockPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: BlockedEmailId,
-      blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-      blockValue: Schema.String,
-      reason: Schema.String,
-      notes: Schema.Union([Schema.String, Schema.Null]),
-      isActive: Schema.Boolean,
-      blockCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      lastBlockedAt: Schema.Union([Schema.String, Schema.Null]),
-      expiresAt: Schema.Union([Schema.String, Schema.Null]),
-      createdAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "BlockPage" });
+export const BlockPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: BlockedEmailId,
+        blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+        blockValue: Schema.String,
+        reason: Schema.String,
+        notes: Schema.Union([Schema.String, Schema.Null]),
+        isActive: Schema.Boolean,
+        blockCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        lastBlockedAt: Schema.Union([Schema.String, Schema.Null]),
+        expiresAt: Schema.Union([Schema.String, Schema.Null]),
+        createdAt: Schema.String,
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "BlockPage" }))();
 export type BlockLogPage = {
   readonly items: ReadonlyArray<{
     readonly id: BlockedEmailLogId;
@@ -540,60 +577,61 @@ export type BlockLogPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const BlockLogPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: BlockedEmailLogId,
-      fromAddress: Schema.String,
-      toAddress: Schema.String,
-      subject: Schema.Union([Schema.String, Schema.Null]),
-      blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-      blockValue: Schema.String,
-      blockReason: Schema.String,
-      spfResult: Schema.Union([
-        Schema.Union([
-          Schema.Literal("pass"),
-          Schema.Literal("fail"),
-          Schema.Literal("softfail"),
-          Schema.Literal("neutral"),
-          Schema.Literal("none"),
-          Schema.Literal("policy"),
-          Schema.Literal("temperror"),
-          Schema.Literal("permerror"),
+export const BlockLogPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: BlockedEmailLogId,
+        fromAddress: Schema.String,
+        toAddress: Schema.String,
+        subject: Schema.Union([Schema.String, Schema.Null]),
+        blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+        blockValue: Schema.String,
+        blockReason: Schema.String,
+        spfResult: Schema.Union([
+          Schema.Union([
+            Schema.Literal("pass"),
+            Schema.Literal("fail"),
+            Schema.Literal("softfail"),
+            Schema.Literal("neutral"),
+            Schema.Literal("none"),
+            Schema.Literal("policy"),
+            Schema.Literal("temperror"),
+            Schema.Literal("permerror"),
+          ]),
+          Schema.Null,
         ]),
-        Schema.Null,
-      ]),
-      dkimResult: Schema.Union([
-        Schema.Union([
-          Schema.Literal("pass"),
-          Schema.Literal("fail"),
-          Schema.Literal("softfail"),
-          Schema.Literal("neutral"),
-          Schema.Literal("none"),
-          Schema.Literal("policy"),
-          Schema.Literal("temperror"),
-          Schema.Literal("permerror"),
+        dkimResult: Schema.Union([
+          Schema.Union([
+            Schema.Literal("pass"),
+            Schema.Literal("fail"),
+            Schema.Literal("softfail"),
+            Schema.Literal("neutral"),
+            Schema.Literal("none"),
+            Schema.Literal("policy"),
+            Schema.Literal("temperror"),
+            Schema.Literal("permerror"),
+          ]),
+          Schema.Null,
         ]),
-        Schema.Null,
-      ]),
-      dmarcResult: Schema.Union([
-        Schema.Union([
-          Schema.Literal("pass"),
-          Schema.Literal("fail"),
-          Schema.Literal("softfail"),
-          Schema.Literal("neutral"),
-          Schema.Literal("none"),
-          Schema.Literal("policy"),
-          Schema.Literal("temperror"),
-          Schema.Literal("permerror"),
+        dmarcResult: Schema.Union([
+          Schema.Union([
+            Schema.Literal("pass"),
+            Schema.Literal("fail"),
+            Schema.Literal("softfail"),
+            Schema.Literal("neutral"),
+            Schema.Literal("none"),
+            Schema.Literal("policy"),
+            Schema.Literal("temperror"),
+            Schema.Literal("permerror"),
+          ]),
+          Schema.Null,
         ]),
-        Schema.Null,
-      ]),
-      blockedAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "BlockLogPage" });
+        blockedAt: Schema.String,
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "BlockLogPage" }))();
 export type ReceivingStatus = {
   readonly domain: string;
   readonly receivingHost: string;
@@ -616,58 +654,36 @@ export type ReceivingStatus = {
   };
   readonly ready: boolean;
 };
-export const ReceivingStatus = /* @__PURE__ */ Schema.Struct({
-  domain: Schema.String,
-  receivingHost: Schema.String,
-  sending: Schema.Struct({
-    satisfied: Schema.Boolean,
-    phase: Schema.Union([
-      Schema.Literal("dns-setup"),
-      Schema.Literal("provisioning"),
-      Schema.Literal("verifying"),
-      Schema.Literal("ready"),
-      Schema.Literal("degraded"),
-      Schema.Literal("failed"),
-    ]),
-  }),
-  destination: Schema.Struct({
-    satisfied: Schema.Boolean,
-    endpointId: Schema.Union([WebhookEndpointId, Schema.Null]),
-    forwardingRules: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    mailboxes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-  receiving: Schema.Struct({ satisfied: Schema.Boolean, catchAll: Schema.Boolean }),
-  mx: Schema.Struct({
-    satisfied: Schema.Boolean,
-    state: Schema.Union([
-      Schema.Literal("pointing-here"),
-      Schema.Literal("elsewhere"),
-      Schema.Literal("missing"),
-      Schema.Literal("unknown"),
-    ]),
-    expected: Schema.Struct({
-      exchange: Schema.String,
-      priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+export const ReceivingStatus = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domain: Schema.String,
+    receivingHost: Schema.String,
+    sending: Schema.Struct({
+      satisfied: Schema.Boolean,
+      phase: Schema.Union([
+        Schema.Literal("dns-setup"),
+        Schema.Literal("provisioning"),
+        Schema.Literal("verifying"),
+        Schema.Literal("ready"),
+        Schema.Literal("degraded"),
+        Schema.Literal("failed"),
+      ]),
+    }),
+    destination: Schema.Struct({
+      satisfied: Schema.Boolean,
+      endpointId: Schema.Union([WebhookEndpointId, Schema.Null]),
+      forwardingRules: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      mailboxes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
         .check(
           Schema.isGreaterThanOrEqualTo(0).annotate({
             expected: "a value greater than or equal to 0",
@@ -679,8 +695,16 @@ export const ReceivingStatus = /* @__PURE__ */ Schema.Struct({
           }),
         ),
     }),
-    current: Schema.Array(
-      Schema.Struct({
+    receiving: Schema.Struct({ satisfied: Schema.Boolean, catchAll: Schema.Boolean }),
+    mx: Schema.Struct({
+      satisfied: Schema.Boolean,
+      state: Schema.Union([
+        Schema.Literal("pointing-here"),
+        Schema.Literal("elsewhere"),
+        Schema.Literal("missing"),
+        Schema.Literal("unknown"),
+      ]),
+      expected: Schema.Struct({
         exchange: Schema.String,
         priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
           .check(
@@ -694,10 +718,25 @@ export const ReceivingStatus = /* @__PURE__ */ Schema.Struct({
             }),
           ),
       }),
-    ),
-  }),
-  ready: Schema.Boolean,
-}).annotate({ identifier: "ReceivingStatus" });
+      current: Schema.Array(
+        Schema.Struct({
+          exchange: Schema.String,
+          priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(0).annotate({
+                expected: "a value greater than or equal to 0",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+        }),
+      ),
+    }),
+    ready: Schema.Boolean,
+  }).annotate({ identifier: "ReceivingStatus" }))();
 export type EmailDomainPage = {
   readonly items: ReadonlyArray<{
     readonly id: EmailDomainId;
@@ -714,34 +753,35 @@ export type EmailDomainPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const EmailDomainPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: EmailDomainId,
-      domain: Schema.String,
-      phase: Schema.Union([
-        Schema.Literal("dns-setup"),
-        Schema.Literal("provisioning"),
-        Schema.Literal("verifying"),
-        Schema.Literal("ready"),
-        Schema.Literal("degraded"),
-        Schema.Literal("failed"),
-      ]),
-      dkimSelector: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      dkimPublicKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
-        description:
-          "The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.",
+export const EmailDomainPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: EmailDomainId,
+        domain: Schema.String,
+        phase: Schema.Union([
+          Schema.Literal("dns-setup"),
+          Schema.Literal("provisioning"),
+          Schema.Literal("verifying"),
+          Schema.Literal("ready"),
+          Schema.Literal("degraded"),
+          Schema.Literal("failed"),
+        ]),
+        dkimSelector: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        dkimPublicKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+          description:
+            "The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.",
+        }),
+        isDefault: Schema.Boolean,
+        deliverability: DeliverabilityFacts,
+        series: SendsSeries,
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
       }),
-      isDefault: Schema.Boolean,
-      deliverability: DeliverabilityFacts,
-      series: SendsSeries,
-      createdAt: Schema.String,
-      updatedAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "EmailDomainPage" });
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "EmailDomainPage" }))();
 export type EmailDomainDetailed = {
   readonly id: EmailDomainId;
   readonly domain: string;
@@ -763,65 +803,66 @@ export type EmailDomainDetailed = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const EmailDomainDetailed = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-  domain: Schema.String,
-  phase: Schema.Union([
-    Schema.Literal("dns-setup"),
-    Schema.Literal("provisioning"),
-    Schema.Literal("verifying"),
-    Schema.Literal("ready"),
-    Schema.Literal("degraded"),
-    Schema.Literal("failed"),
-  ]),
-  dkimSelector: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  dkimPublicKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  dnsRecords: Schema.Array(
-    Schema.Struct({
-      type: Schema.Union([
-        Schema.Literal("A"),
-        Schema.Literal("AAAA"),
-        Schema.Literal("CNAME"),
-        Schema.Literal("MX"),
-        Schema.Literal("NS"),
-        Schema.Literal("SOA"),
-        Schema.Literal("PTR"),
-        Schema.Literal("SRV"),
-        Schema.Literal("TXT"),
-        Schema.Literal("CAA"),
-      ]),
-      name: Schema.String,
-      value: Schema.String,
-      ttl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      priority: Schema.optionalKey(
-        Schema.Union([
-          Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-            .check(
-              Schema.isGreaterThanOrEqualTo(0).annotate({
-                expected: "a value greater than or equal to 0",
-              }),
-            )
-            .check(
-              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                expected: "a value less than or equal to 9007199254740991",
-              }),
-            ),
-          Schema.Null,
+export const EmailDomainDetailed = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailDomainId,
+    domain: Schema.String,
+    phase: Schema.Union([
+      Schema.Literal("dns-setup"),
+      Schema.Literal("provisioning"),
+      Schema.Literal("verifying"),
+      Schema.Literal("ready"),
+      Schema.Literal("degraded"),
+      Schema.Literal("failed"),
+    ]),
+    dkimSelector: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    dkimPublicKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    dnsRecords: Schema.Array(
+      Schema.Struct({
+        type: Schema.Union([
+          Schema.Literal("A"),
+          Schema.Literal("AAAA"),
+          Schema.Literal("CNAME"),
+          Schema.Literal("MX"),
+          Schema.Literal("NS"),
+          Schema.Literal("SOA"),
+          Schema.Literal("PTR"),
+          Schema.Literal("SRV"),
+          Schema.Literal("TXT"),
+          Schema.Literal("CAA"),
         ]),
-      ),
+        name: Schema.String,
+        value: Schema.String,
+        ttl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        priority: Schema.optionalKey(
+          Schema.Union([
+            Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+              .check(
+                Schema.isGreaterThanOrEqualTo(0).annotate({
+                  expected: "a value greater than or equal to 0",
+                }),
+              )
+              .check(
+                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                  expected: "a value less than or equal to 9007199254740991",
+                }),
+              ),
+            Schema.Null,
+          ]),
+        ),
+      }),
+    ),
+    verifiedAt: Schema.Union([Schema.String, Schema.Null]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+      description:
+        "The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.",
     }),
-  ),
-  verifiedAt: Schema.Union([Schema.String, Schema.Null]),
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
-    description:
-      "The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.",
-  }),
-  isDefault: Schema.Boolean,
-  deliverability: DeliverabilityFacts,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "EmailDomainDetailed" });
+    isDefault: Schema.Boolean,
+    deliverability: DeliverabilityFacts,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "EmailDomainDetailed" }))();
 export type CustomTrackingStatus = {
   readonly enabled: boolean;
   readonly customTracking: {
@@ -842,35 +883,36 @@ export type CustomTrackingStatus = {
   } | null;
   readonly parentDomains: ReadonlyArray<string>;
 };
-export const CustomTrackingStatus = /* @__PURE__ */ Schema.Struct({
-  enabled: Schema.Boolean,
-  customTracking: Schema.Union([
-    Schema.Struct({
-      status: Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("caa-blocked"),
-        Schema.Literal("active"),
-        Schema.Literal("teardown-scheduled"),
-        Schema.Literal("disabled"),
-      ]),
-      label: Schema.String,
-      hostname: Schema.String,
-      parentDomain: Schema.String,
-      region: Schema.String,
-      sslStatus: Schema.Union([Schema.String, Schema.Null]),
-      certificate: Schema.Union([CustomTrackingCertificate, Schema.Null]),
-      dnsRecords: Schema.Struct({
-        tracking: Schema.Union([CustomTrackingDnsRecord, Schema.Null]),
-        dcvDelegation: Schema.Union([CustomTrackingDnsRecord, Schema.Null]),
+export const CustomTrackingStatus = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    enabled: Schema.Boolean,
+    customTracking: Schema.Union([
+      Schema.Struct({
+        status: Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("caa-blocked"),
+          Schema.Literal("active"),
+          Schema.Literal("teardown-scheduled"),
+          Schema.Literal("disabled"),
+        ]),
+        label: Schema.String,
+        hostname: Schema.String,
+        parentDomain: Schema.String,
+        region: Schema.String,
+        sslStatus: Schema.Union([Schema.String, Schema.Null]),
+        certificate: Schema.Union([CustomTrackingCertificate, Schema.Null]),
+        dnsRecords: Schema.Struct({
+          tracking: Schema.Union([CustomTrackingDnsRecord, Schema.Null]),
+          dcvDelegation: Schema.Union([CustomTrackingDnsRecord, Schema.Null]),
+        }),
+        caaBlocked: Schema.Boolean,
+        verificationErrors: Schema.Array(Schema.String),
+        teardownScheduledAt: Schema.Union([Schema.String, Schema.Null]),
       }),
-      caaBlocked: Schema.Boolean,
-      verificationErrors: Schema.Array(Schema.String),
-      teardownScheduledAt: Schema.Union([Schema.String, Schema.Null]),
-    }),
-    Schema.Null,
-  ]),
-  parentDomains: Schema.Array(Schema.String),
-}).annotate({ identifier: "CustomTrackingStatus" });
+      Schema.Null,
+    ]),
+    parentDomains: Schema.Array(Schema.String),
+  }).annotate({ identifier: "CustomTrackingStatus" }))();
 export type DomainWarmingPlan = {
   readonly id: EmailDomainWarmingPlanId;
   readonly status: "active" | "paused" | "completed";
@@ -885,34 +927,35 @@ export type DomainWarmingPlan = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const DomainWarmingPlan = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainWarmingPlanId,
-  status: Schema.Union([
-    Schema.Literal("active"),
-    Schema.Literal("paused"),
-    Schema.Literal("completed"),
-  ]),
-  identity: Schema.Union([
-    Schema.Literal("new"),
-    Schema.Literal("migrating"),
-    Schema.Literal("returning"),
-  ]),
-  initialDailyRecipients: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  dailyGrowthPercent: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  targetDailyRecipients: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  holdReason: Schema.Union([Schema.String, Schema.Null]),
-  heldAt: Schema.Union([Schema.String, Schema.Null]),
-  pausedAt: Schema.Union([Schema.String, Schema.Null]),
-  completedAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "DomainWarmingPlan" });
+export const DomainWarmingPlan = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailDomainWarmingPlanId,
+    status: Schema.Union([
+      Schema.Literal("active"),
+      Schema.Literal("paused"),
+      Schema.Literal("completed"),
+    ]),
+    identity: Schema.Union([
+      Schema.Literal("new"),
+      Schema.Literal("migrating"),
+      Schema.Literal("returning"),
+    ]),
+    initialDailyRecipients: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    dailyGrowthPercent: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    targetDailyRecipients: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    holdReason: Schema.Union([Schema.String, Schema.Null]),
+    heldAt: Schema.Union([Schema.String, Schema.Null]),
+    pausedAt: Schema.Union([Schema.String, Schema.Null]),
+    completedAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "DomainWarmingPlan" }))();
 export type DomainWarmingBatch = {
   readonly id: EmailDomainWarmingBatchId;
   readonly sequence: number;
@@ -927,35 +970,36 @@ export type DomainWarmingBatch = {
   readonly cancelledAt: string | null;
   readonly createdAt: string;
 };
-export const DomainWarmingBatch = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainWarmingBatchId,
-  sequence: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  state: Schema.Union([
-    Schema.Literal("scheduled"),
-    Schema.Literal("open"),
-    Schema.Literal("closed"),
-    Schema.Literal("cancelled"),
-  ]),
-  startsAt: Schema.String,
-  endsAt: Schema.String,
-  allowanceRecipients: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  dailyGrowthPercent: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  targetDailyRecipients: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  reservedRecipients: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  acceptedRecipients: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  cancelledAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-}).annotate({ identifier: "DomainWarmingBatch" });
+export const DomainWarmingBatch = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailDomainWarmingBatchId,
+    sequence: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    state: Schema.Union([
+      Schema.Literal("scheduled"),
+      Schema.Literal("open"),
+      Schema.Literal("closed"),
+      Schema.Literal("cancelled"),
+    ]),
+    startsAt: Schema.String,
+    endsAt: Schema.String,
+    allowanceRecipients: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    dailyGrowthPercent: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    targetDailyRecipients: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    reservedRecipients: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    acceptedRecipients: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    cancelledAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "DomainWarmingBatch" }))();
 export type DomainWarmingDecision = {
   readonly id: EmailDomainWarmingDecisionId;
   readonly kind:
@@ -972,23 +1016,24 @@ export type DomainWarmingDecision = {
   readonly note: string | null;
   readonly createdAt: string;
 };
-export const DomainWarmingDecision = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainWarmingDecisionId,
-  kind: Schema.Union([
-    Schema.Literal("plan-created"),
-    Schema.Literal("policy-updated"),
-    Schema.Literal("window-opened"),
-    Schema.Literal("window-cancelled"),
-    Schema.Literal("paused"),
-    Schema.Literal("resumed"),
-    Schema.Literal("held"),
-    Schema.Literal("completed"),
-  ]),
-  batchId: Schema.Union([EmailDomainWarmingBatchId, Schema.Null]),
-  actor: Schema.String,
-  note: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-}).annotate({ identifier: "DomainWarmingDecision" });
+export const DomainWarmingDecision = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailDomainWarmingDecisionId,
+    kind: Schema.Union([
+      Schema.Literal("plan-created"),
+      Schema.Literal("policy-updated"),
+      Schema.Literal("window-opened"),
+      Schema.Literal("window-cancelled"),
+      Schema.Literal("paused"),
+      Schema.Literal("resumed"),
+      Schema.Literal("held"),
+      Schema.Literal("completed"),
+    ]),
+    batchId: Schema.Union([EmailDomainWarmingBatchId, Schema.Null]),
+    actor: Schema.String,
+    note: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "DomainWarmingDecision" }))();
 export type DomainWarmingEvidence = {
   readonly observedAt: string;
   readonly windowHours: number;
@@ -1002,25 +1047,28 @@ export type DomainWarmingEvidence = {
   readonly verdict: "insufficient-evidence" | "healthy" | "over-threshold";
   readonly thresholdReason: string | null;
 };
-export const DomainWarmingEvidence = /* @__PURE__ */ Schema.Struct({
-  observedAt: Schema.String,
-  windowHours: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  minimumSends: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  sent: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  bounced: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  complained: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  hourly: Schema.Array(DomainWarmingWindowHour),
-  bounceThreshold: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  complaintThreshold: Schema.Finite.check(
-    Schema.isFinite().annotate({ expected: "a finite number" }),
-  ),
-  verdict: Schema.Union([
-    Schema.Literal("insufficient-evidence"),
-    Schema.Literal("healthy"),
-    Schema.Literal("over-threshold"),
-  ]),
-  thresholdReason: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "DomainWarmingEvidence" });
+export const DomainWarmingEvidence = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    observedAt: Schema.String,
+    windowHours: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    minimumSends: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    sent: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    bounced: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    complained: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    hourly: Schema.Array(DomainWarmingWindowHour),
+    bounceThreshold: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    complaintThreshold: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    verdict: Schema.Union([
+      Schema.Literal("insufficient-evidence"),
+      Schema.Literal("healthy"),
+      Schema.Literal("over-threshold"),
+    ]),
+    thresholdReason: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "DomainWarmingEvidence" }))();
 export type ForwardingRuleList = {
   readonly items: ReadonlyArray<{
     readonly id: EmailForwardingRuleId;
@@ -1038,55 +1086,56 @@ export type ForwardingRuleList = {
     readonly createdAt: string;
   }>;
 };
-export const ForwardingRuleList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: EmailForwardingRuleId,
-      name: Schema.String,
-      description: Schema.Union([Schema.String, Schema.Null]),
-      domainId: Schema.Union([EmailDomainId, Schema.Null]),
-      sourcePattern: Schema.Union([Schema.String, Schema.Null]),
-      forwardTo: Schema.Array(Schema.String),
-      preserveHeaders: Schema.Boolean,
-      priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(2147483647).annotate({
-            expected: "a value less than or equal to 2147483647",
-          }),
-        ),
-      isActive: Schema.Boolean,
-      forwardCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      failureCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      lastForwardedAt: Schema.Union([Schema.String, Schema.Null]),
-      createdAt: Schema.String,
-    }),
-  ).check(Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" })),
-}).annotate({ identifier: "ForwardingRuleList" });
+export const ForwardingRuleList = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: EmailForwardingRuleId,
+        name: Schema.String,
+        description: Schema.Union([Schema.String, Schema.Null]),
+        domainId: Schema.Union([EmailDomainId, Schema.Null]),
+        sourcePattern: Schema.Union([Schema.String, Schema.Null]),
+        forwardTo: Schema.Array(Schema.String),
+        preserveHeaders: Schema.Boolean,
+        priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(2147483647).annotate({
+              expected: "a value less than or equal to 2147483647",
+            }),
+          ),
+        isActive: Schema.Boolean,
+        forwardCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        failureCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        lastForwardedAt: Schema.Union([Schema.String, Schema.Null]),
+        createdAt: Schema.String,
+      }),
+    ).check(Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" })),
+  }).annotate({ identifier: "ForwardingRuleList" }))();
 export type ForwardingLogPage = {
   readonly items: ReadonlyArray<{
     readonly id: string;
@@ -1103,28 +1152,29 @@ export type ForwardingLogPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const ForwardingLogPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: Schema.String,
-      forwardingRuleId: Schema.Union([EmailForwardingRuleId, Schema.Null]),
-      originalFromAddress: Schema.String,
-      originalToAddress: Schema.String,
-      originalSubject: Schema.Union([Schema.String, Schema.Null]),
-      forwardedTo: Schema.Array(Schema.String),
-      status: Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("forwarded"),
-        Schema.Literal("failed"),
-      ]),
-      errorMessage: Schema.Union([Schema.String, Schema.Null]),
-      messageId: Schema.Union([MessageId, Schema.Null]),
-      forwardedAt: Schema.Union([Schema.String, Schema.Null]),
-      createdAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "ForwardingLogPage" });
+export const ForwardingLogPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: Schema.String,
+        forwardingRuleId: Schema.Union([EmailForwardingRuleId, Schema.Null]),
+        originalFromAddress: Schema.String,
+        originalToAddress: Schema.String,
+        originalSubject: Schema.Union([Schema.String, Schema.Null]),
+        forwardedTo: Schema.Array(Schema.String),
+        status: Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("forwarded"),
+          Schema.Literal("failed"),
+        ]),
+        errorMessage: Schema.Union([Schema.String, Schema.Null]),
+        messageId: Schema.Union([MessageId, Schema.Null]),
+        forwardedAt: Schema.Union([Schema.String, Schema.Null]),
+        createdAt: Schema.String,
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ForwardingLogPage" }))();
 export type OnboardingReviewStatus = {
   readonly decision: "undecided" | "approved" | "rejected";
   readonly trustTier: "screened" | "probation" | "established";
@@ -1162,71 +1212,72 @@ export type OnboardingReviewStatus = {
   readonly identities: ReadonlyArray<IdentityClearanceStatus>;
   readonly updatedAt: string | null;
 };
-export const OnboardingReviewStatus = /* @__PURE__ */ Schema.Struct({
-  decision: Schema.Union([
-    Schema.Literal("undecided"),
-    Schema.Literal("approved"),
-    Schema.Literal("rejected"),
-  ]),
-  trustTier: Schema.Union([
-    Schema.Literal("screened"),
-    Schema.Literal("probation"),
-    Schema.Literal("established"),
-  ]),
-  stage: Schema.Union([
-    Schema.Literal("collecting"),
-    Schema.Literal("automated_review"),
-    Schema.Literal("manual_review"),
-    Schema.Literal("information_requested"),
-    Schema.Literal("complete"),
-  ]),
-  generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  canSend: Schema.Boolean,
-  code: Schema.Union([
-    Schema.Union([
-      Schema.Literal("review_required"),
-      Schema.Literal("review_in_progress"),
-      Schema.Literal("information_required"),
-      Schema.Literal("review_rejected"),
-      Schema.Literal("identity_review_required"),
-      Schema.Literal("identity_review_rejected"),
-      Schema.Literal("identity_changed"),
+export const OnboardingReviewStatus = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    decision: Schema.Union([
+      Schema.Literal("undecided"),
+      Schema.Literal("approved"),
+      Schema.Literal("rejected"),
     ]),
-    Schema.Null,
-  ]),
-  nextAction: Schema.Union([
-    Schema.Union([
-      Schema.Literal("wait_for_review"),
-      Schema.Literal("provide_information"),
-      Schema.Literal("verify_sending_identity"),
-      Schema.Literal("reapply"),
-      Schema.Literal("contact_support"),
+    trustTier: Schema.Union([
+      Schema.Literal("screened"),
+      Schema.Literal("probation"),
+      Schema.Literal("established"),
     ]),
-    Schema.Null,
-  ]),
-  canReapply: Schema.Boolean,
-  informationRequest: Schema.Union([
-    Schema.Struct({
-      id: Schema.String,
-      requestedFields: Schema.Array(Schema.String),
-      requestedAt: Schema.String,
-      canRespond: Schema.Boolean,
-    }),
-    Schema.Null,
-  ]),
-  identities: Schema.Array(IdentityClearanceStatus),
-  updatedAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "OnboardingReviewStatus" });
+    stage: Schema.Union([
+      Schema.Literal("collecting"),
+      Schema.Literal("automated_review"),
+      Schema.Literal("manual_review"),
+      Schema.Literal("information_requested"),
+      Schema.Literal("complete"),
+    ]),
+    generation: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    canSend: Schema.Boolean,
+    code: Schema.Union([
+      Schema.Union([
+        Schema.Literal("review_required"),
+        Schema.Literal("review_in_progress"),
+        Schema.Literal("information_required"),
+        Schema.Literal("review_rejected"),
+        Schema.Literal("identity_review_required"),
+        Schema.Literal("identity_review_rejected"),
+        Schema.Literal("identity_changed"),
+      ]),
+      Schema.Null,
+    ]),
+    nextAction: Schema.Union([
+      Schema.Union([
+        Schema.Literal("wait_for_review"),
+        Schema.Literal("provide_information"),
+        Schema.Literal("verify_sending_identity"),
+        Schema.Literal("reapply"),
+        Schema.Literal("contact_support"),
+      ]),
+      Schema.Null,
+    ]),
+    canReapply: Schema.Boolean,
+    informationRequest: Schema.Union([
+      Schema.Struct({
+        id: Schema.String,
+        requestedFields: Schema.Array(Schema.String),
+        requestedAt: Schema.String,
+        canRespond: Schema.Boolean,
+      }),
+      Schema.Null,
+    ]),
+    identities: Schema.Array(IdentityClearanceStatus),
+    updatedAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "OnboardingReviewStatus" }))();
 export type EmailSenderPage = {
   readonly items: ReadonlyArray<{
     readonly id: EmailSenderId;
@@ -1250,43 +1301,44 @@ export type EmailSenderPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const EmailSenderPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: EmailSenderId,
-      organizationId: Schema.String,
-      email: Schema.String,
-      name: Schema.Union([Schema.String, Schema.Null]),
-      domainId: Schema.Union([EmailDomainId, Schema.Null]),
-      namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
-        description:
-          "The namespace the sender belongs to, or null at organization level. A sender on a domain takes the domain's namespace.",
+export const EmailSenderPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: EmailSenderId,
+        organizationId: Schema.String,
+        email: Schema.String,
+        name: Schema.Union([Schema.String, Schema.Null]),
+        domainId: Schema.Union([EmailDomainId, Schema.Null]),
+        namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+          description:
+            "The namespace the sender belongs to, or null at organization level. A sender on a domain takes the domain's namespace.",
+        }),
+        verificationStatus: Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("verified"),
+          Schema.Literal("failed"),
+        ]),
+        verifiedAt: Schema.Union([Schema.String, Schema.Null]),
+        verificationToken: Schema.Union([Schema.String, Schema.Null]),
+        providerLifecycle: Schema.Union([
+          Schema.Literal("provisioning"),
+          Schema.Literal("active"),
+          Schema.Literal("deleting"),
+          Schema.Literal("failed"),
+        ]),
+        providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
+        isDefault: Schema.Boolean,
+        replyToEmails: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+        deliverability: DeliverabilityFacts,
+        series: SendsSeries,
+        isActive: Schema.Boolean,
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
       }),
-      verificationStatus: Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("verified"),
-        Schema.Literal("failed"),
-      ]),
-      verifiedAt: Schema.Union([Schema.String, Schema.Null]),
-      verificationToken: Schema.Union([Schema.String, Schema.Null]),
-      providerLifecycle: Schema.Union([
-        Schema.Literal("provisioning"),
-        Schema.Literal("active"),
-        Schema.Literal("deleting"),
-        Schema.Literal("failed"),
-      ]),
-      providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
-      isDefault: Schema.Boolean,
-      replyToEmails: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-      deliverability: DeliverabilityFacts,
-      series: SendsSeries,
-      isActive: Schema.Boolean,
-      createdAt: Schema.String,
-      updatedAt: Schema.String,
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "EmailSenderPage" });
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "EmailSenderPage" }))();
 export type SuppressionEntry = {
   readonly id: SuppressionId;
   readonly email: string;
@@ -1299,23 +1351,24 @@ export type SuppressionEntry = {
   readonly expiresAt: string | null;
   readonly createdAt: string;
 };
-export const SuppressionEntry = /* @__PURE__ */ Schema.Struct({
-  id: SuppressionId,
-  email: Schema.String,
-  type: Schema.Union([
-    Schema.Literal("bounce"),
-    Schema.Literal("complaint"),
-    Schema.Literal("unsubscribe"),
-    Schema.Literal("manual"),
-  ]),
-  bounceType: Schema.Union([Schema.String, Schema.Null]),
-  bounceSubType: Schema.Union([Schema.String, Schema.Null]),
-  reason: Schema.Union([Schema.String, Schema.Null]),
-  messageId: Schema.Union([MessageId, Schema.Null]),
-  isActive: Schema.Boolean,
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-}).annotate({ identifier: "SuppressionEntry" });
+export const SuppressionEntry = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: SuppressionId,
+    email: Schema.String,
+    type: Schema.Union([
+      Schema.Literal("bounce"),
+      Schema.Literal("complaint"),
+      Schema.Literal("unsubscribe"),
+      Schema.Literal("manual"),
+    ]),
+    bounceType: Schema.Union([Schema.String, Schema.Null]),
+    bounceSubType: Schema.Union([Schema.String, Schema.Null]),
+    reason: Schema.Union([Schema.String, Schema.Null]),
+    messageId: Schema.Union([MessageId, Schema.Null]),
+    isActive: Schema.Boolean,
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "SuppressionEntry" }))();
 export type EmailRecipientTrackingPreference = {
   readonly email: TrackingRecipientEmail;
   readonly optedOut: boolean;
@@ -1323,13 +1376,14 @@ export type EmailRecipientTrackingPreference = {
   readonly createdAt: string | null;
   readonly updatedAt: string | null;
 };
-export const EmailRecipientTrackingPreference = /* @__PURE__ */ Schema.Struct({
-  email: TrackingRecipientEmail,
-  optedOut: Schema.Boolean,
-  trackingOptedOutAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.Union([Schema.String, Schema.Null]),
-  updatedAt: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "EmailRecipientTrackingPreference" });
+export const EmailRecipientTrackingPreference = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: TrackingRecipientEmail,
+    optedOut: Schema.Boolean,
+    trackingOptedOutAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.Union([Schema.String, Schema.Null]),
+    updatedAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "EmailRecipientTrackingPreference" }))();
 export type EmailDomainVerification = {
   readonly domainId: EmailDomainId;
   readonly domain: string;
@@ -1443,307 +1497,308 @@ export type EmailDomainVerification = {
   };
   readonly rotation: EmailDkimRotation | null;
 };
-export const EmailDomainVerification = /* @__PURE__ */ Schema.Struct({
-  domainId: EmailDomainId,
-  domain: Schema.String,
-  phase: Schema.Union([
-    Schema.Literal("dns-setup"),
-    Schema.Literal("provisioning"),
-    Schema.Literal("verifying"),
-    Schema.Literal("ready"),
-    Schema.Literal("degraded"),
-    Schema.Literal("failed"),
-  ]),
-  dns: Schema.Struct({
-    observed: Schema.Boolean,
-    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-          expected: "a value greater than or equal to -9007199254740991",
+export const EmailDomainVerification = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domainId: EmailDomainId,
+    domain: Schema.String,
+    phase: Schema.Union([
+      Schema.Literal("dns-setup"),
+      Schema.Literal("provisioning"),
+      Schema.Literal("verifying"),
+      Schema.Literal("ready"),
+      Schema.Literal("degraded"),
+      Schema.Literal("failed"),
+    ]),
+    dns: Schema.Struct({
+      observed: Schema.Boolean,
+      total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      satisfied: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      missing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      mismatch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      unknown: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+    requirements: Schema.Array(
+      Schema.Struct({
+        key: Schema.String,
+        record: Schema.Struct({
+          type: Schema.Union([
+            Schema.Literal("A"),
+            Schema.Literal("AAAA"),
+            Schema.Literal("CNAME"),
+            Schema.Literal("MX"),
+            Schema.Literal("NS"),
+            Schema.Literal("SOA"),
+            Schema.Literal("PTR"),
+            Schema.Literal("SRV"),
+            Schema.Literal("TXT"),
+            Schema.Literal("CAA"),
+          ]),
+          name: Schema.String,
+          value: Schema.String,
+          ttl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          priority: Schema.optionalKey(
+            Schema.Union([
+              Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+                .check(
+                  Schema.isGreaterThanOrEqualTo(0).annotate({
+                    expected: "a value greater than or equal to 0",
+                  }),
+                )
+                .check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
+              Schema.Null,
+            ]),
+          ),
         }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    satisfied: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-          expected: "a value greater than or equal to -9007199254740991",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    missing: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-          expected: "a value greater than or equal to -9007199254740991",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    mismatch: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-          expected: "a value greater than or equal to -9007199254740991",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    unknown: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-          expected: "a value greater than or equal to -9007199254740991",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-  }),
-  requirements: Schema.Array(
-    Schema.Struct({
-      key: Schema.String,
-      record: Schema.Struct({
-        type: Schema.Union([
-          Schema.Literal("A"),
-          Schema.Literal("AAAA"),
-          Schema.Literal("CNAME"),
-          Schema.Literal("MX"),
-          Schema.Literal("NS"),
-          Schema.Literal("SOA"),
-          Schema.Literal("PTR"),
-          Schema.Literal("SRV"),
-          Schema.Literal("TXT"),
-          Schema.Literal("CAA"),
+        status: Schema.Union([
+          Schema.Literal("satisfied"),
+          Schema.Literal("missing"),
+          Schema.Literal("mismatch"),
+          Schema.Literal("unknown"),
         ]),
-        name: Schema.String,
-        value: Schema.String,
-        ttl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        priority: Schema.optionalKey(
+        evidence: Schema.Array(
           Schema.Union([
-            Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-              .check(
-                Schema.isGreaterThanOrEqualTo(0).annotate({
-                  expected: "a value greater than or equal to 0",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
+            Schema.TaggedStruct("PublicDns", {
+              resolver: Schema.String,
+              status: Schema.Union([
+                Schema.Literal("satisfied"),
+                Schema.Literal("missing"),
+                Schema.Literal("mismatch"),
+                Schema.Literal("unknown"),
+              ]),
+              values: Schema.Array(Schema.String),
+              detail: Schema.Union([Schema.String, Schema.Null]),
+              observedAt: Schema.String,
+            }),
+            Schema.TaggedStruct("Provider", {
+              provider: Schema.String,
+              status: Schema.Union([
+                Schema.Literal("satisfied"),
+                Schema.Literal("missing"),
+                Schema.Literal("mismatch"),
+                Schema.Literal("unknown"),
+              ]),
+              values: Schema.Array(Schema.String),
+              detail: Schema.Union([Schema.String, Schema.Null]),
+              observedAt: Schema.String,
+            }),
+            Schema.TaggedStruct("Host", {
+              source: Schema.String,
+              status: Schema.Union([
+                Schema.Literal("ok"),
+                Schema.Literal("pending"),
+                Schema.Literal("failed"),
+              ]),
+              label: Schema.String,
+              detail: Schema.Union([Schema.String, Schema.Null]),
+              observedAt: Schema.String,
+            }),
+          ]),
+        ),
+      }),
+    ),
+    provider: Schema.Union([
+      Schema.Struct({
+        identity: Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("verified"),
+          Schema.Literal("failed"),
+          Schema.Literal("unknown"),
+        ]),
+        dkim: Schema.optionalKey(
+          Schema.Union([
+            Schema.Union([
+              Schema.Literal("pending"),
+              Schema.Literal("verified"),
+              Schema.Literal("failed"),
+              Schema.Literal("unknown"),
+            ]),
+            Schema.Null,
+          ]),
+        ),
+        mailFrom: Schema.optionalKey(
+          Schema.Union([
+            Schema.Union([
+              Schema.Literal("pending"),
+              Schema.Literal("verified"),
+              Schema.Literal("failed"),
+              Schema.Literal("unknown"),
+            ]),
             Schema.Null,
           ]),
         ),
       }),
+      Schema.Null,
+    ]),
+    operationId: Schema.Union([OperationId, Schema.Null]),
+    checkedAt: Schema.Union([Schema.String, Schema.Null]),
+    nextCheckAt: Schema.Union([Schema.String, Schema.Null]),
+    failure: Schema.Union([
+      Schema.Struct({ code: Schema.String, message: Schema.String, failedAt: Schema.String }),
+      Schema.Null,
+    ]),
+    provisioning: EmailDomainProvisioningExecution,
+    health: Schema.Struct({
+      actionOwner: Schema.Union([
+        Schema.Literal("customer"),
+        Schema.Literal("samva"),
+        Schema.Literal("upstream"),
+        Schema.Literal("none"),
+      ]),
+      action: Schema.String,
+      freshness: Schema.Union([
+        Schema.Literal("current"),
+        Schema.Literal("stale"),
+        Schema.Literal("unknown"),
+      ]),
+      observedAt: Schema.Union([Schema.String, Schema.Null]),
+      staleAt: Schema.Union([Schema.String, Schema.Null]),
+      nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
+      reason: Schema.Union([
+        Schema.Literal("ready"),
+        Schema.Literal("dns-action-required"),
+        Schema.Literal("dns-unavailable"),
+        Schema.Literal("verification-pending"),
+        Schema.Literal("verification-failed"),
+        Schema.Literal("samva-repair"),
+        Schema.Literal("signing-custody-action-required"),
+        Schema.Literal("ownership-conflict"),
+        Schema.Literal("inactive"),
+        Schema.Literal("observation-stale"),
+        Schema.Literal("observation-unknown"),
+      ]),
+    }),
+    sending: Schema.Struct({
+      actionOwner: Schema.Union([
+        Schema.Literal("customer"),
+        Schema.Literal("samva"),
+        Schema.Literal("upstream"),
+        Schema.Literal("none"),
+      ]),
+      action: Schema.String,
+      freshness: Schema.Union([
+        Schema.Literal("current"),
+        Schema.Literal("stale"),
+        Schema.Literal("unknown"),
+      ]),
+      observedAt: Schema.Union([Schema.String, Schema.Null]),
+      staleAt: Schema.Union([Schema.String, Schema.Null]),
+      nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
       status: Schema.Union([
-        Schema.Literal("satisfied"),
+        Schema.Literal("ready"),
+        Schema.Literal("blocked"),
+        Schema.Literal("unknown"),
+      ]),
+      reason: Schema.Union([
+        Schema.Literal("domain-not-ready"),
+        Schema.Literal("domain-observation-stale"),
+        Schema.Literal("operator-paused"),
+        Schema.Literal("sending-paused"),
+        Schema.Literal("sending-status-unknown"),
+        Schema.Literal("ready"),
+      ]),
+    }).annotate({
+      description:
+        "Whether the domain, the organization, and its sending account are healthy enough to send, as last observed. Ready does not guarantee that a particular send is accepted.",
+    }),
+    dmarc: Schema.Struct({
+      status: Schema.Union([
+        Schema.Literal("valid"),
         Schema.Literal("missing"),
-        Schema.Literal("mismatch"),
+        Schema.Literal("invalid"),
+        Schema.Literal("multiple"),
         Schema.Literal("unknown"),
       ]),
-      evidence: Schema.Array(
+      source: Schema.Union([
+        Schema.Literal("direct"),
+        Schema.Literal("organizational"),
+        Schema.Literal("none"),
+      ]),
+      policyDomain: Schema.Union([Schema.String, Schema.Null]),
+      policy: Schema.Union([
         Schema.Union([
-          Schema.TaggedStruct("PublicDns", {
-            resolver: Schema.String,
-            status: Schema.Union([
-              Schema.Literal("satisfied"),
-              Schema.Literal("missing"),
-              Schema.Literal("mismatch"),
-              Schema.Literal("unknown"),
-            ]),
-            values: Schema.Array(Schema.String),
-            detail: Schema.Union([Schema.String, Schema.Null]),
-            observedAt: Schema.String,
-          }),
-          Schema.TaggedStruct("Provider", {
-            provider: Schema.String,
-            status: Schema.Union([
-              Schema.Literal("satisfied"),
-              Schema.Literal("missing"),
-              Schema.Literal("mismatch"),
-              Schema.Literal("unknown"),
-            ]),
-            values: Schema.Array(Schema.String),
-            detail: Schema.Union([Schema.String, Schema.Null]),
-            observedAt: Schema.String,
-          }),
-          Schema.TaggedStruct("Host", {
-            source: Schema.String,
-            status: Schema.Union([
-              Schema.Literal("ok"),
-              Schema.Literal("pending"),
-              Schema.Literal("failed"),
-            ]),
-            label: Schema.String,
-            detail: Schema.Union([Schema.String, Schema.Null]),
-            observedAt: Schema.String,
-          }),
+          Schema.Literal("none"),
+          Schema.Literal("quarantine"),
+          Schema.Literal("reject"),
         ]),
-      ),
+        Schema.Null,
+      ]),
+      subdomainPolicy: Schema.Union([
+        Schema.Union([
+          Schema.Literal("none"),
+          Schema.Literal("quarantine"),
+          Schema.Literal("reject"),
+        ]),
+        Schema.Null,
+      ]),
+      effectivePolicy: Schema.Union([
+        Schema.Union([
+          Schema.Literal("none"),
+          Schema.Literal("quarantine"),
+          Schema.Literal("reject"),
+        ]),
+        Schema.Null,
+      ]),
+      observedAt: Schema.Union([Schema.String, Schema.Null]),
+      staleAt: Schema.Union([Schema.String, Schema.Null]),
+      guidance: Schema.String,
     }),
-  ),
-  provider: Schema.Union([
-    Schema.Struct({
-      identity: Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("verified"),
-        Schema.Literal("failed"),
-        Schema.Literal("unknown"),
-      ]),
-      dkim: Schema.optionalKey(
-        Schema.Union([
-          Schema.Union([
-            Schema.Literal("pending"),
-            Schema.Literal("verified"),
-            Schema.Literal("failed"),
-            Schema.Literal("unknown"),
-          ]),
-          Schema.Null,
-        ]),
-      ),
-      mailFrom: Schema.optionalKey(
-        Schema.Union([
-          Schema.Union([
-            Schema.Literal("pending"),
-            Schema.Literal("verified"),
-            Schema.Literal("failed"),
-            Schema.Literal("unknown"),
-          ]),
-          Schema.Null,
-        ]),
-      ),
-    }),
-    Schema.Null,
-  ]),
-  operationId: Schema.Union([OperationId, Schema.Null]),
-  checkedAt: Schema.Union([Schema.String, Schema.Null]),
-  nextCheckAt: Schema.Union([Schema.String, Schema.Null]),
-  failure: Schema.Union([
-    Schema.Struct({ code: Schema.String, message: Schema.String, failedAt: Schema.String }),
-    Schema.Null,
-  ]),
-  provisioning: EmailDomainProvisioningExecution,
-  health: Schema.Struct({
-    actionOwner: Schema.Union([
-      Schema.Literal("customer"),
-      Schema.Literal("samva"),
-      Schema.Literal("upstream"),
-      Schema.Literal("none"),
-    ]),
-    action: Schema.String,
-    freshness: Schema.Union([
-      Schema.Literal("current"),
-      Schema.Literal("stale"),
-      Schema.Literal("unknown"),
-    ]),
-    observedAt: Schema.Union([Schema.String, Schema.Null]),
-    staleAt: Schema.Union([Schema.String, Schema.Null]),
-    nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
-    reason: Schema.Union([
-      Schema.Literal("ready"),
-      Schema.Literal("dns-action-required"),
-      Schema.Literal("dns-unavailable"),
-      Schema.Literal("verification-pending"),
-      Schema.Literal("verification-failed"),
-      Schema.Literal("samva-repair"),
-      Schema.Literal("signing-custody-action-required"),
-      Schema.Literal("ownership-conflict"),
-      Schema.Literal("inactive"),
-      Schema.Literal("observation-stale"),
-      Schema.Literal("observation-unknown"),
-    ]),
-  }),
-  sending: Schema.Struct({
-    actionOwner: Schema.Union([
-      Schema.Literal("customer"),
-      Schema.Literal("samva"),
-      Schema.Literal("upstream"),
-      Schema.Literal("none"),
-    ]),
-    action: Schema.String,
-    freshness: Schema.Union([
-      Schema.Literal("current"),
-      Schema.Literal("stale"),
-      Schema.Literal("unknown"),
-    ]),
-    observedAt: Schema.Union([Schema.String, Schema.Null]),
-    staleAt: Schema.Union([Schema.String, Schema.Null]),
-    nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
-    status: Schema.Union([
-      Schema.Literal("ready"),
-      Schema.Literal("blocked"),
-      Schema.Literal("unknown"),
-    ]),
-    reason: Schema.Union([
-      Schema.Literal("domain-not-ready"),
-      Schema.Literal("domain-observation-stale"),
-      Schema.Literal("operator-paused"),
-      Schema.Literal("sending-paused"),
-      Schema.Literal("sending-status-unknown"),
-      Schema.Literal("ready"),
-    ]),
-  }).annotate({
-    description:
-      "Whether the domain, the organization, and its sending account are healthy enough to send, as last observed. Ready does not guarantee that a particular send is accepted.",
-  }),
-  dmarc: Schema.Struct({
-    status: Schema.Union([
-      Schema.Literal("valid"),
-      Schema.Literal("missing"),
-      Schema.Literal("invalid"),
-      Schema.Literal("multiple"),
-      Schema.Literal("unknown"),
-    ]),
-    source: Schema.Union([
-      Schema.Literal("direct"),
-      Schema.Literal("organizational"),
-      Schema.Literal("none"),
-    ]),
-    policyDomain: Schema.Union([Schema.String, Schema.Null]),
-    policy: Schema.Union([
-      Schema.Union([
-        Schema.Literal("none"),
-        Schema.Literal("quarantine"),
-        Schema.Literal("reject"),
-      ]),
-      Schema.Null,
-    ]),
-    subdomainPolicy: Schema.Union([
-      Schema.Union([
-        Schema.Literal("none"),
-        Schema.Literal("quarantine"),
-        Schema.Literal("reject"),
-      ]),
-      Schema.Null,
-    ]),
-    effectivePolicy: Schema.Union([
-      Schema.Union([
-        Schema.Literal("none"),
-        Schema.Literal("quarantine"),
-        Schema.Literal("reject"),
-      ]),
-      Schema.Null,
-    ]),
-    observedAt: Schema.Union([Schema.String, Schema.Null]),
-    staleAt: Schema.Union([Schema.String, Schema.Null]),
-    guidance: Schema.String,
-  }),
-  rotation: Schema.Union([EmailDkimRotation, Schema.Null]),
-}).annotate({ identifier: "EmailDomainVerification" });
+    rotation: Schema.Union([EmailDkimRotation, Schema.Null]),
+  }).annotate({ identifier: "EmailDomainVerification" }))();
 export type DomainWarming = {
   readonly domain: DomainWarmingDomainRef;
   readonly plan: DomainWarmingPlan | null;
@@ -1752,48 +1807,54 @@ export type DomainWarming = {
   readonly evidence: DomainWarmingEvidence;
   readonly holds: DomainWarmingHolds;
 };
-export const DomainWarming = /* @__PURE__ */ Schema.Struct({
-  domain: DomainWarmingDomainRef,
-  plan: Schema.Union([DomainWarmingPlan, Schema.Null]),
-  batches: Schema.Array(DomainWarmingBatch),
-  decisions: Schema.Array(DomainWarmingDecision),
-  evidence: DomainWarmingEvidence,
-  holds: DomainWarmingHolds,
-}).annotate({ identifier: "DomainWarming" });
+export const DomainWarming = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domain: DomainWarmingDomainRef,
+    plan: Schema.Union([DomainWarmingPlan, Schema.Null]),
+    batches: Schema.Array(DomainWarmingBatch),
+    decisions: Schema.Array(DomainWarmingDecision),
+    evidence: DomainWarmingEvidence,
+    holds: DomainWarmingHolds,
+  }).annotate({ identifier: "DomainWarming" }))();
 export type SuppressionPage = {
   readonly items: ReadonlyArray<SuppressionEntry>;
   readonly nextCursor: string | null;
 };
-export const SuppressionPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(SuppressionEntry),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "SuppressionPage" });
+export const SuppressionPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(SuppressionEntry),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "SuppressionPage" }))();
 export type EmailListBlocksQuery = {
   readonly blockType?: "email" | "domain" | null;
   readonly isActive?: boolean | null;
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const EmailListBlocksQuery = /* @__PURE__ */ Schema.Struct({
-  blockType: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]), Schema.Null]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const EmailListBlocksQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    blockType: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+        Schema.Null,
+      ]),
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type EmailListBlocks200 = BlockPage;
 export const EmailListBlocks200 = BlockPage;
 export type EmailListBlocks401 = UnauthorizedError;
@@ -1813,13 +1874,14 @@ export type EmailAddBlockRequestJson = {
   readonly notes?: string | null;
   readonly expiresAt?: string | null;
 };
-export const EmailAddBlockRequestJson = /* @__PURE__ */ Schema.Struct({
-  blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-  blockValue: Schema.String,
-  reason: Schema.String,
-  notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const EmailAddBlockRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+    blockValue: Schema.String,
+    reason: Schema.String,
+    notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type EmailAddBlock201 = {
   readonly id: BlockedEmailId;
   readonly blockType: "email" | "domain";
@@ -1830,16 +1892,17 @@ export type EmailAddBlock201 = {
   readonly expiresAt: string | null;
   readonly createdAt: string;
 };
-export const EmailAddBlock201 = /* @__PURE__ */ Schema.Struct({
-  id: BlockedEmailId,
-  blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-  blockValue: Schema.String,
-  reason: Schema.String,
-  notes: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-});
+export const EmailAddBlock201 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: BlockedEmailId,
+    blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+    blockValue: Schema.String,
+    reason: Schema.String,
+    notes: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }))();
 export type EmailAddBlock401 = UnauthorizedError;
 export const EmailAddBlock401 = UnauthorizedError;
 export type EmailAddBlock403 = ForbiddenError;
@@ -1853,7 +1916,8 @@ export const EmailAddBlock500 = InternalError;
 export type EmailAddBlock504 = GatewayTimeoutError;
 export const EmailAddBlock504 = GatewayTimeoutError;
 export type EmailRemoveBlockPathParams = { readonly id: BlockedEmailId };
-export const EmailRemoveBlockPathParams = /* @__PURE__ */ Schema.Struct({ id: BlockedEmailId });
+export const EmailRemoveBlockPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: BlockedEmailId }))();
 export type EmailRemoveBlock200 = SuccessResult;
 export const EmailRemoveBlock200 = SuccessResult;
 export type EmailRemoveBlock401 = UnauthorizedError;
@@ -1869,21 +1933,23 @@ export const EmailRemoveBlock500 = InternalError;
 export type EmailRemoveBlock504 = GatewayTimeoutError;
 export const EmailRemoveBlock504 = GatewayTimeoutError;
 export type EmailUpdateBlockPathParams = { readonly id: BlockedEmailId };
-export const EmailUpdateBlockPathParams = /* @__PURE__ */ Schema.Struct({ id: BlockedEmailId });
+export const EmailUpdateBlockPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: BlockedEmailId }))();
 export type EmailUpdateBlockRequestJson = {
   readonly reason?: string | null;
   readonly notes?: string | null;
   readonly isActive?: boolean | null;
   readonly expiresAt?: string | null | null;
 };
-export const EmailUpdateBlockRequestJson = /* @__PURE__ */ Schema.Struct({
-  reason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  expiresAt: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-  ),
-});
+export const EmailUpdateBlockRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    reason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    expiresAt: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+  }))();
 export type EmailUpdateBlock200 = {
   readonly id: BlockedEmailId;
   readonly blockType: "email" | "domain";
@@ -1894,16 +1960,17 @@ export type EmailUpdateBlock200 = {
   readonly expiresAt: string | null;
   readonly updatedAt: string;
 };
-export const EmailUpdateBlock200 = /* @__PURE__ */ Schema.Struct({
-  id: BlockedEmailId,
-  blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-  blockValue: Schema.String,
-  reason: Schema.String,
-  notes: Schema.Union([Schema.String, Schema.Null]),
-  isActive: Schema.Boolean,
-  expiresAt: Schema.Union([Schema.String, Schema.Null]),
-  updatedAt: Schema.String,
-});
+export const EmailUpdateBlock200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: BlockedEmailId,
+    blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+    blockValue: Schema.String,
+    reason: Schema.String,
+    notes: Schema.Union([Schema.String, Schema.Null]),
+    isActive: Schema.Boolean,
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+    updatedAt: Schema.String,
+  }))();
 export type EmailUpdateBlock401 = UnauthorizedError;
 export const EmailUpdateBlock401 = UnauthorizedError;
 export type EmailUpdateBlock403 = ForbiddenError;
@@ -1917,9 +1984,8 @@ export const EmailUpdateBlock500 = InternalError;
 export type EmailUpdateBlock504 = GatewayTimeoutError;
 export const EmailUpdateBlock504 = GatewayTimeoutError;
 export type EmailCheckBlockedRequestJson = { readonly emailAddress: string };
-export const EmailCheckBlockedRequestJson = /* @__PURE__ */ Schema.Struct({
-  emailAddress: Schema.String,
-});
+export const EmailCheckBlockedRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ emailAddress: Schema.String }))();
 export type EmailCheckBlocked200 = {
   readonly isBlocked: boolean;
   readonly blockingRule: {
@@ -1931,20 +1997,21 @@ export type EmailCheckBlocked200 = {
   } | null;
   readonly reason: string | null;
 };
-export const EmailCheckBlocked200 = /* @__PURE__ */ Schema.Struct({
-  isBlocked: Schema.Boolean,
-  blockingRule: Schema.Union([
-    Schema.Struct({
-      id: BlockedEmailId,
-      blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-      blockValue: Schema.String,
-      reason: Schema.String,
-      expiresAt: Schema.Union([Schema.String, Schema.Null]),
-    }),
-    Schema.Null,
-  ]),
-  reason: Schema.Union([Schema.String, Schema.Null]),
-});
+export const EmailCheckBlocked200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    isBlocked: Schema.Boolean,
+    blockingRule: Schema.Union([
+      Schema.Struct({
+        id: BlockedEmailId,
+        blockType: Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
+        blockValue: Schema.String,
+        reason: Schema.String,
+        expiresAt: Schema.Union([Schema.String, Schema.Null]),
+      }),
+      Schema.Null,
+    ]),
+    reason: Schema.Union([Schema.String, Schema.Null]),
+  }))();
 export type EmailCheckBlocked401 = UnauthorizedError;
 export const EmailCheckBlocked401 = UnauthorizedError;
 export type EmailCheckBlocked403 = ForbiddenError;
@@ -1963,26 +2030,27 @@ export type EmailGetBlockLogsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const EmailGetBlockLogsQuery = /* @__PURE__ */ Schema.Struct({
-  blockedEmailId: Schema.optionalKey(Schema.Union([BlockedEmailId, Schema.Null])),
-  fromAddress: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const EmailGetBlockLogsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    blockedEmailId: Schema.optionalKey(Schema.Union([BlockedEmailId, Schema.Null])),
+    fromAddress: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type EmailGetBlockLogs200 = BlockLogPage;
 export const EmailGetBlockLogs200 = BlockLogPage;
 export type EmailGetBlockLogs401 = UnauthorizedError;
@@ -1996,29 +2064,31 @@ export const EmailGetBlockLogs500 = InternalError;
 export type EmailGetBlockLogs504 = GatewayTimeoutError;
 export const EmailGetBlockLogs504 = GatewayTimeoutError;
 export type EmailGetCatchAllConfigQuery = { readonly domainId: EmailDomainId };
-export const EmailGetCatchAllConfigQuery = /* @__PURE__ */ Schema.Struct({
-  domainId: EmailDomainId,
-});
+export const EmailGetCatchAllConfigQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({ domainId: EmailDomainId }))();
 export type EmailGetCatchAllConfig200 = {
   readonly enabled: boolean;
   readonly endpointId: WebhookEndpointId | null;
   readonly emailCount: number;
   readonly lastEmailAt: string | null;
 };
-export const EmailGetCatchAllConfig200 = /* @__PURE__ */ Schema.Struct({
-  enabled: Schema.Boolean,
-  endpointId: Schema.Union([WebhookEndpointId, Schema.Null]),
-  emailCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  lastEmailAt: Schema.Union([Schema.String, Schema.Null]),
-});
+export const EmailGetCatchAllConfig200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    enabled: Schema.Boolean,
+    endpointId: Schema.Union([WebhookEndpointId, Schema.Null]),
+    emailCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    lastEmailAt: Schema.Union([Schema.String, Schema.Null]),
+  }))();
 export type EmailGetCatchAllConfig401 = UnauthorizedError;
 export const EmailGetCatchAllConfig401 = UnauthorizedError;
 export type EmailGetCatchAllConfig403 = ForbiddenError;
@@ -2035,14 +2105,14 @@ export type EmailUpdateCatchAllConfigRequestJson = {
   readonly domainId: EmailDomainId;
   readonly endpointId?: WebhookEndpointId | null;
 };
-export const EmailUpdateCatchAllConfigRequestJson = /* @__PURE__ */ Schema.Struct({
-  domainId: EmailDomainId,
-  endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
-});
+export const EmailUpdateCatchAllConfigRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domainId: EmailDomainId,
+    endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
+  }))();
 export type EmailUpdateCatchAllConfig200 = { readonly success: true };
-export const EmailUpdateCatchAllConfig200 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Literal(true),
-});
+export const EmailUpdateCatchAllConfig200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Literal(true) }))();
 export type EmailUpdateCatchAllConfig401 = UnauthorizedError;
 export const EmailUpdateCatchAllConfig401 = UnauthorizedError;
 export type EmailUpdateCatchAllConfig403 = ForbiddenError;
@@ -2060,11 +2130,12 @@ export type EmailGetCatchAllStatsQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const EmailGetCatchAllStatsQuery = /* @__PURE__ */ Schema.Struct({
-  domainId: EmailDomainId,
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const EmailGetCatchAllStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domainId: EmailDomainId,
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type EmailGetCatchAllStats200 = {
   readonly domain: string;
   readonly isCatchAllEnabled: boolean;
@@ -2077,41 +2148,46 @@ export type EmailGetCatchAllStats200 = {
     readonly avgPerDay: number;
   } | null;
 };
-export const EmailGetCatchAllStats200 = /* @__PURE__ */ Schema.Struct({
-  domain: Schema.String,
-  isCatchAllEnabled: Schema.Boolean,
-  catchAllEmailCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  catchAllLastEmailAt: Schema.Union([Schema.String, Schema.Null]),
-  timeRange: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        emailsReceived: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(0).annotate({
-              expected: "a value greater than or equal to 0",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
+export const EmailGetCatchAllStats200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domain: Schema.String,
+    isCatchAllEnabled: Schema.Boolean,
+    catchAllEmailCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    catchAllLastEmailAt: Schema.Union([Schema.String, Schema.Null]),
+    timeRange: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          emailsReceived: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+            .check(
+              Schema.isGreaterThanOrEqualTo(0).annotate({
+                expected: "a value greater than or equal to 0",
+              }),
+            )
+            .check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+          firstEmail: Schema.Union([Schema.String, Schema.Null]),
+          lastEmail: Schema.Union([Schema.String, Schema.Null]),
+          avgPerDay: Schema.Finite.check(
+            Schema.isFinite().annotate({ expected: "a finite number" }),
           ),
-        firstEmail: Schema.Union([Schema.String, Schema.Null]),
-        lastEmail: Schema.Union([Schema.String, Schema.Null]),
-        avgPerDay: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      }),
-      Schema.Null,
-    ]),
-  ),
-});
+        }),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailGetCatchAllStats401 = UnauthorizedError;
 export const EmailGetCatchAllStats401 = UnauthorizedError;
 export type EmailGetCatchAllStats403 = ForbiddenError;
@@ -2130,24 +2206,25 @@ export type EmailListDomainsQuery = {
   readonly sendable?: true | null;
   readonly namespaceId?: NamespaceId | null;
 };
-export const EmailListDomainsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  sendable: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-});
+export const EmailListDomainsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    sendable: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+  }))();
 export type EmailListDomains200 = EmailDomainPage;
 export const EmailListDomains200 = EmailDomainPage;
 export type EmailListDomains401 = UnauthorizedError;
@@ -2165,16 +2242,17 @@ export type EmailAddDomainRequestJson = {
   readonly connection?: { readonly connectionId: string; readonly zone: string } | null;
   readonly namespaceId?: NamespaceId | null;
 };
-export const EmailAddDomainRequestJson = /* @__PURE__ */ Schema.Struct({
-  domain: Schema.String,
-  connection: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({ connectionId: Schema.String, zone: Schema.String }),
-      Schema.Null,
-    ]),
-  ),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-});
+export const EmailAddDomainRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domain: Schema.String,
+    connection: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({ connectionId: Schema.String, zone: Schema.String }),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+  }))();
 export type EmailAddDomain201 = EmailDomainDetailed;
 export const EmailAddDomain201 = EmailDomainDetailed;
 export type EmailAddDomain401 = UnauthorizedError;
@@ -2194,14 +2272,13 @@ export const EmailAddDomain429 = RateLimitedError;
 export type EmailAddDomain500 = InternalError;
 export const EmailAddDomain500 = InternalError;
 export type EmailAddDomain502 = EmailChannelError | BillingProviderError;
-export const EmailAddDomain502 = /* @__PURE__ */ Schema.Union([
-  EmailChannelError,
-  BillingProviderError,
-]);
+export const EmailAddDomain502 = /* @__PURE__ */ (() =>
+  Schema.Union([EmailChannelError, BillingProviderError]))();
 export type EmailAddDomain504 = GatewayTimeoutError;
 export const EmailAddDomain504 = GatewayTimeoutError;
 export type EmailGetDomainByIdPathParams = { readonly id: EmailDomainId };
-export const EmailGetDomainByIdPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailGetDomainByIdPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainById200 = EmailDomainDetailed;
 export const EmailGetDomainById200 = EmailDomainDetailed;
 export type EmailGetDomainById401 = UnauthorizedError;
@@ -2217,7 +2294,8 @@ export const EmailGetDomainById500 = InternalError;
 export type EmailGetDomainById504 = GatewayTimeoutError;
 export const EmailGetDomainById504 = GatewayTimeoutError;
 export type EmailRemoveDomainPathParams = { readonly id: EmailDomainId };
-export const EmailRemoveDomainPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailRemoveDomainPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailRemoveDomain200 = SuccessResult;
 export const EmailRemoveDomain200 = SuccessResult;
 export type EmailRemoveDomain401 = UnauthorizedError;
@@ -2231,16 +2309,13 @@ export const EmailRemoveDomain422 = ValidationError;
 export type EmailRemoveDomain500 = InternalError;
 export const EmailRemoveDomain500 = InternalError;
 export type EmailRemoveDomain502 = EmailChannelError | BillingProviderError;
-export const EmailRemoveDomain502 = /* @__PURE__ */ Schema.Union([
-  EmailChannelError,
-  BillingProviderError,
-]);
+export const EmailRemoveDomain502 = /* @__PURE__ */ (() =>
+  Schema.Union([EmailChannelError, BillingProviderError]))();
 export type EmailRemoveDomain504 = GatewayTimeoutError;
 export const EmailRemoveDomain504 = GatewayTimeoutError;
 export type EmailUpdateDomainConfigPathParams = { readonly id: EmailDomainId };
-export const EmailUpdateDomainConfigPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailUpdateDomainConfigPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailUpdateDomainConfigRequestJson = {
   readonly openTracking?: boolean | null | null;
   readonly clickTracking?: boolean | null | null;
@@ -2249,34 +2324,35 @@ export type EmailUpdateDomainConfigRequestJson = {
   readonly footerEnabled?: boolean | null | null;
   readonly brandSlug?: string | null | null;
 };
-export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ Schema.Struct({
-  openTracking: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-  ),
-  clickTracking: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-  ),
-  replyTo: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-  ),
-  topicId: Schema.optionalKey(Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null])),
-  footerEnabled: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-  ),
-  brandSlug: Schema.optionalKey(
-    Schema.Union([
+export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    openTracking: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
+    ),
+    clickTracking: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
+    ),
+    replyTo: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+    ),
+    topicId: Schema.optionalKey(Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null])),
+    footerEnabled: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
+    ),
+    brandSlug: Schema.optionalKey(
       Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-          }),
-        ),
+        Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+            }),
+          ),
+          Schema.Null,
+        ]),
         Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-});
+    ),
+  }))();
 export type EmailUpdateDomainConfig200 = {
   readonly id: EmailDomainId;
   readonly openTracking: boolean | null;
@@ -2286,22 +2362,23 @@ export type EmailUpdateDomainConfig200 = {
   readonly footerEnabled: boolean | null;
   readonly brandSlug: string | null;
 };
-export const EmailUpdateDomainConfig200 = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-  openTracking: Schema.Union([Schema.Boolean, Schema.Null]),
-  clickTracking: Schema.Union([Schema.Boolean, Schema.Null]),
-  replyTo: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  topicId: Schema.Union([TopicId, Schema.Null]),
-  footerEnabled: Schema.Union([Schema.Boolean, Schema.Null]),
-  brandSlug: Schema.Union([
-    Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-      }),
-    ),
-    Schema.Null,
-  ]),
-});
+export const EmailUpdateDomainConfig200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailDomainId,
+    openTracking: Schema.Union([Schema.Boolean, Schema.Null]),
+    clickTracking: Schema.Union([Schema.Boolean, Schema.Null]),
+    replyTo: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    topicId: Schema.Union([TopicId, Schema.Null]),
+    footerEnabled: Schema.Union([Schema.Boolean, Schema.Null]),
+    brandSlug: Schema.Union([
+      Schema.String.check(
+        Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+        }),
+      ),
+      Schema.Null,
+    ]),
+  }))();
 export type EmailUpdateDomainConfig401 = UnauthorizedError;
 export const EmailUpdateDomainConfig401 = UnauthorizedError;
 export type EmailUpdateDomainConfig403 = ForbiddenError;
@@ -2315,9 +2392,8 @@ export const EmailUpdateDomainConfig500 = InternalError;
 export type EmailUpdateDomainConfig504 = GatewayTimeoutError;
 export const EmailUpdateDomainConfig504 = GatewayTimeoutError;
 export type EmailGetCustomTrackingPathParams = { readonly id: EmailDomainId };
-export const EmailGetCustomTrackingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailGetCustomTrackingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetCustomTracking200 = CustomTrackingStatus;
 export const EmailGetCustomTracking200 = CustomTrackingStatus;
 export type EmailGetCustomTracking401 = UnauthorizedError;
@@ -2333,32 +2409,32 @@ export const EmailGetCustomTracking500 = InternalError;
 export type EmailGetCustomTracking504 = GatewayTimeoutError;
 export const EmailGetCustomTracking504 = GatewayTimeoutError;
 export type EmailEnableCustomTrackingPathParams = { readonly id: EmailDomainId };
-export const EmailEnableCustomTrackingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailEnableCustomTrackingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailEnableCustomTrackingRequestJson = {
   readonly label?: string | null;
   readonly parentDomain?: string | null;
 };
-export const EmailEnableCustomTrackingRequestJson = /* @__PURE__ */ Schema.Struct({
-  label: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description: "First label of the tracking host. Defaults to `track`.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-  parentDomain: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Domain the tracking host sits directly under: the sending domain (the default) or one of its parents up to its registrable domain, listed in `parentDomains`.",
-      }),
-      Schema.Null,
-    ]),
-  ),
-});
+export const EmailEnableCustomTrackingRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    label: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description: "First label of the tracking host. Defaults to `track`.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    parentDomain: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Domain the tracking host sits directly under: the sending domain (the default) or one of its parents up to its registrable domain, listed in `parentDomains`.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailEnableCustomTracking200 = CustomTrackingStatus;
 export const EmailEnableCustomTracking200 = CustomTrackingStatus;
 export type EmailEnableCustomTracking401 = UnauthorizedError;
@@ -2374,16 +2450,13 @@ export const EmailEnableCustomTracking422 = ValidationError;
 export type EmailEnableCustomTracking500 = InternalError;
 export const EmailEnableCustomTracking500 = InternalError;
 export type EmailEnableCustomTracking502 = EmailChannelError | BillingProviderError;
-export const EmailEnableCustomTracking502 = /* @__PURE__ */ Schema.Union([
-  EmailChannelError,
-  BillingProviderError,
-]);
+export const EmailEnableCustomTracking502 = /* @__PURE__ */ (() =>
+  Schema.Union([EmailChannelError, BillingProviderError]))();
 export type EmailEnableCustomTracking504 = GatewayTimeoutError;
 export const EmailEnableCustomTracking504 = GatewayTimeoutError;
 export type EmailDisableCustomTrackingPathParams = { readonly id: EmailDomainId };
-export const EmailDisableCustomTrackingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailDisableCustomTrackingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailDisableCustomTracking200 = SuccessResult;
 export const EmailDisableCustomTracking200 = SuccessResult;
 export type EmailDisableCustomTracking401 = UnauthorizedError;
@@ -2403,9 +2476,8 @@ export const EmailDisableCustomTracking502 = EmailChannelError;
 export type EmailDisableCustomTracking504 = GatewayTimeoutError;
 export const EmailDisableCustomTracking504 = GatewayTimeoutError;
 export type EmailGetCustomTrackingDomainConnectPathParams = { readonly id: EmailDomainId };
-export const EmailGetCustomTrackingDomainConnectPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailGetCustomTrackingDomainConnectPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetCustomTrackingDomainConnect200 = DomainConnectEligibility;
 export const EmailGetCustomTrackingDomainConnect200 = DomainConnectEligibility;
 export type EmailGetCustomTrackingDomainConnect401 = UnauthorizedError;
@@ -2423,8 +2495,8 @@ export const EmailGetCustomTrackingDomainConnect504 = GatewayTimeoutError;
 export type EmailBuildCustomTrackingDomainConnectApplyUrlPathParams = {
   readonly id: EmailDomainId;
 };
-export const EmailBuildCustomTrackingDomainConnectApplyUrlPathParams =
-  /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailBuildCustomTrackingDomainConnectApplyUrlPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailBuildCustomTrackingDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
 export const EmailBuildCustomTrackingDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
 export type EmailBuildCustomTrackingDomainConnectApplyUrl401 = UnauthorizedError;
@@ -2444,19 +2516,19 @@ export const EmailBuildCustomTrackingDomainConnectApplyUrl502 = EmailChannelErro
 export type EmailBuildCustomTrackingDomainConnectApplyUrl504 = GatewayTimeoutError;
 export const EmailBuildCustomTrackingDomainConnectApplyUrl504 = GatewayTimeoutError;
 export type EmailCompleteCustomTrackingDomainConnectPathParams = { readonly id: EmailDomainId };
-export const EmailCompleteCustomTrackingDomainConnectPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailCompleteCustomTrackingDomainConnectPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailCompleteCustomTrackingDomainConnectRequestJson = {
   readonly state: string;
   readonly error?: string | null;
   readonly errorDescription?: string | null;
 };
-export const EmailCompleteCustomTrackingDomainConnectRequestJson = /* @__PURE__ */ Schema.Struct({
-  state: Schema.String,
-  error: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  errorDescription: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const EmailCompleteCustomTrackingDomainConnectRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    state: Schema.String,
+    error: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    errorDescription: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type EmailCompleteCustomTrackingDomainConnect200 = CustomTrackingDomainConnectCompleteResult;
 export const EmailCompleteCustomTrackingDomainConnect200 =
   CustomTrackingDomainConnectCompleteResult;
@@ -2473,9 +2545,8 @@ export const EmailCompleteCustomTrackingDomainConnect500 = InternalError;
 export type EmailCompleteCustomTrackingDomainConnect504 = GatewayTimeoutError;
 export const EmailCompleteCustomTrackingDomainConnect504 = GatewayTimeoutError;
 export type EmailRecheckCustomTrackingPathParams = { readonly id: EmailDomainId };
-export const EmailRecheckCustomTrackingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailRecheckCustomTrackingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailRecheckCustomTracking200 = CustomTrackingStatus;
 export const EmailRecheckCustomTracking200 = CustomTrackingStatus;
 export type EmailRecheckCustomTracking401 = UnauthorizedError;
@@ -2495,7 +2566,8 @@ export const EmailRecheckCustomTracking502 = EmailChannelError;
 export type EmailRecheckCustomTracking504 = GatewayTimeoutError;
 export const EmailRecheckCustomTracking504 = GatewayTimeoutError;
 export type EmailSetDefaultDomainPathParams = { readonly id: EmailDomainId };
-export const EmailSetDefaultDomainPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailSetDefaultDomainPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailSetDefaultDomain200 = SuccessResult;
 export const EmailSetDefaultDomain200 = SuccessResult;
 export type EmailSetDefaultDomain401 = UnauthorizedError;
@@ -2511,11 +2583,11 @@ export const EmailSetDefaultDomain500 = InternalError;
 export type EmailSetDefaultDomain504 = GatewayTimeoutError;
 export const EmailSetDefaultDomain504 = GatewayTimeoutError;
 export type EmailDisableCatchAllPathParams = { readonly id: EmailDomainId };
-export const EmailDisableCatchAllPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailDisableCatchAllPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailDisableCatchAll200 = { readonly success: true };
-export const EmailDisableCatchAll200 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Literal(true),
-});
+export const EmailDisableCatchAll200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Literal(true) }))();
 export type EmailDisableCatchAll401 = UnauthorizedError;
 export const EmailDisableCatchAll401 = UnauthorizedError;
 export type EmailDisableCatchAll403 = ForbiddenError;
@@ -2531,11 +2603,13 @@ export const EmailDisableCatchAll502 = ExternalServiceError;
 export type EmailDisableCatchAll504 = GatewayTimeoutError;
 export const EmailDisableCatchAll504 = GatewayTimeoutError;
 export type EmailGetDomainConnectPathParams = { readonly id: EmailDomainId };
-export const EmailGetDomainConnectPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailGetDomainConnectPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainConnectQuery = { readonly mode: "send-only" | "send-and-receive" };
-export const EmailGetDomainConnectQuery = /* @__PURE__ */ Schema.Struct({
-  mode: Schema.Union([Schema.Literal("send-only"), Schema.Literal("send-and-receive")]),
-});
+export const EmailGetDomainConnectQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    mode: Schema.Union([Schema.Literal("send-only"), Schema.Literal("send-and-receive")]),
+  }))();
 export type EmailGetDomainConnect200 = DomainConnectEligibility;
 export const EmailGetDomainConnect200 = DomainConnectEligibility;
 export type EmailGetDomainConnect401 = UnauthorizedError;
@@ -2551,15 +2625,15 @@ export const EmailGetDomainConnect500 = InternalError;
 export type EmailGetDomainConnect504 = GatewayTimeoutError;
 export const EmailGetDomainConnect504 = GatewayTimeoutError;
 export type EmailBuildDomainConnectApplyUrlPathParams = { readonly id: EmailDomainId };
-export const EmailBuildDomainConnectApplyUrlPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailBuildDomainConnectApplyUrlPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailBuildDomainConnectApplyUrlRequestJson = {
   readonly mode: "send-only" | "send-and-receive";
 };
-export const EmailBuildDomainConnectApplyUrlRequestJson = /* @__PURE__ */ Schema.Struct({
-  mode: Schema.Union([Schema.Literal("send-only"), Schema.Literal("send-and-receive")]),
-});
+export const EmailBuildDomainConnectApplyUrlRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    mode: Schema.Union([Schema.Literal("send-only"), Schema.Literal("send-and-receive")]),
+  }))();
 export type EmailBuildDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
 export const EmailBuildDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
 export type EmailBuildDomainConnectApplyUrl401 = UnauthorizedError;
@@ -2579,19 +2653,19 @@ export const EmailBuildDomainConnectApplyUrl502 = EmailChannelError;
 export type EmailBuildDomainConnectApplyUrl504 = GatewayTimeoutError;
 export const EmailBuildDomainConnectApplyUrl504 = GatewayTimeoutError;
 export type EmailCompleteDomainConnectPathParams = { readonly id: EmailDomainId };
-export const EmailCompleteDomainConnectPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailCompleteDomainConnectPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailCompleteDomainConnectRequestJson = {
   readonly state: string;
   readonly error?: string | null;
   readonly errorDescription?: string | null;
 };
-export const EmailCompleteDomainConnectRequestJson = /* @__PURE__ */ Schema.Struct({
-  state: Schema.String,
-  error: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  errorDescription: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const EmailCompleteDomainConnectRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    state: Schema.String,
+    error: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    errorDescription: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type EmailCompleteDomainConnect200 = DomainConnectCompleteResult;
 export const EmailCompleteDomainConnect200 = DomainConnectCompleteResult;
 export type EmailCompleteDomainConnect401 = UnauthorizedError;
@@ -2609,15 +2683,16 @@ export const EmailCompleteDomainConnect502 = EmailChannelError;
 export type EmailCompleteDomainConnect504 = GatewayTimeoutError;
 export const EmailCompleteDomainConnect504 = GatewayTimeoutError;
 export type EmailEnableCatchAllPathParams = { readonly id: EmailDomainId };
-export const EmailEnableCatchAllPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailEnableCatchAllPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailEnableCatchAllRequestJson = { readonly endpointId?: WebhookEndpointId | null };
-export const EmailEnableCatchAllRequestJson = /* @__PURE__ */ Schema.Struct({
-  endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
-});
+export const EmailEnableCatchAllRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
+  }))();
 export type EmailEnableCatchAll201 = { readonly success: true };
-export const EmailEnableCatchAll201 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Literal(true),
-});
+export const EmailEnableCatchAll201 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Literal(true) }))();
 export type EmailEnableCatchAll401 = UnauthorizedError;
 export const EmailEnableCatchAll401 = UnauthorizedError;
 export type EmailEnableCatchAll403 = ForbiddenError;
@@ -2633,27 +2708,27 @@ export const EmailEnableCatchAll502 = ExternalServiceError;
 export type EmailEnableCatchAll504 = GatewayTimeoutError;
 export const EmailEnableCatchAll504 = GatewayTimeoutError;
 export type EmailEnableReceivingPathParams = { readonly id: EmailDomainId };
-export const EmailEnableReceivingPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailEnableReceivingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailEnableReceivingRequestJson = {
   readonly domain: string;
   readonly catchAll?: boolean | null;
   readonly endpointId?: WebhookEndpointId | null;
   readonly addresses?: ReadonlyArray<string> | null;
 };
-export const EmailEnableReceivingRequestJson = /* @__PURE__ */ Schema.Struct({
-  domain: Schema.String,
-  catchAll: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
-  addresses: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-});
+export const EmailEnableReceivingRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domain: Schema.String,
+    catchAll: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
+    addresses: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+  }))();
 export type EmailEnableReceiving200 = {
   readonly success: true;
   readonly recipients: ReadonlyArray<string>;
 };
-export const EmailEnableReceiving200 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Literal(true),
-  recipients: Schema.Array(Schema.String),
-});
+export const EmailEnableReceiving200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Literal(true), recipients: Schema.Array(Schema.String) }))();
 export type EmailEnableReceiving401 = UnauthorizedError;
 export const EmailEnableReceiving401 = UnauthorizedError;
 export type EmailEnableReceiving403 = ForbiddenError;
@@ -2667,9 +2742,8 @@ export const EmailEnableReceiving500 = InternalError;
 export type EmailEnableReceiving504 = GatewayTimeoutError;
 export const EmailEnableReceiving504 = GatewayTimeoutError;
 export type EmailGetReceivingStatusPathParams = { readonly id: EmailDomainId };
-export const EmailGetReceivingStatusPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailGetReceivingStatusPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetReceivingStatus200 = ReceivingStatus;
 export const EmailGetReceivingStatus200 = ReceivingStatus;
 export type EmailGetReceivingStatus401 = UnauthorizedError;
@@ -2685,23 +2759,24 @@ export const EmailGetReceivingStatus500 = InternalError;
 export type EmailGetReceivingStatus504 = GatewayTimeoutError;
 export const EmailGetReceivingStatus504 = GatewayTimeoutError;
 export type EmailDetectRegistrarPathParams = { readonly id: EmailDomainId };
-export const EmailDetectRegistrarPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailDetectRegistrarPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailDetectRegistrarRequestJson = { readonly domain: string };
-export const EmailDetectRegistrarRequestJson = /* @__PURE__ */ Schema.Struct({
-  domain: Schema.String,
-});
+export const EmailDetectRegistrarRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ domain: Schema.String }))();
 export type EmailDetectRegistrar200 = {
   readonly provider: string;
   readonly name: string;
   readonly nameservers: ReadonlyArray<string>;
   readonly docsUrl: string;
 };
-export const EmailDetectRegistrar200 = /* @__PURE__ */ Schema.Struct({
-  provider: Schema.String,
-  name: Schema.String,
-  nameservers: Schema.Array(Schema.String),
-  docsUrl: Schema.String,
-});
+export const EmailDetectRegistrar200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    provider: Schema.String,
+    name: Schema.String,
+    nameservers: Schema.Array(Schema.String),
+    docsUrl: Schema.String,
+  }))();
 export type EmailDetectRegistrar401 = UnauthorizedError;
 export const EmailDetectRegistrar401 = UnauthorizedError;
 export type EmailDetectRegistrar403 = ForbiddenError;
@@ -2715,17 +2790,21 @@ export const EmailDetectRegistrar500 = InternalError;
 export type EmailDetectRegistrar504 = GatewayTimeoutError;
 export const EmailDetectRegistrar504 = GatewayTimeoutError;
 export type EmailRotateDomainDkimPathParams = { readonly id: EmailDomainId };
-export const EmailRotateDomainDkimPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailRotateDomainDkimPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailRotateDomainDkimHeaders = { readonly "idempotency-key": string };
-export const EmailRotateDomainDkimHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+export const EmailRotateDomainDkimHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type EmailRotateDomainDkim200 = EmailDkimRotation;
 export const EmailRotateDomainDkim200 = EmailDkimRotation;
 export type EmailRotateDomainDkim401 = UnauthorizedError;
@@ -2745,9 +2824,8 @@ export const EmailRotateDomainDkim502 = EmailChannelError;
 export type EmailRotateDomainDkim504 = GatewayTimeoutError;
 export const EmailRotateDomainDkim504 = GatewayTimeoutError;
 export type EmailGetDomainVerificationPathParams = { readonly id: EmailDomainId };
-export const EmailGetDomainVerificationPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailGetDomainVerificationPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainVerification200 = EmailDomainVerification;
 export const EmailGetDomainVerification200 = EmailDomainVerification;
 export type EmailGetDomainVerification401 = UnauthorizedError;
@@ -2763,9 +2841,8 @@ export const EmailGetDomainVerification500 = InternalError;
 export type EmailGetDomainVerification504 = GatewayTimeoutError;
 export const EmailGetDomainVerification504 = GatewayTimeoutError;
 export type EmailAdvanceDomainVerificationPathParams = { readonly id: EmailDomainId };
-export const EmailAdvanceDomainVerificationPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailAdvanceDomainVerificationPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailAdvanceDomainVerification200 = EmailDomainVerification;
 export const EmailAdvanceDomainVerification200 = EmailDomainVerification;
 export type EmailAdvanceDomainVerification401 = UnauthorizedError;
@@ -2787,7 +2864,8 @@ export const EmailAdvanceDomainVerification502 = EmailChannelError;
 export type EmailAdvanceDomainVerification504 = GatewayTimeoutError;
 export const EmailAdvanceDomainVerification504 = GatewayTimeoutError;
 export type EmailGetDomainWarmingPathParams = { readonly id: EmailDomainId };
-export const EmailGetDomainWarmingPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailDomainId });
+export const EmailGetDomainWarmingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainWarming200 = DomainWarming;
 export const EmailGetDomainWarming200 = DomainWarming;
 export type EmailGetDomainWarming401 = UnauthorizedError;
@@ -2803,45 +2881,47 @@ export const EmailGetDomainWarming500 = InternalError;
 export type EmailGetDomainWarming504 = GatewayTimeoutError;
 export const EmailGetDomainWarming504 = GatewayTimeoutError;
 export type EmailCreateDomainWarmingPlanPathParams = { readonly id: EmailDomainId };
-export const EmailCreateDomainWarmingPlanPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailCreateDomainWarmingPlanPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailCreateDomainWarmingPlanRequestJson = {
   readonly identity: "new" | "migrating" | "returning";
   readonly initialDailyRecipients: number;
   readonly dailyGrowthPercent: number;
   readonly targetDailyRecipients: number;
 };
-export const EmailCreateDomainWarmingPlanRequestJson = /* @__PURE__ */ Schema.Struct({
-  identity: Schema.Union([
-    Schema.Literal("new"),
-    Schema.Literal("migrating"),
-    Schema.Literal("returning"),
-  ]),
-  initialDailyRecipients: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(1000000).annotate({
-        expected: "a value less than or equal to 1000000",
-      }),
-    )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-  dailyGrowthPercent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(10000).annotate({
-        expected: "a value less than or equal to 10000",
-      }),
-    ),
-  targetDailyRecipients: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(1000000).annotate({
-        expected: "a value less than or equal to 1000000",
-      }),
-    )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-});
+export const EmailCreateDomainWarmingPlanRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    identity: Schema.Union([
+      Schema.Literal("new"),
+      Schema.Literal("migrating"),
+      Schema.Literal("returning"),
+    ]),
+    initialDailyRecipients: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(1000000).annotate({
+          expected: "a value less than or equal to 1000000",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    dailyGrowthPercent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(10000).annotate({
+          expected: "a value less than or equal to 10000",
+        }),
+      ),
+    targetDailyRecipients: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(1000000).annotate({
+          expected: "a value less than or equal to 1000000",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+  }))();
 export type EmailCreateDomainWarmingPlan201 = DomainWarming;
 export const EmailCreateDomainWarmingPlan201 = DomainWarming;
 export type EmailCreateDomainWarmingPlan401 = UnauthorizedError;
@@ -2862,10 +2942,8 @@ export type EmailCancelDomainWarmingBatchPathParams = {
   readonly id: EmailDomainId;
   readonly batchId: EmailDomainWarmingBatchId;
 };
-export const EmailCancelDomainWarmingBatchPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-  batchId: EmailDomainWarmingBatchId,
-});
+export const EmailCancelDomainWarmingBatchPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId, batchId: EmailDomainWarmingBatchId }))();
 export type EmailCancelDomainWarmingBatch200 = DomainWarming;
 export const EmailCancelDomainWarmingBatch200 = DomainWarming;
 export type EmailCancelDomainWarmingBatch401 = UnauthorizedError;
@@ -2883,22 +2961,24 @@ export const EmailCancelDomainWarmingBatch500 = InternalError;
 export type EmailCancelDomainWarmingBatch504 = GatewayTimeoutError;
 export const EmailCancelDomainWarmingBatch504 = GatewayTimeoutError;
 export type EmailCompleteDomainWarmingPathParams = { readonly id: EmailDomainId };
-export const EmailCompleteDomainWarmingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailCompleteDomainWarmingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailCompleteDomainWarmingRequestJson = { readonly note?: string | null };
-export const EmailCompleteDomainWarmingRequestJson = /* @__PURE__ */ Schema.Struct({
-  note: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(500).annotate({ expected: "a string with at most 500 code points" }),
-      ).check(
-        Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const EmailCompleteDomainWarmingRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    note: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(500).annotate({
+            expected: "a string with at most 500 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailCompleteDomainWarming200 = DomainWarming;
 export const EmailCompleteDomainWarming200 = DomainWarming;
 export type EmailCompleteDomainWarming401 = UnauthorizedError;
@@ -2916,22 +2996,24 @@ export const EmailCompleteDomainWarming500 = InternalError;
 export type EmailCompleteDomainWarming504 = GatewayTimeoutError;
 export const EmailCompleteDomainWarming504 = GatewayTimeoutError;
 export type EmailPauseDomainWarmingPathParams = { readonly id: EmailDomainId };
-export const EmailPauseDomainWarmingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailPauseDomainWarmingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailPauseDomainWarmingRequestJson = { readonly note?: string | null };
-export const EmailPauseDomainWarmingRequestJson = /* @__PURE__ */ Schema.Struct({
-  note: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(500).annotate({ expected: "a string with at most 500 code points" }),
-      ).check(
-        Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const EmailPauseDomainWarmingRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    note: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(500).annotate({
+            expected: "a string with at most 500 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailPauseDomainWarming200 = DomainWarming;
 export const EmailPauseDomainWarming200 = DomainWarming;
 export type EmailPauseDomainWarming401 = UnauthorizedError;
@@ -2949,42 +3031,46 @@ export const EmailPauseDomainWarming500 = InternalError;
 export type EmailPauseDomainWarming504 = GatewayTimeoutError;
 export const EmailPauseDomainWarming504 = GatewayTimeoutError;
 export type EmailUpdateDomainWarmingPolicyPathParams = { readonly id: EmailDomainId };
-export const EmailUpdateDomainWarmingPolicyPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailUpdateDomainWarmingPolicyPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailUpdateDomainWarmingPolicyRequestJson = {
   readonly dailyGrowthPercent: number;
   readonly targetDailyRecipients: number;
   readonly note?: string | null;
 };
-export const EmailUpdateDomainWarmingPolicyRequestJson = /* @__PURE__ */ Schema.Struct({
-  dailyGrowthPercent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(10000).annotate({
-        expected: "a value less than or equal to 10000",
-      }),
-    ),
-  targetDailyRecipients: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(1000000).annotate({
-        expected: "a value less than or equal to 1000000",
-      }),
-    )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-  note: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(500).annotate({ expected: "a string with at most 500 code points" }),
-      ).check(
-        Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+export const EmailUpdateDomainWarmingPolicyRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    dailyGrowthPercent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(10000).annotate({
+          expected: "a value less than or equal to 10000",
+        }),
       ),
-      Schema.Null,
-    ]),
-  ),
-});
+    targetDailyRecipients: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(1000000).annotate({
+          expected: "a value less than or equal to 1000000",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    note: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(500).annotate({
+            expected: "a string with at most 500 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailUpdateDomainWarmingPolicy200 = DomainWarming;
 export const EmailUpdateDomainWarmingPolicy200 = DomainWarming;
 export type EmailUpdateDomainWarmingPolicy401 = UnauthorizedError;
@@ -3002,22 +3088,24 @@ export const EmailUpdateDomainWarmingPolicy500 = InternalError;
 export type EmailUpdateDomainWarmingPolicy504 = GatewayTimeoutError;
 export const EmailUpdateDomainWarmingPolicy504 = GatewayTimeoutError;
 export type EmailResumeDomainWarmingPathParams = { readonly id: EmailDomainId };
-export const EmailResumeDomainWarmingPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailDomainId,
-});
+export const EmailResumeDomainWarmingPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailDomainId }))();
 export type EmailResumeDomainWarmingRequestJson = { readonly note?: string | null };
-export const EmailResumeDomainWarmingRequestJson = /* @__PURE__ */ Schema.Struct({
-  note: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(500).annotate({ expected: "a string with at most 500 code points" }),
-      ).check(
-        Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const EmailResumeDomainWarmingRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    note: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(500).annotate({
+            expected: "a string with at most 500 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(500).annotate({ expected: "a value with a length of at most 500" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailResumeDomainWarming200 = DomainWarming;
 export const EmailResumeDomainWarming200 = DomainWarming;
 export type EmailResumeDomainWarming401 = UnauthorizedError;
@@ -3038,10 +3126,11 @@ export type EmailListForwardingRulesQuery = {
   readonly domainId?: EmailDomainId | null;
   readonly isActive?: boolean | null;
 };
-export const EmailListForwardingRulesQuery = /* @__PURE__ */ Schema.Struct({
-  domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-});
+export const EmailListForwardingRulesQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }))();
 export type EmailListForwardingRules200 = ForwardingRuleList;
 export const EmailListForwardingRules200 = ForwardingRuleList;
 export type EmailListForwardingRules401 = UnauthorizedError;
@@ -3067,39 +3156,40 @@ export type EmailCreateForwardingRuleRequestJson = {
   readonly isActive?: boolean | null;
   readonly metadata?: { readonly [x: string]: JsonValue } | null | null;
 };
-export const EmailCreateForwardingRuleRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.String,
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
-  sourcePattern: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  forwardTo: Schema.Array(Schema.String),
-  preserveHeaders: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  appendNote: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  conditions: Schema.optionalKey(Schema.Union([ForwardingConditions, Schema.Null])),
-  priority: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(2147483647).annotate({
-            expected: "a value less than or equal to 2147483647",
-          }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  metadata: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-      Schema.Null,
-    ]),
-  ),
-});
+export const EmailCreateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String,
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
+    sourcePattern: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    forwardTo: Schema.Array(Schema.String),
+    preserveHeaders: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    appendNote: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    conditions: Schema.optionalKey(Schema.Union([ForwardingConditions, Schema.Null])),
+    priority: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(2147483647).annotate({
+              expected: "a value less than or equal to 2147483647",
+            }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    metadata: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailCreateForwardingRule201 = {
   readonly id: EmailForwardingRuleId;
   readonly name: string;
@@ -3108,22 +3198,25 @@ export type EmailCreateForwardingRule201 = {
   readonly isActive: boolean;
   readonly createdAt: string;
 };
-export const EmailCreateForwardingRule201 = /* @__PURE__ */ Schema.Struct({
-  id: EmailForwardingRuleId,
-  name: Schema.String,
-  forwardTo: Schema.Array(Schema.String),
-  priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(2147483647).annotate({
-        expected: "a value less than or equal to 2147483647",
-      }),
-    ),
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-});
+export const EmailCreateForwardingRule201 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailForwardingRuleId,
+    name: Schema.String,
+    forwardTo: Schema.Array(Schema.String),
+    priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(2147483647).annotate({
+          expected: "a value less than or equal to 2147483647",
+        }),
+      ),
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+  }))();
 export type EmailCreateForwardingRule401 = UnauthorizedError;
 export const EmailCreateForwardingRule401 = UnauthorizedError;
 export type EmailCreateForwardingRule403 = ForbiddenError;
@@ -3139,9 +3232,8 @@ export const EmailCreateForwardingRule500 = InternalError;
 export type EmailCreateForwardingRule504 = GatewayTimeoutError;
 export const EmailCreateForwardingRule504 = GatewayTimeoutError;
 export type EmailDeleteForwardingRulePathParams = { readonly id: EmailForwardingRuleId };
-export const EmailDeleteForwardingRulePathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailForwardingRuleId,
-});
+export const EmailDeleteForwardingRulePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailForwardingRuleId }))();
 export type EmailDeleteForwardingRule200 = SuccessResult;
 export const EmailDeleteForwardingRule200 = SuccessResult;
 export type EmailDeleteForwardingRule401 = UnauthorizedError;
@@ -3157,9 +3249,8 @@ export const EmailDeleteForwardingRule500 = InternalError;
 export type EmailDeleteForwardingRule504 = GatewayTimeoutError;
 export const EmailDeleteForwardingRule504 = GatewayTimeoutError;
 export type EmailUpdateForwardingRulePathParams = { readonly id: EmailForwardingRuleId };
-export const EmailUpdateForwardingRulePathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailForwardingRuleId,
-});
+export const EmailUpdateForwardingRulePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailForwardingRuleId }))();
 export type EmailUpdateForwardingRuleRequestJson = {
   readonly name?: string | null;
   readonly description?: string | null;
@@ -3173,41 +3264,42 @@ export type EmailUpdateForwardingRuleRequestJson = {
   readonly isActive?: boolean | null;
   readonly metadata?: { readonly [x: string]: JsonValue } | null | null;
 };
-export const EmailUpdateForwardingRuleRequestJson = /* @__PURE__ */ Schema.Struct({
-  name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
-  sourcePattern: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  forwardTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-  preserveHeaders: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  appendNote: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  conditions: Schema.optionalKey(
-    Schema.Union([Schema.Union([ForwardingConditions, Schema.Null]), Schema.Null]),
-  ),
-  priority: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(2147483647).annotate({
-            expected: "a value less than or equal to 2147483647",
-          }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  metadata: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-      Schema.Null,
-    ]),
-  ),
-});
+export const EmailUpdateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
+    sourcePattern: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    forwardTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    preserveHeaders: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    appendNote: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    conditions: Schema.optionalKey(
+      Schema.Union([Schema.Union([ForwardingConditions, Schema.Null]), Schema.Null]),
+    ),
+    priority: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(2147483647).annotate({
+              expected: "a value less than or equal to 2147483647",
+            }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    metadata: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EmailUpdateForwardingRule200 = {
   readonly id: EmailForwardingRuleId;
   readonly name: string;
@@ -3216,22 +3308,25 @@ export type EmailUpdateForwardingRule200 = {
   readonly isActive: boolean;
   readonly updatedAt: string;
 };
-export const EmailUpdateForwardingRule200 = /* @__PURE__ */ Schema.Struct({
-  id: EmailForwardingRuleId,
-  name: Schema.String,
-  forwardTo: Schema.Array(Schema.String),
-  priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(2147483647).annotate({
-        expected: "a value less than or equal to 2147483647",
-      }),
-    ),
-  isActive: Schema.Boolean,
-  updatedAt: Schema.String,
-});
+export const EmailUpdateForwardingRule200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailForwardingRuleId,
+    name: Schema.String,
+    forwardTo: Schema.Array(Schema.String),
+    priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(2147483647).annotate({
+          expected: "a value less than or equal to 2147483647",
+        }),
+      ),
+    isActive: Schema.Boolean,
+    updatedAt: Schema.String,
+  }))();
 export type EmailUpdateForwardingRule401 = UnauthorizedError;
 export const EmailUpdateForwardingRule401 = UnauthorizedError;
 export type EmailUpdateForwardingRule403 = ForbiddenError;
@@ -3252,35 +3347,36 @@ export type EmailGetForwardingLogQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const EmailGetForwardingLogQuery = /* @__PURE__ */ Schema.Struct({
-  forwardingRuleId: Schema.optionalKey(Schema.Union([EmailForwardingRuleId, Schema.Null])),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const EmailGetForwardingLogQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    forwardingRuleId: Schema.optionalKey(Schema.Union([EmailForwardingRuleId, Schema.Null])),
+    status: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("forwarded"),
-        Schema.Literal("failed"),
+        Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("forwarded"),
+          Schema.Literal("failed"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+    ),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type EmailGetForwardingLog200 = ForwardingLogPage;
 export const EmailGetForwardingLog200 = ForwardingLogPage;
 export type EmailGetForwardingLog401 = UnauthorizedError;
@@ -3306,19 +3402,20 @@ export const EmailGetOnboardingReview500 = InternalError;
 export type EmailGetOnboardingReview504 = GatewayTimeoutError;
 export const EmailGetOnboardingReview504 = GatewayTimeoutError;
 export type EmailReapplyOnboardingReviewRequestJson = { readonly expectedGeneration: number };
-export const EmailReapplyOnboardingReviewRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedGeneration: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-});
+export const EmailReapplyOnboardingReviewRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedGeneration: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
 export type EmailReapplyOnboardingReview200 = OnboardingReviewStatus;
 export const EmailReapplyOnboardingReview200 = OnboardingReviewStatus;
 export type EmailReapplyOnboardingReview401 = UnauthorizedError;
@@ -3338,27 +3435,30 @@ export type EmailRespondToOnboardingInformationRequestRequestJson = {
   readonly responseText: string;
   readonly evidenceMediaIds: ReadonlyArray<MediaId>;
 };
-export const EmailRespondToOnboardingInformationRequestRequestJson = /* @__PURE__ */ Schema.Struct({
-  expectedGeneration: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
+export const EmailRespondToOnboardingInformationRequestRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    expectedGeneration: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    responseText: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-  responseText: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(4000).annotate({ expected: "a string with at most 4000 code points" }),
-    )
-    .check(
-      Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+    evidenceMediaIds: Schema.Array(MediaId).check(
+      Schema.isMaxLength(3).annotate({ expected: "a value with a length of at most 3" }),
     ),
-  evidenceMediaIds: Schema.Array(MediaId).check(
-    Schema.isMaxLength(3).annotate({ expected: "a value with a length of at most 3" }),
-  ),
-});
+  }))();
 export type EmailRespondToOnboardingInformationRequest200 = OnboardingReviewStatus;
 export const EmailRespondToOnboardingInformationRequest200 = OnboardingReviewStatus;
 export type EmailRespondToOnboardingInformationRequest401 = UnauthorizedError;
@@ -3381,35 +3481,36 @@ export type EmailListSendersQuery = {
   readonly isDefault?: boolean | null;
   readonly namespaceId?: NamespaceId | null;
 };
-export const EmailListSendersQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  verificationStatus: Schema.optionalKey(
-    Schema.Union([
+export const EmailListSendersQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("verified"),
-        Schema.Literal("failed"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  isDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-});
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    verificationStatus: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("verified"),
+          Schema.Literal("failed"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    isDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+  }))();
 export type EmailListSenders200 = EmailSenderPage;
 export const EmailListSenders200 = EmailSenderPage;
 export type EmailListSenders401 = UnauthorizedError;
@@ -3423,15 +3524,18 @@ export const EmailListSenders500 = InternalError;
 export type EmailListSenders504 = GatewayTimeoutError;
 export const EmailListSenders504 = GatewayTimeoutError;
 export type EmailAddSenderHeaders = { readonly "idempotency-key": string };
-export const EmailAddSenderHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+export const EmailAddSenderHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" })),
-});
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type EmailAddSenderRequestJson = {
   readonly email: string;
   readonly domainId?: EmailDomainId | null;
@@ -3439,15 +3543,18 @@ export type EmailAddSenderRequestJson = {
   readonly replyToEmails?: ReadonlyArray<string> | null | null;
   readonly namespaceId?: NamespaceId | null;
 };
-export const EmailAddSenderRequestJson = /* @__PURE__ */ Schema.Struct({
-  email: Schema.String,
-  domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
-  name: Schema.optionalKey(Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null])),
-  replyToEmails: Schema.optionalKey(
-    Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-  ),
-  namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-});
+export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.String,
+    domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
+    name: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
+    ),
+    replyToEmails: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
+    ),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+  }))();
 export type EmailAddSender201 = {
   readonly id: EmailSenderId;
   readonly email: string;
@@ -3456,23 +3563,24 @@ export type EmailAddSender201 = {
   readonly providerFailureCode: string | null;
   readonly createdAt: string;
 };
-export const EmailAddSender201 = /* @__PURE__ */ Schema.Struct({
-  id: EmailSenderId,
-  email: Schema.String,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("verified"),
-    Schema.Literal("failed"),
-  ]),
-  providerLifecycle: Schema.Union([
-    Schema.Literal("provisioning"),
-    Schema.Literal("active"),
-    Schema.Literal("deleting"),
-    Schema.Literal("failed"),
-  ]),
-  providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
-  createdAt: Schema.String,
-});
+export const EmailAddSender201 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailSenderId,
+    email: Schema.String,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("verified"),
+      Schema.Literal("failed"),
+    ]),
+    providerLifecycle: Schema.Union([
+      Schema.Literal("provisioning"),
+      Schema.Literal("active"),
+      Schema.Literal("deleting"),
+      Schema.Literal("failed"),
+    ]),
+    providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+  }))();
 export type EmailAddSender401 = UnauthorizedError;
 export const EmailAddSender401 = UnauthorizedError;
 export type EmailAddSender403 = ForbiddenError;
@@ -3490,7 +3598,8 @@ export const EmailAddSender502 = ExternalServiceError;
 export type EmailAddSender504 = GatewayTimeoutError;
 export const EmailAddSender504 = GatewayTimeoutError;
 export type EmailGetSenderPathParams = { readonly id: EmailSenderId };
-export const EmailGetSenderPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailSenderId });
+export const EmailGetSenderPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailSenderId }))();
 export type EmailGetSender200 = {
   readonly id: EmailSenderId;
   readonly organizationId: string;
@@ -3511,38 +3620,39 @@ export type EmailGetSender200 = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const EmailGetSender200 = /* @__PURE__ */ Schema.Struct({
-  id: EmailSenderId,
-  organizationId: Schema.String,
-  email: Schema.String,
-  name: Schema.Union([Schema.String, Schema.Null]),
-  domainId: Schema.Union([EmailDomainId, Schema.Null]),
-  namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
-    description:
-      "The namespace the sender belongs to, or null at organization level. A sender on a domain takes the domain's namespace.",
-  }),
-  verificationStatus: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("verified"),
-    Schema.Literal("failed"),
-  ]),
-  verifiedAt: Schema.Union([Schema.String, Schema.Null]),
-  verificationToken: Schema.Union([Schema.String, Schema.Null]),
-  providerLifecycle: Schema.Union([
-    Schema.Literal("provisioning"),
-    Schema.Literal("active"),
-    Schema.Literal("deleting"),
-    Schema.Literal("failed"),
-  ]),
-  providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
-  isDefault: Schema.Boolean,
-  replyToEmails: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  deliverability: DeliverabilityFacts,
-  series: SendsSeries,
-  isActive: Schema.Boolean,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-});
+export const EmailGetSender200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailSenderId,
+    organizationId: Schema.String,
+    email: Schema.String,
+    name: Schema.Union([Schema.String, Schema.Null]),
+    domainId: Schema.Union([EmailDomainId, Schema.Null]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+      description:
+        "The namespace the sender belongs to, or null at organization level. A sender on a domain takes the domain's namespace.",
+    }),
+    verificationStatus: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("verified"),
+      Schema.Literal("failed"),
+    ]),
+    verifiedAt: Schema.Union([Schema.String, Schema.Null]),
+    verificationToken: Schema.Union([Schema.String, Schema.Null]),
+    providerLifecycle: Schema.Union([
+      Schema.Literal("provisioning"),
+      Schema.Literal("active"),
+      Schema.Literal("deleting"),
+      Schema.Literal("failed"),
+    ]),
+    providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
+    isDefault: Schema.Boolean,
+    replyToEmails: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    deliverability: DeliverabilityFacts,
+    series: SendsSeries,
+    isActive: Schema.Boolean,
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }))();
 export type EmailGetSender401 = UnauthorizedError;
 export const EmailGetSender401 = UnauthorizedError;
 export type EmailGetSender403 = ForbiddenError;
@@ -3556,7 +3666,8 @@ export const EmailGetSender500 = InternalError;
 export type EmailGetSender504 = GatewayTimeoutError;
 export const EmailGetSender504 = GatewayTimeoutError;
 export type EmailRemoveSenderPathParams = { readonly id: EmailSenderId };
-export const EmailRemoveSenderPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailSenderId });
+export const EmailRemoveSenderPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailSenderId }))();
 export type EmailRemoveSender200 = SuccessResult;
 export const EmailRemoveSender200 = SuccessResult;
 export type EmailRemoveSender401 = UnauthorizedError;
@@ -3572,7 +3683,8 @@ export const EmailRemoveSender500 = InternalError;
 export type EmailRemoveSender504 = GatewayTimeoutError;
 export const EmailRemoveSender504 = GatewayTimeoutError;
 export type EmailSetDefaultSenderPathParams = { readonly id: EmailSenderId };
-export const EmailSetDefaultSenderPathParams = /* @__PURE__ */ Schema.Struct({ id: EmailSenderId });
+export const EmailSetDefaultSenderPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailSenderId }))();
 export type EmailSetDefaultSender200 = SuccessResult;
 export const EmailSetDefaultSender200 = SuccessResult;
 export type EmailSetDefaultSender401 = UnauthorizedError;
@@ -3588,25 +3700,25 @@ export const EmailSetDefaultSender500 = InternalError;
 export type EmailSetDefaultSender504 = GatewayTimeoutError;
 export const EmailSetDefaultSender504 = GatewayTimeoutError;
 export type EmailCheckSenderVerificationPathParams = { readonly id: EmailSenderId };
-export const EmailCheckSenderVerificationPathParams = /* @__PURE__ */ Schema.Struct({
-  id: EmailSenderId,
-});
+export const EmailCheckSenderVerificationPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: EmailSenderId }))();
 export type EmailCheckSenderVerification200 = {
   readonly id: EmailSenderId;
   readonly email: string;
   readonly status: "pending" | "verified" | "failed";
   readonly verifiedAt: string | null;
 };
-export const EmailCheckSenderVerification200 = /* @__PURE__ */ Schema.Struct({
-  id: EmailSenderId,
-  email: Schema.String,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("verified"),
-    Schema.Literal("failed"),
-  ]),
-  verifiedAt: Schema.Union([Schema.String, Schema.Null]),
-});
+export const EmailCheckSenderVerification200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: EmailSenderId,
+    email: Schema.String,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("verified"),
+      Schema.Literal("failed"),
+    ]),
+    verifiedAt: Schema.Union([Schema.String, Schema.Null]),
+  }))();
 export type EmailCheckSenderVerification401 = UnauthorizedError;
 export const EmailCheckSenderVerification401 = UnauthorizedError;
 export type EmailCheckSenderVerification403 = ForbiddenError;
@@ -3625,10 +3737,11 @@ export type EmailGetStatsQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const EmailGetStatsQuery = /* @__PURE__ */ Schema.Struct({
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+export const EmailGetStatsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type EmailGetStats200 = {
   readonly totalSent: number;
   readonly totalDelivered: number;
@@ -3638,47 +3751,56 @@ export type EmailGetStats200 = {
   readonly bounceRate: number;
   readonly complaintRate: number;
 };
-export const EmailGetStats200 = /* @__PURE__ */ Schema.Struct({
-  totalSent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  totalDelivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  totalBounced: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  totalComplained: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  deliveryRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  complaintRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-});
+export const EmailGetStats200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    totalSent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    totalDelivered: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    totalBounced: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    totalComplained: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    deliveryRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    complaintRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+  }))();
 export type EmailGetStats401 = UnauthorizedError;
 export const EmailGetStats401 = UnauthorizedError;
 export type EmailGetStats403 = ForbiddenError;
@@ -3696,49 +3818,52 @@ export type EmailListSuppressionsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const EmailListSuppressionsQuery = /* @__PURE__ */ Schema.Struct({
-  type: Schema.optionalKey(
-    Schema.Union([
+export const EmailListSuppressionsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("bounce"),
-        Schema.Literal("complaint"),
-        Schema.Literal("unsubscribe"),
-        Schema.Literal("manual"),
+        Schema.Union([
+          Schema.Literal("bounce"),
+          Schema.Literal("complaint"),
+          Schema.Literal("unsubscribe"),
+          Schema.Literal("manual"),
+        ]),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  status: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("active"), Schema.Literal("expired")]),
-      Schema.Null,
-    ]),
-  ),
-  search: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(256).annotate({ expected: "a string with at most 256 code points" }),
-      ).check(
-        Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
+    ),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("active"), Schema.Literal("expired")]),
+        Schema.Null,
+      ]),
+    ),
+    search: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(256).annotate({
+            expected: "a string with at most 256 code points",
           }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+        ).check(
+          Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type EmailListSuppressions200 = SuppressionPage;
 export const EmailListSuppressions200 = SuppressionPage;
 export type EmailListSuppressions401 = UnauthorizedError;
@@ -3752,9 +3877,8 @@ export const EmailListSuppressions500 = InternalError;
 export type EmailListSuppressions504 = GatewayTimeoutError;
 export const EmailListSuppressions504 = GatewayTimeoutError;
 export type EmailRemoveSuppressionPathParams = { readonly id: SuppressionId };
-export const EmailRemoveSuppressionPathParams = /* @__PURE__ */ Schema.Struct({
-  id: SuppressionId,
-});
+export const EmailRemoveSuppressionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: SuppressionId }))();
 export type EmailRemoveSuppression200 = SuccessResult;
 export const EmailRemoveSuppression200 = SuccessResult;
 export type EmailRemoveSuppression401 = UnauthorizedError;
@@ -3801,10 +3925,11 @@ export type EmailUpdateTrackingDefaultsRequestJson = {
   readonly opens?: boolean;
   readonly clicks?: boolean;
 };
-export const EmailUpdateTrackingDefaultsRequestJson = /* @__PURE__ */ Schema.Struct({
-  opens: Schema.optionalKey(Schema.Boolean),
-  clicks: Schema.optionalKey(Schema.Boolean),
-});
+export const EmailUpdateTrackingDefaultsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    opens: Schema.optionalKey(Schema.Boolean),
+    clicks: Schema.optionalKey(Schema.Boolean),
+  }))();
 export type EmailUpdateTrackingDefaults200 = EmailTrackingDefaults;
 export const EmailUpdateTrackingDefaults200 = EmailTrackingDefaults;
 export type EmailUpdateTrackingDefaults401 = UnauthorizedError;
@@ -3820,9 +3945,8 @@ export const EmailUpdateTrackingDefaults500 = InternalError;
 export type EmailUpdateTrackingDefaults504 = GatewayTimeoutError;
 export const EmailUpdateTrackingDefaults504 = GatewayTimeoutError;
 export type EmailGetRecipientTrackingPreferenceQuery = { readonly email: TrackingRecipientEmail };
-export const EmailGetRecipientTrackingPreferenceQuery = /* @__PURE__ */ Schema.Struct({
-  email: TrackingRecipientEmail,
-});
+export const EmailGetRecipientTrackingPreferenceQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({ email: TrackingRecipientEmail }))();
 export type EmailGetRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
 export const EmailGetRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
 export type EmailGetRecipientTrackingPreference401 = UnauthorizedError;
@@ -3839,10 +3963,8 @@ export type EmailUpdateRecipientTrackingPreferenceRequestJson = {
   readonly email: TrackingRecipientEmail;
   readonly optedOut: boolean;
 };
-export const EmailUpdateRecipientTrackingPreferenceRequestJson = /* @__PURE__ */ Schema.Struct({
-  email: TrackingRecipientEmail,
-  optedOut: Schema.Boolean,
-});
+export const EmailUpdateRecipientTrackingPreferenceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ email: TrackingRecipientEmail, optedOut: Schema.Boolean }))();
 export type EmailUpdateRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
 export const EmailUpdateRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
 export type EmailUpdateRecipientTrackingPreference401 = UnauthorizedError;

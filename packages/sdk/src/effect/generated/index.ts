@@ -25,10 +25,12 @@ import { MessagesGroup } from "./messages";
 import { NamespacesGroup } from "./namespaces";
 import { OperationsGroup } from "./operations";
 import { OrganizationsGroup } from "./organizations";
+import { PublicationDomainsGroup } from "./publication-domains";
 import { ScheduledMessagesGroup } from "./scheduled-messages";
 import { SubscriptionsGroup } from "./subscriptions";
 import { TemplatesGroup } from "./templates";
 import { TopicFormsGroup } from "./topic-forms";
+import { TopicIssuesGroup } from "./topic-issues";
 import { TopicsGroup } from "./topics";
 import { WebhooksGroup } from "./webhooks";
 import { WhoamiGroup } from "./whoami";
@@ -91,6 +93,10 @@ export * from "./topics";
 
 export * from "./topic-forms";
 
+export * from "./topic-issues";
+
+export * from "./publication-domains";
+
 export * from "./webhooks";
 
 export * from "./whoami";
@@ -132,6 +138,8 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     TemplatesGroup,
     TopicsGroup,
     TopicFormsGroup,
+    TopicIssuesGroup,
+    PublicationDomainsGroup,
     WebhooksGroup,
     WhoamiGroup,
   ) {}

@@ -31,59 +31,60 @@ export type BatchEventsResult = {
     readonly error?: string | null;
   }>;
 };
-export const BatchEventsResult = /* @__PURE__ */ Schema.Struct({
-  total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
+export const BatchEventsResult = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    accepted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    errors: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    results: Schema.Array(
+      Schema.Struct({
+        index: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+              expected: "a value greater than or equal to -9007199254740991",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        status: Schema.Union([Schema.Literal("accepted"), Schema.Literal("error")]),
+        event: Schema.optionalKey(Schema.Union([ContactEvent, Schema.Null])),
+        error: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
       }),
     ),
-  accepted: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  errors: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  results: Schema.Array(
-    Schema.Struct({
-      index: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-            expected: "a value greater than or equal to -9007199254740991",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      status: Schema.Union([Schema.Literal("accepted"), Schema.Literal("error")]),
-      event: Schema.optionalKey(Schema.Union([ContactEvent, Schema.Null])),
-      error: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    }),
-  ),
-}).annotate({ identifier: "BatchEventsResult" });
+  }).annotate({ identifier: "BatchEventsResult" }))();
 export type EventsCreateRequestJson = {
   readonly contact: ContactEventReference;
   readonly name: string;
@@ -91,44 +92,45 @@ export type EventsCreateRequestJson = {
   readonly occurredAt?: string | null;
   readonly idempotencyKey?: string | null;
 };
-export const EventsCreateRequestJson = /* @__PURE__ */ Schema.Struct({
-  contact: ContactEventReference,
-  name: Schema.String.check(
-    Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-  )
-    .check(
-      Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+export const EventsCreateRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contact: ContactEventReference,
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
-    .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
-    .check(
-      Schema.isPattern(
-        new RegExp(
-          "^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
-      }),
-    ),
-  properties: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-  occurredAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  idempotencyKey: Schema.optionalKey(
-    Schema.Union([
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
       )
-        .check(
-          Schema.isMaxCodePoints(255).annotate({
-            expected: "a string with at most 255 code points",
-          }),
+      .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
+      .check(
+        Schema.isPattern(
+          new RegExp(
+            "^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
+        }),
+      ),
+    properties: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+    occurredAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    idempotencyKey: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         )
-        .check(
-          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-        ),
-      Schema.Null,
-    ]),
-  ),
-});
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EventsCreate200 = ContactEvent;
 export const EventsCreate200 = ContactEvent;
 export type EventsCreate401 = UnauthorizedError;
@@ -152,11 +154,12 @@ export const EventsCreate504 = GatewayTimeoutError;
 export type EventsBatchRequestJson = {
   readonly events: readonly [CreateEventPayload, ...Array<CreateEventPayload>];
 };
-export const EventsBatchRequestJson = /* @__PURE__ */ Schema.Struct({
-  events: Schema.TupleWithRest(Schema.Tuple([CreateEventPayload]), [CreateEventPayload]).check(
-    Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
-  ),
-});
+export const EventsBatchRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    events: Schema.TupleWithRest(Schema.Tuple([CreateEventPayload]), [CreateEventPayload]).check(
+      Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+    ),
+  }))();
 export type EventsBatch200 = BatchEventsResult;
 export const EventsBatch200 = BatchEventsResult;
 export type EventsBatch401 = UnauthorizedError;

@@ -46,54 +46,59 @@ import {
 } from "./shared";
 
 export type MessageSender = { readonly address: string; readonly name: string | null };
-export const MessageSender = /* @__PURE__ */ Schema.Struct({
-  address: Schema.String,
-  name: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MessageSender" });
+export const MessageSender = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    address: Schema.String,
+    name: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MessageSender" }))();
 export type SubmissionClient = {
   readonly surface: "typescript-promise" | "typescript-effect" | "cli" | "mcp";
   readonly version: string;
 };
-export const SubmissionClient = /* @__PURE__ */ Schema.Struct({
-  surface: Schema.Union([
-    Schema.Literal("typescript-promise"),
-    Schema.Literal("typescript-effect"),
-    Schema.Literal("cli"),
-    Schema.Literal("mcp"),
-  ]),
-  version: Schema.String,
-}).annotate({ identifier: "SubmissionClient" });
+export const SubmissionClient = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    surface: Schema.Union([
+      Schema.Literal("typescript-promise"),
+      Schema.Literal("typescript-effect"),
+      Schema.Literal("cli"),
+      Schema.Literal("mcp"),
+    ]),
+    version: Schema.String,
+  }).annotate({ identifier: "SubmissionClient" }))();
 export type MessageDeliveryId = string & EffectBrand.Brand<"MessageDeliveryId">;
-export const MessageDeliveryId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "MessageDeliveryId",
-  }),
-).pipe(Schema.brand("MessageDeliveryId"));
+export const MessageDeliveryId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MessageDeliveryId",
+    }),
+  ).pipe(Schema.brand("MessageDeliveryId")))();
 export type MessageDeliveryError = {
   readonly code: string | null;
   readonly message: string | null;
   readonly retryable: boolean | null;
 };
-export const MessageDeliveryError = /* @__PURE__ */ Schema.Struct({
-  code: Schema.Union([Schema.String, Schema.Null]),
-  message: Schema.Union([Schema.String, Schema.Null]),
-  retryable: Schema.Union([Schema.Boolean, Schema.Null]),
-}).annotate({ identifier: "MessageDeliveryError" });
+export const MessageDeliveryError = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    code: Schema.Union([Schema.String, Schema.Null]),
+    message: Schema.Union([Schema.String, Schema.Null]),
+    retryable: Schema.Union([Schema.Boolean, Schema.Null]),
+  }).annotate({ identifier: "MessageDeliveryError" }))();
 export type EstimatedProviderCost = {
   readonly amount: string;
   readonly currency: string;
   readonly billingMode: "pass_through";
 };
-export const EstimatedProviderCost = /* @__PURE__ */ Schema.Struct({
-  amount: Schema.String.check(
-    Schema.isPattern(new RegExp("^\\d+\\.\\d+$", "u")).annotate({
-      expected: "a string matching the RegExp ^\\d+\\.\\d+$",
-    }),
-  ),
-  currency: Schema.String,
-  billingMode: Schema.Literal("pass_through"),
-}).annotate({ identifier: "EstimatedProviderCost" });
+export const EstimatedProviderCost = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    amount: Schema.String.check(
+      Schema.isPattern(new RegExp("^\\d+\\.\\d+$", "u")).annotate({
+        expected: "a string matching the RegExp ^\\d+\\.\\d+$",
+      }),
+    ),
+    currency: Schema.String,
+    billingMode: Schema.Literal("pass_through"),
+  }).annotate({ identifier: "EstimatedProviderCost" }))();
 export type DeliveryErrorDetails = {
   readonly code?: string | null;
   readonly name?: string | null;
@@ -101,37 +106,40 @@ export type DeliveryErrorDetails = {
   readonly details?: { readonly [x: string]: string | number | null } | null;
   readonly retryable?: boolean | null;
 };
-export const DeliveryErrorDetails = /* @__PURE__ */ Schema.Struct({
-  code: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  message: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  details: Schema.optionalKey(
-    Schema.Union([
-      Schema.Record(
-        Schema.String,
-        Schema.Union([
+export const DeliveryErrorDetails = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    code: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    message: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    details: Schema.optionalKey(
+      Schema.Union([
+        Schema.Record(
           Schema.String,
-          Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-          Schema.Null,
-        ]),
-      ),
-      Schema.Null,
-    ]),
-  ),
-  retryable: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-}).annotate({ identifier: "DeliveryErrorDetails" });
+          Schema.Union([
+            Schema.String,
+            Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+            Schema.Null,
+          ]),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    retryable: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+  }).annotate({ identifier: "DeliveryErrorDetails" }))();
 export type EmailAddress = { readonly email: string; readonly name: string | null };
-export const EmailAddress = /* @__PURE__ */ Schema.Struct({
-  email: Schema.String,
-  name: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "EmailAddress" });
+export const EmailAddress = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.String,
+    name: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "EmailAddress" }))();
 export type MessageEventId = string & EffectBrand.Brand<"MessageEventId">;
-export const MessageEventId = /* @__PURE__ */ Schema.String.check(
-  Schema.isPattern(new RegExp("^mevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-    expected: "a string matching the RegExp ^mevt_[0-9a-hjkmnp-tv-z]{16,24}$",
-    identifier: "MessageEventId",
-  }),
-).pipe(Schema.brand("MessageEventId"));
+export const MessageEventId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new RegExp("^mevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^mevt_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MessageEventId",
+    }),
+  ).pipe(Schema.brand("MessageEventId")))();
 export type ValidateEmailResponse = {
   readonly valid: true;
   readonly from: { readonly email: string; readonly name: string | null };
@@ -143,42 +151,44 @@ export type ValidateEmailResponse = {
     readonly hasText: boolean;
   };
 };
-export const ValidateEmailResponse = /* @__PURE__ */ Schema.Struct({
-  valid: Schema.Literal(true),
-  from: Schema.Struct({ email: Schema.String, name: Schema.Union([Schema.String, Schema.Null]) }),
-  recipientCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-        expected: "a value greater than or equal to -9007199254740991",
-      }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
-      }),
-    ),
-  content: Schema.Struct({
-    source: Schema.Union([Schema.Literal("inline"), Schema.Literal("template")]),
-    subject: Schema.String,
-    hasHtml: Schema.Boolean,
-    hasText: Schema.Boolean,
-  }),
-}).annotate({ identifier: "ValidateEmailResponse" });
+export const ValidateEmailResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    valid: Schema.Literal(true),
+    from: Schema.Struct({ email: Schema.String, name: Schema.Union([Schema.String, Schema.Null]) }),
+    recipientCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    content: Schema.Struct({
+      source: Schema.Union([Schema.Literal("inline"), Schema.Literal("template")]),
+      subject: Schema.String,
+      hasHtml: Schema.Boolean,
+      hasText: Schema.Boolean,
+    }),
+  }).annotate({ identifier: "ValidateEmailResponse" }))();
 export type SubmissionCredential =
   | { readonly kind: "api_key"; readonly apiKeyId: ApiKeyId | null }
   | { readonly kind: "oauth"; readonly clientId: string | null }
   | { readonly kind: "session" };
-export const SubmissionCredential = /* @__PURE__ */ Schema.Union([
-  Schema.Struct({
-    kind: Schema.Literal("api_key"),
-    apiKeyId: Schema.Union([ApiKeyId, Schema.Null]),
-  }),
-  Schema.Struct({
-    kind: Schema.Literal("oauth"),
-    clientId: Schema.Union([Schema.String, Schema.Null]),
-  }),
-  Schema.Struct({ kind: Schema.Literal("session") }),
-]).annotate({ identifier: "SubmissionCredential" });
+export const SubmissionCredential = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      kind: Schema.Literal("api_key"),
+      apiKeyId: Schema.Union([ApiKeyId, Schema.Null]),
+    }),
+    Schema.Struct({
+      kind: Schema.Literal("oauth"),
+      clientId: Schema.Union([Schema.String, Schema.Null]),
+    }),
+    Schema.Struct({ kind: Schema.Literal("session") }),
+  ]).annotate({ identifier: "SubmissionCredential" }))();
 export type MessageContent = {
   readonly text?: string | null;
   readonly html?: string | null;
@@ -201,51 +211,53 @@ export type MessageContent = {
   } | null;
   readonly metadata?: { readonly [x: string]: JsonValue } | null;
 };
-export const MessageContent = /* @__PURE__ */ Schema.Struct({
-  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  markdown: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  email: Schema.optionalKey(
-    Schema.Union([
-      Schema.Struct({
-        subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-        headers: Schema.optionalKey(
-          Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
-        ),
-        tracking: Schema.optionalKey(EmailTrackingOverrideV1),
-        attachments: Schema.optionalKey(
-          Schema.Union([
-            Schema.Array(
-              Schema.Struct({
-                filename: Schema.String,
-                contentId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                isInline: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-                content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
-                contentType: Schema.String,
-                size: Schema.Finite.check(
-                  Schema.isFinite().annotate({ expected: "a finite number" }),
-                ),
-              }),
-            ),
-            Schema.Null,
-          ]),
-        ),
-      }),
-      Schema.Null,
-    ]),
-  ),
-  metadata: Schema.optionalKey(
-    Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  ),
-}).annotate({ identifier: "MessageContent" });
+export const MessageContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    markdown: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    email: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          headers: Schema.optionalKey(
+            Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
+          ),
+          tracking: Schema.optionalKey(EmailTrackingOverrideV1),
+          attachments: Schema.optionalKey(
+            Schema.Union([
+              Schema.Array(
+                Schema.Struct({
+                  filename: Schema.String,
+                  contentId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                  isInline: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+                  content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                  mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
+                  contentType: Schema.String,
+                  size: Schema.Finite.check(
+                    Schema.isFinite().annotate({ expected: "a finite number" }),
+                  ),
+                }),
+              ),
+              Schema.Null,
+            ]),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    metadata: Schema.optionalKey(
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    ),
+  }).annotate({ identifier: "MessageContent" }))();
 export type MessageAddress = { readonly address: string; readonly contactId: ContactId | null };
-export const MessageAddress = /* @__PURE__ */ Schema.Struct({
-  address: Schema.String,
-  contactId: Schema.Union([ContactId, Schema.Null]),
-}).annotate({ identifier: "MessageAddress" });
+export const MessageAddress = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    address: Schema.String,
+    contactId: Schema.Union([ContactId, Schema.Null]),
+  }).annotate({ identifier: "MessageAddress" }))();
 export type MessageDelivery = {
   readonly id: MessageDeliveryId;
   readonly recipient: string | null;
@@ -284,48 +296,49 @@ export type MessageDelivery = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const MessageDelivery = /* @__PURE__ */ Schema.Struct({
-  id: MessageDeliveryId,
-  recipient: Schema.Union([Schema.String, Schema.Null]),
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("scheduled"),
-    Schema.Literal("queued"),
-    Schema.Literal("processing"),
-    Schema.Literal("sent"),
-    Schema.Literal("delivered"),
-    Schema.Literal("read"),
-    Schema.Literal("failed"),
-    Schema.Literal("bounced"),
-    Schema.Literal("complained"),
-  ]),
-  attemptCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  waitReason: Schema.Union([
-    Schema.Union([
-      Schema.Literal("rate"),
-      Schema.Literal("daily-quota"),
-      Schema.Literal("domain-health"),
-      Schema.Literal("sending-paused"),
-      Schema.Literal("upstream-unavailable"),
-      Schema.Literal("retry"),
-      Schema.Literal("campaign-paused"),
-      Schema.Literal("domain-warming"),
-      Schema.Literal("onboarding-review"),
-      Schema.Literal("content-review"),
-      Schema.Literal("screening-unavailable"),
+export const MessageDelivery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageDeliveryId,
+    recipient: Schema.Union([Schema.String, Schema.Null]),
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("queued"),
+      Schema.Literal("processing"),
+      Schema.Literal("sent"),
+      Schema.Literal("delivered"),
+      Schema.Literal("read"),
+      Schema.Literal("failed"),
+      Schema.Literal("bounced"),
+      Schema.Literal("complained"),
     ]),
-    Schema.Null,
-  ]),
-  nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
-  sentAt: Schema.Union([Schema.String, Schema.Null]),
-  deliveredAt: Schema.Union([Schema.String, Schema.Null]),
-  readAt: Schema.Union([Schema.String, Schema.Null]),
-  failedAt: Schema.Union([Schema.String, Schema.Null]),
-  error: Schema.Union([MessageDeliveryError, Schema.Null]),
-  estimatedProviderCost: Schema.Union([EstimatedProviderCost, Schema.Null]),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "MessageDelivery" });
+    attemptCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    waitReason: Schema.Union([
+      Schema.Union([
+        Schema.Literal("rate"),
+        Schema.Literal("daily-quota"),
+        Schema.Literal("domain-health"),
+        Schema.Literal("sending-paused"),
+        Schema.Literal("upstream-unavailable"),
+        Schema.Literal("retry"),
+        Schema.Literal("campaign-paused"),
+        Schema.Literal("domain-warming"),
+        Schema.Literal("onboarding-review"),
+        Schema.Literal("content-review"),
+        Schema.Literal("screening-unavailable"),
+      ]),
+      Schema.Null,
+    ]),
+    nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
+    sentAt: Schema.Union([Schema.String, Schema.Null]),
+    deliveredAt: Schema.Union([Schema.String, Schema.Null]),
+    readAt: Schema.Union([Schema.String, Schema.Null]),
+    failedAt: Schema.Union([Schema.String, Schema.Null]),
+    error: Schema.Union([MessageDeliveryError, Schema.Null]),
+    estimatedProviderCost: Schema.Union([EstimatedProviderCost, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MessageDelivery" }))();
 export type MessageEventPage = {
   readonly items: ReadonlyArray<{
     readonly id: MessageEventId;
@@ -337,21 +350,22 @@ export type MessageEventPage = {
   }>;
   readonly nextCursor: string | null;
 };
-export const MessageEventPage = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(
-    Schema.Struct({
-      id: MessageEventId,
-      messageId: MessageId,
-      eventType: Schema.String,
-      status: Schema.String,
-      timestamp: Schema.String,
-      metadata: Schema.optionalKey(
-        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-      ),
-    }),
-  ),
-  nextCursor: Schema.Union([Schema.String, Schema.Null]),
-}).annotate({ identifier: "MessageEventPage" });
+export const MessageEventPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(
+      Schema.Struct({
+        id: MessageEventId,
+        messageId: MessageId,
+        eventType: Schema.String,
+        status: Schema.String,
+        timestamp: Schema.String,
+        metadata: Schema.optionalKey(
+          Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+        ),
+      }),
+    ),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MessageEventPage" }))();
 export type MessageSubmission = {
   readonly origin:
     | "direct"
@@ -366,21 +380,22 @@ export type MessageSubmission = {
   readonly userId: UserId | null;
   readonly client: SubmissionClient | null;
 };
-export const MessageSubmission = /* @__PURE__ */ Schema.Struct({
-  origin: Schema.Union([
-    Schema.Literal("direct"),
-    Schema.Literal("campaign"),
-    Schema.Literal("scheduled"),
-    Schema.Literal("mailbox"),
-    Schema.Literal("forwarding"),
-    Schema.Literal("journey"),
-    Schema.Literal("businessApp"),
-  ]),
-  transport: Schema.Union([Schema.Literal("http"), Schema.Null]),
-  credential: Schema.Union([SubmissionCredential, Schema.Null]),
-  userId: Schema.Union([UserId, Schema.Null]),
-  client: Schema.Union([SubmissionClient, Schema.Null]),
-}).annotate({ identifier: "MessageSubmission" });
+export const MessageSubmission = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    origin: Schema.Union([
+      Schema.Literal("direct"),
+      Schema.Literal("campaign"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("mailbox"),
+      Schema.Literal("forwarding"),
+      Schema.Literal("journey"),
+      Schema.Literal("businessApp"),
+    ]),
+    transport: Schema.Union([Schema.Literal("http"), Schema.Null]),
+    credential: Schema.Union([SubmissionCredential, Schema.Null]),
+    userId: Schema.Union([UserId, Schema.Null]),
+    client: Schema.Union([SubmissionClient, Schema.Null]),
+  }).annotate({ identifier: "MessageSubmission" }))();
 export type MessageReceipt = {
   readonly id: MessageId;
   readonly status:
@@ -411,44 +426,46 @@ export type MessageReceipt = {
   readonly skippedRecipients: ReadonlyArray<SkippedRecipient>;
   readonly createdAt: string;
 };
-export const MessageReceipt = /* @__PURE__ */ Schema.Struct({
-  id: MessageId,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("scheduled"),
-    Schema.Literal("queued"),
-    Schema.Literal("processing"),
-    Schema.Literal("sent"),
-    Schema.Literal("delivered"),
-    Schema.Literal("read"),
-    Schema.Literal("failed"),
-    Schema.Literal("bounced"),
-    Schema.Literal("complained"),
-  ]),
-  waitReason: Schema.Union([
-    Schema.Union([
-      Schema.Literal("rate"),
-      Schema.Literal("daily-quota"),
-      Schema.Literal("domain-health"),
-      Schema.Literal("sending-paused"),
-      Schema.Literal("upstream-unavailable"),
-      Schema.Literal("retry"),
-      Schema.Literal("campaign-paused"),
-      Schema.Literal("domain-warming"),
-      Schema.Literal("onboarding-review"),
-      Schema.Literal("content-review"),
-      Schema.Literal("screening-unavailable"),
+export const MessageReceipt = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("queued"),
+      Schema.Literal("processing"),
+      Schema.Literal("sent"),
+      Schema.Literal("delivered"),
+      Schema.Literal("read"),
+      Schema.Literal("failed"),
+      Schema.Literal("bounced"),
+      Schema.Literal("complained"),
     ]),
-    Schema.Null,
-  ]),
-  reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
-  skippedRecipients: Schema.Array(SkippedRecipient),
-  createdAt: Schema.String,
-}).annotate({ identifier: "MessageReceipt" });
+    waitReason: Schema.Union([
+      Schema.Union([
+        Schema.Literal("rate"),
+        Schema.Literal("daily-quota"),
+        Schema.Literal("domain-health"),
+        Schema.Literal("sending-paused"),
+        Schema.Literal("upstream-unavailable"),
+        Schema.Literal("retry"),
+        Schema.Literal("campaign-paused"),
+        Schema.Literal("domain-warming"),
+        Schema.Literal("onboarding-review"),
+        Schema.Literal("content-review"),
+        Schema.Literal("screening-unavailable"),
+      ]),
+      Schema.Null,
+    ]),
+    reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
+    skippedRecipients: Schema.Array(SkippedRecipient),
+    createdAt: Schema.String,
+  }).annotate({ identifier: "MessageReceipt" }))();
 export type MessageDeliveryList = { readonly items: ReadonlyArray<MessageDelivery> };
-export const MessageDeliveryList = /* @__PURE__ */ Schema.Struct({
-  items: Schema.Array(MessageDelivery),
-}).annotate({ identifier: "MessageDeliveryList" });
+export const MessageDeliveryList = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(MessageDelivery) }).annotate({
+    identifier: "MessageDeliveryList",
+  }))();
 export type Message = {
   readonly id: MessageId;
   readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
@@ -496,59 +513,60 @@ export type Message = {
   readonly createdAt: string;
   readonly updatedAt: string;
 };
-export const Message = /* @__PURE__ */ Schema.Struct({
-  id: MessageId,
-  campaign: Schema.optionalKey(
-    Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
-  ),
-  channel: Schema.Literal("email"),
-  direction: Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("scheduled"),
-    Schema.Literal("queued"),
-    Schema.Literal("processing"),
-    Schema.Literal("sent"),
-    Schema.Literal("delivered"),
-    Schema.Literal("read"),
-    Schema.Literal("failed"),
-    Schema.Literal("bounced"),
-    Schema.Literal("complained"),
-  ]),
-  from: Schema.Union([MessageSender, Schema.Null]),
-  to: Schema.Array(MessageAddress),
-  cc: Schema.Array(MessageAddress),
-  bcc: Schema.Array(MessageAddress),
-  replyTo: Schema.Array(Schema.String),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  conversationId: Schema.Union([ConversationId, Schema.Null]),
-  inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-  tags: Schema.Array(Schema.String),
-  metadata: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-  isTest: Schema.Boolean,
-  scheduledAt: Schema.Union([Schema.String, Schema.Null]),
-  submission: Schema.Union([MessageSubmission, Schema.Null]),
-  waitReason: Schema.Union([
-    Schema.Union([
-      Schema.Literal("rate"),
-      Schema.Literal("daily-quota"),
-      Schema.Literal("domain-health"),
-      Schema.Literal("sending-paused"),
-      Schema.Literal("upstream-unavailable"),
-      Schema.Literal("retry"),
-      Schema.Literal("campaign-paused"),
-      Schema.Literal("domain-warming"),
-      Schema.Literal("onboarding-review"),
-      Schema.Literal("content-review"),
-      Schema.Literal("screening-unavailable"),
+export const Message = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    campaign: Schema.optionalKey(
+      Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
+    ),
+    channel: Schema.Literal("email"),
+    direction: Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("queued"),
+      Schema.Literal("processing"),
+      Schema.Literal("sent"),
+      Schema.Literal("delivered"),
+      Schema.Literal("read"),
+      Schema.Literal("failed"),
+      Schema.Literal("bounced"),
+      Schema.Literal("complained"),
     ]),
-    Schema.Null,
-  ]),
-  reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
-  skippedRecipients: Schema.Array(SkippedRecipient),
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-}).annotate({ identifier: "Message" });
+    from: Schema.Union([MessageSender, Schema.Null]),
+    to: Schema.Array(MessageAddress),
+    cc: Schema.Array(MessageAddress),
+    bcc: Schema.Array(MessageAddress),
+    replyTo: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    conversationId: Schema.Union([ConversationId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+    tags: Schema.Array(Schema.String),
+    metadata: Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    isTest: Schema.Boolean,
+    scheduledAt: Schema.Union([Schema.String, Schema.Null]),
+    submission: Schema.Union([MessageSubmission, Schema.Null]),
+    waitReason: Schema.Union([
+      Schema.Union([
+        Schema.Literal("rate"),
+        Schema.Literal("daily-quota"),
+        Schema.Literal("domain-health"),
+        Schema.Literal("sending-paused"),
+        Schema.Literal("upstream-unavailable"),
+        Schema.Literal("retry"),
+        Schema.Literal("campaign-paused"),
+        Schema.Literal("domain-warming"),
+        Schema.Literal("onboarding-review"),
+        Schema.Literal("content-review"),
+        Schema.Literal("screening-unavailable"),
+      ]),
+      Schema.Null,
+    ]),
+    reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
+    skippedRecipients: Schema.Array(SkippedRecipient),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Message" }))();
 export type MessagesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
@@ -573,57 +591,58 @@ export type MessagesListQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
 };
-export const MessagesListQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-  channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-  direction: Schema.optionalKey(
-    Schema.Union([
-      Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
-      Schema.Null,
-    ]),
-  ),
-  status: Schema.optionalKey(
-    Schema.Union([
+export const MessagesListQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("scheduled"),
-        Schema.Literal("queued"),
-        Schema.Literal("processing"),
-        Schema.Literal("sent"),
-        Schema.Literal("delivered"),
-        Schema.Literal("read"),
-        Schema.Literal("failed"),
-        Schema.Literal("bounced"),
-        Schema.Literal("complained"),
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
       ]),
-      Schema.Null,
-    ]),
-  ),
-  conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-  contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
-  from: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  namespaceId: Schema.optionalKey(
-    Schema.Union([NamespaceId, Schema.Null]).annotate({
-      description:
-        "Only this namespace's messages. A key scoped to a namespace always lists its own.",
-    }),
-  ),
-  after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-});
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    direction: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
+        Schema.Null,
+      ]),
+    ),
+    status: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("scheduled"),
+          Schema.Literal("queued"),
+          Schema.Literal("processing"),
+          Schema.Literal("sent"),
+          Schema.Literal("delivered"),
+          Schema.Literal("read"),
+          Schema.Literal("failed"),
+          Schema.Literal("bounced"),
+          Schema.Literal("complained"),
+        ]),
+        Schema.Null,
+      ]),
+    ),
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
+    from: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "Only this namespace's messages. A key scoped to a namespace always lists its own.",
+      }),
+    ),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }))();
 export type MessagesList200 = MessagePage;
 export const MessagesList200 = MessagePage;
 export type MessagesList401 = UnauthorizedError;
@@ -637,21 +656,22 @@ export const MessagesList500 = InternalError;
 export type MessagesList504 = GatewayTimeoutError;
 export const MessagesList504 = GatewayTimeoutError;
 export type MessagesSendHeaders = { readonly "idempotency-key"?: string | null };
-export const MessagesSendHeaders = /* @__PURE__ */ Schema.Struct({
-  "idempotency-key": Schema.optionalKey(
-    Schema.Union([
-      Schema.String.annotate({
-        description:
-          "Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.",
-      }).check(
-        Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-        }),
-      ),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MessagesSendHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.",
+        }).check(
+          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
+            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MessagesSendRequestJson = {
   readonly conversationId?: ConversationId | null | null;
   readonly metadata?: MessageMetadata;
@@ -662,18 +682,19 @@ export type MessagesSendRequestJson = {
   readonly from?: EmailSender;
   readonly email: EmailContent;
 };
-export const MessagesSendRequestJson = /* @__PURE__ */ Schema.Struct({
-  conversationId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(MessageMetadata),
-  channel: Schema.Literal("email"),
-  to: EmailRecipients,
-  cc: Schema.optionalKey(EmailCcRecipients),
-  bcc: Schema.optionalKey(EmailBccRecipients),
-  from: Schema.optionalKey(EmailSender),
-  email: EmailContent,
-});
+export const MessagesSendRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("email"),
+    to: EmailRecipients,
+    cc: Schema.optionalKey(EmailCcRecipients),
+    bcc: Schema.optionalKey(EmailBccRecipients),
+    from: Schema.optionalKey(EmailSender),
+    email: EmailContent,
+  }))();
 export type MessagesSend201 = MessageReceipt;
 export const MessagesSend201 = MessageReceipt;
 export type MessagesSend401 = UnauthorizedError;
@@ -681,38 +702,29 @@ export const MessagesSend401 = UnauthorizedError;
 export type MessagesSend402 = PaymentRequiredError;
 export const MessagesSend402 = PaymentRequiredError;
 export type MessagesSend403 = ForbiddenError | OnboardingReviewRequiredError | FlagDisabledError;
-export const MessagesSend403 = /* @__PURE__ */ Schema.Union([
-  ForbiddenError,
-  OnboardingReviewRequiredError,
-  FlagDisabledError,
-]);
+export const MessagesSend403 = /* @__PURE__ */ (() =>
+  Schema.Union([ForbiddenError, OnboardingReviewRequiredError, FlagDisabledError]))();
 export type MessagesSend404 = ResourceNotFoundError;
 export const MessagesSend404 = ResourceNotFoundError;
 export type MessagesSend409 = ConflictError;
 export const MessagesSend409 = ConflictError;
 export type MessagesSend422 = ValidationError | FromAddressRequiredError;
-export const MessagesSend422 = /* @__PURE__ */ Schema.Union([
-  ValidationError,
-  FromAddressRequiredError,
-]);
+export const MessagesSend422 = /* @__PURE__ */ (() =>
+  Schema.Union([ValidationError, FromAddressRequiredError]))();
 export type MessagesSend429 = RateLimitedError;
 export const MessagesSend429 = RateLimitedError;
 export type MessagesSend500 = InternalError;
 export const MessagesSend500 = InternalError;
 export type MessagesSend502 = BillingProviderError | ExternalServiceError;
-export const MessagesSend502 = /* @__PURE__ */ Schema.Union([
-  BillingProviderError,
-  ExternalServiceError,
-]);
+export const MessagesSend502 = /* @__PURE__ */ (() =>
+  Schema.Union([BillingProviderError, ExternalServiceError]))();
 export type MessagesSend503 = SenderNotReadyError | DeliveryUnavailableError;
-export const MessagesSend503 = /* @__PURE__ */ Schema.Union([
-  SenderNotReadyError,
-  DeliveryUnavailableError,
-]);
+export const MessagesSend503 = /* @__PURE__ */ (() =>
+  Schema.Union([SenderNotReadyError, DeliveryUnavailableError]))();
 export type MessagesSend504 = GatewayTimeoutError;
 export const MessagesSend504 = GatewayTimeoutError;
 export type MessagesGetPathParams = { readonly id: MessageId };
-export const MessagesGetPathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MessageId }))();
 export type MessagesGet200 = Message;
 export const MessagesGet200 = Message;
 export type MessagesGet401 = UnauthorizedError;
@@ -728,12 +740,10 @@ export const MessagesGet500 = InternalError;
 export type MessagesGet504 = GatewayTimeoutError;
 export const MessagesGet504 = GatewayTimeoutError;
 export type MessagesRemovePathParams = { readonly id: MessageId };
-export const MessagesRemovePathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MessageId }))();
 export type MessagesRemove200 = { readonly success: boolean; readonly message: string };
-export const MessagesRemove200 = /* @__PURE__ */ Schema.Struct({
-  success: Schema.Boolean,
-  message: Schema.String,
-});
+export const MessagesRemove200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ success: Schema.Boolean, message: Schema.String }))();
 export type MessagesRemove401 = UnauthorizedError;
 export const MessagesRemove401 = UnauthorizedError;
 export type MessagesRemove403 = ForbiddenError;
@@ -749,7 +759,8 @@ export const MessagesRemove502 = BillingProviderError;
 export type MessagesRemove504 = GatewayTimeoutError;
 export const MessagesRemove504 = GatewayTimeoutError;
 export type MessagesGetContentPathParams = { readonly id: MessageId };
-export const MessagesGetContentPathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesGetContentPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MessageId }))();
 export type MessagesGetContent200 = MessageContent;
 export const MessagesGetContent200 = MessageContent;
 export type MessagesGetContent401 = UnauthorizedError;
@@ -765,7 +776,8 @@ export const MessagesGetContent500 = InternalError;
 export type MessagesGetContent504 = GatewayTimeoutError;
 export const MessagesGetContent504 = GatewayTimeoutError;
 export type MessagesListDeliveriesPathParams = { readonly id: MessageId };
-export const MessagesListDeliveriesPathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesListDeliveriesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MessageId }))();
 export type MessagesListDeliveries200 = MessageDeliveryList;
 export const MessagesListDeliveries200 = MessageDeliveryList;
 export type MessagesListDeliveries401 = UnauthorizedError;
@@ -781,26 +793,28 @@ export const MessagesListDeliveries500 = InternalError;
 export type MessagesListDeliveries504 = GatewayTimeoutError;
 export const MessagesListDeliveries504 = GatewayTimeoutError;
 export type MessagesGetEmailPathParams = { readonly id: MessageId };
-export const MessagesGetEmailPathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesGetEmailPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MessageId }))();
 export type MessagesGetEmailQuery = {
   readonly includeDownloadUrls?: boolean | null;
   readonly urlExpiresIn?: number | null;
 };
-export const MessagesGetEmailQuery = /* @__PURE__ */ Schema.Struct({
-  includeDownloadUrls: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  urlExpiresIn: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(604800).annotate({
-            expected: "a value less than or equal to 604800",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-});
+export const MessagesGetEmailQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    includeDownloadUrls: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    urlExpiresIn: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(604800).annotate({
+              expected: "a value less than or equal to 604800",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type MessagesGetEmail200 = {
   readonly deliveries: ReadonlyArray<{
     readonly scheduling: {
@@ -948,194 +962,104 @@ export type MessagesGetEmail200 = {
   readonly receivedAt: string | null;
   readonly processedAt: string | null;
 };
-export const MessagesGetEmail200 = /* @__PURE__ */ Schema.Struct({
-  deliveries: Schema.Array(
-    Schema.Struct({
-      scheduling: Schema.Union([
-        Schema.Struct({
-          dueAt: Schema.String,
-          expiresAt: Schema.String,
-          waitReason: Schema.Union([
-            Schema.Union([
-              Schema.Literal("rate"),
-              Schema.Literal("daily-quota"),
-              Schema.Literal("domain-health"),
-              Schema.Literal("sending-paused"),
-              Schema.Literal("upstream-unavailable"),
-              Schema.Literal("retry"),
-              Schema.Literal("campaign-paused"),
-              Schema.Literal("domain-warming"),
-              Schema.Literal("onboarding-review"),
-              Schema.Literal("content-review"),
-              Schema.Literal("screening-unavailable"),
+export const MessagesGetEmail200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    deliveries: Schema.Array(
+      Schema.Struct({
+        scheduling: Schema.Union([
+          Schema.Struct({
+            dueAt: Schema.String,
+            expiresAt: Schema.String,
+            waitReason: Schema.Union([
+              Schema.Union([
+                Schema.Literal("rate"),
+                Schema.Literal("daily-quota"),
+                Schema.Literal("domain-health"),
+                Schema.Literal("sending-paused"),
+                Schema.Literal("upstream-unavailable"),
+                Schema.Literal("retry"),
+                Schema.Literal("campaign-paused"),
+                Schema.Literal("domain-warming"),
+                Schema.Literal("onboarding-review"),
+                Schema.Literal("content-review"),
+                Schema.Literal("screening-unavailable"),
+              ]),
+              Schema.Null,
             ]),
-            Schema.Null,
-          ]),
-          reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
-        }),
-        Schema.Null,
-      ]),
-      id: Schema.String,
-      messageId: Schema.String,
-      recipientId: Schema.Union([Schema.String, Schema.Null]),
-      channel: Schema.Literal("email"),
-      status: Schema.Union([
-        Schema.Literal("pending"),
-        Schema.Literal("scheduled"),
-        Schema.Literal("queued"),
-        Schema.Literal("processing"),
-        Schema.Literal("sent"),
-        Schema.Literal("delivered"),
-        Schema.Literal("read"),
-        Schema.Literal("failed"),
-        Schema.Literal("bounced"),
-        Schema.Literal("complained"),
-      ]),
-      attemptCount: Schema.Finite.check(
-        Schema.isFinite().annotate({ expected: "a finite number" }),
-      ),
-      maxAttempts: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      queuedAt: Schema.Union([Schema.String, Schema.Null]),
-      claimedAt: Schema.Union([Schema.String, Schema.Null]),
-      lastAttemptAt: Schema.Union([Schema.String, Schema.Null]),
-      nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
-      sentAt: Schema.Union([Schema.String, Schema.Null]),
-      deliveredAt: Schema.Union([Schema.String, Schema.Null]),
-      readAt: Schema.Union([Schema.String, Schema.Null]),
-      failedAt: Schema.Union([Schema.String, Schema.Null]),
-      terminalAt: Schema.Union([Schema.String, Schema.Null]),
-      errorCode: Schema.Union([Schema.String, Schema.Null]),
-      errorMessage: Schema.Union([Schema.String, Schema.Null]),
-      errorDetails: Schema.Union([DeliveryErrorDetails, Schema.Null]),
-      cost: Schema.String,
-      currency: Schema.String,
-      idempotencyKey: Schema.Union([Schema.String, Schema.Null]),
-      createdAt: Schema.String,
-      updatedAt: Schema.String,
-    }),
-  ),
-  id: MessageId,
-  organizationId: Schema.String,
-  conversationId: Schema.Union([ConversationId, Schema.Null]),
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("scheduled"),
-    Schema.Literal("queued"),
-    Schema.Literal("processing"),
-    Schema.Literal("sent"),
-    Schema.Literal("delivered"),
-    Schema.Literal("read"),
-    Schema.Literal("failed"),
-    Schema.Literal("bounced"),
-    Schema.Literal("complained"),
-  ]),
-  channel: Schema.Literal("email"),
-  direction: Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
-  subject: Schema.Union([Schema.String, Schema.Null]),
-  fromEmail: Schema.String,
-  fromName: Schema.Union([Schema.String, Schema.Null]),
-  toEmails: Schema.Array(EmailAddress),
-  ccEmails: Schema.Union([Schema.Array(EmailAddress), Schema.Null]),
-  bccEmails: Schema.Union([Schema.Array(EmailAddress), Schema.Null]),
-  replyToEmails: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  messageIdHeader: Schema.String,
-  inReplyTo: Schema.Union([Schema.String, Schema.Null]),
-  references: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  threadPosition: Schema.Union([
-    Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    Schema.Null,
-  ]),
-  newContent: Schema.Union([Schema.String, Schema.Null]),
-  quotedContent: Schema.Union([Schema.String, Schema.Null]),
-  hasQuotedContent: Schema.Boolean,
-  dkimVerdict: Schema.Union([
-    Schema.Union([
-      Schema.Literal("pass"),
-      Schema.Literal("fail"),
-      Schema.Literal("softfail"),
-      Schema.Literal("neutral"),
-      Schema.Literal("none"),
-      Schema.Literal("policy"),
-      Schema.Literal("temperror"),
-      Schema.Literal("permerror"),
-    ]),
-    Schema.Null,
-  ]),
-  spfVerdict: Schema.Union([
-    Schema.Union([
-      Schema.Literal("pass"),
-      Schema.Literal("fail"),
-      Schema.Literal("softfail"),
-      Schema.Literal("neutral"),
-      Schema.Literal("none"),
-      Schema.Literal("policy"),
-      Schema.Literal("temperror"),
-      Schema.Literal("permerror"),
-    ]),
-    Schema.Null,
-  ]),
-  dmarcVerdict: Schema.Union([
-    Schema.Union([
-      Schema.Literal("pass"),
-      Schema.Literal("fail"),
-      Schema.Literal("softfail"),
-      Schema.Literal("neutral"),
-      Schema.Literal("none"),
-      Schema.Literal("policy"),
-      Schema.Literal("temperror"),
-      Schema.Literal("permerror"),
-    ]),
-    Schema.Null,
-  ]),
-  isAutoReply: Schema.Boolean,
-  autoReplyReason: Schema.Union([
-    Schema.Union([
-      Schema.Literal("out-of-office"),
-      Schema.Literal("auto-response"),
-      Schema.Literal("delivery-status"),
-      Schema.Literal("read-receipt"),
-    ]),
-    Schema.Null,
-  ]),
-  listUnsubscribeUrl: Schema.Union([Schema.String, Schema.Null]),
-  listUnsubscribeEmail: Schema.Union([Schema.String, Schema.Null]),
-  priority: Schema.Union([
-    Schema.Union([Schema.Literal("high"), Schema.Literal("normal"), Schema.Literal("low")]),
-    Schema.Null,
-  ]),
-  parsingErrors: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
-  parsingDuration: Schema.Union([
-    Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    ),
-    Schema.Null,
-  ]),
-  hasAttachments: Schema.Boolean,
-  attachmentCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-    .check(
-      Schema.isGreaterThanOrEqualTo(0).annotate({ expected: "a value greater than or equal to 0" }),
-    )
-    .check(
-      Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-        expected: "a value less than or equal to 9007199254740991",
+            reviewExpectedAt: Schema.Union([Schema.String, Schema.Null]),
+          }),
+          Schema.Null,
+        ]),
+        id: Schema.String,
+        messageId: Schema.String,
+        recipientId: Schema.Union([Schema.String, Schema.Null]),
+        channel: Schema.Literal("email"),
+        status: Schema.Union([
+          Schema.Literal("pending"),
+          Schema.Literal("scheduled"),
+          Schema.Literal("queued"),
+          Schema.Literal("processing"),
+          Schema.Literal("sent"),
+          Schema.Literal("delivered"),
+          Schema.Literal("read"),
+          Schema.Literal("failed"),
+          Schema.Literal("bounced"),
+          Schema.Literal("complained"),
+        ]),
+        attemptCount: Schema.Finite.check(
+          Schema.isFinite().annotate({ expected: "a finite number" }),
+        ),
+        maxAttempts: Schema.Finite.check(
+          Schema.isFinite().annotate({ expected: "a finite number" }),
+        ),
+        queuedAt: Schema.Union([Schema.String, Schema.Null]),
+        claimedAt: Schema.Union([Schema.String, Schema.Null]),
+        lastAttemptAt: Schema.Union([Schema.String, Schema.Null]),
+        nextRetryAt: Schema.Union([Schema.String, Schema.Null]),
+        sentAt: Schema.Union([Schema.String, Schema.Null]),
+        deliveredAt: Schema.Union([Schema.String, Schema.Null]),
+        readAt: Schema.Union([Schema.String, Schema.Null]),
+        failedAt: Schema.Union([Schema.String, Schema.Null]),
+        terminalAt: Schema.Union([Schema.String, Schema.Null]),
+        errorCode: Schema.Union([Schema.String, Schema.Null]),
+        errorMessage: Schema.Union([Schema.String, Schema.Null]),
+        errorDetails: Schema.Union([DeliveryErrorDetails, Schema.Null]),
+        cost: Schema.String,
+        currency: Schema.String,
+        idempotencyKey: Schema.Union([Schema.String, Schema.Null]),
+        createdAt: Schema.String,
+        updatedAt: Schema.String,
       }),
     ),
-  attachments: Schema.Array(
-    Schema.Struct({
-      id: AttachmentId,
-      filename: Schema.String,
-      contentType: Schema.String,
-      size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+    id: MessageId,
+    organizationId: Schema.String,
+    conversationId: Schema.Union([ConversationId, Schema.Null]),
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("queued"),
+      Schema.Literal("processing"),
+      Schema.Literal("sent"),
+      Schema.Literal("delivered"),
+      Schema.Literal("read"),
+      Schema.Literal("failed"),
+      Schema.Literal("bounced"),
+      Schema.Literal("complained"),
+    ]),
+    channel: Schema.Literal("email"),
+    direction: Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    fromEmail: Schema.String,
+    fromName: Schema.Union([Schema.String, Schema.Null]),
+    toEmails: Schema.Array(EmailAddress),
+    ccEmails: Schema.Union([Schema.Array(EmailAddress), Schema.Null]),
+    bccEmails: Schema.Union([Schema.Array(EmailAddress), Schema.Null]),
+    replyToEmails: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    messageIdHeader: Schema.String,
+    inReplyTo: Schema.Union([Schema.String, Schema.Null]),
+    references: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    threadPosition: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
         .check(
           Schema.isGreaterThanOrEqualTo(0).annotate({
             expected: "a value greater than or equal to 0",
@@ -1146,26 +1070,123 @@ export const MessagesGetEmail200 = /* @__PURE__ */ Schema.Struct({
             expected: "a value less than or equal to 9007199254740991",
           }),
         ),
-      isInline: Schema.Boolean,
-      contentId: Schema.Union([Schema.String, Schema.Null]),
+      Schema.Null,
+    ]),
+    newContent: Schema.Union([Schema.String, Schema.Null]),
+    quotedContent: Schema.Union([Schema.String, Schema.Null]),
+    hasQuotedContent: Schema.Boolean,
+    dkimVerdict: Schema.Union([
+      Schema.Union([
+        Schema.Literal("pass"),
+        Schema.Literal("fail"),
+        Schema.Literal("softfail"),
+        Schema.Literal("neutral"),
+        Schema.Literal("none"),
+        Schema.Literal("policy"),
+        Schema.Literal("temperror"),
+        Schema.Literal("permerror"),
+      ]),
+      Schema.Null,
+    ]),
+    spfVerdict: Schema.Union([
+      Schema.Union([
+        Schema.Literal("pass"),
+        Schema.Literal("fail"),
+        Schema.Literal("softfail"),
+        Schema.Literal("neutral"),
+        Schema.Literal("none"),
+        Schema.Literal("policy"),
+        Schema.Literal("temperror"),
+        Schema.Literal("permerror"),
+      ]),
+      Schema.Null,
+    ]),
+    dmarcVerdict: Schema.Union([
+      Schema.Union([
+        Schema.Literal("pass"),
+        Schema.Literal("fail"),
+        Schema.Literal("softfail"),
+        Schema.Literal("neutral"),
+        Schema.Literal("none"),
+        Schema.Literal("policy"),
+        Schema.Literal("temperror"),
+        Schema.Literal("permerror"),
+      ]),
+      Schema.Null,
+    ]),
+    isAutoReply: Schema.Boolean,
+    autoReplyReason: Schema.Union([
+      Schema.Union([
+        Schema.Literal("out-of-office"),
+        Schema.Literal("auto-response"),
+        Schema.Literal("delivery-status"),
+        Schema.Literal("read-receipt"),
+      ]),
+      Schema.Null,
+    ]),
+    listUnsubscribeUrl: Schema.Union([Schema.String, Schema.Null]),
+    listUnsubscribeEmail: Schema.Union([Schema.String, Schema.Null]),
+    priority: Schema.Union([
+      Schema.Union([Schema.Literal("high"), Schema.Literal("normal"), Schema.Literal("low")]),
+      Schema.Null,
+    ]),
+    parsingErrors: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
+    parsingDuration: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })).check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      ),
+      Schema.Null,
+    ]),
+    hasAttachments: Schema.Boolean,
+    attachmentCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    attachments: Schema.Array(
+      Schema.Struct({
+        id: AttachmentId,
+        filename: Schema.String,
+        contentType: Schema.String,
+        size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        isInline: Schema.Boolean,
+        contentId: Schema.Union([Schema.String, Schema.Null]),
+      }),
+    ),
+    downloadUrls: Schema.Union([
+      Schema.Struct({
+        rawMime: Schema.Union([Schema.String, Schema.Null]),
+        html: Schema.Union([Schema.String, Schema.Null]),
+        text: Schema.Union([Schema.String, Schema.Null]),
+        expiresAt: Schema.String,
+      }),
+      Schema.Null,
+    ]),
+    createdAt: Schema.String,
+    receivedAt: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "When Samva's receiving server accepted the email; null for outbound email. The sender's `Date` header plays no part and stays in the raw MIME.",
     }),
-  ),
-  downloadUrls: Schema.Union([
-    Schema.Struct({
-      rawMime: Schema.Union([Schema.String, Schema.Null]),
-      html: Schema.Union([Schema.String, Schema.Null]),
-      text: Schema.Union([Schema.String, Schema.Null]),
-      expiresAt: Schema.String,
-    }),
-    Schema.Null,
-  ]),
-  createdAt: Schema.String,
-  receivedAt: Schema.Union([Schema.String, Schema.Null]).annotate({
-    description:
-      "When Samva's receiving server accepted the email; null for outbound email. The sender's `Date` header plays no part and stays in the raw MIME.",
-  }),
-  processedAt: Schema.Union([Schema.String, Schema.Null]),
-});
+    processedAt: Schema.Union([Schema.String, Schema.Null]),
+  }))();
 export type MessagesGetEmail401 = UnauthorizedError;
 export const MessagesGetEmail401 = UnauthorizedError;
 export type MessagesGetEmail403 = ForbiddenError;
@@ -1179,27 +1200,29 @@ export const MessagesGetEmail500 = InternalError;
 export type MessagesGetEmail504 = GatewayTimeoutError;
 export const MessagesGetEmail504 = GatewayTimeoutError;
 export type MessagesGetEventsPathParams = { readonly id: MessageId };
-export const MessagesGetEventsPathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesGetEventsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MessageId }))();
 export type MessagesGetEventsQuery = {
   readonly limit?: number | null;
   readonly cursor?: Cursor | null;
 };
-export const MessagesGetEventsQuery = /* @__PURE__ */ Schema.Struct({
-  limit: Schema.optionalKey(
-    Schema.Union([
-      Schema.Finite.annotate({ description: "Items per page, at most 100." })
-        .check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        )
-        .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-      Schema.Null,
-    ]),
-  ),
-  cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-});
+export const MessagesGetEventsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
 export type MessagesGetEvents200 = MessageEventPage;
 export const MessagesGetEvents200 = MessageEventPage;
 export type MessagesGetEvents401 = UnauthorizedError;
@@ -1215,7 +1238,8 @@ export const MessagesGetEvents500 = InternalError;
 export type MessagesGetEvents504 = GatewayTimeoutError;
 export const MessagesGetEvents504 = GatewayTimeoutError;
 export type MessagesGetStatusPathParams = { readonly id: MessageId };
-export const MessagesGetStatusPathParams = /* @__PURE__ */ Schema.Struct({ id: MessageId });
+export const MessagesGetStatusPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MessageId }))();
 export type MessagesGetStatus200 = {
   readonly id: MessageId;
   readonly status:
@@ -1231,22 +1255,23 @@ export type MessagesGetStatus200 = {
     | "complained";
   readonly updatedAt: string;
 };
-export const MessagesGetStatus200 = /* @__PURE__ */ Schema.Struct({
-  id: MessageId,
-  status: Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("scheduled"),
-    Schema.Literal("queued"),
-    Schema.Literal("processing"),
-    Schema.Literal("sent"),
-    Schema.Literal("delivered"),
-    Schema.Literal("read"),
-    Schema.Literal("failed"),
-    Schema.Literal("bounced"),
-    Schema.Literal("complained"),
-  ]),
-  updatedAt: Schema.String,
-});
+export const MessagesGetStatus200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("queued"),
+      Schema.Literal("processing"),
+      Schema.Literal("sent"),
+      Schema.Literal("delivered"),
+      Schema.Literal("read"),
+      Schema.Literal("failed"),
+      Schema.Literal("bounced"),
+      Schema.Literal("complained"),
+    ]),
+    updatedAt: Schema.String,
+  }))();
 export type MessagesGetStatus401 = UnauthorizedError;
 export const MessagesGetStatus401 = UnauthorizedError;
 export type MessagesGetStatus403 = ForbiddenError;
@@ -1269,18 +1294,19 @@ export type MessagesValidateEmailRequestJson = {
   readonly from?: EmailSender;
   readonly email: EmailContent;
 };
-export const MessagesValidateEmailRequestJson = /* @__PURE__ */ Schema.Struct({
-  conversationId: Schema.optionalKey(
-    Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-  ),
-  metadata: Schema.optionalKey(MessageMetadata),
-  channel: Schema.Literal("email"),
-  to: EmailRecipients,
-  cc: Schema.optionalKey(EmailCcRecipients),
-  bcc: Schema.optionalKey(EmailBccRecipients),
-  from: Schema.optionalKey(EmailSender),
-  email: EmailContent,
-});
+export const MessagesValidateEmailRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(
+      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
+    ),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("email"),
+    to: EmailRecipients,
+    cc: Schema.optionalKey(EmailCcRecipients),
+    bcc: Schema.optionalKey(EmailBccRecipients),
+    from: Schema.optionalKey(EmailSender),
+    email: EmailContent,
+  }))();
 export type MessagesValidateEmail200 = ValidateEmailResponse;
 export const MessagesValidateEmail200 = ValidateEmailResponse;
 export type MessagesValidateEmail401 = UnauthorizedError;
@@ -1290,10 +1316,8 @@ export const MessagesValidateEmail403 = ForbiddenError;
 export type MessagesValidateEmail404 = ResourceNotFoundError;
 export const MessagesValidateEmail404 = ResourceNotFoundError;
 export type MessagesValidateEmail422 = ValidationError | FromAddressRequiredError;
-export const MessagesValidateEmail422 = /* @__PURE__ */ Schema.Union([
-  ValidationError,
-  FromAddressRequiredError,
-]);
+export const MessagesValidateEmail422 = /* @__PURE__ */ (() =>
+  Schema.Union([ValidationError, FromAddressRequiredError]))();
 export type MessagesValidateEmail500 = InternalError;
 export const MessagesValidateEmail500 = InternalError;
 export type MessagesValidateEmail503 = SenderNotReadyError;

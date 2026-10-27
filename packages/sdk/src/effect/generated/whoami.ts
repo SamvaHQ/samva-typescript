@@ -15,31 +15,34 @@ import {
 } from "./shared";
 
 export type WhoamiUser = { readonly id: string; readonly name: string; readonly email: string };
-export const WhoamiUser = /* @__PURE__ */ Schema.Struct({
-  id: Schema.String,
-  name: Schema.String,
-  email: Schema.String,
-}).annotate({ identifier: "WhoamiUser" });
+export const WhoamiUser = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: Schema.String, name: Schema.String, email: Schema.String }).annotate({
+    identifier: "WhoamiUser",
+  }))();
 export type WhoamiOrganization = {
   readonly id: OrganizationId;
   readonly slug: string;
   readonly name: string;
 };
-export const WhoamiOrganization = /* @__PURE__ */ Schema.Struct({
-  id: OrganizationId,
-  slug: Schema.String,
-  name: Schema.String,
-}).annotate({ identifier: "WhoamiOrganization" });
+export const WhoamiOrganization = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: OrganizationId, slug: Schema.String, name: Schema.String }).annotate({
+    identifier: "WhoamiOrganization",
+  }))();
 export type WhoamiUserCredential = {
   readonly type: "user";
   readonly user: WhoamiUser;
   readonly role: "member" | "admin" | "owner";
 };
-export const WhoamiUserCredential = /* @__PURE__ */ Schema.Struct({
-  type: Schema.Literal("user"),
-  user: WhoamiUser,
-  role: Schema.Union([Schema.Literal("member"), Schema.Literal("admin"), Schema.Literal("owner")]),
-}).annotate({ identifier: "WhoamiUserCredential" });
+export const WhoamiUserCredential = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Literal("user"),
+    user: WhoamiUser,
+    role: Schema.Union([
+      Schema.Literal("member"),
+      Schema.Literal("admin"),
+      Schema.Literal("owner"),
+    ]),
+  }).annotate({ identifier: "WhoamiUserCredential" }))();
 export type WhoamiApiKeyCredential = {
   readonly type: "apiKey";
   readonly id: string;
@@ -47,21 +50,23 @@ export type WhoamiApiKeyCredential = {
   readonly start: string | null;
   readonly access: ApiKeyAccess;
 };
-export const WhoamiApiKeyCredential = /* @__PURE__ */ Schema.Struct({
-  type: Schema.Literal("apiKey"),
-  id: Schema.String,
-  name: Schema.String,
-  start: Schema.Union([Schema.String, Schema.Null]),
-  access: ApiKeyAccess,
-}).annotate({ identifier: "WhoamiApiKeyCredential" });
+export const WhoamiApiKeyCredential = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Literal("apiKey"),
+    id: Schema.String,
+    name: Schema.String,
+    start: Schema.Union([Schema.String, Schema.Null]),
+    access: ApiKeyAccess,
+  }).annotate({ identifier: "WhoamiApiKeyCredential" }))();
 export type Whoami = {
   readonly organization: WhoamiOrganization;
   readonly credential: WhoamiApiKeyCredential | WhoamiUserCredential;
 };
-export const Whoami = /* @__PURE__ */ Schema.Struct({
-  organization: WhoamiOrganization,
-  credential: Schema.Union([WhoamiApiKeyCredential, WhoamiUserCredential]),
-}).annotate({ identifier: "Whoami" });
+export const Whoami = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    organization: WhoamiOrganization,
+    credential: Schema.Union([WhoamiApiKeyCredential, WhoamiUserCredential]),
+  }).annotate({ identifier: "Whoami" }))();
 export type WhoamiGet200 = Whoami;
 export const WhoamiGet200 = Whoami;
 export type WhoamiGet401 = UnauthorizedError;

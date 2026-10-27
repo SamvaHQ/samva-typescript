@@ -17,6 +17,8 @@ const topic = {
   defaultSenderId: null,
   replyMailboxId: null,
   templateId: null,
+  archiveEnabled: false,
+  publicationSlug: null,
   createdAt: "2026-10-25T00:00:00.000Z",
   updatedAt: "2026-10-25T00:00:00.000Z",
 };
