@@ -169,19 +169,17 @@ export const ContactGroupsListQuery = /* @__PURE__ */ (() =>
     type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
+          Schema.Literal("static"),
+          Schema.Literal("dynamic"),
+          Schema.Literal("smart"),
+        ]),
+        Schema.Array(
           Schema.Union([
             Schema.Literal("static"),
             Schema.Literal("dynamic"),
             Schema.Literal("smart"),
           ]),
-          Schema.Array(
-            Schema.Union([
-              Schema.Literal("static"),
-              Schema.Literal("dynamic"),
-              Schema.Literal("smart"),
-            ]),
-          ),
-        ]),
+        ),
         Schema.Null,
       ]),
     ),
@@ -201,20 +199,18 @@ export type ContactGroupsList504 = GatewayTimeoutError;
 export const ContactGroupsList504 = GatewayTimeoutError;
 export type ContactGroupsCreateRequestJson = {
   readonly name: string;
-  readonly description?: string | null | null;
+  readonly description?: string | null;
   readonly type?: "static" | "dynamic" | "smart" | null;
-  readonly criteria?: { readonly [x: string]: JsonValue } | null | null;
+  readonly criteria?: { readonly [x: string]: JsonValue } | null;
   readonly color?: "clay" | "sand" | "moss" | "sky" | "plum" | "rose" | null | null;
-  readonly icon?: string | null | null;
-  readonly parentGroupId?: ContactGroupId | null | null;
+  readonly icon?: string | null;
+  readonly parentGroupId?: ContactGroupId | null;
   readonly isActive?: boolean | null;
 };
 export const ContactGroupsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.String,
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -226,10 +222,7 @@ export const ContactGroupsCreateRequestJson = /* @__PURE__ */ (() =>
       ]),
     ),
     criteria: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
     ),
     color: Schema.optionalKey(
       Schema.Union([
@@ -250,12 +243,8 @@ export const ContactGroupsCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    icon: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    parentGroupId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ContactGroupId, Schema.Null]), Schema.Null]),
-    ),
+    icon: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    parentGroupId: Schema.optionalKey(Schema.Union([ContactGroupId, Schema.Null])),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type ContactGroupsCreate201 = {
@@ -426,20 +415,18 @@ export const ContactGroupsUpdatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsUpdateRequestJson = {
   readonly name?: string | null;
-  readonly description?: string | null | null;
+  readonly description?: string | null;
   readonly type?: "static" | "dynamic" | "smart" | null;
-  readonly criteria?: { readonly [x: string]: JsonValue } | null | null;
+  readonly criteria?: { readonly [x: string]: JsonValue } | null;
   readonly color?: "clay" | "sand" | "moss" | "sky" | "plum" | "rose" | null | null;
-  readonly icon?: string | null | null;
-  readonly parentGroupId?: ContactGroupId | null | null;
+  readonly icon?: string | null;
+  readonly parentGroupId?: ContactGroupId | null;
   readonly isActive?: boolean | null;
 };
 export const ContactGroupsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -451,10 +438,7 @@ export const ContactGroupsUpdateRequestJson = /* @__PURE__ */ (() =>
       ]),
     ),
     criteria: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
     ),
     color: Schema.optionalKey(
       Schema.Union([
@@ -475,12 +459,8 @@ export const ContactGroupsUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    icon: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    parentGroupId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ContactGroupId, Schema.Null]), Schema.Null]),
-    ),
+    icon: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    parentGroupId: Schema.optionalKey(Schema.Union([ContactGroupId, Schema.Null])),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type ContactGroupsUpdate200 = {

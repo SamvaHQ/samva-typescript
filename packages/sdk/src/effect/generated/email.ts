@@ -1939,16 +1939,14 @@ export type EmailUpdateBlockRequestJson = {
   readonly reason?: string | null;
   readonly notes?: string | null;
   readonly isActive?: boolean | null;
-  readonly expiresAt?: string | null | null;
+  readonly expiresAt?: string | null;
 };
 export const EmailUpdateBlockRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     reason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     notes: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    expiresAt: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
 export type EmailUpdateBlock200 = {
   readonly id: BlockedEmailId;
@@ -2317,38 +2315,27 @@ export type EmailUpdateDomainConfigPathParams = { readonly id: EmailDomainId };
 export const EmailUpdateDomainConfigPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailUpdateDomainConfigRequestJson = {
-  readonly openTracking?: boolean | null | null;
-  readonly clickTracking?: boolean | null | null;
-  readonly replyTo?: ReadonlyArray<string> | null | null;
-  readonly topicId?: TopicId | null | null;
-  readonly footerEnabled?: boolean | null | null;
-  readonly brandSlug?: string | null | null;
+  readonly openTracking?: boolean | null;
+  readonly clickTracking?: boolean | null;
+  readonly replyTo?: ReadonlyArray<string> | null;
+  readonly topicId?: TopicId | null;
+  readonly footerEnabled?: boolean | null;
+  readonly brandSlug?: string | null;
 };
 export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    openTracking: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-    ),
-    clickTracking: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-    ),
-    replyTo: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
-    topicId: Schema.optionalKey(Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null])),
-    footerEnabled: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-    ),
+    openTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    clickTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    topicId: Schema.optionalKey(Schema.Union([TopicId, Schema.Null])),
+    footerEnabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     brandSlug: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-            }),
-          ),
-          Schema.Null,
-        ]),
+        Schema.String.check(
+          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+          }),
+        ),
         Schema.Null,
       ]),
     ),
@@ -3154,7 +3141,7 @@ export type EmailCreateForwardingRuleRequestJson = {
   readonly conditions?: ForwardingConditions | null;
   readonly priority?: number | null;
   readonly isActive?: boolean | null;
-  readonly metadata?: { readonly [x: string]: JsonValue } | null | null;
+  readonly metadata?: { readonly [x: string]: JsonValue } | null;
 };
 export const EmailCreateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3184,10 +3171,7 @@ export const EmailCreateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
     ),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     metadata: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
     ),
   }))();
 export type EmailCreateForwardingRule201 = {
@@ -3259,10 +3243,10 @@ export type EmailUpdateForwardingRuleRequestJson = {
   readonly forwardTo?: ReadonlyArray<string> | null;
   readonly preserveHeaders?: boolean | null;
   readonly appendNote?: string | null;
-  readonly conditions?: ForwardingConditions | null | null;
+  readonly conditions?: ForwardingConditions | null;
   readonly priority?: number | null;
   readonly isActive?: boolean | null;
-  readonly metadata?: { readonly [x: string]: JsonValue } | null | null;
+  readonly metadata?: { readonly [x: string]: JsonValue } | null;
 };
 export const EmailUpdateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3273,9 +3257,7 @@ export const EmailUpdateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
     forwardTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     preserveHeaders: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     appendNote: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    conditions: Schema.optionalKey(
-      Schema.Union([Schema.Union([ForwardingConditions, Schema.Null]), Schema.Null]),
-    ),
+    conditions: Schema.optionalKey(Schema.Union([ForwardingConditions, Schema.Null])),
     priority: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
@@ -3294,10 +3276,7 @@ export const EmailUpdateForwardingRuleRequestJson = /* @__PURE__ */ (() =>
     ),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     metadata: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
     ),
   }))();
 export type EmailUpdateForwardingRule200 = {
@@ -3539,20 +3518,16 @@ export const EmailAddSenderHeaders = /* @__PURE__ */ (() =>
 export type EmailAddSenderRequestJson = {
   readonly email: string;
   readonly domainId?: EmailDomainId | null;
-  readonly name?: string | null | null;
-  readonly replyToEmails?: ReadonlyArray<string> | null | null;
+  readonly name?: string | null;
+  readonly replyToEmails?: ReadonlyArray<string> | null;
   readonly namespaceId?: NamespaceId | null;
 };
 export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     email: Schema.String,
     domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
-    name: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    replyToEmails: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    replyToEmails: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
   }))();
 export type EmailAddSender201 = {

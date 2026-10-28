@@ -40,14 +40,14 @@ export * as Messages from "./messages";
 export * as Namespaces from "./namespaces";
 export * as Operations from "./operations";
 export * as Organizations from "./organizations";
-export * as TopicPublicationDomains from "./publication-domains";
+export * as NewsletterDomains from "./newsletter-domains";
 export * as Retry from "./retry";
 export * as ScheduledMessages from "./scheduled-messages";
 export * as Subscriptions from "./subscriptions";
 export * as Templates from "./templates";
 export * as Topics from "./topics";
 export * as TopicForms from "./topic-forms";
-export * as TopicIssues from "./topic-issues";
+export * as NewsletterIssues from "./newsletter-issues";
 export * as Webhooks from "./webhooks";
 export * as Whoami from "./whoami";
 
@@ -77,3 +77,5 @@ export {
 
 export type { CursorPageEnvelope } from "./pagination";
 export type { Json as JsonValue } from "effect/Schema";
+
+export * as Newsletters from "./newsletters";

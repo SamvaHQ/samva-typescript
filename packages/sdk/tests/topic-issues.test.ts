@@ -3,10 +3,10 @@ import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
-import * as TopicIssues from "../src/effect/topic-issues";
+import * as NewsletterIssues from "../src/effect/newsletter-issues";
 import { createClient, type SamvaClient } from "../src/promises";
 
-const id = "unsub_1234567890abcdef";
+const id = "nl_1234567890abcdef";
 const projectId = "tproj_1234567890abcdef";
 const revision = "draft-7";
 const commit = "1111111111111111111111111111111111111111";
@@ -48,7 +48,7 @@ const checked = {
   incompatibilities: [],
 };
 const fenced = { path, expectedRevision: revision };
-const write = { ...fenced, content, idempotencyKey: "edit-1" };
+const write = { ...fenced, content };
 const saved = {
   commit,
   parentCommit: commit,
@@ -64,7 +64,6 @@ const save = {
   expectedRevision: revision,
   expectedHead: commit,
   message: "Save weekly digest",
-  idempotencyKey: "save-1",
 };
 
 type Cell = {
@@ -73,6 +72,7 @@ type Cell = {
   readonly suffix: string;
   readonly query?: Readonly<Record<string, string>>;
   readonly body?: unknown;
+  readonly idempotencyKey?: string;
   readonly response: unknown;
   readonly promise: (client: SamvaClient) => Promise<unknown>;
   readonly effect: () => Effect.Effect<unknown, unknown, Client.Service>;
@@ -84,16 +84,16 @@ const cells = [
     method: "GET",
     suffix: "",
     response: { projectId, revision, items: [{ path, title: "October", latestSend: null }] },
-    promise: (client) => client.topicIssues.list({ id }),
-    effect: () => TopicIssues.list({ id }),
+    promise: (client) => client.newsletters.issues.list({ id }),
+    effect: () => NewsletterIssues.list({ id }),
   },
   {
     name: "open",
     method: "GET",
     suffix: "/workspace",
     response: view,
-    promise: (client) => client.topicIssues.open({ id }),
-    effect: () => TopicIssues.open({ id }),
+    promise: (client) => client.newsletters.issues.open({ id }),
+    effect: () => NewsletterIssues.open({ id }),
   },
   {
     name: "get",
@@ -101,54 +101,67 @@ const cells = [
     suffix: "/document",
     query: fenced,
     response: { projectId, revision, path, content },
-    promise: (client) => client.topicIssues.get({ id, ...fenced }),
-    effect: () => TopicIssues.get({ id, ...fenced }),
+    promise: (client) => client.newsletters.issues.get({ id, ...fenced }),
+    effect: () => NewsletterIssues.get({ id, ...fenced }),
   },
   {
     name: "first create",
     method: "POST",
     suffix: "",
-    body: { path, content, idempotencyKey: "first-1" },
+    body: { path, content },
+    idempotencyKey: "first-1",
     response: view,
     promise: (client) =>
-      client.topicIssues.create({ id, path, content, idempotencyKey: "first-1" }),
-    effect: () => TopicIssues.create({ id, path, content, idempotencyKey: "first-1" }),
+      client.newsletters.issues.create({ id, path, content }, { idempotencyKey: "first-1" }),
+    effect: () => NewsletterIssues.create({ id, path, content }, { idempotencyKey: "first-1" }),
   },
   {
     name: "fenced create",
     method: "POST",
     suffix: "",
     body: write,
+    idempotencyKey: "edit-1",
     response: view,
-    promise: (client) => client.topicIssues.create({ id, ...write }),
-    effect: () => TopicIssues.create({ id, ...write }),
+    promise: (client) =>
+      client.newsletters.issues.create({ id, ...write }, { idempotencyKey: "edit-1" }),
+    effect: () => NewsletterIssues.create({ id, ...fenced, content }, { idempotencyKey: "edit-1" }),
   },
   {
     name: "update",
     method: "PATCH",
     suffix: "",
     body: write,
+    idempotencyKey: "edit-1",
     response: view,
-    promise: (client) => client.topicIssues.update({ id, ...write }),
-    effect: () => TopicIssues.update({ id, ...write }),
+    promise: (client) =>
+      client.newsletters.issues.update({ id, ...write }, { idempotencyKey: "edit-1" }),
+    effect: () => NewsletterIssues.update({ id, ...fenced, content }, { idempotencyKey: "edit-1" }),
   },
   {
     name: "remove",
     method: "POST",
     suffix: "/remove",
-    body: { ...fenced, idempotencyKey: "remove-1" },
+    body: { ...fenced },
+    idempotencyKey: "remove-1",
     response: view,
-    promise: (client) => client.topicIssues.remove({ id, ...fenced, idempotencyKey: "remove-1" }),
-    effect: () => TopicIssues.remove({ id, ...fenced, idempotencyKey: "remove-1" }),
+    promise: (client) =>
+      client.newsletters.issues.remove({ id, ...fenced }, { idempotencyKey: "remove-1" }),
+    effect: () => NewsletterIssues.remove({ id, ...fenced }, { idempotencyKey: "remove-1" }),
   },
   {
     name: "save",
     method: "POST",
     suffix: "/save",
     body: save,
+    idempotencyKey: "save-1",
     response: saved,
-    promise: (client) => client.topicIssues.save({ id, ...save }),
-    effect: () => TopicIssues.save({ id, ...save }),
+    promise: (client) =>
+      client.newsletters.issues.save({ id, ...save }, { idempotencyKey: "save-1" }),
+    effect: () =>
+      NewsletterIssues.save(
+        { id, expectedRevision: revision, expectedHead: commit, message: save.message },
+        { idempotencyKey: "save-1" },
+      ),
   },
   {
     name: "check",
@@ -156,8 +169,8 @@ const cells = [
     suffix: "/check",
     body: fenced,
     response: checked,
-    promise: (client) => client.topicIssues.check({ id, ...fenced }),
-    effect: () => TopicIssues.check({ id, ...fenced }),
+    promise: (client) => client.newsletters.issues.check({ id, ...fenced }),
+    effect: () => NewsletterIssues.check({ id, ...fenced }),
   },
   ...(["email", "web"] as const).map((target): Cell => ({
     name: `render ${target}`,
@@ -170,16 +183,17 @@ const cells = [
       rendered: null,
       page: target === "web" ? { kind: "page", html: "<p>Hello!</p>", selections: [] } : null,
     },
-    promise: (client) => client.topicIssues.render({ id, ...fenced, fixture: "default", target }),
-    effect: () => TopicIssues.render({ id, ...fenced, fixture: "default", target }),
+    promise: (client) =>
+      client.newsletters.issues.render({ id, ...fenced, fixture: "default", target }),
+    effect: () => NewsletterIssues.render({ id, ...fenced, fixture: "default", target }),
   })),
   {
     name: "head",
     method: "GET",
     suffix: "/head",
     response: { projectId, revision, remoteHead: commit },
-    promise: (client) => client.topicIssues.head({ id }),
-    effect: () => TopicIssues.head({ id }),
+    promise: (client) => client.newsletters.issues.head({ id }),
+    effect: () => NewsletterIssues.head({ id }),
   },
   {
     name: "history",
@@ -199,8 +213,8 @@ const cells = [
         },
       ],
     },
-    promise: (client) => client.topicIssues.history({ id, limit: 5 }),
-    effect: () => TopicIssues.history({ id, limit: 5 }),
+    promise: (client) => client.newsletters.issues.history({ id, limit: 5 }),
+    effect: () => NewsletterIssues.history({ id, limit: 5 }),
   },
 ] satisfies ReadonlyArray<Cell>;
 
@@ -231,7 +245,7 @@ describe("topic issues service transport parity", () => {
           path: url.pathname,
           query: Object.fromEntries(url.searchParams),
           apiKey: request.headers.get("x-api-key"),
-          idempotencyKey: request.headers.get("idempotency-key"),
+          "idempotency-key": request.headers.get("idempotency-key"),
           body: body === "" ? undefined : JSON.parse(body),
         });
         return Response.json(cell.response);
@@ -240,14 +254,17 @@ describe("topic issues service transport parity", () => {
       const effect = await Effect.runPromise(provide(cell.effect(), fetch));
       expect(JSON.parse(JSON.stringify(promise))).toEqual(cell.response);
       expect(JSON.parse(JSON.stringify(effect))).toEqual(cell.response);
+      const expectedBody = cell.body;
+      const expectedKey =
+        cell.method === "GET" ? null : (cell.idempotencyKey ?? expect.any(String));
       expect(requests).toEqual(
         Array.from({ length: 2 }, () => ({
           method: cell.method,
-          path: `/v1/topics/${id}/issues${cell.suffix}`,
+          path: `/v1/newsletters/${id}/issues${cell.suffix}`,
           query: cell.query ?? {},
           apiKey: "samva_sk_test",
-          idempotencyKey: null,
-          body: cell.body,
+          "idempotency-key": expectedKey,
+          body: expectedBody,
         })),
       );
     },
@@ -256,10 +273,12 @@ describe("topic issues service transport parity", () => {
   it("preserves an uninitialized topic without inventing a project or revision", async () => {
     const response = { projectId: null, revision: null, items: [] };
     const fetch = async () => Response.json(response);
-    expect(await createClient({ apiKey: "samva_sk_test", fetch }).topicIssues.list({ id })).toEqual(
+    expect(
+      await createClient({ apiKey: "samva_sk_test", fetch }).newsletters.issues.list({ id }),
+    ).toEqual(response);
+    expect(await Effect.runPromise(provide(NewsletterIssues.list({ id }), fetch))).toEqual(
       response,
     );
-    expect(await Effect.runPromise(provide(TopicIssues.list({ id }), fetch))).toEqual(response);
   });
 
   it.each([
@@ -298,18 +317,21 @@ describe("topic issues service transport parity", () => {
       status: 403,
       body: {
         _tag: "FlagDisabledError",
-        flag: "issueContent",
+        flag: "newsletters",
         message: "Issue content is unavailable",
       },
     },
   ])("preserves the tagged $status failure in both clients", async ({ status, body }) => {
     const fetch = async () => Response.json(body, { status });
     await expect(
-      createClient({ apiKey: "samva_sk_test", fetch }).topicIssues.update({ id, ...write }),
+      createClient({ apiKey: "samva_sk_test", fetch }).newsletters.issues.update(
+        { id, ...write },
+        { idempotencyKey: "edit-1" },
+      ),
     ).rejects.toMatchObject(body);
     const failure = await Effect.runPromise(
       provide(
-        TopicIssues.update({ id, ...write }).pipe(
+        NewsletterIssues.update({ id, ...fenced, content }, { idempotencyKey: "edit-1" }).pipe(
           Effect.catchTags({
             ConflictError: Effect.succeed,
             FlagDisabledError: Effect.succeed,

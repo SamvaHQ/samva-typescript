@@ -14,7 +14,6 @@ import {
   ContactIdentityId,
   ConversationId,
   Cursor,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -268,30 +267,20 @@ export const ContactProfile = /* @__PURE__ */ (() =>
     ),
   }).annotate({ identifier: "ContactProfile" }))();
 export type ContactProfileUpdate = {
-  readonly firstName?: string | null | null;
-  readonly lastName?: string | null | null;
-  readonly company?: string | null | null;
-  readonly jobTitle?: string | null | null;
-  readonly location?: ContactLocation | null | null;
+  readonly firstName?: string | null;
+  readonly lastName?: string | null;
+  readonly company?: string | null;
+  readonly jobTitle?: string | null;
+  readonly location?: ContactLocation | null;
   readonly customFields?: ContactCustomFields | null;
 };
 export const ContactProfileUpdate = /* @__PURE__ */ (() =>
   Schema.Struct({
-    firstName: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    lastName: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    company: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    jobTitle: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    location: Schema.optionalKey(
-      Schema.Union([Schema.Union([ContactLocation, Schema.Null]), Schema.Null]),
-    ),
+    firstName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    lastName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    company: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    jobTitle: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    location: Schema.optionalKey(Schema.Union([ContactLocation, Schema.Null])),
     customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
   }).annotate({ identifier: "ContactProfileUpdate" }))();
 export type ContactSummary = {
@@ -682,34 +671,26 @@ export const ContactsList504 = GatewayTimeoutError;
 export type ContactsCreateRequestJson = {
   readonly namespaceId?: NamespaceId | null;
   readonly name: string;
-  readonly displayName?: string | null | null;
-  readonly avatar?: string | null | null;
+  readonly displayName?: string | null;
+  readonly avatar?: string | null;
   readonly identities?: ReadonlyArray<ContactIdentityInput> | null;
-  readonly profile?: ContactProfile | null | null;
-  readonly preferences?: ContactPreferences | null | null;
+  readonly profile?: ContactProfile | null;
+  readonly preferences?: ContactPreferences | null;
   readonly tags?: ReadonlyArray<string> | null;
   readonly status?: "active" | "paused" | "blocked" | "archived" | null;
-  readonly statusReason?: string | null | null;
-  readonly externalId?: string | null | null;
-  readonly metadata?: JsonObject | null | null;
+  readonly statusReason?: string | null;
+  readonly externalId?: string | null;
+  readonly metadata?: JsonObject | null;
 };
 export const ContactsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     name: Schema.String,
-    displayName: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    avatar: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    avatar: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     identities: Schema.optionalKey(Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null])),
-    profile: Schema.optionalKey(
-      Schema.Union([Schema.Union([ContactProfile, Schema.Null]), Schema.Null]),
-    ),
-    preferences: Schema.optionalKey(
-      Schema.Union([Schema.Union([ContactPreferences, Schema.Null]), Schema.Null]),
-    ),
+    profile: Schema.optionalKey(Schema.Union([ContactProfile, Schema.Null])),
+    preferences: Schema.optionalKey(Schema.Union([ContactPreferences, Schema.Null])),
     tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     status: Schema.optionalKey(
       Schema.Union([
@@ -722,15 +703,9 @@ export const ContactsCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    statusReason: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    externalId: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    metadata: Schema.optionalKey(
-      Schema.Union([Schema.Union([JsonObject, Schema.Null]), Schema.Null]),
-    ),
+    statusReason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
   }))();
 export type ContactsCreate201 = Contact;
 export const ContactsCreate201 = Contact;
@@ -791,28 +766,22 @@ export type ContactsUpdatePathParams = { readonly id: ContactId };
 export const ContactsUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsUpdateRequestJson = {
   readonly name?: string | null;
-  readonly displayName?: string | null | null;
-  readonly avatar?: string | null | null;
+  readonly displayName?: string | null;
+  readonly avatar?: string | null;
   readonly profile?: ContactProfileUpdate | null;
-  readonly preferences?: ContactPreferences | null | null;
+  readonly preferences?: ContactPreferences | null;
   readonly status?: "active" | "paused" | "blocked" | "archived" | null;
-  readonly statusReason?: string | null | null;
-  readonly externalId?: string | null | null;
+  readonly statusReason?: string | null;
+  readonly externalId?: string | null;
   readonly metadata?: JsonObject | null;
 };
 export const ContactsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    displayName: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    avatar: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    avatar: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     profile: Schema.optionalKey(Schema.Union([ContactProfileUpdate, Schema.Null])),
-    preferences: Schema.optionalKey(
-      Schema.Union([Schema.Union([ContactPreferences, Schema.Null]), Schema.Null]),
-    ),
+    preferences: Schema.optionalKey(Schema.Union([ContactPreferences, Schema.Null])),
     status: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -824,12 +793,8 @@ export const ContactsUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    statusReason: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    externalId: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    statusReason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
   }))();
 export type ContactsUpdate200 = Contact;
@@ -1365,11 +1330,11 @@ export type ContactsFindOrCreateRequestJson = {
   readonly lookup: ContactLookup;
   readonly create?: {
     readonly name?: string | null;
-    readonly displayName?: string | null | null;
-    readonly avatar?: string | null | null;
+    readonly displayName?: string | null;
+    readonly avatar?: string | null;
     readonly identities?: ReadonlyArray<ContactIdentityInput> | null;
-    readonly profile?: ContactProfile | null | null;
-    readonly externalId?: string | null | null;
+    readonly profile?: ContactProfile | null;
+    readonly externalId?: string | null;
   } | null;
 };
 export const ContactsFindOrCreateRequestJson = /* @__PURE__ */ (() =>
@@ -1380,21 +1345,13 @@ export const ContactsFindOrCreateRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.Struct({
           name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          displayName: Schema.optionalKey(
-            Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-          ),
-          avatar: Schema.optionalKey(
-            Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-          ),
+          displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          avatar: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
           identities: Schema.optionalKey(
             Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null]),
           ),
-          profile: Schema.optionalKey(
-            Schema.Union([Schema.Union([ContactProfile, Schema.Null]), Schema.Null]),
-          ),
-          externalId: Schema.optionalKey(
-            Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-          ),
+          profile: Schema.optionalKey(Schema.Union([ContactProfile, Schema.Null])),
+          externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         }),
         Schema.Null,
       ]),
@@ -1421,6 +1378,26 @@ export type ContactsFindOrCreate502 = BillingProviderError;
 export const ContactsFindOrCreate502 = BillingProviderError;
 export type ContactsFindOrCreate504 = GatewayTimeoutError;
 export const ContactsFindOrCreate504 = GatewayTimeoutError;
+export type ContactsStartImportHeaders = { readonly "idempotency-key"?: string | null };
+export const ContactsStartImportHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type ContactsStartImportRequestJson =
   | {
       readonly mode: "new";
@@ -1454,7 +1431,6 @@ export type ContactsStartImportRequestJson =
         ];
       };
       readonly planHash: string;
-      readonly idempotencyKey: string;
     }
   | {
       readonly mode: "resume";
@@ -1556,19 +1532,6 @@ export const ContactsStartImportRequestJson = /* @__PURE__ */ (() =>
         ),
       }),
       planHash: Schema.String,
-      idempotencyKey: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(255).annotate({
-            expected: "a string with at most 255 code points",
-          }),
-        )
-        .check(
-          Schema.isBetweenLength(1, 255).annotate({
-            expected: "a value with a length between 1 and 255",
-          }),
-        ),
     }),
     Schema.Struct({
       mode: Schema.Literal("resume"),
@@ -1783,9 +1746,8 @@ export type ContactsStartImport401 = UnauthorizedError;
 export const ContactsStartImport401 = UnauthorizedError;
 export type ContactsStartImport402 = PaymentRequiredError;
 export const ContactsStartImport402 = PaymentRequiredError;
-export type ContactsStartImport403 = ForbiddenError | FlagDisabledError;
-export const ContactsStartImport403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type ContactsStartImport403 = ForbiddenError;
+export const ContactsStartImport403 = ForbiddenError;
 export type ContactsStartImport404 = ResourceNotFoundError;
 export const ContactsStartImport404 = ResourceNotFoundError;
 export type ContactsStartImport409 = ConflictError;
@@ -2281,9 +2243,8 @@ export const ContactsPlanImport200 = /* @__PURE__ */ (() =>
   }))();
 export type ContactsPlanImport401 = UnauthorizedError;
 export const ContactsPlanImport401 = UnauthorizedError;
-export type ContactsPlanImport403 = ForbiddenError | FlagDisabledError;
-export const ContactsPlanImport403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type ContactsPlanImport403 = ForbiddenError;
+export const ContactsPlanImport403 = ForbiddenError;
 export type ContactsPlanImport404 = ResourceNotFoundError;
 export const ContactsPlanImport404 = ResourceNotFoundError;
 export type ContactsPlanImport422 = ValidationError;
@@ -2674,6 +2635,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
         "Looks up exactly one identifier through `lookup: { type, value }`. Returns `{ contact, created: false }` unchanged when it exists. Otherwise creates the lookup identity (or external ID), applies `create` attributes, and returns `{ contact, created: true }`. Additional addresses belong in `create.identities`, custom fields in `create.profile.customFields`; custom field keys must be defined and values must match their types. An external ID lookup cannot be contradicted by `create.externalId`. Creation returns HTTP 409 ConflictError if an externalId or address belongs to another contact; the conflicting field is named and no contact is created. Use the update endpoint to change an existing contact.",
       ),
     HttpApiEndpoint.post("contactsStartImport", "/v1/contacts/imports", {
+      headers: ContactsStartImportHeaders,
       payload: ContactsStartImportRequestJson,
       success: ContactsStartImport202.pipe(HttpApiSchema.status(202)),
       error: [
@@ -2693,7 +2655,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       .annotate(OpenApi.Summary, "Start or resume a list migration")
       .annotate(
         OpenApi.Description,
-        "The complete encoded JSON request, including new-start metadata, must not exceed 3000000 bytes. Admits a durable import using the preview hash and an idempotency key, or resumes the same persisted input at its committed cursor. Imports never restore an existing unsubscribe, suppression or bounce. Namespace-scoped credentials cannot create organization-wide suppressions; those rows are conflicts and create no contact. New active contacts are billable and normal contact events apply. Requires listMigration for new admissions.",
+        "The complete encoded JSON request, including new-start metadata, must not exceed 3000000 bytes. Admits a durable import using the preview hash and an Idempotency-Key header, or resumes the same persisted input at its committed cursor. The header is required for mode:new and optional for mode:resume. Only mode:new supports idempotent replay. Resume uses expectedGeneration and must not be automatically retried; read getImportJob after an ambiguous response. Imports never restore an existing unsubscribe, suppression or bounce. Namespace-scoped credentials cannot create organization-wide suppressions; those rows are conflicts and create no contact. New active contacts are billable and normal contact events apply.",
       ),
     HttpApiEndpoint.get("contactsGetImportJob", "/v1/contacts/imports/:id", {
       params: ContactsGetImportJobPathParams,
@@ -2712,7 +2674,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       .annotate(OpenApi.Summary, "Get list migration progress")
       .annotate(
         OpenApi.Description,
-        "Returns the visible import job's committed counts, generation, terminal failure and resumability. The job persists across worker restarts and page reloads. Admitted jobs remain readable when listMigration is disabled.",
+        "Returns the visible import job's committed counts, generation, terminal failure and resumability. The job persists across worker restarts and page reloads.",
       ),
     HttpApiEndpoint.post("contactsPlanImport", "/v1/contacts/imports/plan", {
       payload: ContactsPlanImportRequestJson,
@@ -2731,7 +2693,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       .annotate(OpenApi.Summary, "Preview a list migration")
       .annotate(
         OpenApi.Description,
-        "The complete encoded JSON request must not exceed 3000000 bytes. Reads multiple declared export files without changing contacts. Restrictive evidence wins per address. Returns estimated counts and at most 100 diagnostics; processing rechecks current restrictions. Filenames never establish permission. Requires listMigration. Missing required columns refuse the file; unknown status values are conflicts and never subscribe a reader.",
+        "The complete encoded JSON request must not exceed 3000000 bytes. Reads multiple declared export files without changing contacts. Restrictive evidence wins per address. Returns estimated counts and at most 100 diagnostics; processing rechecks current restrictions. Filenames never establish permission. Missing required columns refuse the file; unknown status values are conflicts and never subscribe a reader.",
       ),
   )
   .annotate(

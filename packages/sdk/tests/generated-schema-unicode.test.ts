@@ -2,12 +2,11 @@ import { describe, expect, it } from "@effect/vitest";
 import { Schema } from "effect";
 
 import { MessagesSendHeaders } from "../src/effect/generated/messages";
+import { AddTemplateEntryPayload, BrandAssets } from "../src/effect/generated/shared";
 import {
-  AddTemplateEntryPayload,
-  BrandAssets,
-  CreateTemplatePayload,
-} from "../src/effect/generated/shared";
-import { TemplatesPutWorkspaceAssetRequestJson } from "../src/effect/generated/templates";
+  TemplatesPutWorkspaceAssetRequestJson,
+  TemplatesSaveWorkspaceHeaders,
+} from "../src/effect/generated/templates";
 
 // SDK validation retains the source API's UTF-16 checks across JSON Schema projection. The same
 // cases hold for the source schemas in the monorepo's consumer contract tests.
@@ -20,9 +19,9 @@ describe("generated API Unicode validation", () => {
     ["😀".repeat(255), false],
     ["", false],
     ["line\nbreak", true],
-  ])("retains header and body idempotency bounds: %s", (key, accepted) => {
+  ])("retains header idempotency bounds: %s", (key, accepted) => {
     expect(Schema.is(MessagesSendHeaders)({ "idempotency-key": key })).toBe(accepted);
-    expect(Schema.is(CreateTemplatePayload.fields.idempotencyKey)(key)).toBe(accepted);
+    expect(Schema.is(TemplatesSaveWorkspaceHeaders)({ "idempotency-key": key })).toBe(accepted);
   });
 
   it.each([

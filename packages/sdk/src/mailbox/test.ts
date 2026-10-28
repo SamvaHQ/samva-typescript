@@ -1,4 +1,4 @@
-import { createSamvaClient, type SamvaClient } from "./client";
+import { createBoundClient, type SamvaClient } from "../promises/client";
 import { dispatchEvent } from "./dispatch";
 import type { EventData, EventType, ExtensionDefinition, ExtensionEvent } from "./types";
 
@@ -11,7 +11,7 @@ export interface RecordedCall {
 /** Canned responses are keyed by `METHOD /path`. */
 export function createTestClient(responses: Record<string, unknown> = {}) {
   const calls: RecordedCall[] = [];
-  const client = createSamvaClient({
+  const client = createBoundClient({
     baseUrl: "https://api.samva.dev",
     async fetch(input, init) {
       const request = new Request(input, init);

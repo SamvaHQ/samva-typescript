@@ -28,7 +28,6 @@ describe("SDK generator input", () => {
     expect(Predicate.isObject(body) && "$ref" in body).toBe(false);
     expect(Predicate.isObject(body) ? body.properties : undefined).toMatchObject({
       name: expect.anything(),
-      idempotencyKey: expect.anything(),
     });
     const components = Predicate.isObject(spec.components) ? spec.components : {};
     const schemas = Predicate.isObject(components.schemas) ? components.schemas : {};
@@ -37,9 +36,9 @@ describe("SDK generator input", () => {
 
   it("excludes the private issue-agent surface", () => {
     const paths = Object.keys(spec.paths ?? {});
-    expect(paths).toContain("/v1/topics/{id}/issues");
+    expect(paths).toContain("/v1/newsletters/{id}/issues");
     expect(paths.filter((path) => path.includes("/issues/agent"))).toEqual([]);
-    expect(JSON.stringify(spec)).not.toContain("topicIssueAgent.");
+    expect(JSON.stringify(spec)).not.toContain("newsletterIssueAgent.");
   });
 
   it("otherwise matches the published document", () => {

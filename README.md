@@ -2,11 +2,10 @@
 
 The source of Samva's TypeScript packages on npm:
 
-| Package                                                            | Directory           | What it is                                                              |
-| ------------------------------------------------------------------ | ------------------- | ----------------------------------------------------------------------- |
-| [`samva`](https://www.npmjs.com/package/samva)                     | `packages/sdk`      | TypeScript SDK for the Samva email API, with Promise and Effect clients |
-| [`@samva/webhooks`](https://www.npmjs.com/package/@samva/webhooks) | `packages/webhooks` | Runtime-neutral verification for Samva webhook deliveries               |
-| [`@samva/mailbox`](https://www.npmjs.com/package/@samva/mailbox)   | `packages/mailbox`  | Authoring SDK for Samva mailbox extensions                              |
+| Package                                                            | Directory           | What it is                                                                                              |
+| ------------------------------------------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------- |
+| [`samva`](https://www.npmjs.com/package/samva)                     | `packages/sdk`      | TypeScript SDK for the Samva email API, with Promise and Effect clients and mailbox extension authoring |
+| [`@samva/webhooks`](https://www.npmjs.com/package/@samva/webhooks) | `packages/webhooks` | Runtime-neutral verification for Samva webhook deliveries                                               |
 
 Each package's README covers installation and use.
 

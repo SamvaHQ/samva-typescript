@@ -224,7 +224,7 @@ export const AgentsCreateRequestJson = /* @__PURE__ */ (() =>
           instructions: "",
           knowledge: "",
           endpointIds: [],
-          integrationIds: [],
+          integrations: [],
           mode: "supervised",
           model: "standard",
           workingHours: null,

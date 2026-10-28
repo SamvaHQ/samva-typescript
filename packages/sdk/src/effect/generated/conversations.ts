@@ -332,7 +332,7 @@ export type ConversationsCreateRequestJson = {
   readonly urgency?: "low" | "medium" | "high" | "critical" | null;
   readonly complexity?: "simple" | "moderate" | "complex" | null;
   readonly metadata?: JsonObject | null;
-  readonly context?: ConversationContext | null | null;
+  readonly context?: ConversationContext | null;
   readonly tags?: ReadonlyArray<string> | null;
   readonly categories?: ReadonlyArray<string> | null;
   readonly isTest?: boolean | null;
@@ -398,9 +398,7 @@ export const ConversationsCreateRequestJson = /* @__PURE__ */ (() =>
       ]),
     ),
     metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-    context: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationContext, Schema.Null]), Schema.Null]),
-    ),
+    context: Schema.optionalKey(Schema.Union([ConversationContext, Schema.Null])),
     tags: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     categories: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     isTest: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
@@ -441,16 +439,16 @@ export const ConversationsUpdatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ConversationId }))();
 export type ConversationsUpdateRequestJson = {
   readonly title?: string | null;
-  readonly description?: string | null | null;
-  readonly externalId?: string | null | null;
-  readonly parentConversationId?: ConversationId | null | null;
+  readonly description?: string | null;
+  readonly externalId?: string | null;
+  readonly parentConversationId?: ConversationId | null;
   readonly primaryChannel?: "email" | null;
   readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null;
-  readonly statusReason?: string | null | null;
+  readonly statusReason?: string | null;
   readonly priority?: number | null;
   readonly urgency?: "low" | "medium" | "high" | "critical" | null;
   readonly complexity?: "simple" | "moderate" | "complex" | null;
-  readonly context?: ConversationContext | null | null;
+  readonly context?: ConversationContext | null;
   readonly metadata?: JsonObject | null;
   readonly isTest?: boolean | null;
   readonly isInternal?: boolean | null;
@@ -459,15 +457,9 @@ export type ConversationsUpdateRequestJson = {
 export const ConversationsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    externalId: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    parentConversationId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    parentConversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
     primaryChannel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
     status: Schema.optionalKey(
       Schema.Union([
@@ -481,9 +473,7 @@ export const ConversationsUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    statusReason: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    statusReason: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     priority: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
@@ -521,9 +511,7 @@ export const ConversationsUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    context: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationContext, Schema.Null]), Schema.Null]),
-    ),
+    context: Schema.optionalKey(Schema.Union([ConversationContext, Schema.Null])),
     metadata: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
     isTest: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     isInternal: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),

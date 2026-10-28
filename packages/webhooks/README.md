@@ -5,7 +5,7 @@ Samva is the email API for your app: transactional and campaign sending, inbound
 Verify signed Samva webhook deliveries in Node.js, Bun, Cloudflare Workers, and other Web
 Crypto-compatible runtimes.
 
-```ts
+```ts sdk-typecheck-skip="Handler fragment uses the incoming request and application persistence and suppression functions"
 import { isKnownEvent, verifyRequest } from "@samva/webhooks";
 
 const verified = await verifyRequest(request, process.env.SAMVA_WEBHOOK_SECRET!);
@@ -22,13 +22,15 @@ request body and keep the signing secret on the server.
 Effect applications can use the optional Effect entrypoint:
 
 ```ts
-import { Effect } from "effect";
 import * as Webhooks from "@samva/webhooks/effect";
+import { Effect } from "effect";
 
-const program = Effect.gen(function* () {
-  const verified = yield* Webhooks.verifyRequest(request, secret);
-  return verified.event;
-});
+export async function verifyEvent(request: Request, secret: string) {
+  const program = Webhooks.verifyRequest(request, secret).pipe(
+    Effect.map((verified) => verified.event),
+  );
+  return Effect.runPromise(program);
+}
 ```
 
 Install the `effect` version this package lists in `peerDependencies` when using that entrypoint.

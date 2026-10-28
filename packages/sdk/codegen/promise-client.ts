@@ -89,6 +89,7 @@ interface Operation {
   readonly summary: string | undefined;
   readonly description: string | undefined;
   readonly deprecated: boolean;
+  readonly conditionalIdempotency: boolean;
   readonly parameters: Readonly<Record<ParameterLocation, ReadonlyArray<Parameter>>>;
   readonly body: Body | undefined;
   /** Keyed by status code; integer keys enumerate in ascending order. */
@@ -353,6 +354,7 @@ const parseOperation = (
     summary: optionalString(operation, "summary", context),
     description: optionalString(operation, "description", context),
     deprecated: operation["deprecated"] === true,
+    conditionalIdempotency: operation["x-idempotent-when"] !== undefined,
     parameters,
     body,
     responses,
@@ -651,7 +653,11 @@ const signature = (
     body !== undefined &&
     body.schema.logicalOperator === "or" &&
     body.schema.items?.every((item) => item.type === "object") &&
-    locations.every((location) => operation.parameters[location].length === 0)
+    locations.every((location) =>
+      operation.parameters[location].every(
+        (parameter) => parameter.name.toLowerCase() === "idempotency-key",
+      ),
+    )
   ) {
     return {
       required: body.required,
@@ -699,6 +705,7 @@ const signature = (
   };
   for (const location of locations) {
     for (const parameter of operation.parameters[location]) {
+      if (location === "header" && parameter.name.toLowerCase() === "idempotency-key") continue;
       const name = conflicted(parameter.name) ? `${location}_${parameter.name}` : parameter.name;
       const fieldIn = location === "header" ? "headers" : location;
       add(
@@ -847,7 +854,7 @@ const renderMethod = (
   }
   parameters.push(`options?: ${names.options}<never, ThrowOnError>`);
   statements.push(
-    `return (options?.client ?? ${names.client}).${operation.method}<${generics}>(${objectLiteral(request)});`,
+    `return requestWithPolicy(options?.client ?? ${names.client}, ${JSON.stringify(operation.id)}, options, (headers) => (options?.client ?? ${names.client}).${operation.method}<${generics}>(${objectLiteral([...request, operation.body === undefined ? "headers" : `headers: { "Content-Type": ${JSON.stringify(operation.body.mediaType)}, ...headers }`])})${operation.conditionalIdempotency ? ", parameters" : ""});`,
   );
   return [
     `${docComment(doc, "  ")}  public static ${method.name}<ThrowOnError extends boolean = false>(`,
@@ -878,18 +885,31 @@ const renderSdk = (
       signature: signature(operation, (name) => referencedTypes.push(name)),
       referencedTypes,
     };
-    let node = roots.get(operation.tag);
+    const newsletterNamespace =
+      operation.segments[0] === "newsletterIssues"
+        ? "issues"
+        : operation.segments[0] === "newsletterDomains"
+          ? "domains"
+          : undefined;
+    const rootTag = newsletterNamespace === undefined ? operation.tag : "Newsletters";
+    const segments =
+      rootTag === "Newsletters"
+        ? newsletterNamespace === undefined
+          ? operation.segments.slice(1)
+          : [newsletterNamespace, ...operation.segments.slice(1)]
+        : operation.segments;
+    let node = roots.get(rootTag);
     if (node === undefined) {
       node = {
-        name: operation.tag,
+        name: rootTag,
         children: new Map(),
         methods: [],
         requestedName: "",
         className: "",
       };
-      roots.set(operation.tag, node);
+      roots.set(rootTag, node);
     }
-    for (const segment of operation.segments.slice(0, -1)) {
+    for (const segment of segments.slice(0, -1)) {
       let child: ClassNode | undefined = node.children.get(segment);
       if (child === undefined) {
         child = {
@@ -975,6 +995,7 @@ const renderSdk = (
     .map(([source, local]) => specifier(source, local, false));
 
   const imports = [
+    `import { requestWithPolicy } from "../promises/request";`,
     `import ${runtimeTypeOnly ? "type " : ""}{ ${runtimeSpecifiers.join(", ")} } from "./client";`,
     `import { ${clientName === "client" ? "client" : `client as ${clientName}`} } from "./client.gen";`,
     ...(typeSpecifiers.length === 0
@@ -994,6 +1015,8 @@ const renderSdk = (
     "   * custom client.",
     "   */",
     `  client?: ${names.runtime("Client")} | undefined;`,
+    "  idempotencyKey?: string | undefined;",
+    "  maxRetries?: number | undefined;",
     "  /**",
     "   * You can pass arbitrary values through the `meta` object. This can be",
     "   * used to access values that aren't defined as part of the SDK function.",
@@ -1012,7 +1035,7 @@ const renderSdk = (
     return `export class ${node.className} {\n${members.join("\n\n")}\n}`;
   });
 
-  return `// @ts-nocheck\n${GENERATED_HEADER}\n\n${imports.join("\n")}\n\n${[optionsType, ...classSources].join("\n\n")}\n`;
+  return `// @ts-nocheck\n${GENERATED_HEADER}\n\n${imports.join("\n")}\n\n${[optionsType, ...classSources, ...classes.flatMap((node) => node.methods.map((method) => `Object.assign(${node.className}.${method.name}, { operation: ${JSON.stringify(method.operation.id)} });`))].join("\n\n")}\n`;
 };
 
 // ---------------------------------------------------------------------------------------------

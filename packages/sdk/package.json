@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.29.1",
+  "version": "0.30.0",
   "description": "TypeScript SDK for the Samva email API",
   "keywords": [
     "api-client",
@@ -147,9 +147,9 @@
       "types": "./dist/effect/organizations.d.ts",
       "import": "./dist/effect/organizations.js"
     },
-    "./effect/publication-domains": {
-      "types": "./dist/effect/publication-domains.d.ts",
-      "import": "./dist/effect/publication-domains.js"
+    "./effect/newsletter-domains": {
+      "types": "./dist/effect/newsletter-domains.d.ts",
+      "import": "./dist/effect/newsletter-domains.js"
     },
     "./effect/retry": {
       "types": "./dist/effect/retry.d.ts",
@@ -192,9 +192,25 @@
       "import": "./dist/webhooks/effect.js"
     },
     "./package.json": "./package.json",
-    "./effect/topic-issues": {
-      "types": "./dist/effect/topic-issues.d.ts",
-      "import": "./dist/effect/topic-issues.js"
+    "./mailbox": {
+      "types": "./dist/mailbox/index.d.ts",
+      "import": "./dist/mailbox/index.js"
+    },
+    "./mailbox/test": {
+      "types": "./dist/mailbox/test.d.ts",
+      "import": "./dist/mailbox/test.js"
+    },
+    "./mailbox/webhook": {
+      "types": "./dist/mailbox/webhook.d.ts",
+      "import": "./dist/mailbox/webhook.js"
+    },
+    "./effect/newsletter-issues": {
+      "types": "./dist/effect/newsletter-issues.d.ts",
+      "import": "./dist/effect/newsletter-issues.js"
+    },
+    "./effect/newsletters": {
+      "types": "./dist/effect/newsletters.d.ts",
+      "import": "./dist/effect/newsletters.js"
     }
   },
   "publishConfig": {
@@ -213,25 +229,25 @@
     "test:tarball": "bun run build && bun scripts/check-tarball.ts",
     "test:startup": "bun run build && bun scripts/check-startup.ts",
     "test:tree-shaking": "bun run build && bun scripts/check-tree-shaking.ts",
-    "typecheck": "tsc-rs --noEmit && tsc-rs --noEmit -p codegen/tsconfig.json && tsc-rs --noEmit -p tests/tsconfig.json && tsc-rs --noEmit --project tests/parity/tsconfig.json"
+    "typecheck": "effect-tsgo tsrs --noEmit && effect-tsgo tsrs --noEmit -p codegen/tsconfig.json && effect-tsgo tsrs --noEmit -p tests/tsconfig.json && effect-tsgo tsrs --noEmit --project tests/parity/tsconfig.json"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.29.1"
+    "@samva/webhooks": "workspace:0.30.0"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",
     "@effect/platform-node": "catalog:effect",
+    "@effect/tsgo": "catalog:",
     "@effect/vitest": "catalog:effect",
     "@samva/openapi": "workspace:*",
     "@types/node": "catalog:",
     "effect": "catalog:effect",
-    "tsc-rs": "catalog:",
-    "tsdown": "^0.22.13",
+    "tsdown": "0.23.1",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "effect": "4.0.5"
+    "effect": "^4.0.4"
   },
   "peerDependenciesMeta": {
     "effect": {

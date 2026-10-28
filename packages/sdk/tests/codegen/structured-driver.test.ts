@@ -84,6 +84,24 @@ const fixture = {
 } as const satisfies SamvaOpenApiDocument;
 
 describe("structured Effect codegen driver", () => {
+  it("derives conditional replay policy from operation extensions", () => {
+    const document: SamvaOpenApiDocument = {
+      ...fixture,
+      paths: {
+        "/messages/{id}": {
+          get: {
+            ...fixture.paths["/messages/{id}"].get,
+            "x-idempotent": true,
+            "x-idempotent-when": { field: "mode", equals: "new" },
+          },
+        },
+      },
+    };
+    expect(generateEffectMetadataSource(document)).toContain(
+      '"idempotentWhen":{"field":"mode","equals":"new"}',
+    );
+  });
+
   it("substitutes marked leaves structurally and retains their extension metadata", () => {
     const prepared = prepareOpenApi(fixture);
     expect(

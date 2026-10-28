@@ -95,16 +95,42 @@ describe("module-first Effect SDK", () => {
     }),
   );
 
-  it.effect("sends an optional idempotency key only when the caller supplies one", () =>
+  it.effect("scopes an OAuth client to its configured organization", () =>
+    Effect.gen(function* () {
+      let authorization: string | undefined;
+      let orgSlug: string | undefined;
+      yield* Email.listDomains().pipe(
+        Effect.provide([
+          Retry.layerDisabled,
+          Client.layer({ authToken: "oauth-token", orgSlug: "acme" }),
+        ]),
+        Effect.provideService(
+          HttpClient.HttpClient,
+          stub((request) => {
+            authorization = request.headers.authorization;
+            orgSlug = request.headers["x-org-slug"];
+            return response(500, {});
+          }),
+        ),
+        Effect.exit,
+      );
+      expect(authorization).toBe("Bearer oauth-token");
+      expect(orgSlug).toBe("acme");
+    }),
+  );
+
+  it.effect("generates optional wire keys and accepts overrides only in options", () =>
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
       const reply = (idempotencyKey?: string) =>
-        Mailboxes.reply({
-          id: "mbx_1234567890123456",
-          messageId: "msg_1234567890123456",
-          text: "Thanks",
-          idempotencyKey,
-        }).pipe(
+        Mailboxes.reply(
+          {
+            id: "mbx_1234567890123456",
+            messageId: "msg_1234567890123456",
+            text: "Thanks",
+          },
+          { idempotencyKey },
+        ).pipe(
           Effect.provide(Client.layer({ apiKey: "samva_sk_module" })),
           Effect.provideService(
             HttpClient.HttpClient,
@@ -135,22 +161,25 @@ describe("module-first Effect SDK", () => {
       yield* reply();
       yield* reply("reply-1");
 
-      expect(keys).toEqual([undefined, "reply-1"]);
+      expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+      expect(keys[1]).toBe("reply-1");
     }),
   );
 
-  it.effect("keeps a payload idempotency key in the body of a path operation", () =>
+  it.effect("sends a campaign key in the header with no body key", () =>
     Effect.gen(function* () {
       let body: unknown;
+      let key: string | undefined;
       yield* Effect.exit(
-        Campaigns.scheduleRun({
-          id: "camp_1234567890abcdefgh",
-          idempotencyKey: "launch-august",
-        }).pipe(
-          Effect.provide(Client.layer({ apiKey: "samva_sk_module" })),
+        Campaigns.scheduleRun(
+          { id: "camp_1234567890abcdefgh" },
+          { idempotencyKey: "launch-august" },
+        ).pipe(
+          Effect.provide([Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_module" })]),
           Effect.provideService(
             HttpClient.HttpClient,
             stub((request) => {
+              key = request.headers["idempotency-key"];
               body =
                 request.body._tag === "Uint8Array"
                   ? JSON.parse(new TextDecoder().decode(request.body.body))
@@ -160,7 +189,8 @@ describe("module-first Effect SDK", () => {
           ),
         ),
       );
-      expect(body).toEqual({ idempotencyKey: "launch-august" });
+      expect(body).toEqual({});
+      expect(key).toBe("launch-august");
     }),
   );
 
@@ -183,7 +213,6 @@ describe("module-first Effect SDK", () => {
     expect(
       Schema.decodeSync(Templates.CreatePayload)({
         name: "Welcome",
-        idempotencyKey: "create-welcome",
       }).name,
     ).toBe("Welcome");
     expect(Schema.decodeSync(Webhooks.TestPayload)({ data: { event: "webhook.test" } })).toEqual({

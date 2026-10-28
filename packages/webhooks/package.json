@@ -1,6 +1,6 @@
 {
   "name": "@samva/webhooks",
-  "version": "0.29.1",
+  "version": "0.30.0",
   "description": "Runtime-neutral verification for Samva webhook deliveries",
   "keywords": [
     "samva",
@@ -59,24 +59,24 @@
     "build": "tsdown && tsc --project tsconfig.build.json",
     "prepack": "bun run build",
     "test": "bun run test:generation && vitest run --root ../.. --project packages packages/webhooks/tests",
-    "typecheck": "tsc-rs --noEmit",
+    "typecheck": "effect-tsgo tsrs --noEmit",
     "generate": "bun run --filter @samva/openapi build && bun run scripts/generate.ts",
     "test:generation": "bun run --filter @samva/openapi build && bun run scripts/generate.ts --check",
     "test:bundle": "bun run build && bun run scripts/check-bundle.ts"
   },
   "devDependencies": {
+    "@effect/tsgo": "catalog:",
     "@effect/vitest": "catalog:effect",
     "@samva/openapi": "workspace:*",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "effect": "catalog:effect",
-    "tsc-rs": "catalog:",
-    "tsdown": "^0.22.13",
+    "tsdown": "0.23.1",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "effect": "4.0.5"
+    "effect": "^4.0.4"
   },
   "peerDependenciesMeta": {
     "effect": {

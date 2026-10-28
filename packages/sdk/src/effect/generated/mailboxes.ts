@@ -2089,43 +2089,28 @@ export const MailboxesUpdateDraftPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesUpdateDraftRequestJson = {
   readonly to?: ReadonlyArray<string> | null;
-  readonly cc?: ReadonlyArray<string> | null | null;
-  readonly bcc?: ReadonlyArray<string> | null | null;
-  readonly replyTo?: ReadonlyArray<string> | null | null;
-  readonly subject?: string | null | null;
-  readonly text?: string | null | null;
-  readonly html?: string | null | null;
-  readonly attachments?: ReadonlyArray<EmailAttachment> | null | null;
+  readonly cc?: ReadonlyArray<string> | null;
+  readonly bcc?: ReadonlyArray<string> | null;
+  readonly replyTo?: ReadonlyArray<string> | null;
+  readonly subject?: string | null;
+  readonly text?: string | null;
+  readonly html?: string | null;
+  readonly attachments?: ReadonlyArray<EmailAttachment> | null;
 };
 export const MailboxesUpdateDraftRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     to: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    cc: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
-    bcc: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
-    replyTo: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
-    subject: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    text: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    html: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Array(EmailAttachment).check(
-            Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-          ),
-          Schema.Null,
-        ]),
+        Schema.Array(EmailAttachment).check(
+          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+        ),
         Schema.Null,
       ]),
     ),
@@ -2264,14 +2249,12 @@ export type MailboxesUpdateEndpointPathParams = {
 export const MailboxesUpdateEndpointPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, endpointId: MailboxEndpointId }))();
 export type MailboxesUpdateEndpointRequestJson = {
-  readonly displayName?: string | null | null;
+  readonly displayName?: string | null;
   readonly default?: true | null;
 };
 export const MailboxesUpdateEndpointRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    displayName: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     default: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
   }))();
 export type MailboxesUpdateEndpoint200 = Mailbox;
@@ -2491,15 +2474,7 @@ export const MailboxesCreateLabelPathParams = /* @__PURE__ */ (() =>
 export type MailboxesCreateLabelRequestJson = {
   readonly slug: string;
   readonly displayName: string;
-  readonly color?:
-    | "billing"
-    | "domain"
-    | "agent"
-    | "routing"
-    | "important"
-    | "neutral"
-    | null
-    | null;
+  readonly color?: "billing" | "domain" | "agent" | "routing" | "important" | "neutral" | null;
 };
 export const MailboxesCreateLabelRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2508,15 +2483,12 @@ export const MailboxesCreateLabelRequestJson = /* @__PURE__ */ (() =>
     color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Union([
-            Schema.Literal("billing"),
-            Schema.Literal("domain"),
-            Schema.Literal("agent"),
-            Schema.Literal("routing"),
-            Schema.Literal("important"),
-            Schema.Literal("neutral"),
-          ]),
-          Schema.Null,
+          Schema.Literal("billing"),
+          Schema.Literal("domain"),
+          Schema.Literal("agent"),
+          Schema.Literal("routing"),
+          Schema.Literal("important"),
+          Schema.Literal("neutral"),
         ]),
         Schema.Null,
       ]),
@@ -2566,15 +2538,7 @@ export const MailboxesUpdateLabelPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, labelId: MailboxLabelId }))();
 export type MailboxesUpdateLabelRequestJson = {
   readonly displayName?: string | null;
-  readonly color?:
-    | "billing"
-    | "domain"
-    | "agent"
-    | "routing"
-    | "important"
-    | "neutral"
-    | null
-    | null;
+  readonly color?: "billing" | "domain" | "agent" | "routing" | "important" | "neutral" | null;
 };
 export const MailboxesUpdateLabelRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2582,15 +2546,12 @@ export const MailboxesUpdateLabelRequestJson = /* @__PURE__ */ (() =>
     color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Union([
-            Schema.Literal("billing"),
-            Schema.Literal("domain"),
-            Schema.Literal("agent"),
-            Schema.Literal("routing"),
-            Schema.Literal("important"),
-            Schema.Literal("neutral"),
-          ]),
-          Schema.Null,
+          Schema.Literal("billing"),
+          Schema.Literal("domain"),
+          Schema.Literal("agent"),
+          Schema.Literal("routing"),
+          Schema.Literal("important"),
+          Schema.Literal("neutral"),
         ]),
         Schema.Null,
       ]),
@@ -3210,7 +3171,7 @@ export const MailboxesUpdatePolicyPathParams = /* @__PURE__ */ (() =>
 export type MailboxesUpdatePolicyRequestJson = {
   readonly name?: string | null;
   readonly outcome?: MailboxPolicyOutcomeKind | null;
-  readonly reason?: string | null | null;
+  readonly reason?: string | null;
   readonly enabled?: boolean | null;
 };
 export const MailboxesUpdatePolicyRequestJson = /* @__PURE__ */ (() =>
@@ -3239,16 +3200,13 @@ export const MailboxesUpdatePolicyRequestJson = /* @__PURE__ */ (() =>
     outcome: Schema.optionalKey(Schema.Union([MailboxPolicyOutcomeKind, Schema.Null])),
     reason: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(512).annotate({
-              expected: "a string with at most 512 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
-          ),
-          Schema.Null,
-        ]),
+        Schema.String.check(
+          Schema.isMaxCodePoints(512).annotate({
+            expected: "a string with at most 512 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+        ),
         Schema.Null,
       ]),
     ),
@@ -3411,7 +3369,7 @@ export type MailboxesUpdateThreadRequestJson = {
   readonly priority?: MailboxThreadPriority | null;
   readonly read?: boolean | null;
   readonly starred?: boolean | null;
-  readonly snoozedUntil?: string | null | null;
+  readonly snoozedUntil?: string | null;
 };
 export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3419,9 +3377,7 @@ export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
     priority: Schema.optionalKey(Schema.Union([MailboxThreadPriority, Schema.Null])),
     read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    snoozedUntil: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    snoozedUntil: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
 export type MailboxesUpdateThread200 = MailboxThreadState;
 export const MailboxesUpdateThread200 = MailboxThreadState;
@@ -3622,15 +3578,13 @@ export const MailboxesCreateNotePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesCreateNoteRequestJson = {
   readonly body: string;
-  readonly color?: string | null | null;
+  readonly color?: string | null;
   readonly pinned?: boolean | null;
 };
 export const MailboxesCreateNoteRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     body: Schema.String,
-    color: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    color: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type MailboxesCreateNote201 = MailboxNote;
@@ -3677,15 +3631,13 @@ export const MailboxesUpdateNotePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId, noteId: MailboxNoteId }))();
 export type MailboxesUpdateNoteRequestJson = {
   readonly body?: string | null;
-  readonly color?: string | null | null;
+  readonly color?: string | null;
   readonly pinned?: boolean | null;
 };
 export const MailboxesUpdateNoteRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     body: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    color: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    color: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type MailboxesUpdateNote200 = MailboxNote;

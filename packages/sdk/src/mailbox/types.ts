@@ -1,4 +1,6 @@
-import type { SamvaClient, SendResult } from "./client";
+import type { SamvaClient } from "../promises/client";
+
+type SendResult = Awaited<ReturnType<SamvaClient["mailboxes"]["reply"]>>;
 
 export type ExtensionManifest = {
   readonly name: string;
@@ -94,7 +96,7 @@ export type EventData = {
   "mailbox.action.pending_approval": MailboxEventScope & {
     readonly action: {
       readonly state?: "approvalRequired";
-      readonly decision?: NonNullable<SendResult["decision"]>;
+      readonly decision?: Readonly<NonNullable<SendResult["decision"]>>;
       readonly id: string;
       readonly type:
         | "sendMessage"

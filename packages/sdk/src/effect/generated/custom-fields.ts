@@ -90,7 +90,7 @@ export type CustomFieldsCreateRequestJson = {
   readonly label: string;
   readonly type: "text" | "number" | "boolean" | "date" | "select";
   readonly options?: ReadonlyArray<string> | null;
-  readonly defaultValue?: string | null | null;
+  readonly defaultValue?: string | null;
   readonly isRequired?: boolean | null;
   readonly sortOrder?: number | null;
 };
@@ -106,9 +106,7 @@ export const CustomFieldsCreateRequestJson = /* @__PURE__ */ (() =>
       Schema.Literal("select"),
     ]),
     options: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    defaultValue: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    defaultValue: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     isRequired: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     sortOrder: Schema.optionalKey(
       Schema.Union([
@@ -206,7 +204,7 @@ export const CustomFieldsUpdatePathParams = /* @__PURE__ */ (() =>
 export type CustomFieldsUpdateRequestJson = {
   readonly label?: string | null;
   readonly options?: ReadonlyArray<string> | null;
-  readonly defaultValue?: string | null | null;
+  readonly defaultValue?: string | null;
   readonly isRequired?: boolean | null;
   readonly sortOrder?: number | null;
 };
@@ -214,9 +212,7 @@ export const CustomFieldsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     label: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     options: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    defaultValue: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    defaultValue: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     isRequired: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     sortOrder: Schema.optionalKey(
       Schema.Union([

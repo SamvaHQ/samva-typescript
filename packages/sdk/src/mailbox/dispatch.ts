@@ -1,9 +1,15 @@
-import { clientForEvent, type SamvaClient } from "./client";
+import { clientWithIdempotency, type SamvaClient } from "../promises/client";
 import type { DispatchResult, ExtensionDefinition, ExtensionEvent, Invocation } from "./types";
 
-/* oxlint-disable samva/no-try-catch-or-throw -- dispatch is the Promise SDK boundary that captures extension handler failures into DispatchResult */
-/* oxlint-disable samva/no-error-constructor -- the Promise SDK reports invalid invocations and handler failures as result strings */
 /* oxlint-disable samva/no-hand-rolled-object-guard -- the dependency-free dispatcher checks the externally supplied JSON event envelope before exposing it to handlers */
+
+// Preserve keys already bound to actions when an installation upgrades its extension bundle.
+const sendKeyMethods: Readonly<Record<string, string>> = {
+  mailboxesReply: "reply",
+  mailboxesReplyAll: "replyAll",
+  mailboxesForward: "forward",
+  mailboxesSendMessage: "send",
+};
 
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 export { errorMessage };
@@ -65,8 +71,14 @@ export async function dispatchEvent(
           context: { samva: SamvaClient; log: typeof log; event: ExtensionEvent; attempt: number },
         ) => void | Promise<void>)
       | undefined;
+    const counts = new Map<string, number>();
     await handler?.(event, {
-      samva: clientForEvent(client, event.id),
+      samva: clientWithIdempotency(client, (operation) => {
+        const method = sendKeyMethods[operation] ?? operation;
+        const n = (counts.get(method) ?? 0) + 1;
+        counts.set(method, n);
+        return `${event.id}:${method}:${n}`;
+      }),
       log,
       event,
       attempt: invocation.attempt,

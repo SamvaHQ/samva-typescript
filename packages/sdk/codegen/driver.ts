@@ -1401,12 +1401,28 @@ export const generateEffectMetadataSource = (input: SamvaOpenApiDocument): strin
     ]);
   };
   const roots = new Map(registry.roots.map((root) => [root.name, root.schema]));
+  const idempotency = (path: string, method: string) => {
+    const item = input.paths[path];
+    const operation = isObject(item) ? item[method] : undefined;
+    const idempotent = isObject(operation) && operation["x-idempotent"] === true;
+    const condition = isObject(operation) ? operation["x-idempotent-when"] : undefined;
+    if (condition === undefined) return { idempotent };
+    if (
+      !idempotent ||
+      !isObject(condition) ||
+      typeof condition.field !== "string" ||
+      typeof condition.equals !== "string"
+    )
+      throw new Error(`Invalid x-idempotent-when on ${method} ${path}`);
+    return { idempotent, idempotentWhen: { field: condition.field, equals: condition.equals } };
+  };
   const operations = Object.fromEntries(
     parsed.operations.map((operation) => [
       operation.id,
       {
         group: operation.tags[0] ?? "default",
         method: operation.method.toUpperCase(),
+        ...idempotency(operation.path, operation.method),
         paginated: [...operation.httpClientResponses.successSchemas.values()].some((name) => {
           const properties = propertyNames(roots.get(name));
           return properties.has("items") && properties.has("nextCursor");

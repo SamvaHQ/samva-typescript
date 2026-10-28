@@ -95,7 +95,10 @@ const sendPayload = (
 ): Effect.Effect<Effect.Success<SendResult>, UploadFailure, Service> =>
   Effect.gen(function* () {
     const client = yield* Service;
-    const idempotencyKey = options?.idempotencyKey ?? (yield* generateIdempotencyKey);
+    const idempotencyKey =
+      options?.idempotencyKey ??
+      client.idempotency?.("messagesSend") ??
+      (yield* generateIdempotencyKey);
     // Uploads run once, outside the retry, so a retried send reuses the same media ids.
     const prepared = yield* uploadOversizedAttachments(client, payload);
     return yield* withRetry(

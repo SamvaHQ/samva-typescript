@@ -1,40 +1,10 @@
-import { createSamvaClient, type Fetch } from "./client";
+import { createBoundClient } from "../promises/client";
 import { dispatchEvent, errorMessage } from "./dispatch";
 import type { EventType, ExtensionDefinition, ExtensionManifest, Invocation } from "./types";
 
-/* oxlint-disable samva/no-try-catch-or-throw -- the public Promise authoring API reports invalid definitions by throwing and adapts hosted requests to HTTP responses */
-/* oxlint-disable samva/no-error-constructor -- invalid authoring definitions use the package's documented native Error failure surface */
+type Fetch = NonNullable<Parameters<typeof createBoundClient>[0]["fetch"]>;
 
 export * from "./types";
-export { createSamvaClient, SamvaApiError } from "./client";
-export type {
-  ClientOptions,
-  Fetch,
-  SamvaClient,
-  SendOptions,
-  SendPayload,
-  ReplyPayload,
-  ForwardPayload,
-  SendResult,
-  SendRefusal,
-  SendIntent,
-  EmailSendIntent,
-  ChatSendIntent,
-  MailboxAction,
-  Message,
-  EmailMessage,
-  ChatMessage,
-  MessageSummary,
-  MailboxThread,
-  MailboxThreadState,
-  PageQuery,
-  ThreadSummary,
-  ThreadQuery,
-  ThreadList,
-  ThreadMessages,
-  ThreadContent,
-  ThreadUpdate,
-} from "./client";
 export { dispatchEvent } from "./dispatch";
 
 export function defineExtension<const M extends ExtensionManifest>(definition: {
@@ -53,7 +23,7 @@ export function defineExtension<const M extends ExtensionManifest>(definition: {
       try {
         if (request.method !== "POST") throw new Error("Hosted invocations require POST");
         const invocation: Invocation = await request.json();
-        const client = createSamvaClient({
+        const client = createBoundClient({
           fetch: env.SAMVA.fetch.bind(env.SAMVA),
           baseUrl: "https://api.samva.dev",
         });

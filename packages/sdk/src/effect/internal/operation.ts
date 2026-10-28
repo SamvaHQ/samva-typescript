@@ -1,10 +1,11 @@
 import { type Brand, Effect, Predicate, Redacted, Stream } from "effect";
 import type { HttpApiGroup } from "effect/http-api";
 
+import { isRetrySafe } from "../../request-policy";
 import { SDK_OPERATION_CALLS } from "../../service-map";
 import { SamvaOperations } from "../generated-metadata";
 import { type CursorPageEnvelope, streamCursorItems, streamCursorPages } from "../pagination";
-import { withRetry } from "../retry";
+import { generateIdempotencyKey, withRetry } from "../retry";
 import {
   type FlatRaw,
   type Operation,
@@ -53,11 +54,9 @@ type Input<Name extends SdkOperation> = Wire<
   FlattenRequest<NonNullable<RequestArg<FlatRaw[Name]>>>
 >;
 
-type IdempotencyKeyField<Request> = Request extends {
-  readonly headers: { readonly "idempotency-key": infer Key };
+export interface OperationOptions {
+  readonly idempotencyKey?: string | undefined;
 }
-  ? { readonly idempotencyKey: Wire<Key> }
-  : unknown;
 
 export type OperationResult<Name extends SdkOperation> = Effect.Effect<
   OperationSuccess<Name>,
@@ -65,28 +64,13 @@ export type OperationResult<Name extends SdkOperation> = Effect.Effect<
   Service
 >;
 
-type DirectOperation<Name extends SdkOperation> =
-  {} extends Input<Name>
-    ? (input?: Input<Name>) => OperationResult<Name>
-    : (input: Input<Name>) => OperationResult<Name>;
-
 type OperationFunction<Name extends SdkOperation> = (typeof SDK_OPERATION_CALLS)[Name] extends {
   readonly kind: "none";
 }
-  ? (_?: never) => OperationResult<Name>
-  : (typeof SDK_OPERATION_CALLS)[Name] extends {
-        readonly kind: "idempotentPayload" | "idempotentPath";
-      }
-    ? (
-        input: Input<Name> & IdempotencyKeyField<NonNullable<RequestArg<FlatRaw[Name]>>>,
-      ) => OperationResult<Name>
-    : (typeof SDK_OPERATION_CALLS)[Name] extends {
-          readonly kind: "optionalIdempotentPath" | "optionalIdempotentPathPayload";
-        }
-      ? (
-          input: Input<Name> & { readonly idempotencyKey?: string | undefined },
-        ) => OperationResult<Name>
-      : DirectOperation<Name>;
+  ? (input?: never, options?: OperationOptions) => OperationResult<Name>
+  : {} extends Input<Name>
+    ? (input?: Input<Name>, options?: OperationOptions) => OperationResult<Name>
+    : (input: Input<Name>, options?: OperationOptions) => OperationResult<Name>;
 
 type EnvelopeItem<A> = A extends { readonly items: ReadonlyArray<infer Item> } ? Item : never;
 type IsPaginated<A> = [A] extends [
@@ -112,8 +96,6 @@ type WithPagination<Method> = Method extends (
     ? Method & PaginationCompanions<Parameters, A, E, R>
     : Method
   : Method;
-
-const READ_METHODS = new Set<string>(["GET", "HEAD"]);
 
 const MODULE_NAMES = {
   agents: "Agents",
@@ -167,27 +149,21 @@ type PathDescriptor = { readonly kind: string; readonly paths: ReadonlyArray<str
 const adapt = (
   operationName: SdkOperation,
   rawCall: RawCall,
-  input?: unknown,
+  input: unknown,
+  idempotencyKey: string | undefined,
 ): Effect.Effect<unknown, unknown> => {
   const descriptor = SDK_OPERATION_CALLS[operationName];
-  const call = READ_METHODS.has(SamvaOperations[operationName].method)
-    ? (request?: unknown) => withRetry(rawCall(request))
-    : rawCall;
+  const call = (request: Record<string, unknown> = {}) => {
+    const operation = rawCall({
+      ...request,
+      ...(idempotencyKey === undefined ? {} : { headers: { "idempotency-key": idempotencyKey } }),
+    });
+    return isRetrySafe(operationName, input) ? withRetry(operation) : operation;
+  };
 
   if (descriptor.kind === "none") return call();
-  if (descriptor.kind === "params")
-    return call({ query: stripUndefined(input === undefined ? {} : input) });
-  if (descriptor.kind === "payload")
-    return call({ payload: stripUndefined(input === undefined ? {} : input) });
-  if (descriptor.kind === "idempotentPayload") {
-    const { idempotencyKey, ...payload } = input as {
-      readonly idempotencyKey: string;
-    } & Record<string, unknown>;
-    return call({
-      headers: { "idempotency-key": idempotencyKey },
-      payload: stripUndefined(payload),
-    });
-  }
+  if (descriptor.kind === "params") return call({ query: stripUndefined(input ?? {}) });
+  if (descriptor.kind === "payload") return call({ payload: stripUndefined(input ?? {}) });
 
   const pathDescriptor = descriptor as PathDescriptor;
   const inputRecord = (input ?? {}) as Readonly<Record<string, unknown>>;
@@ -199,33 +175,12 @@ const adapt = (
     params[path] = inputRecord[path];
   }
   if (pathDescriptor.kind === "path") return call({ params });
-  if (pathDescriptor.kind === "idempotentPath") {
-    return call({ params, headers: { "idempotency-key": inputRecord.idempotencyKey } });
-  }
-  // An optional key: absent, the request carries no header and the server does not dedupe it.
-  // The endpoint still declares a headers schema, so the request always carries the object.
-  const optionalKeyHeaders = {
-    headers:
-      inputRecord.idempotencyKey === undefined
-        ? {}
-        : { "idempotency-key": inputRecord.idempotencyKey },
-  };
-  if (pathDescriptor.kind === "optionalIdempotentPath") {
-    return call({ params, ...optionalKeyHeaders });
-  }
 
-  // Only an optional key travels as a header; any other `idempotencyKey` is a payload field.
-  const headerKey = pathDescriptor.kind === "optionalIdempotentPathPayload";
   const remainingInput = stripUndefined(
     Object.fromEntries(
-      Object.entries(inputRecord).filter(
-        ([key]) => !pathDescriptor.paths.includes(key) && !(headerKey && key === "idempotencyKey"),
-      ),
+      Object.entries(inputRecord).filter(([key]) => !pathDescriptor.paths.includes(key)),
     ),
   );
-  if (pathDescriptor.kind === "optionalIdempotentPathPayload") {
-    return call({ params, payload: remainingInput, ...optionalKeyHeaders });
-  }
   return call({
     params,
     [pathDescriptor.kind === "pathParams" ? "query" : "payload"]: remainingInput,
@@ -264,13 +219,19 @@ const make = <Name extends SdkOperation>(
   group: HttpApiGroup.Constraint,
   operationName: Name,
 ): WithPagination<OperationFunction<Name>> => {
-  const call = Effect.fn(traceName(operationName))((input?: unknown) =>
-    Effect.flatMap(Service, (client) =>
-      Effect.flatMap(client.endpoint(group, operationName), (rawCall: RawCall) =>
-        adapt(operationName, rawCall, input),
-      ),
-    ),
-  );
+  const call = Effect.fn(traceName(operationName))(function* (
+    input?: unknown,
+    options?: OperationOptions,
+  ) {
+    const client = yield* Service;
+    const rawCall = yield* client.endpoint(group, operationName);
+    const idempotencyKey = SamvaOperations[operationName].idempotent
+      ? (options?.idempotencyKey ??
+        client.idempotency?.(operationName) ??
+        (yield* generateIdempotencyKey))
+      : undefined;
+    return yield* adapt(operationName, rawCall, input, idempotencyKey);
+  });
   const operation = call as OperationFunction<Name>;
 
   if (SamvaOperations[operationName].paginated) {

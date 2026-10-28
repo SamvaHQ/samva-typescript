@@ -13,23 +13,23 @@ import {
   GatewayTimeoutError,
   InternalError,
   JsonValue,
+  NewsletterId,
   OrganizationId,
   ResourceNotFoundError,
   TemplateProjectId,
   TemplateSourceError,
-  TopicId,
   UnauthorizedError,
   UserId,
   ValidationError,
 } from "./shared";
 
-export type TopicIssueDocument = {
+export type NewsletterIssueDocument = {
   readonly projectId: TemplateProjectId;
   readonly revision: string;
   readonly path: string;
   readonly content: string;
 };
-export const TopicIssueDocument = /* @__PURE__ */ (() =>
+export const NewsletterIssueDocument = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: TemplateProjectId,
     revision: Schema.String.check(
@@ -61,18 +61,21 @@ export const TopicIssueDocument = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
     content: Schema.String,
-  }).annotate({ identifier: "TopicIssueDocument" }))();
-export type TopicIssueSend = { readonly campaignId: CampaignId; readonly run: CampaignLatestRun };
-export const TopicIssueSend = /* @__PURE__ */ (() =>
+  }).annotate({ identifier: "NewsletterIssueDocument" }))();
+export type NewsletterIssueSend = {
+  readonly campaignId: CampaignId;
+  readonly run: CampaignLatestRun;
+};
+export const NewsletterIssueSend = /* @__PURE__ */ (() =>
   Schema.Struct({ campaignId: CampaignId, run: CampaignLatestRun }).annotate({
-    identifier: "TopicIssueSend",
+    identifier: "NewsletterIssueSend",
   }))();
-export type TopicIssueListItem = {
+export type NewsletterIssueListItem = {
   readonly path: string;
   readonly title: string | null;
-  readonly latestSend: TopicIssueSend | null;
+  readonly latestSend: NewsletterIssueSend | null;
 };
-export const TopicIssueListItem = /* @__PURE__ */ (() =>
+export const NewsletterIssueListItem = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -92,14 +95,14 @@ export const TopicIssueListItem = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
     title: Schema.Union([Schema.String, Schema.Null]),
-    latestSend: Schema.Union([TopicIssueSend, Schema.Null]),
-  }).annotate({ identifier: "TopicIssueListItem" }))();
-export type TopicIssueList = {
+    latestSend: Schema.Union([NewsletterIssueSend, Schema.Null]),
+  }).annotate({ identifier: "NewsletterIssueListItem" }))();
+export type NewsletterIssueList = {
   readonly projectId: TemplateProjectId | null;
   readonly revision: string | null;
-  readonly items: ReadonlyArray<TopicIssueListItem>;
+  readonly items: ReadonlyArray<NewsletterIssueListItem>;
 };
-export const TopicIssueList = /* @__PURE__ */ (() =>
+export const NewsletterIssueList = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: Schema.Union([TemplateProjectId, Schema.Null]),
     revision: Schema.Union([
@@ -116,37 +119,58 @@ export const TopicIssueList = /* @__PURE__ */ (() =>
         ),
       Schema.Null,
     ]),
-    items: Schema.Array(TopicIssueListItem),
-  }).annotate({ identifier: "TopicIssueList" }))();
-export type TopicIssuesListPathParams = { readonly id: TopicId };
-export const TopicIssuesListPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesList200 = TopicIssueList;
-export const TopicIssuesList200 = TopicIssueList;
-export type TopicIssuesList401 = UnauthorizedError;
-export const TopicIssuesList401 = UnauthorizedError;
-export type TopicIssuesList403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesList403 = /* @__PURE__ */ (() =>
+    items: Schema.Array(NewsletterIssueListItem),
+  }).annotate({ identifier: "NewsletterIssueList" }))();
+export type NewsletterIssuesListPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesListPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesList200 = NewsletterIssueList;
+export const NewsletterIssuesList200 = NewsletterIssueList;
+export type NewsletterIssuesList401 = UnauthorizedError;
+export const NewsletterIssuesList401 = UnauthorizedError;
+export type NewsletterIssuesList403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesList403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesList404 = ResourceNotFoundError;
-export const TopicIssuesList404 = ResourceNotFoundError;
-export type TopicIssuesList409 = ConflictError;
-export const TopicIssuesList409 = ConflictError;
-export type TopicIssuesList422 = TemplateSourceError | ValidationError;
-export const TopicIssuesList422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesList404 = ResourceNotFoundError;
+export const NewsletterIssuesList404 = ResourceNotFoundError;
+export type NewsletterIssuesList409 = ConflictError;
+export const NewsletterIssuesList409 = ConflictError;
+export type NewsletterIssuesList422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesList422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesList500 = InternalError;
-export const TopicIssuesList500 = InternalError;
-export type TopicIssuesList504 = GatewayTimeoutError;
-export const TopicIssuesList504 = GatewayTimeoutError;
-export type TopicIssuesCreatePathParams = { readonly id: TopicId };
-export const TopicIssuesCreatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesCreateRequestJson = {
+export type NewsletterIssuesList500 = InternalError;
+export const NewsletterIssuesList500 = InternalError;
+export type NewsletterIssuesList504 = GatewayTimeoutError;
+export const NewsletterIssuesList504 = GatewayTimeoutError;
+export type NewsletterIssuesCreatePathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesCreatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesCreateHeaders = { readonly "idempotency-key"?: string | null };
+export const NewsletterIssuesCreateHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NewsletterIssuesCreateRequestJson = {
   readonly path: string;
   readonly content: string;
-  readonly idempotencyKey: string;
   readonly expectedRevision?: string | null;
 };
-export const TopicIssuesCreateRequestJson = /* @__PURE__ */ (() =>
+export const NewsletterIssuesCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -166,15 +190,6 @@ export const TopicIssuesCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
     content: Schema.String,
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-      ),
     expectedRevision: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
@@ -194,7 +209,7 @@ export const TopicIssuesCreateRequestJson = /* @__PURE__ */ (() =>
       ]),
     ),
   }))();
-export type TopicIssuesCreate200 = {
+export type NewsletterIssuesCreate200 = {
   readonly workspace: {
     readonly projectId: TemplateProjectId;
     readonly organizationId: OrganizationId | null;
@@ -266,7 +281,7 @@ export type TopicIssuesCreate200 = {
   };
   readonly files: { readonly [x: string]: string };
 };
-export const TopicIssuesCreate200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     workspace: Schema.Struct({
       projectId: TemplateProjectId,
@@ -617,31 +632,51 @@ export const TopicIssuesCreate200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
-export type TopicIssuesCreate401 = UnauthorizedError;
-export const TopicIssuesCreate401 = UnauthorizedError;
-export type TopicIssuesCreate403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesCreate403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesCreate401 = UnauthorizedError;
+export const NewsletterIssuesCreate401 = UnauthorizedError;
+export type NewsletterIssuesCreate403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesCreate403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesCreate404 = ResourceNotFoundError;
-export const TopicIssuesCreate404 = ResourceNotFoundError;
-export type TopicIssuesCreate409 = ConflictError;
-export const TopicIssuesCreate409 = ConflictError;
-export type TopicIssuesCreate422 = TemplateSourceError | ValidationError;
-export const TopicIssuesCreate422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesCreate404 = ResourceNotFoundError;
+export const NewsletterIssuesCreate404 = ResourceNotFoundError;
+export type NewsletterIssuesCreate409 = ConflictError;
+export const NewsletterIssuesCreate409 = ConflictError;
+export type NewsletterIssuesCreate422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesCreate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesCreate500 = InternalError;
-export const TopicIssuesCreate500 = InternalError;
-export type TopicIssuesCreate504 = GatewayTimeoutError;
-export const TopicIssuesCreate504 = GatewayTimeoutError;
-export type TopicIssuesUpdatePathParams = { readonly id: TopicId };
-export const TopicIssuesUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesUpdateRequestJson = {
+export type NewsletterIssuesCreate500 = InternalError;
+export const NewsletterIssuesCreate500 = InternalError;
+export type NewsletterIssuesCreate504 = GatewayTimeoutError;
+export const NewsletterIssuesCreate504 = GatewayTimeoutError;
+export type NewsletterIssuesUpdatePathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesUpdatePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesUpdateHeaders = { readonly "idempotency-key"?: string | null };
+export const NewsletterIssuesUpdateHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NewsletterIssuesUpdateRequestJson = {
   readonly path: string;
   readonly content: string;
-  readonly idempotencyKey: string;
   readonly expectedRevision: string;
 };
-export const TopicIssuesUpdateRequestJson = /* @__PURE__ */ (() =>
+export const NewsletterIssuesUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -661,15 +696,6 @@ export const TopicIssuesUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
     content: Schema.String,
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-      ),
     expectedRevision: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
@@ -682,7 +708,7 @@ export const TopicIssuesUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
   }))();
-export type TopicIssuesUpdate200 = {
+export type NewsletterIssuesUpdate200 = {
   readonly workspace: {
     readonly projectId: TemplateProjectId;
     readonly organizationId: OrganizationId | null;
@@ -754,7 +780,7 @@ export type TopicIssuesUpdate200 = {
   };
   readonly files: { readonly [x: string]: string };
 };
-export const TopicIssuesUpdate200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     workspace: Schema.Struct({
       projectId: TemplateProjectId,
@@ -1105,29 +1131,50 @@ export const TopicIssuesUpdate200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
-export type TopicIssuesUpdate401 = UnauthorizedError;
-export const TopicIssuesUpdate401 = UnauthorizedError;
-export type TopicIssuesUpdate403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesUpdate403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesUpdate401 = UnauthorizedError;
+export const NewsletterIssuesUpdate401 = UnauthorizedError;
+export type NewsletterIssuesUpdate403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesUpdate403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesUpdate404 = ResourceNotFoundError;
-export const TopicIssuesUpdate404 = ResourceNotFoundError;
-export type TopicIssuesUpdate409 = ConflictError;
-export const TopicIssuesUpdate409 = ConflictError;
-export type TopicIssuesUpdate422 = TemplateSourceError | ValidationError;
-export const TopicIssuesUpdate422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesUpdate404 = ResourceNotFoundError;
+export const NewsletterIssuesUpdate404 = ResourceNotFoundError;
+export type NewsletterIssuesUpdate409 = ConflictError;
+export const NewsletterIssuesUpdate409 = ConflictError;
+export type NewsletterIssuesUpdate422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesUpdate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesUpdate500 = InternalError;
-export const TopicIssuesUpdate500 = InternalError;
-export type TopicIssuesUpdate504 = GatewayTimeoutError;
-export const TopicIssuesUpdate504 = GatewayTimeoutError;
-export type TopicIssuesCheckPathParams = { readonly id: TopicId };
-export const TopicIssuesCheckPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesCheckRequestJson = {
+export type NewsletterIssuesUpdate500 = InternalError;
+export const NewsletterIssuesUpdate500 = InternalError;
+export type NewsletterIssuesUpdate504 = GatewayTimeoutError;
+export const NewsletterIssuesUpdate504 = GatewayTimeoutError;
+export type NewsletterIssuesCheckPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesCheckPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesCheckHeaders = { readonly "idempotency-key"?: string | null };
+export const NewsletterIssuesCheckHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NewsletterIssuesCheckRequestJson = {
   readonly path: string;
   readonly expectedRevision: string;
 };
-export const TopicIssuesCheckRequestJson = /* @__PURE__ */ (() =>
+export const NewsletterIssuesCheckRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -1158,7 +1205,7 @@ export const TopicIssuesCheckRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
   }))();
-export type TopicIssuesCheck200 = {
+export type NewsletterIssuesCheck200 = {
   readonly projectId: TemplateProjectId;
   readonly revision: string;
   readonly entryPath: string | string;
@@ -1176,6 +1223,7 @@ export type TopicIssuesCheck200 = {
     readonly path: string;
     readonly frontmatter: {
       readonly title: string;
+      readonly date?: string;
       readonly slug: string;
       readonly topic: string;
       readonly preheader?: string;
@@ -1238,7 +1286,7 @@ export type TopicIssuesCheck200 = {
     } | null;
   }>;
 };
-export const TopicIssuesCheck200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: TemplateProjectId,
     revision: Schema.String,
@@ -1356,6 +1404,7 @@ export const TopicIssuesCheck200 = /* @__PURE__ */ (() =>
           ),
         frontmatter: Schema.Struct({
           title: Schema.String,
+          date: Schema.optionalKey(Schema.String),
           slug: Schema.String,
           topic: Schema.String,
           preheader: Schema.optionalKey(Schema.String),
@@ -1573,26 +1622,27 @@ export const TopicIssuesCheck200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
-export type TopicIssuesCheck401 = UnauthorizedError;
-export const TopicIssuesCheck401 = UnauthorizedError;
-export type TopicIssuesCheck403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesCheck403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesCheck401 = UnauthorizedError;
+export const NewsletterIssuesCheck401 = UnauthorizedError;
+export type NewsletterIssuesCheck403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesCheck403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesCheck404 = ResourceNotFoundError;
-export const TopicIssuesCheck404 = ResourceNotFoundError;
-export type TopicIssuesCheck409 = ConflictError;
-export const TopicIssuesCheck409 = ConflictError;
-export type TopicIssuesCheck422 = TemplateSourceError | ValidationError;
-export const TopicIssuesCheck422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesCheck404 = ResourceNotFoundError;
+export const NewsletterIssuesCheck404 = ResourceNotFoundError;
+export type NewsletterIssuesCheck409 = ConflictError;
+export const NewsletterIssuesCheck409 = ConflictError;
+export type NewsletterIssuesCheck422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesCheck422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesCheck500 = InternalError;
-export const TopicIssuesCheck500 = InternalError;
-export type TopicIssuesCheck504 = GatewayTimeoutError;
-export const TopicIssuesCheck504 = GatewayTimeoutError;
-export type TopicIssuesGetPathParams = { readonly id: TopicId };
-export const TopicIssuesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesGetQuery = { readonly path: string; readonly expectedRevision: string };
-export const TopicIssuesGetQuery = /* @__PURE__ */ (() =>
+export type NewsletterIssuesCheck500 = InternalError;
+export const NewsletterIssuesCheck500 = InternalError;
+export type NewsletterIssuesCheck504 = GatewayTimeoutError;
+export const NewsletterIssuesCheck504 = GatewayTimeoutError;
+export type NewsletterIssuesGetPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesGetPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesGetQuery = { readonly path: string; readonly expectedRevision: string };
+export const NewsletterIssuesGetQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -1623,32 +1673,33 @@ export const TopicIssuesGetQuery = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
   }))();
-export type TopicIssuesGet200 = TopicIssueDocument;
-export const TopicIssuesGet200 = TopicIssueDocument;
-export type TopicIssuesGet401 = UnauthorizedError;
-export const TopicIssuesGet401 = UnauthorizedError;
-export type TopicIssuesGet403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesGet403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesGet200 = NewsletterIssueDocument;
+export const NewsletterIssuesGet200 = NewsletterIssueDocument;
+export type NewsletterIssuesGet401 = UnauthorizedError;
+export const NewsletterIssuesGet401 = UnauthorizedError;
+export type NewsletterIssuesGet403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesGet403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesGet404 = ResourceNotFoundError;
-export const TopicIssuesGet404 = ResourceNotFoundError;
-export type TopicIssuesGet409 = ConflictError;
-export const TopicIssuesGet409 = ConflictError;
-export type TopicIssuesGet422 = TemplateSourceError | ValidationError;
-export const TopicIssuesGet422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesGet404 = ResourceNotFoundError;
+export const NewsletterIssuesGet404 = ResourceNotFoundError;
+export type NewsletterIssuesGet409 = ConflictError;
+export const NewsletterIssuesGet409 = ConflictError;
+export type NewsletterIssuesGet422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesGet422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesGet500 = InternalError;
-export const TopicIssuesGet500 = InternalError;
-export type TopicIssuesGet504 = GatewayTimeoutError;
-export const TopicIssuesGet504 = GatewayTimeoutError;
-export type TopicIssuesHeadPathParams = { readonly id: TopicId };
-export const TopicIssuesHeadPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesHead200 = {
+export type NewsletterIssuesGet500 = InternalError;
+export const NewsletterIssuesGet500 = InternalError;
+export type NewsletterIssuesGet504 = GatewayTimeoutError;
+export const NewsletterIssuesGet504 = GatewayTimeoutError;
+export type NewsletterIssuesHeadPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesHeadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesHead200 = {
   readonly projectId: TemplateProjectId;
   readonly revision: string;
   readonly remoteHead: string;
 };
-export const TopicIssuesHead200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesHead200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: TemplateProjectId,
     revision: Schema.String,
@@ -1658,27 +1709,27 @@ export const TopicIssuesHead200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
-export type TopicIssuesHead401 = UnauthorizedError;
-export const TopicIssuesHead401 = UnauthorizedError;
-export type TopicIssuesHead403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesHead403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesHead401 = UnauthorizedError;
+export const NewsletterIssuesHead401 = UnauthorizedError;
+export type NewsletterIssuesHead403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesHead403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesHead404 = ResourceNotFoundError;
-export const TopicIssuesHead404 = ResourceNotFoundError;
-export type TopicIssuesHead409 = ConflictError;
-export const TopicIssuesHead409 = ConflictError;
-export type TopicIssuesHead422 = TemplateSourceError | ValidationError;
-export const TopicIssuesHead422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesHead404 = ResourceNotFoundError;
+export const NewsletterIssuesHead404 = ResourceNotFoundError;
+export type NewsletterIssuesHead409 = ConflictError;
+export const NewsletterIssuesHead409 = ConflictError;
+export type NewsletterIssuesHead422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesHead422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesHead500 = InternalError;
-export const TopicIssuesHead500 = InternalError;
-export type TopicIssuesHead504 = GatewayTimeoutError;
-export const TopicIssuesHead504 = GatewayTimeoutError;
-export type TopicIssuesHistoryPathParams = { readonly id: TopicId };
-export const TopicIssuesHistoryPathParams = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: TopicId }))();
-export type TopicIssuesHistoryQuery = { readonly limit?: number | null };
-export const TopicIssuesHistoryQuery = /* @__PURE__ */ (() =>
+export type NewsletterIssuesHead500 = InternalError;
+export const NewsletterIssuesHead500 = InternalError;
+export type NewsletterIssuesHead504 = GatewayTimeoutError;
+export const NewsletterIssuesHead504 = GatewayTimeoutError;
+export type NewsletterIssuesHistoryPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesHistoryPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesHistoryQuery = { readonly limit?: number | null };
+export const NewsletterIssuesHistoryQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     limit: Schema.optionalKey(
       Schema.Union([
@@ -1697,7 +1748,7 @@ export const TopicIssuesHistoryQuery = /* @__PURE__ */ (() =>
       ]),
     ),
   }))();
-export type TopicIssuesHistory200 = {
+export type NewsletterIssuesHistory200 = {
   readonly projectId: TemplateProjectId;
   readonly head: string;
   readonly commits: ReadonlyArray<{
@@ -1708,7 +1759,7 @@ export type TopicIssuesHistory200 = {
     readonly committedAt: string;
   }>;
 };
-export const TopicIssuesHistory200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesHistory200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: TemplateProjectId,
     head: Schema.String.check(
@@ -1741,30 +1792,50 @@ export const TopicIssuesHistory200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
-export type TopicIssuesHistory401 = UnauthorizedError;
-export const TopicIssuesHistory401 = UnauthorizedError;
-export type TopicIssuesHistory403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesHistory403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesHistory401 = UnauthorizedError;
+export const NewsletterIssuesHistory401 = UnauthorizedError;
+export type NewsletterIssuesHistory403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesHistory403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesHistory404 = ResourceNotFoundError;
-export const TopicIssuesHistory404 = ResourceNotFoundError;
-export type TopicIssuesHistory409 = ConflictError;
-export const TopicIssuesHistory409 = ConflictError;
-export type TopicIssuesHistory422 = TemplateSourceError | ValidationError;
-export const TopicIssuesHistory422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesHistory404 = ResourceNotFoundError;
+export const NewsletterIssuesHistory404 = ResourceNotFoundError;
+export type NewsletterIssuesHistory409 = ConflictError;
+export const NewsletterIssuesHistory409 = ConflictError;
+export type NewsletterIssuesHistory422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesHistory422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesHistory500 = InternalError;
-export const TopicIssuesHistory500 = InternalError;
-export type TopicIssuesHistory504 = GatewayTimeoutError;
-export const TopicIssuesHistory504 = GatewayTimeoutError;
-export type TopicIssuesRemovePathParams = { readonly id: TopicId };
-export const TopicIssuesRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesRemoveRequestJson = {
+export type NewsletterIssuesHistory500 = InternalError;
+export const NewsletterIssuesHistory500 = InternalError;
+export type NewsletterIssuesHistory504 = GatewayTimeoutError;
+export const NewsletterIssuesHistory504 = GatewayTimeoutError;
+export type NewsletterIssuesRemovePathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesRemovePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesRemoveHeaders = { readonly "idempotency-key"?: string | null };
+export const NewsletterIssuesRemoveHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NewsletterIssuesRemoveRequestJson = {
   readonly path: string;
-  readonly idempotencyKey: string;
   readonly expectedRevision: string;
 };
-export const TopicIssuesRemoveRequestJson = /* @__PURE__ */ (() =>
+export const NewsletterIssuesRemoveRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -1783,15 +1854,6 @@ export const TopicIssuesRemoveRequestJson = /* @__PURE__ */ (() =>
       .check(
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-      ),
     expectedRevision: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
@@ -1804,7 +1866,7 @@ export const TopicIssuesRemoveRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
   }))();
-export type TopicIssuesRemove200 = {
+export type NewsletterIssuesRemove200 = {
   readonly workspace: {
     readonly projectId: TemplateProjectId;
     readonly organizationId: OrganizationId | null;
@@ -1876,7 +1938,7 @@ export type TopicIssuesRemove200 = {
   };
   readonly files: { readonly [x: string]: string };
 };
-export const TopicIssuesRemove200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     workspace: Schema.Struct({
       projectId: TemplateProjectId,
@@ -2227,31 +2289,52 @@ export const TopicIssuesRemove200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
-export type TopicIssuesRemove401 = UnauthorizedError;
-export const TopicIssuesRemove401 = UnauthorizedError;
-export type TopicIssuesRemove403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesRemove403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesRemove401 = UnauthorizedError;
+export const NewsletterIssuesRemove401 = UnauthorizedError;
+export type NewsletterIssuesRemove403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesRemove403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesRemove404 = ResourceNotFoundError;
-export const TopicIssuesRemove404 = ResourceNotFoundError;
-export type TopicIssuesRemove409 = ConflictError;
-export const TopicIssuesRemove409 = ConflictError;
-export type TopicIssuesRemove422 = TemplateSourceError | ValidationError;
-export const TopicIssuesRemove422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesRemove404 = ResourceNotFoundError;
+export const NewsletterIssuesRemove404 = ResourceNotFoundError;
+export type NewsletterIssuesRemove409 = ConflictError;
+export const NewsletterIssuesRemove409 = ConflictError;
+export type NewsletterIssuesRemove422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesRemove422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesRemove500 = InternalError;
-export const TopicIssuesRemove500 = InternalError;
-export type TopicIssuesRemove504 = GatewayTimeoutError;
-export const TopicIssuesRemove504 = GatewayTimeoutError;
-export type TopicIssuesRenderPathParams = { readonly id: TopicId };
-export const TopicIssuesRenderPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesRenderRequestJson = {
+export type NewsletterIssuesRemove500 = InternalError;
+export const NewsletterIssuesRemove500 = InternalError;
+export type NewsletterIssuesRemove504 = GatewayTimeoutError;
+export const NewsletterIssuesRemove504 = GatewayTimeoutError;
+export type NewsletterIssuesRenderPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesRenderPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesRenderHeaders = { readonly "idempotency-key"?: string | null };
+export const NewsletterIssuesRenderHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NewsletterIssuesRenderRequestJson = {
   readonly path: string;
   readonly expectedRevision: string;
   readonly fixture: string;
   readonly target: "email" | "web";
 };
-export const TopicIssuesRenderRequestJson = /* @__PURE__ */ (() =>
+export const NewsletterIssuesRenderRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     path: Schema.String.check(
       Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
@@ -2292,7 +2375,7 @@ export const TopicIssuesRenderRequestJson = /* @__PURE__ */ (() =>
       ),
     target: Schema.Union([Schema.Literal("email"), Schema.Literal("web")]),
   }))();
-export type TopicIssuesRender200 = {
+export type NewsletterIssuesRender200 = {
   readonly projectId: TemplateProjectId;
   readonly revision: string;
   readonly entryPath: string | string;
@@ -2310,6 +2393,7 @@ export type TopicIssuesRender200 = {
     readonly path: string;
     readonly frontmatter: {
       readonly title: string;
+      readonly date?: string;
       readonly slug: string;
       readonly topic: string;
       readonly preheader?: string;
@@ -2415,7 +2499,7 @@ export type TopicIssuesRender200 = {
     }>;
   } | null;
 };
-export const TopicIssuesRender200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: TemplateProjectId,
     revision: Schema.String,
@@ -2533,6 +2617,7 @@ export const TopicIssuesRender200 = /* @__PURE__ */ (() =>
           ),
         frontmatter: Schema.Struct({
           title: Schema.String,
+          date: Schema.optionalKey(Schema.String),
           slug: Schema.String,
           topic: Schema.String,
           preheader: Schema.optionalKey(Schema.String),
@@ -2987,31 +3072,51 @@ export const TopicIssuesRender200 = /* @__PURE__ */ (() =>
       ]),
     ),
   }))();
-export type TopicIssuesRender401 = UnauthorizedError;
-export const TopicIssuesRender401 = UnauthorizedError;
-export type TopicIssuesRender403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesRender403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesRender401 = UnauthorizedError;
+export const NewsletterIssuesRender401 = UnauthorizedError;
+export type NewsletterIssuesRender403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesRender403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesRender404 = ResourceNotFoundError;
-export const TopicIssuesRender404 = ResourceNotFoundError;
-export type TopicIssuesRender409 = ConflictError;
-export const TopicIssuesRender409 = ConflictError;
-export type TopicIssuesRender422 = TemplateSourceError | ValidationError;
-export const TopicIssuesRender422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesRender404 = ResourceNotFoundError;
+export const NewsletterIssuesRender404 = ResourceNotFoundError;
+export type NewsletterIssuesRender409 = ConflictError;
+export const NewsletterIssuesRender409 = ConflictError;
+export type NewsletterIssuesRender422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesRender422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesRender500 = InternalError;
-export const TopicIssuesRender500 = InternalError;
-export type TopicIssuesRender504 = GatewayTimeoutError;
-export const TopicIssuesRender504 = GatewayTimeoutError;
-export type TopicIssuesSavePathParams = { readonly id: TopicId };
-export const TopicIssuesSavePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesSaveRequestJson = {
+export type NewsletterIssuesRender500 = InternalError;
+export const NewsletterIssuesRender500 = InternalError;
+export type NewsletterIssuesRender504 = GatewayTimeoutError;
+export const NewsletterIssuesRender504 = GatewayTimeoutError;
+export type NewsletterIssuesSavePathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesSavePathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesSaveHeaders = { readonly "idempotency-key"?: string | null };
+export const NewsletterIssuesSaveHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NewsletterIssuesSaveRequestJson = {
   readonly expectedRevision: string;
   readonly expectedHead: string;
   readonly message: string;
-  readonly idempotencyKey: string;
 };
-export const TopicIssuesSaveRequestJson = /* @__PURE__ */ (() =>
+export const NewsletterIssuesSaveRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     expectedRevision: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
@@ -3038,17 +3143,8 @@ export const TopicIssuesSaveRequestJson = /* @__PURE__ */ (() =>
       .check(
         Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
       ),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-      ),
   }))();
-export type TopicIssuesSave200 = {
+export type NewsletterIssuesSave200 = {
   readonly commit: string;
   readonly parentCommit: string;
   readonly tree: string;
@@ -3107,7 +3203,7 @@ export type TopicIssuesSave200 = {
     } | null;
   }>;
 };
-export const TopicIssuesSave200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesSave200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     commit: Schema.String.check(
       Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
@@ -3336,25 +3432,26 @@ export const TopicIssuesSave200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
-export type TopicIssuesSave401 = UnauthorizedError;
-export const TopicIssuesSave401 = UnauthorizedError;
-export type TopicIssuesSave403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesSave403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesSave401 = UnauthorizedError;
+export const NewsletterIssuesSave401 = UnauthorizedError;
+export type NewsletterIssuesSave403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesSave403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesSave404 = ResourceNotFoundError;
-export const TopicIssuesSave404 = ResourceNotFoundError;
-export type TopicIssuesSave409 = ConflictError;
-export const TopicIssuesSave409 = ConflictError;
-export type TopicIssuesSave422 = TemplateSourceError | ValidationError;
-export const TopicIssuesSave422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesSave404 = ResourceNotFoundError;
+export const NewsletterIssuesSave404 = ResourceNotFoundError;
+export type NewsletterIssuesSave409 = ConflictError;
+export const NewsletterIssuesSave409 = ConflictError;
+export type NewsletterIssuesSave422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesSave422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesSave500 = InternalError;
-export const TopicIssuesSave500 = InternalError;
-export type TopicIssuesSave504 = GatewayTimeoutError;
-export const TopicIssuesSave504 = GatewayTimeoutError;
-export type TopicIssuesOpenPathParams = { readonly id: TopicId };
-export const TopicIssuesOpenPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
-export type TopicIssuesOpen200 = {
+export type NewsletterIssuesSave500 = InternalError;
+export const NewsletterIssuesSave500 = InternalError;
+export type NewsletterIssuesSave504 = GatewayTimeoutError;
+export const NewsletterIssuesSave504 = GatewayTimeoutError;
+export type NewsletterIssuesOpenPathParams = { readonly id: NewsletterId };
+export const NewsletterIssuesOpenPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NewsletterId }))();
+export type NewsletterIssuesOpen200 = {
   readonly workspace: {
     readonly projectId: TemplateProjectId;
     readonly organizationId: OrganizationId | null;
@@ -3426,7 +3523,7 @@ export type TopicIssuesOpen200 = {
   };
   readonly files: { readonly [x: string]: string };
 };
-export const TopicIssuesOpen200 = /* @__PURE__ */ (() =>
+export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     workspace: Schema.Struct({
       projectId: TemplateProjectId,
@@ -3777,252 +3874,261 @@ export const TopicIssuesOpen200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
-export type TopicIssuesOpen401 = UnauthorizedError;
-export const TopicIssuesOpen401 = UnauthorizedError;
-export type TopicIssuesOpen403 = ForbiddenError | FlagDisabledError;
-export const TopicIssuesOpen403 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesOpen401 = UnauthorizedError;
+export const NewsletterIssuesOpen401 = UnauthorizedError;
+export type NewsletterIssuesOpen403 = ForbiddenError | FlagDisabledError;
+export const NewsletterIssuesOpen403 = /* @__PURE__ */ (() =>
   Schema.Union([ForbiddenError, FlagDisabledError]))();
-export type TopicIssuesOpen404 = ResourceNotFoundError;
-export const TopicIssuesOpen404 = ResourceNotFoundError;
-export type TopicIssuesOpen409 = ConflictError;
-export const TopicIssuesOpen409 = ConflictError;
-export type TopicIssuesOpen422 = TemplateSourceError | ValidationError;
-export const TopicIssuesOpen422 = /* @__PURE__ */ (() =>
+export type NewsletterIssuesOpen404 = ResourceNotFoundError;
+export const NewsletterIssuesOpen404 = ResourceNotFoundError;
+export type NewsletterIssuesOpen409 = ConflictError;
+export const NewsletterIssuesOpen409 = ConflictError;
+export type NewsletterIssuesOpen422 = TemplateSourceError | ValidationError;
+export const NewsletterIssuesOpen422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
-export type TopicIssuesOpen500 = InternalError;
-export const TopicIssuesOpen500 = InternalError;
-export type TopicIssuesOpen504 = GatewayTimeoutError;
-export const TopicIssuesOpen504 = GatewayTimeoutError;
+export type NewsletterIssuesOpen500 = InternalError;
+export const NewsletterIssuesOpen500 = InternalError;
+export type NewsletterIssuesOpen504 = GatewayTimeoutError;
+export const NewsletterIssuesOpen504 = GatewayTimeoutError;
 
-export class TopicIssuesGroup extends HttpApiGroup.make("Topic issues")
+export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues")
   .add(
-    HttpApiEndpoint.get("topicIssuesList", "/v1/topics/:id/issues", {
-      params: TopicIssuesListPathParams,
-      success: TopicIssuesList200,
+    HttpApiEndpoint.get("newsletterIssuesList", "/v1/newsletters/:id/issues", {
+      params: NewsletterIssuesListPathParams,
+      success: NewsletterIssuesList200,
       error: [
-        TopicIssuesList401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesList403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesList404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesList409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesList422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesList500,
-        TopicIssuesList504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesList401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesList403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesList404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesList409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesList422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesList500,
+        NewsletterIssuesList504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.list")
-      .annotate(OpenApi.Summary, "List topic issues")
+      .annotate(OpenApi.Identifier, "newsletterIssues.list")
+      .annotate(OpenApi.Summary, "List newsletter issues")
       .annotate(
         OpenApi.Description,
-        "Lists the Markdown issues in the topic's shared Git workspace with each draft's title and its latest campaign send. An uninitialized topic returns null projectId and revision. Requires issueContent and email.",
+        "Lists the Markdown issues in the newsletter's shared Git workspace with each draft's title and its latest campaign send. An uninitialized topic returns null projectId and revision. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.post("topicIssuesCreate", "/v1/topics/:id/issues", {
-      params: TopicIssuesCreatePathParams,
-      payload: TopicIssuesCreateRequestJson,
-      success: TopicIssuesCreate200,
+    HttpApiEndpoint.post("newsletterIssuesCreate", "/v1/newsletters/:id/issues", {
+      params: NewsletterIssuesCreatePathParams,
+      headers: NewsletterIssuesCreateHeaders,
+      payload: NewsletterIssuesCreateRequestJson,
+      success: NewsletterIssuesCreate200,
       error: [
-        TopicIssuesCreate401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesCreate403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesCreate404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesCreate409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesCreate422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesCreate500,
-        TopicIssuesCreate504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesCreate401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesCreate403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesCreate404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesCreate409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesCreate422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesCreate500,
+        NewsletterIssuesCreate504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.create")
-      .annotate(OpenApi.Summary, "Create a topic issue")
+      .annotate(OpenApi.Identifier, "newsletterIssues.create")
+      .annotate(OpenApi.Summary, "Create a newsletter issue")
       .annotate(
         OpenApi.Description,
-        "Creates an unsaved Markdown file. The first request provisions the topic's project and layout; omit expectedRevision only for that first request or its retry. Further creates require the current revision. No template entry is registered. Requires issueContent and email.",
+        "Creates an unsaved Markdown file. The first request provisions the newsletter's project and layout; omit expectedRevision only for that first request or its retry. Further creates require the current revision. No template entry is registered. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.patch("topicIssuesUpdate", "/v1/topics/:id/issues", {
-      params: TopicIssuesUpdatePathParams,
-      payload: TopicIssuesUpdateRequestJson,
-      success: TopicIssuesUpdate200,
+    HttpApiEndpoint.patch("newsletterIssuesUpdate", "/v1/newsletters/:id/issues", {
+      params: NewsletterIssuesUpdatePathParams,
+      headers: NewsletterIssuesUpdateHeaders,
+      payload: NewsletterIssuesUpdateRequestJson,
+      success: NewsletterIssuesUpdate200,
       error: [
-        TopicIssuesUpdate401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesUpdate403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesUpdate404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesUpdate409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesUpdate422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesUpdate500,
-        TopicIssuesUpdate504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesUpdate401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesUpdate403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesUpdate404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesUpdate409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesUpdate422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesUpdate500,
+        NewsletterIssuesUpdate504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.update")
-      .annotate(OpenApi.Summary, "Update a topic issue")
+      .annotate(OpenApi.Identifier, "newsletterIssues.update")
+      .annotate(OpenApi.Summary, "Update a newsletter issue")
       .annotate(
         OpenApi.Description,
-        "Replaces the complete Markdown file under a revision fence. Save separately to create a Git commit. Requires issueContent and email.",
+        "Replaces the complete Markdown file under a revision fence. Save separately to create a Git commit. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.post("topicIssuesCheck", "/v1/topics/:id/issues/check", {
-      params: TopicIssuesCheckPathParams,
-      payload: TopicIssuesCheckRequestJson,
-      success: TopicIssuesCheck200,
+    HttpApiEndpoint.post("newsletterIssuesCheck", "/v1/newsletters/:id/issues/check", {
+      params: NewsletterIssuesCheckPathParams,
+      headers: NewsletterIssuesCheckHeaders,
+      payload: NewsletterIssuesCheckRequestJson,
+      success: NewsletterIssuesCheck200,
       error: [
-        TopicIssuesCheck401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesCheck403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesCheck404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesCheck409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesCheck422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesCheck500,
-        TopicIssuesCheck504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesCheck401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesCheck403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesCheck404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesCheck409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesCheck422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesCheck500,
+        NewsletterIssuesCheck504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.check")
-      .annotate(OpenApi.Summary, "Check a topic issue")
+      .annotate(OpenApi.Identifier, "newsletterIssues.check")
+      .annotate(OpenApi.Summary, "Check a newsletter issue")
       .annotate(
         OpenApi.Description,
-        "Compiles the issue in its layout at the requested revision and returns diagnostics and declared fixtures. Requires issueContent and email.",
+        "Compiles the issue in its layout at the requested revision and returns diagnostics and declared fixtures. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.get("topicIssuesGet", "/v1/topics/:id/issues/document", {
-      params: TopicIssuesGetPathParams,
-      query: TopicIssuesGetQuery,
-      success: TopicIssuesGet200,
+    HttpApiEndpoint.get("newsletterIssuesGet", "/v1/newsletters/:id/issues/document", {
+      params: NewsletterIssuesGetPathParams,
+      query: NewsletterIssuesGetQuery,
+      success: NewsletterIssuesGet200,
       error: [
-        TopicIssuesGet401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesGet403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesGet404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesGet409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesGet422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesGet500,
-        TopicIssuesGet504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesGet401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesGet403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesGet404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesGet409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesGet422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesGet500,
+        NewsletterIssuesGet504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.get")
-      .annotate(OpenApi.Summary, "Read a topic issue")
+      .annotate(OpenApi.Identifier, "newsletterIssues.get")
+      .annotate(OpenApi.Summary, "Read a newsletter issue")
       .annotate(
         OpenApi.Description,
-        "Reads one issues/*.md file at the requested workspace revision. Requires issueContent and email.",
+        "Reads one issues/*.md file at the requested workspace revision. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.get("topicIssuesHead", "/v1/topics/:id/issues/head", {
-      params: TopicIssuesHeadPathParams,
-      success: TopicIssuesHead200,
+    HttpApiEndpoint.get("newsletterIssuesHead", "/v1/newsletters/:id/issues/head", {
+      params: NewsletterIssuesHeadPathParams,
+      success: NewsletterIssuesHead200,
       error: [
-        TopicIssuesHead401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesHead403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesHead404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesHead409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesHead422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesHead500,
-        TopicIssuesHead504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesHead401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesHead403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesHead404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesHead409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesHead422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesHead500,
+        NewsletterIssuesHead504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.head")
-      .annotate(OpenApi.Summary, "Read the topic issue head")
+      .annotate(OpenApi.Identifier, "newsletterIssues.head")
+      .annotate(OpenApi.Summary, "Read the newsletter issue head")
       .annotate(
         OpenApi.Description,
-        "Reads the current workspace revision and repository branch head. Requires issueContent and email.",
+        "Reads the current workspace revision and repository branch head. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.get("topicIssuesHistory", "/v1/topics/:id/issues/history", {
-      params: TopicIssuesHistoryPathParams,
-      query: TopicIssuesHistoryQuery,
-      success: TopicIssuesHistory200,
+    HttpApiEndpoint.get("newsletterIssuesHistory", "/v1/newsletters/:id/issues/history", {
+      params: NewsletterIssuesHistoryPathParams,
+      query: NewsletterIssuesHistoryQuery,
+      success: NewsletterIssuesHistory200,
       error: [
-        TopicIssuesHistory401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesHistory403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesHistory404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesHistory409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesHistory422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesHistory500,
-        TopicIssuesHistory504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesHistory401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesHistory403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesHistory404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesHistory409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesHistory422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesHistory500,
+        NewsletterIssuesHistory504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.history")
-      .annotate(OpenApi.Summary, "Read topic issue history")
+      .annotate(OpenApi.Identifier, "newsletterIssues.history")
+      .annotate(OpenApi.Summary, "Read newsletter issue history")
       .annotate(
         OpenApi.Description,
-        "Lists saved commits in the topic repository, newest first. Requires issueContent and email.",
+        "Lists saved commits in the topic repository, newest first. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.post("topicIssuesRemove", "/v1/topics/:id/issues/remove", {
-      params: TopicIssuesRemovePathParams,
-      payload: TopicIssuesRemoveRequestJson,
-      success: TopicIssuesRemove200,
+    HttpApiEndpoint.post("newsletterIssuesRemove", "/v1/newsletters/:id/issues/remove", {
+      params: NewsletterIssuesRemovePathParams,
+      headers: NewsletterIssuesRemoveHeaders,
+      payload: NewsletterIssuesRemoveRequestJson,
+      success: NewsletterIssuesRemove200,
       error: [
-        TopicIssuesRemove401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesRemove403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesRemove404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesRemove409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesRemove422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesRemove500,
-        TopicIssuesRemove504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesRemove401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesRemove403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesRemove404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesRemove409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesRemove422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesRemove500,
+        NewsletterIssuesRemove504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.remove")
-      .annotate(OpenApi.Summary, "Remove a topic issue")
+      .annotate(OpenApi.Identifier, "newsletterIssues.remove")
+      .annotate(OpenApi.Summary, "Remove a newsletter issue")
       .annotate(
         OpenApi.Description,
-        "Removes one Markdown file from the draft under a revision fence. The project default issue must remain. Saved commits remain readable. Requires issueContent and email.",
+        "Removes one Markdown file from the draft under a revision fence. The project default issue must remain. Saved commits remain readable. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.post("topicIssuesRender", "/v1/topics/:id/issues/render", {
-      params: TopicIssuesRenderPathParams,
-      payload: TopicIssuesRenderRequestJson,
-      success: TopicIssuesRender200,
+    HttpApiEndpoint.post("newsletterIssuesRender", "/v1/newsletters/:id/issues/render", {
+      params: NewsletterIssuesRenderPathParams,
+      headers: NewsletterIssuesRenderHeaders,
+      payload: NewsletterIssuesRenderRequestJson,
+      success: NewsletterIssuesRender200,
       error: [
-        TopicIssuesRender401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesRender403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesRender404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesRender409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesRender422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesRender500,
-        TopicIssuesRender504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesRender401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesRender403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesRender404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesRender409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesRender422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesRender500,
+        NewsletterIssuesRender504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.render")
-      .annotate(OpenApi.Summary, "Render a topic issue fixture")
+      .annotate(OpenApi.Identifier, "newsletterIssues.render")
+      .annotate(OpenApi.Summary, "Render a newsletter issue fixture")
       .annotate(
         OpenApi.Description,
-        "Renders a fixture declared by the layout to email or web at the requested revision. The web render is the publication page readers get, with the subscribe wall position marked. Requires issueContent and email.",
+        "Renders a fixture declared by the layout to email or web at the requested revision. The web render is the publication page readers get, with the subscribe wall position marked. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.post("topicIssuesSave", "/v1/topics/:id/issues/save", {
-      params: TopicIssuesSavePathParams,
-      payload: TopicIssuesSaveRequestJson,
-      success: TopicIssuesSave200,
+    HttpApiEndpoint.post("newsletterIssuesSave", "/v1/newsletters/:id/issues/save", {
+      params: NewsletterIssuesSavePathParams,
+      headers: NewsletterIssuesSaveHeaders,
+      payload: NewsletterIssuesSaveRequestJson,
+      success: NewsletterIssuesSave200,
       error: [
-        TopicIssuesSave401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesSave403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesSave404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesSave409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesSave422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesSave500,
-        TopicIssuesSave504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesSave401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesSave403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesSave404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesSave409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesSave422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesSave500,
+        NewsletterIssuesSave504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.save")
-      .annotate(OpenApi.Summary, "Save topic issues")
+      .annotate(OpenApi.Identifier, "newsletterIssues.save")
+      .annotate(OpenApi.Summary, "Save newsletter issues")
       .annotate(
         OpenApi.Description,
-        "Validates the project and saves its draft as a Git commit with revision and branch-head fences. Issue sends pin the resulting commit and issue path. Requires issueContent and email.",
+        "Validates the project and saves its draft as a Git commit with revision and branch-head fences. Issue sends pin the resulting commit and issue path. Requires newsletters and email.",
       ),
-    HttpApiEndpoint.get("topicIssuesOpen", "/v1/topics/:id/issues/workspace", {
-      params: TopicIssuesOpenPathParams,
-      success: TopicIssuesOpen200,
+    HttpApiEndpoint.get("newsletterIssuesOpen", "/v1/newsletters/:id/issues/workspace", {
+      params: NewsletterIssuesOpenPathParams,
+      success: NewsletterIssuesOpen200,
       error: [
-        TopicIssuesOpen401.pipe(HttpApiSchema.status(401)),
-        TopicIssuesOpen403.pipe(HttpApiSchema.status(403)),
-        TopicIssuesOpen404.pipe(HttpApiSchema.status(404)),
-        TopicIssuesOpen409.pipe(HttpApiSchema.status(409)),
-        TopicIssuesOpen422.pipe(HttpApiSchema.status(422)),
-        TopicIssuesOpen500,
-        TopicIssuesOpen504.pipe(HttpApiSchema.status(504)),
+        NewsletterIssuesOpen401.pipe(HttpApiSchema.status(401)),
+        NewsletterIssuesOpen403.pipe(HttpApiSchema.status(403)),
+        NewsletterIssuesOpen404.pipe(HttpApiSchema.status(404)),
+        NewsletterIssuesOpen409.pipe(HttpApiSchema.status(409)),
+        NewsletterIssuesOpen422.pipe(HttpApiSchema.status(422)),
+        NewsletterIssuesOpen500,
+        NewsletterIssuesOpen504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "topicIssues.open")
-      .annotate(OpenApi.Summary, "Open the topic issue workspace")
+      .annotate(OpenApi.Identifier, "newsletterIssues.open")
+      .annotate(OpenApi.Summary, "Open the newsletter issue workspace")
       .annotate(
         OpenApi.Description,
-        "Returns the existing project workspace and pulls saved Git changes. Does not create a repository. Requires issueContent and email.",
+        "Returns the existing project workspace and pulls saved Git changes. Does not create a repository. Requires newsletters and email.",
       ),
   )
-  .annotate(OpenApi.Description, "Topic-owned newsletter Markdown files and their Git workspace") {}
+  .annotate(
+    OpenApi.Description,
+    "Newsletter-owned newsletter Markdown files and their Git workspace",
+  ) {}

@@ -15,7 +15,6 @@ const input = {
   expectedRevision: "revision-2",
   expectedHead: "a".repeat(40),
   message: "Save email source",
-  idempotencyKey: "save-source-regression",
 };
 
 const sourceError = {
@@ -79,7 +78,9 @@ describe("public SDK workspace save errors", () => {
       },
     });
 
-    const error = await client.templates.saveWorkspace(input).catch((cause: unknown) => cause);
+    const error = await client.templates
+      .saveWorkspace(input, { idempotencyKey: "save-source-regression" })
+      .catch((cause: unknown) => cause);
 
     assert(error instanceof TemplateSourceError);
     expect(error).toBeInstanceOf(SamvaApiError);
@@ -101,7 +102,9 @@ describe("public SDK workspace save errors", () => {
   it.effect("Effect catchTag receives the public TemplateSourceError and full diagnostics", () => {
     let calls = 0;
     return Effect.gen(function* () {
-      const diagnostics = yield* Templates.saveWorkspace(input).pipe(
+      const diagnostics = yield* Templates.saveWorkspace(input, {
+        idempotencyKey: "save-source-regression",
+      }).pipe(
         Effect.catchTag("TemplateSourceError", (error) => {
           expect(error).toBeInstanceOf(EffectTemplateSourceError);
           expect(error.message).toBe(sourceError.message);
@@ -139,7 +142,9 @@ describe("public SDK workspace save errors", () => {
       apiKey: "samva_sk_test",
       fetch: async () => response(409, conflict),
     });
-    const error = await client.templates.saveWorkspace(input).catch((cause: unknown) => cause);
+    const error = await client.templates
+      .saveWorkspace(input, { idempotencyKey: "save-source-regression" })
+      .catch((cause: unknown) => cause);
     assert(error instanceof ConflictError);
     expect(error).toMatchObject({ ...conflict, status: 409 });
     expect(categoriesOf(error)).toEqual(["conflict"]);
@@ -149,7 +154,9 @@ describe("public SDK workspace save errors", () => {
     "Effect preserves the ConflictError tag and public constructor for workspace save 409",
     () =>
       Effect.gen(function* () {
-        const refusal = yield* Templates.saveWorkspace(input).pipe(
+        const refusal = yield* Templates.saveWorkspace(input, {
+          idempotencyKey: "save-source-regression",
+        }).pipe(
           Effect.catchTag("ConflictError", (error) => {
             expect(error).toBeInstanceOf(EffectConflictError);
             return Effect.succeed(error);

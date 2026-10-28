@@ -20,6 +20,8 @@ const DEFAULT_BASE_URL = "https://api.samva.dev";
 
 export interface ConfigBase {
   readonly baseUrl?: string;
+  /** Generate the key once for each idempotent logical call. */
+  readonly idempotency?: ((operation: string) => string | undefined) | undefined;
   readonly headers?: Readonly<Record<string, string | undefined>>;
 }
 
@@ -27,9 +29,11 @@ export type Config =
   | (ConfigBase & {
       readonly apiKey: string | Redacted.Redacted<string>;
       readonly authToken?: never;
+      readonly orgSlug?: never;
     })
   | (ConfigBase & {
       readonly authToken: string;
+      readonly orgSlug?: string;
       readonly apiKey?: never;
     });
 
@@ -61,6 +65,7 @@ export type OperationSuccess<Name extends Operation> = HttpApiClient.SuccessType
 export type RawCall = (request?: unknown) => Effect.Effect<unknown, unknown>;
 
 export interface Interface {
+  readonly idempotency?: ((operation: string) => string | undefined) | undefined;
   /**
    * The generated call for one endpoint. A group's client is built on the first call to any of its
    * endpoints and reused, so a group the program never calls costs nothing.
@@ -89,7 +94,10 @@ type GroupClient = Readonly<Record<string, RawCall>>;
 
 const authHeaders = (config: Config): Readonly<Record<string, string>> =>
   config.authToken !== undefined
-    ? { Authorization: `Bearer ${config.authToken}` }
+    ? {
+        Authorization: `Bearer ${config.authToken}`,
+        ...(config.orgSlug === undefined ? {} : { "x-org-slug": config.orgSlug }),
+      }
     : {
         "x-api-key": Redacted.isRedacted(config.apiKey)
           ? Redacted.value(config.apiKey)
@@ -107,6 +115,11 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
     const removesAttribution = Object.entries(config.headers ?? {}).some(
       ([name, value]) => name.toLowerCase() === CLIENT_ATTRIBUTION_HEADER && value === undefined,
     );
+    const requestHeaders = Object.fromEntries(
+      Object.entries(config.headers ?? {}).filter(
+        ([name]) => name.toLowerCase() !== "idempotency-key",
+      ),
+    );
     const storage = yield* HttpClient.HttpClient;
     const httpClient = storage.pipe(
       HttpClient.mapRequest((request) => {
@@ -115,9 +128,7 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
           CLIENT_ATTRIBUTION_HEADER,
           clientAttribution("typescript-effect"),
         );
-        if (config.headers !== undefined) {
-          attributed = HttpClientRequest.setHeaders(attributed, config.headers);
-        }
+        attributed = HttpClientRequest.setHeaders(attributed, requestHeaders);
         if (removesAttribution) {
           attributed = HttpClientRequest.removeHeader(attributed, CLIENT_ATTRIBUTION_HEADER);
         }
@@ -147,7 +158,7 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
     const headers: Record<string, string> = removesAttribution
       ? {}
       : { [CLIENT_ATTRIBUTION_HEADER]: clientAttribution("typescript-effect") };
-    for (const [name, value] of Object.entries(config.headers ?? {})) {
+    for (const [name, value] of Object.entries(requestHeaders)) {
       if (value !== undefined) headers[name] = value;
     }
 
@@ -178,6 +189,7 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
         );
 
     return Service.of({
+      idempotency: config.idempotency,
       putUpload,
       endpoint: (group, name) =>
         Effect.flatMap(groupClient(group), (client) => {

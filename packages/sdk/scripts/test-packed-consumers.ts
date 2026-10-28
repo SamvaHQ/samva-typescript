@@ -119,6 +119,9 @@ await writeConsumer(
   promiseDirectory,
   `import { createClient, type SamvaClient } from "samva";
 import { isKnownEvent, generateWebhookSecret, signWebhook, verifyRequest, type SamvaWebhookEvent, type MessageBouncedPayload } from "samva/webhooks";
+import { defineExtension } from "samva/mailbox";
+import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
+import { createWebhookHandler } from "samva/mailbox/webhook";
 
 let requestPath: string | undefined;
 let clientAttribution: string | null | undefined;
@@ -127,7 +130,7 @@ const fetch: typeof globalThis.fetch = async (input: URL | RequestInfo) => {
   requestPath = new URL(request.url).pathname;
   clientAttribution = request.headers.get("x-samva-client");
   if (requestPath.endsWith("/issues")) return Response.json({ projectId: null, revision: null, items: [] });
-  if (requestPath.includes("/publication/domains/")) return Response.json({ _tag: "FlagDisabledError", flag: "issueWeb", message: "Publication is unavailable" }, { status: 403 });
+  if (requestPath.includes("/domains")) return Response.json({ _tag: "FlagDisabledError", flag: "newsletters", message: "Publication is unavailable" }, { status: 403 });
   return new Response(JSON.stringify({ contact: { id: "contact_test" }, created: true }), {
     status: 201,
     headers: { "content-type": "application/json" },
@@ -148,12 +151,12 @@ if (raw.data?.contact.id !== "contact_test" || raw.response?.status !== 201) {
   await Promise.reject(new Error("Promise packed raw-envelope proof failed"));
 }
 
-const issues = await client.topicIssues.list({ id: "unsub_1234567890abcdef" });
+const issues = await client.newsletters.issues.list({ id: "nl_1234567890abcdef" });
 if (issues.projectId !== null || issues.revision !== null || issues.items.length !== 0) {
-  throw new Error("Packed Promise topic issues proof failed");
+  throw new Error("Packed Promise newsletter issues proof failed");
 }
 
-await client.topicPublicationDomains.get({ id: "unsub_1234567890abcdef", hostname: "news.example.com" }).then(
+await client.newsletters.domains.list({ id: "nl_1234567890abcdef", limit: 2 }).then(
   () => { throw new Error("Packed Promise publication domains accepted a disabled feature"); },
   (error: unknown) => {
     if (!(error instanceof Error) || error.name !== "FlagDisabledError") {
@@ -189,6 +192,34 @@ const event = await verifyRequest(
 );
 if (event.id !== "evt_packed" || !isKnownEvent(event.event) || event.event.type !== "webhook.test") {
   await Promise.reject(new Error("Promise packed webhook verification proof failed"));
+}
+const extension = defineExtension({
+  manifest: { name: "packed-ack", displayName: "Packed acknowledgement", version: "1.0.0", runtime: "webhook", events: ["mailbox.message.received"], permissions: ["read", "send"] },
+  on: { "mailbox.message.received": async (received, { samva }) => {
+    const normalClient: SamvaClient = samva;
+    await normalClient.mailboxes.reply({ id: received.data.mailboxId, messageId: received.data.message.id, text: "Thanks" });
+  } },
+});
+const mailboxFixture = mailboxEvent("mailbox.message.received");
+const mailboxClient = createTestClient();
+const firstDispatch = await runExtension(extension, mailboxFixture, { client: mailboxClient });
+const retriedDispatch = await runExtension(extension, mailboxFixture, { client: mailboxClient, attempt: 2 });
+if (!firstDispatch.ok || !retriedDispatch.ok || firstDispatch.calls.length !== 1 || firstDispatch.calls[0]?.idempotencyKey !== mailboxFixture.id + ":reply:1" || firstDispatch.calls[0]?.idempotencyKey !== retriedDispatch.calls[0]?.idempotencyKey) {
+  throw new Error("Packed mailbox deterministic dispatch proof failed");
+}
+const { id: mailboxEventId, ...mailboxEnvelope } = mailboxFixture;
+const mailboxBody = JSON.stringify(mailboxEnvelope);
+const mailboxSignature = await signWebhook({ id: mailboxEventId, timestamp, body: mailboxBody, secret });
+let mailboxAuth: string | null = null;
+const mailboxHandler = createWebhookHandler(extension, { apiKey: "installation-key", webhookSecret: secret, fetch: async (input, init) => {
+  mailboxAuth = new Request(input, init).headers.get("x-api-key");
+  return Response.json({ state: "queued" });
+} });
+const mailboxResponse = await mailboxHandler(new Request("https://extension.test", { method: "POST", body: mailboxBody, headers: {
+  "webhook-id": mailboxEventId, "webhook-timestamp": timestamp, "webhook-signature": mailboxSignature,
+} }));
+if (mailboxResponse.status !== 200 || mailboxAuth !== "installation-key") {
+  throw new Error("Packed mailbox webhook proof failed");
 }
 const futureBody = JSON.stringify({ type: "future.event", timestamp: "2026-01-01T00:00:00.000Z", data: { futureField: true } });
 const futureSignature = await signWebhook({ id: "evt_future", timestamp, body: futureBody, secret });
@@ -271,26 +302,26 @@ import * as PromiseSdk from "samva";
 import * as Organizations from "samva/effect/organizations";
 import * as Retry from "samva/effect/retry";
 import * as Templates from "samva/effect/templates";
-import * as TopicIssues from "samva/effect/topic-issues";
-import * as TopicPublicationDomains from "samva/effect/publication-domains";
+import * as NewsletterIssues from "samva/effect/newsletter-issues";
+import * as NewsletterDomains from "samva/effect/newsletter-domains";
 import * as Webhooks from "samva/effect/webhooks";
 
 const issueFetch: typeof globalThis.fetch = async () => Response.json({ projectId: null, revision: null, items: [] });
-const issues = await Effect.runPromise(TopicIssues.list({ id: "unsub_1234567890abcdef" }).pipe(
+const issues = await Effect.runPromise(NewsletterIssues.list({ id: "nl_1234567890abcdef" }).pipe(
   Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
   Effect.provide(Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, issueFetch))),
 ));
-if (issues.projectId !== null || issues.revision !== null || issues.items.length !== 0 || EffectSdk.TopicIssues.list !== TopicIssues.list) {
-  throw new Error("Packed Effect topic issues proof failed");
+if (issues.projectId !== null || issues.revision !== null || issues.items.length !== 0 || EffectSdk.NewsletterIssues.list !== NewsletterIssues.list) {
+  throw new Error("Packed Effect newsletter issues proof failed");
 }
 
-const publicationFetch: typeof globalThis.fetch = async () => Response.json({ _tag: "FlagDisabledError", flag: "issueWeb", message: "Publication is unavailable" }, { status: 403 });
-const publicationFailure = await Effect.runPromise(TopicPublicationDomains.get({ id: "unsub_1234567890abcdef", hostname: "news.example.com" }).pipe(
+const publicationFetch: typeof globalThis.fetch = async () => Response.json({ _tag: "FlagDisabledError", flag: "newsletters", message: "Publication is unavailable" }, { status: 403 });
+const publicationFailure = await Effect.runPromise(NewsletterDomains.list({ id: "nl_1234567890abcdef", limit: 2 }).pipe(
   Effect.catchTag("FlagDisabledError", Effect.succeed),
   Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
   Effect.provide(Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, publicationFetch))),
 ));
-if (!(publicationFailure instanceof Errors.FlagDisabledError) || publicationFailure.flag !== "issueWeb" || EffectSdk.TopicPublicationDomains.get !== TopicPublicationDomains.get) {
+if (!(publicationFailure instanceof Errors.FlagDisabledError) || publicationFailure.flag !== "newsletters" || EffectSdk.NewsletterDomains.list !== NewsletterDomains.list) {
   throw new Error("Packed Effect publication domains proof failed");
 }
 

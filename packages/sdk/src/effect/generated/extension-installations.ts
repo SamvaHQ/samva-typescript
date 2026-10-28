@@ -637,17 +637,15 @@ export const ExtensionInstallationsUpgradeRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     version: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.String.check(
-            Schema.isPattern(
-              new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
-            }),
-          ),
-          ExtensionVersionId,
-        ]),
+        Schema.String.check(
+          Schema.isPattern(
+            new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+          ).annotate({
+            expected:
+              "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
+          }),
+        ),
+        ExtensionVersionId,
         Schema.Null,
       ]),
     ),

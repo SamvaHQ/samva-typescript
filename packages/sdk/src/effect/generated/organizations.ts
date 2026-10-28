@@ -126,12 +126,12 @@ export type OrganizationsUpdateRequestJson = {
   readonly name?: string | null;
   readonly slug?: string | null;
   readonly avatarUrl?: string | null | null;
-  readonly defaultRegion?: PhoneRegion | null | null;
+  readonly defaultRegion?: PhoneRegion | null;
   readonly timezone?: IanaTimezone | null;
   readonly isActive?: boolean | null;
   readonly metadata?: { readonly [x: string]: JsonValue } | null;
-  readonly replyToDefault?: ReadonlyArray<string> | null | null;
-  readonly emailFooterEnabledDefault?: boolean | null | null;
+  readonly replyToDefault?: ReadonlyArray<string> | null;
+  readonly emailFooterEnabledDefault?: boolean | null;
 };
 export const OrganizationsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -146,20 +146,14 @@ export const OrganizationsUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    defaultRegion: Schema.optionalKey(
-      Schema.Union([Schema.Union([PhoneRegion, Schema.Null]), Schema.Null]),
-    ),
+    defaultRegion: Schema.optionalKey(Schema.Union([PhoneRegion, Schema.Null])),
     timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     metadata: Schema.optionalKey(
       Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
     ),
-    replyToDefault: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-    ),
-    emailFooterEnabledDefault: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Boolean, Schema.Null]), Schema.Null]),
-    ),
+    replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    emailFooterEnabledDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type OrganizationsUpdate200 = Organization;
 export const OrganizationsUpdate200 = Organization;

@@ -512,13 +512,26 @@ export type TemplatesList500 = InternalError;
 export const TemplatesList500 = InternalError;
 export type TemplatesList504 = GatewayTimeoutError;
 export const TemplatesList504 = GatewayTimeoutError;
+export type TemplatesCreateHeaders = { readonly "idempotency-key": string };
+export const TemplatesCreateHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesCreateRequestJson = {
   readonly name: string;
   readonly projectName?: string | null;
   readonly slug?: string | null;
   readonly galleryTemplateId?: string | null;
   readonly useBrand?: boolean | null;
-  readonly description?: string | null | null;
+  readonly description?: string | null;
   readonly category?:
     | "transactional"
     | "marketing"
@@ -527,12 +540,10 @@ export type TemplatesCreateRequestJson = {
     | "verification"
     | "reminder"
     | "alert"
-    | null
     | null;
   readonly isActive?: boolean | null;
   readonly namespaceId?: NamespaceId | null;
   readonly shared?: boolean | null;
-  readonly idempotencyKey: string;
 };
 export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -596,22 +607,17 @@ export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     category: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Union([
-            Schema.Literal("transactional"),
-            Schema.Literal("marketing"),
-            Schema.Literal("support"),
-            Schema.Literal("notification"),
-            Schema.Literal("verification"),
-            Schema.Literal("reminder"),
-            Schema.Literal("alert"),
-          ]),
-          Schema.Null,
+          Schema.Literal("transactional"),
+          Schema.Literal("marketing"),
+          Schema.Literal("support"),
+          Schema.Literal("notification"),
+          Schema.Literal("verification"),
+          Schema.Literal("reminder"),
+          Schema.Literal("alert"),
         ]),
         Schema.Null,
       ]),
@@ -629,15 +635,6 @@ export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
           "Share the new organization-level project with every namespace: namespace-scoped keys read and send its entries but cannot change them. Defaults to false. Not with `namespaceId`, and not from a namespace-scoped key.",
       }),
     ),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
   }))();
 export type TemplatesCreate201 = Template;
 export const TemplatesCreate201 = Template;
@@ -698,7 +695,7 @@ export type TemplatesUpdateRequestJson = {
     readonly name?: string | null;
     readonly slug?: string | null;
     readonly entryPath?: string | null;
-    readonly description?: string | null | null;
+    readonly description?: string | null;
     readonly category?:
       | "transactional"
       | "marketing"
@@ -707,11 +704,10 @@ export type TemplatesUpdateRequestJson = {
       | "verification"
       | "reminder"
       | "alert"
-      | null
       | null;
-    readonly fromDefault?: TemplateFromDefault | null | null;
-    readonly replyToDefault?: ReadonlyArray<string> | null | null;
-    readonly trackingDefault?: TemplateTrackingDefault | null | null;
+    readonly fromDefault?: TemplateFromDefault | null;
+    readonly replyToDefault?: ReadonlyArray<string> | null;
+    readonly trackingDefault?: TemplateTrackingDefault | null;
     readonly isActive?: boolean | null;
     readonly shared?: boolean | null;
   };
@@ -756,34 +752,25 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
           Schema.Null,
         ]),
       ),
-      description: Schema.optionalKey(
-        Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-      ),
+      description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
       category: Schema.optionalKey(
         Schema.Union([
           Schema.Union([
-            Schema.Union([
-              Schema.Literal("transactional"),
-              Schema.Literal("marketing"),
-              Schema.Literal("support"),
-              Schema.Literal("notification"),
-              Schema.Literal("verification"),
-              Schema.Literal("reminder"),
-              Schema.Literal("alert"),
-            ]),
-            Schema.Null,
+            Schema.Literal("transactional"),
+            Schema.Literal("marketing"),
+            Schema.Literal("support"),
+            Schema.Literal("notification"),
+            Schema.Literal("verification"),
+            Schema.Literal("reminder"),
+            Schema.Literal("alert"),
           ]),
           Schema.Null,
         ]),
       ),
-      fromDefault: Schema.optionalKey(
-        Schema.Union([Schema.Union([TemplateFromDefault, Schema.Null]), Schema.Null]),
-      ),
-      replyToDefault: Schema.optionalKey(
-        Schema.Union([Schema.Union([Schema.Array(Schema.String), Schema.Null]), Schema.Null]),
-      ),
+      fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefault, Schema.Null])),
+      replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
       trackingDefault: Schema.optionalKey(
-        Schema.Union([Schema.Union([TemplateTrackingDefault, Schema.Null]), Schema.Null]).annotate({
+        Schema.Union([TemplateTrackingDefault, Schema.Null]).annotate({
           description:
             "Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.",
         }),
@@ -2705,10 +2692,22 @@ export const TemplatesOpenWorkspace504 = GatewayTimeoutError;
 export type TemplatesPatchWorkspacePathParams = { readonly id: TemplateId };
 export const TemplatesPatchWorkspacePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
+export type TemplatesPatchWorkspaceHeaders = { readonly "idempotency-key": string };
+export const TemplatesPatchWorkspaceHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesPatchWorkspaceRequestJson = {
   readonly expectedRevision: string;
   readonly patches: ReadonlyArray<{ readonly path: string; readonly content: string | null }>;
-  readonly idempotencyKey: string;
 };
 export const TemplatesPatchWorkspaceRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2742,15 +2741,6 @@ export const TemplatesPatchWorkspaceRequestJson = /* @__PURE__ */ (() =>
       .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
       .check(
         Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
-      ),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
       ),
   }))();
 export type TemplatesPatchWorkspace200 = {
@@ -3194,12 +3184,24 @@ export const TemplatesPatchWorkspace504 = GatewayTimeoutError;
 export type TemplatesPutWorkspaceAssetPathParams = { readonly id: TemplateId };
 export const TemplatesPutWorkspaceAssetPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
+export type TemplatesPutWorkspaceAssetHeaders = { readonly "idempotency-key": string };
+export const TemplatesPutWorkspaceAssetHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesPutWorkspaceAssetRequestJson = {
   readonly expectedRevision: string;
   readonly path: string;
   readonly contentBase64: string;
   readonly replace: boolean;
-  readonly idempotencyKey: string;
 };
 export const TemplatesPutWorkspaceAssetRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3216,15 +3218,6 @@ export const TemplatesPutWorkspaceAssetRequestJson = /* @__PURE__ */ (() =>
     ),
     contentBase64: Schema.String,
     replace: Schema.Boolean,
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
   }))();
 export type TemplatesPutWorkspaceAsset200 = {
   readonly workspace: {
@@ -3688,6 +3681,7 @@ export type TemplatesCheckWorkspace200 = {
     readonly path: string;
     readonly frontmatter: {
       readonly title: string;
+      readonly date?: string;
       readonly slug: string;
       readonly topic: string;
       readonly preheader?: string;
@@ -3868,6 +3862,7 @@ export const TemplatesCheckWorkspace200 = /* @__PURE__ */ (() =>
           ),
         frontmatter: Schema.Struct({
           title: Schema.String,
+          date: Schema.optionalKey(Schema.String),
           slug: Schema.String,
           topic: Schema.String,
           preheader: Schema.optionalKey(Schema.String),
@@ -4103,11 +4098,23 @@ export const TemplatesCheckWorkspace504 = GatewayTimeoutError;
 export type TemplatesResolveWorkspaceConflictPathParams = { readonly id: TemplateId };
 export const TemplatesResolveWorkspaceConflictPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
+export type TemplatesResolveWorkspaceConflictHeaders = { readonly "idempotency-key": string };
+export const TemplatesResolveWorkspaceConflictHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesResolveWorkspaceConflictRequestJson = {
   readonly expectedRevision: string;
   readonly path: string;
   readonly resolution: "draft" | "main" | { readonly content: string | null };
-  readonly idempotencyKey: string;
 };
 export const TemplatesResolveWorkspaceConflictRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -4127,15 +4134,6 @@ export const TemplatesResolveWorkspaceConflictRequestJson = /* @__PURE__ */ (() 
       Schema.Literal("main"),
       Schema.Struct({ content: Schema.Union([Schema.String, Schema.Null]) }),
     ]),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
   }))();
 export type TemplatesResolveWorkspaceConflict200 = {
   readonly workspace: {
@@ -4721,6 +4719,7 @@ export type TemplatesRenderWorkspaceFixture200 = {
     readonly path: string;
     readonly frontmatter: {
       readonly title: string;
+      readonly date?: string;
       readonly slug: string;
       readonly topic: string;
       readonly preheader?: string;
@@ -4944,6 +4943,7 @@ export const TemplatesRenderWorkspaceFixture200 = /* @__PURE__ */ (() =>
           ),
         frontmatter: Schema.Struct({
           title: Schema.String,
+          date: Schema.optionalKey(Schema.String),
           slug: Schema.String,
           topic: Schema.String,
           preheader: Schema.optionalKey(Schema.String),
@@ -5510,6 +5510,19 @@ export const TemplatesWorkspaceHistory504 = GatewayTimeoutError;
 export type TemplatesAttachWorkspaceResourcePathParams = { readonly id: TemplateId };
 export const TemplatesAttachWorkspaceResourcePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
+export type TemplatesAttachWorkspaceResourceHeaders = { readonly "idempotency-key": string };
+export const TemplatesAttachWorkspaceResourceHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesAttachWorkspaceResourceRequestJson = {
   readonly expectedRevision: string;
   readonly resource: {
@@ -5521,7 +5534,6 @@ export type TemplatesAttachWorkspaceResourceRequestJson = {
       readonly contentBase64: string;
     }>;
   };
-  readonly idempotencyKey: string;
 };
 export const TemplatesAttachWorkspaceResourceRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -5583,15 +5595,6 @@ export const TemplatesAttachWorkspaceResourceRequestJson = /* @__PURE__ */ (() =
           Schema.isMaxLength(32).annotate({ expected: "a value with a length of at most 32" }),
         ),
     }),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
   }))();
 export type TemplatesAttachWorkspaceResource200 = {
   readonly projectId: TemplateProjectId;
@@ -6036,14 +6039,10 @@ export const TemplatesRemoveWorkspaceResourcePathParams = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
-export type TemplatesRemoveWorkspaceResourceRequestJson = {
-  readonly expectedRevision: string;
-  readonly idempotencyKey: string;
-};
-export const TemplatesRemoveWorkspaceResourceRequestJson = /* @__PURE__ */ (() =>
+export type TemplatesRemoveWorkspaceResourceHeaders = { readonly "idempotency-key": string };
+export const TemplatesRemoveWorkspaceResourceHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
-    expectedRevision: Schema.String,
-    idempotencyKey: Schema.String.check(
+    "idempotency-key": Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     )
       .check(
@@ -6053,6 +6052,9 @@ export const TemplatesRemoveWorkspaceResourceRequestJson = /* @__PURE__ */ (() =
         Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
       ),
   }))();
+export type TemplatesRemoveWorkspaceResourceRequestJson = { readonly expectedRevision: string };
+export const TemplatesRemoveWorkspaceResourceRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ expectedRevision: Schema.String }))();
 export type TemplatesRemoveWorkspaceResource200 = {
   readonly projectId: TemplateProjectId;
   readonly organizationId: OrganizationId | null;
@@ -6486,10 +6488,22 @@ export const TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
 export type TemplatesRestoreWorkspacePathParams = { readonly id: TemplateId };
 export const TemplatesRestoreWorkspacePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
+export type TemplatesRestoreWorkspaceHeaders = { readonly "idempotency-key": string };
+export const TemplatesRestoreWorkspaceHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesRestoreWorkspaceRequestJson = {
   readonly expectedRevision: string;
   readonly commit: string;
-  readonly idempotencyKey: string;
 };
 export const TemplatesRestoreWorkspaceRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -6499,15 +6513,6 @@ export const TemplatesRestoreWorkspaceRequestJson = /* @__PURE__ */ (() =>
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
   }))();
 export type TemplatesRestoreWorkspace200 = {
   readonly view: {
@@ -6979,11 +6984,23 @@ export const TemplatesRestoreWorkspace504 = GatewayTimeoutError;
 export type TemplatesSaveWorkspacePathParams = { readonly id: TemplateId };
 export const TemplatesSaveWorkspacePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
+export type TemplatesSaveWorkspaceHeaders = { readonly "idempotency-key": string };
+export const TemplatesSaveWorkspaceHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesSaveWorkspaceRequestJson = {
   readonly expectedRevision: string;
   readonly expectedHead: string;
   readonly message: string;
-  readonly idempotencyKey: string;
 };
 export const TemplatesSaveWorkspaceRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -7001,15 +7018,6 @@ export const TemplatesSaveWorkspaceRequestJson = /* @__PURE__ */ (() =>
       )
       .check(
         Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
-      ),
-    idempotencyKey: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
       ),
   }))();
 export type TemplatesSaveWorkspace200 = {
@@ -7495,11 +7503,23 @@ export type TemplatesCreateFamilyFromTemplate500 = InternalError;
 export const TemplatesCreateFamilyFromTemplate500 = InternalError;
 export type TemplatesCreateFamilyFromTemplate504 = GatewayTimeoutError;
 export const TemplatesCreateFamilyFromTemplate504 = GatewayTimeoutError;
+export type TemplatesCreateFromWebsiteHeaders = { readonly "idempotency-key": string };
+export const TemplatesCreateFromWebsiteHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
 export type TemplatesCreateFromWebsiteRequestJson = {
   readonly url: string;
   readonly name?: string | null;
   readonly namespaceId?: NamespaceId | null;
-  readonly idempotencyKey: string;
 };
 export const TemplatesCreateFromWebsiteRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -7538,17 +7558,6 @@ export const TemplatesCreateFromWebsiteRequestJson = /* @__PURE__ */ (() =>
           "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
       }),
     ),
-    idempotencyKey: Schema.String.annotate({
-      description:
-        "Repeating a request with the same key, address, name, and namespace returns the project the first one created, even if the site has since stopped answering. The same key with another address, name, or namespace is refused with a 409.",
-    })
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-      ),
   }))();
 export type TemplatesCreateFromWebsite201 = TemplateFromWebsite;
 export const TemplatesCreateFromWebsite201 = TemplateFromWebsite;
@@ -7574,7 +7583,7 @@ export type TemplatesAddEntryRequestJson = {
   readonly entryPath: string;
   readonly name: string;
   readonly slug: string;
-  readonly description?: string | null | null;
+  readonly description?: string | null;
   readonly category?:
     | "transactional"
     | "marketing"
@@ -7583,7 +7592,6 @@ export type TemplatesAddEntryRequestJson = {
     | "verification"
     | "reminder"
     | "alert"
-    | null
     | null;
 };
 export const TemplatesAddEntryRequestJson = /* @__PURE__ */ (() =>
@@ -7619,22 +7627,17 @@ export const TemplatesAddEntryRequestJson = /* @__PURE__ */ (() =>
         expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
       }),
     ),
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     category: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
-          Schema.Union([
-            Schema.Literal("transactional"),
-            Schema.Literal("marketing"),
-            Schema.Literal("support"),
-            Schema.Literal("notification"),
-            Schema.Literal("verification"),
-            Schema.Literal("reminder"),
-            Schema.Literal("alert"),
-          ]),
-          Schema.Null,
+          Schema.Literal("transactional"),
+          Schema.Literal("marketing"),
+          Schema.Literal("support"),
+          Schema.Literal("notification"),
+          Schema.Literal("verification"),
+          Schema.Literal("reminder"),
+          Schema.Literal("alert"),
         ]),
         Schema.Null,
       ]),
@@ -7678,6 +7681,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         "Returns template summaries, newest first, filterable by category, channel, status, project, and search. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read a template's compiled content, current publication, and input schema with `GET /v1/templates/{id}`.",
       ),
     HttpApiEndpoint.post("templatesCreate", "/v1/templates", {
+      headers: TemplatesCreateHeaders,
       payload: TemplatesCreateRequestJson,
       success: TemplatesCreate201.pipe(HttpApiSchema.status(201)),
       error: [
@@ -7935,6 +7939,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       ),
     HttpApiEndpoint.patch("templatesPatchWorkspace", "/v1/templates/:id/workspace", {
       params: TemplatesPatchWorkspacePathParams,
+      headers: TemplatesPatchWorkspaceHeaders,
       payload: TemplatesPatchWorkspaceRequestJson,
       success: TemplatesPatchWorkspace200,
       error: [
@@ -7956,6 +7961,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       ),
     HttpApiEndpoint.put("templatesPutWorkspaceAsset", "/v1/templates/:id/workspace/assets", {
       params: TemplatesPutWorkspaceAssetPathParams,
+      headers: TemplatesPutWorkspaceAssetHeaders,
       payload: TemplatesPutWorkspaceAssetRequestJson,
       success: TemplatesPutWorkspaceAsset200,
       error: [
@@ -8001,6 +8007,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       "/v1/templates/:id/workspace/conflicts",
       {
         params: TemplatesResolveWorkspaceConflictPathParams,
+        headers: TemplatesResolveWorkspaceConflictHeaders,
         payload: TemplatesResolveWorkspaceConflictRequestJson,
         success: TemplatesResolveWorkspaceConflict200,
         error: [
@@ -8093,6 +8100,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       "/v1/templates/:id/workspace/resources",
       {
         params: TemplatesAttachWorkspaceResourcePathParams,
+        headers: TemplatesAttachWorkspaceResourceHeaders,
         payload: TemplatesAttachWorkspaceResourceRequestJson,
         success: TemplatesAttachWorkspaceResource200,
         error: [
@@ -8118,6 +8126,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       "/v1/templates/:id/workspace/resources/:resourceId/remove",
       {
         params: TemplatesRemoveWorkspaceResourcePathParams,
+        headers: TemplatesRemoveWorkspaceResourceHeaders,
         payload: TemplatesRemoveWorkspaceResourceRequestJson,
         success: TemplatesRemoveWorkspaceResource200,
         error: [
@@ -8140,6 +8149,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       ),
     HttpApiEndpoint.post("templatesRestoreWorkspace", "/v1/templates/:id/workspace/restore", {
       params: TemplatesRestoreWorkspacePathParams,
+      headers: TemplatesRestoreWorkspaceHeaders,
       payload: TemplatesRestoreWorkspaceRequestJson,
       success: TemplatesRestoreWorkspace200,
       error: [
@@ -8161,6 +8171,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       ),
     HttpApiEndpoint.post("templatesSaveWorkspace", "/v1/templates/:id/workspace/save", {
       params: TemplatesSaveWorkspacePathParams,
+      headers: TemplatesSaveWorkspaceHeaders,
       payload: TemplatesSaveWorkspaceRequestJson,
       success: TemplatesSaveWorkspace200,
       error: [
@@ -8348,6 +8359,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         "Creates a template family containing the specified template and returns the new family with status 201.",
       ),
     HttpApiEndpoint.post("templatesCreateFromWebsite", "/v1/templates/from-website", {
+      headers: TemplatesCreateFromWebsiteHeaders,
       payload: TemplatesCreateFromWebsiteRequestJson,
       success: TemplatesCreateFromWebsite201.pipe(HttpApiSchema.status(201)),
       error: [

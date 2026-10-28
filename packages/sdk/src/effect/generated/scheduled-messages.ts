@@ -64,7 +64,7 @@ export type EmailDispatchContent = {
   readonly timeZone?: RenderTimeZone;
   readonly inReplyToMessageId?: MessageId | null;
   readonly replyTo?: ReplyToAddresses;
-  readonly topicId?: TopicId | null | null;
+  readonly topicId?: TopicId | null;
   readonly tracking?: EmailTrackingOverrideV1;
   readonly footer?: EmailFooterOverride;
   readonly headers?: EmailCustomHeaders | null;
@@ -94,7 +94,7 @@ export const EmailDispatchContent = /* @__PURE__ */ (() =>
     inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
     replyTo: Schema.optionalKey(ReplyToAddresses),
     topicId: Schema.optionalKey(
-      Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null]).annotate({
+      Schema.Union([TopicId, Schema.Null]).annotate({
         description:
           "The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.",
       }),
@@ -104,7 +104,7 @@ export const EmailDispatchContent = /* @__PURE__ */ (() =>
     headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
   }).annotate({ identifier: "EmailDispatchContent" }))();
 export type SendMessagePayload = {
-  readonly conversationId?: ConversationId | null | null;
+  readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;
   readonly channel: "email";
   readonly to: EmailRecipients;
@@ -115,9 +115,7 @@ export type SendMessagePayload = {
 };
 export const SendMessagePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    conversationId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-    ),
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
     metadata: Schema.optionalKey(MessageMetadata),
     channel: Schema.Literal("email"),
     to: EmailRecipients,
@@ -127,7 +125,7 @@ export const SendMessagePayload = /* @__PURE__ */ (() =>
     email: EmailContent,
   }).annotate({ identifier: "SendMessagePayload" }))();
 export type DispatchSendMessagePayload = {
-  readonly conversationId?: ConversationId | null | null;
+  readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;
   readonly channel: "email";
   readonly to: EmailRecipients;
@@ -138,9 +136,7 @@ export type DispatchSendMessagePayload = {
 };
 export const DispatchSendMessagePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    conversationId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-    ),
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
     metadata: Schema.optionalKey(MessageMetadata),
     channel: Schema.Literal("email"),
     to: EmailRecipients,
@@ -254,11 +250,30 @@ export type ScheduledMessagesList500 = InternalError;
 export const ScheduledMessagesList500 = InternalError;
 export type ScheduledMessagesList504 = GatewayTimeoutError;
 export const ScheduledMessagesList504 = GatewayTimeoutError;
+export type ScheduledMessagesCreateHeaders = { readonly "idempotency-key"?: string | null };
+export const ScheduledMessagesCreateHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type ScheduledMessagesCreateRequestJson = {
   readonly send: DispatchSendMessagePayload;
   readonly scheduledFor: __SamvaRuntimeAbsoluteInstant;
   readonly timezone?: IanaTimezone | null;
-  readonly idempotencyKey?: string | null;
   readonly referenceId?: string | null;
 };
 export const ScheduledMessagesCreateRequestJson = /* @__PURE__ */ (() =>
@@ -266,7 +281,6 @@ export const ScheduledMessagesCreateRequestJson = /* @__PURE__ */ (() =>
     send: DispatchSendMessagePayload,
     scheduledFor: __SamvaRuntimeAbsoluteInstant,
     timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
-    idempotencyKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     referenceId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
 export type ScheduledMessagesCreate201 = ScheduledMessage;
@@ -383,6 +397,7 @@ export class ScheduledMessagesGroup extends HttpApiGroup.make("Scheduled Message
         "Returns scheduled messages, soonest send first, optionally filtered by status. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
       ),
     HttpApiEndpoint.post("scheduledMessagesCreate", "/v1/messages/scheduled", {
+      headers: ScheduledMessagesCreateHeaders,
       payload: ScheduledMessagesCreateRequestJson,
       success: ScheduledMessagesCreate201.pipe(HttpApiSchema.status(201)),
       error: [

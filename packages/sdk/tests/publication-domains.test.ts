@@ -3,15 +3,15 @@ import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
-import * as TopicPublicationDomains from "../src/effect/publication-domains";
+import * as NewsletterDomains from "../src/effect/newsletter-domains";
 import { createClient, type SamvaClient } from "../src/promises";
 
-const id = "unsub_1234567890abcdef";
+const id = "nl_1234567890abcdef";
 const hostname = "news.example.com";
 const idempotencyKey = "be85c605-d10d-4a62-86b5-e0df9c92261e";
 const snapshot = {
   organizationId: "org_1234567890abcdef",
-  topicId: id,
+  topicId: "unsub_1234567890abcdef",
   hostname,
   canonicalHostname: "weekly-digest.samva.app",
   phase: "pending",
@@ -29,33 +29,43 @@ type Cell = {
   readonly suffix: string;
   readonly query?: Readonly<Record<string, string>>;
   readonly body?: unknown;
+  readonly response?: unknown;
   readonly promise: (client: SamvaClient) => Promise<unknown>;
   readonly effect: () => Effect.Effect<unknown, unknown, Client.Service>;
 };
 
 const cells = [
   {
+    name: "list",
+    method: "GET",
+    suffix: "",
+    query: { limit: "2", cursor: "bmV3cy5leGFtcGxlLmNvbQ" },
+    response: { items: [snapshot], nextCursor: null },
+    promise: (client) =>
+      client.newsletters.domains.list({ id, limit: 2, cursor: "bmV3cy5leGFtcGxlLmNvbQ" }),
+    effect: () => NewsletterDomains.list({ id, limit: 2, cursor: "bmV3cy5leGFtcGxlLmNvbQ" }),
+  },
+  {
     name: "add",
     method: "POST",
     suffix: "",
-    body: { hostname, idempotencyKey },
-    promise: (client) => client.topicPublicationDomains.add({ id, hostname, idempotencyKey }),
-    effect: () => TopicPublicationDomains.add({ id, hostname, idempotencyKey }),
+    body: { hostname },
+    promise: (client) => client.newsletters.domains.add({ id, hostname }, { idempotencyKey }),
+    effect: () => NewsletterDomains.add({ id, hostname }, { idempotencyKey }),
   },
   {
     name: "get",
     method: "GET",
     suffix: `/${hostname}`,
-    promise: (client) => client.topicPublicationDomains.get({ id, hostname }),
-    effect: () => TopicPublicationDomains.get({ id, hostname }),
+    promise: (client) => client.newsletters.domains.get({ id, hostname }),
+    effect: () => NewsletterDomains.get({ id, hostname }),
   },
   {
     name: "remove",
     method: "DELETE",
     suffix: `/${hostname}`,
-    query: { idempotencyKey },
-    promise: (client) => client.topicPublicationDomains.remove({ id, hostname, idempotencyKey }),
-    effect: () => TopicPublicationDomains.remove({ id, hostname, idempotencyKey }),
+    promise: (client) => client.newsletters.domains.remove({ id, hostname }, { idempotencyKey }),
+    effect: () => NewsletterDomains.remove({ id, hostname }, { idempotencyKey }),
   },
 ] satisfies ReadonlyArray<Cell>;
 
@@ -87,22 +97,24 @@ describe("publication domains transport parity", () => {
           query: Object.fromEntries(url.searchParams),
           body: body === "" ? undefined : JSON.parse(body),
           apiKey: request.headers.get("x-api-key"),
-          idempotencyKey: request.headers.get("idempotency-key"),
+          "idempotency-key": request.headers.get("idempotency-key"),
         });
-        return Response.json(snapshot);
+        return Response.json(cell.response ?? snapshot);
       };
       expect(await cell.promise(createClient({ apiKey: "samva_sk_test", fetch }))).toEqual(
-        snapshot,
+        cell.response ?? snapshot,
       );
-      expect(await Effect.runPromise(provide(cell.effect(), fetch))).toEqual(snapshot);
+      expect(await Effect.runPromise(provide(cell.effect(), fetch))).toEqual(
+        cell.response ?? snapshot,
+      );
       expect(requests).toEqual(
         Array.from({ length: 2 }, () => ({
           method: cell.method,
-          path: `/v1/topics/${id}/publication/domains${cell.suffix}`,
+          path: `/v1/newsletters/${id}/domains${cell.suffix}`,
           query: cell.query ?? {},
           body: cell.body,
           apiKey: "samva_sk_test",
-          idempotencyKey: null,
+          "idempotency-key": cell.method === "GET" ? null : idempotencyKey,
         })),
       );
     },
@@ -111,21 +123,20 @@ describe("publication domains transport parity", () => {
   it("preserves the Preview access error in both clients", async () => {
     const body = {
       _tag: "FlagDisabledError",
-      flag: "issueWeb",
+      flag: "newsletters",
       message: "Publication is unavailable",
     };
     const fetch = async () => Response.json(body, { status: 403 });
     await expect(
-      createClient({ apiKey: "samva_sk_test", fetch }).topicPublicationDomains.add({
-        id,
-        hostname,
-        idempotencyKey,
-      }),
+      createClient({ apiKey: "samva_sk_test", fetch }).newsletters.domains.add(
+        { id, hostname },
+        { idempotencyKey },
+      ),
     ).rejects.toMatchObject(body);
     expect(
       await Effect.runPromise(
         provide(
-          TopicPublicationDomains.add({ id, hostname, idempotencyKey }).pipe(
+          NewsletterDomains.add({ id, hostname }, { idempotencyKey }).pipe(
             Effect.catchTag("FlagDisabledError", Effect.succeed),
           ),
           fetch,

@@ -5,6 +5,7 @@ import { TestClock } from "effect/testing";
 
 import { ConflictError, InternalError, RateLimitedError, ValidationError } from "../src/effect";
 import * as Client from "../src/effect/client";
+import * as Contacts from "../src/effect/contacts";
 import * as Email from "../src/effect/email";
 import * as Messages from "../src/effect/messages";
 import * as Retry from "../src/effect/retry";
@@ -153,6 +154,51 @@ const countingClient = (counter: { calls: number }): HttpClient.HttpClient =>
   });
 
 describe("facade idempotency keys and retry-safety", () => {
+  it.effect("retries only the replayable new-import branch with the same key", () =>
+    Effect.gen(function* () {
+      const keys: Array<string | undefined> = [];
+      const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
+        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+      );
+      const fiber = yield* Effect.forkChild(
+        Effect.exit(
+          Contacts.startImport({
+            mode: "new",
+            planHash: "a".repeat(64),
+            input: {
+              preset: "mailchimp",
+              topicId: "unsub_7q2xk9mvt4znw8rh",
+              files: [
+                {
+                  name: "readers.csv",
+                  csv: "Email Address\nada@example.com",
+                  evidence: { kind: "export_scope", scope: "subscribed" },
+                },
+              ],
+            },
+          }).pipe(Effect.provide(client)),
+        ),
+        { startImmediately: true },
+      );
+      yield* TestClock.adjust(Duration.minutes(1));
+      yield* Fiber.join(fiber);
+      expect(keys).toHaveLength(4);
+      expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+      expect(new Set(keys).size).toBe(1);
+
+      const resume = yield* Effect.forkChild(
+        Contacts.startImport(
+          { mode: "resume", jobId: "cimport_7q2xk9mvt4znw8rh", expectedGeneration: 1 },
+          { idempotencyKey: "resume-key" },
+        ).pipe(Effect.provide(client), Effect.exit),
+        { startImmediately: true },
+      );
+      yield* TestClock.adjust(Duration.minutes(1));
+      yield* Fiber.join(resume);
+      expect(keys).toEqual([...Array.from({ length: 4 }, () => keys[0]), "resume-key"]);
+    }),
+  );
+
   it.effect("uses one generated idempotency key across all retries of a logical send", () =>
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
@@ -175,6 +221,58 @@ describe("facade idempotency keys and retry-safety", () => {
       expect(keys[0]).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
+    }),
+  );
+
+  it.effect("reuses one generated key across retries of a non-send idempotent mutation", () =>
+    Effect.gen(function* () {
+      const keys: Array<string | undefined> = [];
+      const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
+        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+      );
+      const fiber = yield* Effect.forkChild(
+        Effect.exit(
+          Email.rotateDomainDkim({ id: "dom_7q2xk9mvt4znw8rh" }).pipe(Effect.provide(client)),
+        ),
+        { startImmediately: true },
+      );
+      yield* TestClock.adjust(Duration.minutes(1));
+      yield* Fiber.join(fiber);
+      expect(keys).toHaveLength(4);
+      expect(new Set(keys).size).toBe(1);
+      expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+    }),
+  );
+
+  it.effect("calls the client idempotency hook once and lets options override it", () =>
+    Effect.gen(function* () {
+      const operations: Array<string> = [];
+      const keys: Array<string | undefined> = [];
+      const client = Client.layer({
+        apiKey: "samva_sk_test",
+        headers: { "Idempotency-Key": "header-is-not-an-override" },
+        idempotency: (operation) => {
+          operations.push(operation);
+          return "event:rotate:1";
+        },
+      }).pipe(Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))));
+      const fiber = yield* Effect.forkChild(
+        Effect.exit(
+          Email.rotateDomainDkim({ id: "dom_7q2xk9mvt4znw8rh" }).pipe(Effect.provide(client)),
+        ),
+        { startImmediately: true },
+      );
+      yield* TestClock.adjust(Duration.minutes(1));
+      yield* Fiber.join(fiber);
+      expect(operations).toEqual(["emailRotateDomainDkim"]);
+      expect(keys).toEqual(Array.from({ length: 4 }, () => "event:rotate:1"));
+
+      yield* Email.rotateDomainDkim(
+        { id: "dom_7q2xk9mvt4znw8rh" },
+        { idempotencyKey: "override" },
+      ).pipe(Effect.provide([client, Retry.layerDisabled]), Effect.ignore);
+      expect(operations).toEqual(["emailRotateDomainDkim"]);
+      expect(keys.at(-1)).toBe("override");
     }),
   );
 
@@ -235,7 +333,7 @@ describe("facade idempotency keys and retry-safety", () => {
     }),
   );
 
-  it.effect("never auto-retries a keyless facade mutation", () =>
+  it.effect("never auto-retries a non-idempotent mutation, even with an option key", () =>
     Effect.gen(function* () {
       const counter = { calls: 0 };
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
@@ -247,7 +345,11 @@ describe("facade idempotency keys and retry-safety", () => {
         Effect.exit,
       );
 
-      expect(counter.calls).toBe(1);
+      yield* Messages.remove({ id: "msg_7q2xk9mvt4znw8rh" }, { idempotencyKey: "caller-key" }).pipe(
+        Effect.provide(client),
+        Effect.exit,
+      );
+      expect(counter.calls).toBe(2);
     }),
   );
 });

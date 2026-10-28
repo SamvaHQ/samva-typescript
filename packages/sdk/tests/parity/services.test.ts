@@ -28,8 +28,9 @@ import {
   Templates,
   Topics,
   TopicForms,
-  TopicIssues,
-  TopicPublicationDomains,
+  NewsletterIssues,
+  Newsletters,
+  NewsletterDomains,
   Webhooks,
   Whoami,
 } from "../../src/effect";
@@ -75,8 +76,9 @@ const effectModules = {
   templates: Templates,
   topics: Topics,
   topicForms: TopicForms,
-  topicIssues: TopicIssues,
-  topicPublicationDomains: TopicPublicationDomains,
+  newsletters: Newsletters,
+  newsletterIssues: NewsletterIssues,
+  newsletterDomains: NewsletterDomains,
   webhooks: Webhooks,
   whoami: Whoami,
 } satisfies Record<keyof typeof SDK_SERVICE_OPERATIONS, object>;
@@ -110,11 +112,20 @@ describe("SDK surface inventory", () => {
               ),
             );
           });
-          return [name, { group: groupName, method: endpoint.method, paginated }];
+          const headers: SchemaNode | undefined = endpoint.headers?.ast;
+          const idempotent =
+            headers?.propertySignatures?.some((property) => property.name === "idempotency-key") ??
+            false;
+          return [name, { group: groupName, method: endpoint.method, paginated, idempotent }];
         }),
       ),
     );
-    expect(SamvaOperations).toEqual(expected);
+    expect(Object.keys(SamvaOperations).sort()).toEqual(Object.keys(expected).sort());
+    expect(SamvaOperations).toMatchObject(expected);
+    expect(SamvaOperations.contactsStartImport.idempotentWhen).toEqual({
+      field: "mode",
+      equals: "new",
+    });
   });
 
   it("maps every Effect module and Promise service to the public operation registry", () => {
@@ -126,6 +137,16 @@ describe("SDK surface inventory", () => {
       keyof typeof SDK_SERVICE_OPERATIONS
     >;
     const promiseClient = createPromiseClient({ apiKey: "samva_sk_test" });
+    const promiseServices = {
+      ...promiseClient,
+      newsletterIssues: promiseClient.newsletters.issues,
+      newsletterDomains: promiseClient.newsletters.domains,
+    };
+    const rawServices = {
+      ...promiseClient.raw,
+      newsletterIssues: promiseClient.raw.newsletters.issues,
+      newsletterDomains: promiseClient.raw.newsletters.domains,
+    };
     for (const serviceName of serviceNames) {
       const expectedMethods = sortedKeys(SDK_SERVICE_OPERATIONS[serviceName]);
       const schemaExports =
@@ -134,7 +155,12 @@ describe("SDK surface inventory", () => {
         [...expectedMethods, ...schemaExports].sort(),
       );
       // The event stream is a WebSocket, not an operation: the Promise service adds it.
-      expect(sortedKeys(promiseClient[serviceName]), `${serviceName} Promise service`).toEqual(
+      expect(
+        sortedKeys(promiseServices[serviceName]).filter(
+          (name) => serviceName !== "newsletters" || !["issues", "domains"].includes(name),
+        ),
+        `${serviceName} Promise service`,
+      ).toEqual(
         serviceName === "mailboxes" ? [...expectedMethods, "events"].sort() : expectedMethods,
       );
       const expectedRawMethods =
@@ -142,12 +168,19 @@ describe("SDK surface inventory", () => {
           ? expectedMethods.filter((method) => method !== "send")
           : expectedMethods;
       expect(
-        sortedKeys(promiseClient.raw[serviceName]),
+        sortedKeys(rawServices[serviceName]).filter(
+          (name) => serviceName !== "newsletters" || !["issues", "domains"].includes(name),
+        ),
         `${serviceName} raw Promise service`,
       ).toEqual(expectedRawMethods);
     }
 
-    expect(Object.keys(promiseClient).sort()).toEqual([...serviceNames, "raw"].sort());
+    expect(Object.keys(promiseClient).sort()).toEqual(
+      [
+        ...serviceNames.filter((name) => !["newsletterIssues", "newsletterDomains"].includes(name)),
+        "raw",
+      ].sort(),
+    );
   });
 
   it("adapts every operation's path and query fields from its generated endpoint", () => {
@@ -166,7 +199,7 @@ describe("SDK surface inventory", () => {
       Object.entries(group.endpoints).flatMap(([name, endpoint]) => {
         const { kind } = SDK_OPERATION_CALLS[name as keyof typeof SDK_OPERATION_CALLS];
         const query = endpoint.query !== undefined;
-        const path = endpoint.params !== undefined;
+        const path = endpoint.params !== undefined || name === "newslettersCreate";
         return query === queryKinds.has(kind) && path === pathKinds.has(kind)
           ? []
           : [`${name}: kind ${kind}, query ${query}, path ${path}`];

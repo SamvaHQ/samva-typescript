@@ -69,10 +69,12 @@ describe("contact import SDK facades", () => {
       failure: null,
       resumable: false,
     };
+    const keys: Array<string | null> = [];
     const requests: Array<{ method: string; path: string; body: unknown }> = [];
     const fetch = async (url: RequestInfo | URL, init?: RequestInit) => {
       const request = url instanceof Request ? url : new Request(url, init);
       const path = new URL(request.url).pathname;
+      keys.push(request.headers.get("idempotency-key"));
       requests.push({
         method: request.method,
         path,
@@ -87,18 +89,19 @@ describe("contact import SDK facades", () => {
       mode: "new",
       input,
       planHash: plan.planHash,
-      idempotencyKey: "migration-1",
     };
     const resume = { mode: "resume" as const, jobId: id, expectedGeneration: 1 };
     const promise = createClient({ apiKey: "samva_sk_test", fetch });
     expect(await promise.contacts.planImport(input)).toMatchObject(plan);
-    expect((await promise.contacts.startImport(start)).id).toBe(id);
+    expect((await promise.contacts.startImport(start, { idempotencyKey: "migration-1" })).id).toBe(
+      id,
+    );
     expect((await promise.contacts.getImportJob({ id })).processedRows).toBe(1);
     expect((await promise.contacts.startImport(resume)).generation).toBe(2);
     await Effect.runPromise(
       Effect.gen(function* () {
         expect(yield* Contacts.planImport(input)).toMatchObject(plan);
-        expect((yield* Contacts.startImport(start)).id).toBe(id);
+        expect((yield* Contacts.startImport(start, { idempotencyKey: "migration-1" })).id).toBe(id);
         expect((yield* Contacts.getImportJob({ id })).processedRows).toBe(1);
         expect((yield* Contacts.startImport(resume)).generation).toBe(2);
       }).pipe(
@@ -117,6 +120,10 @@ describe("contact import SDK facades", () => {
       { method: "POST", path: "/v1/contacts/imports", body: resume },
     ];
     expect(requests).toEqual([...expected, ...expected]);
+    expect(keys[1]).toBe("migration-1");
+    expect(keys[5]).toBe("migration-1");
+    expect(keys[3]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(keys[7]).toMatch(/^[0-9a-f-]{36}$/);
     expect(promise.contacts).not.toHaveProperty("bulkImport");
   });
 });

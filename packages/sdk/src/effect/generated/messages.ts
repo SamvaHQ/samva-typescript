@@ -673,7 +673,7 @@ export const MessagesSendHeaders = /* @__PURE__ */ (() =>
     ),
   }))();
 export type MessagesSendRequestJson = {
-  readonly conversationId?: ConversationId | null | null;
+  readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;
   readonly channel: "email";
   readonly to: EmailRecipients;
@@ -684,9 +684,7 @@ export type MessagesSendRequestJson = {
 };
 export const MessagesSendRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    conversationId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-    ),
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
     metadata: Schema.optionalKey(MessageMetadata),
     channel: Schema.Literal("email"),
     to: EmailRecipients,
@@ -1285,7 +1283,7 @@ export const MessagesGetStatus500 = InternalError;
 export type MessagesGetStatus504 = GatewayTimeoutError;
 export const MessagesGetStatus504 = GatewayTimeoutError;
 export type MessagesValidateEmailRequestJson = {
-  readonly conversationId?: ConversationId | null | null;
+  readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;
   readonly channel: "email";
   readonly to: EmailRecipients;
@@ -1296,9 +1294,7 @@ export type MessagesValidateEmailRequestJson = {
 };
 export const MessagesValidateEmailRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    conversationId: Schema.optionalKey(
-      Schema.Union([Schema.Union([ConversationId, Schema.Null]), Schema.Null]),
-    ),
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
     metadata: Schema.optionalKey(MessageMetadata),
     channel: Schema.Literal("email"),
     to: EmailRecipients,

@@ -11,7 +11,12 @@ import * as Media from "../../src/effect/media";
 import * as Messages from "../../src/effect/messages";
 import * as Organizations from "../../src/effect/organizations";
 import * as Topics from "../../src/effect/topics";
-import type { JourneyDefinition, MediaUploadInstruction, SamvaClient } from "../../src/promises";
+import {
+  createClient,
+  type JourneyDefinition,
+  type MediaUploadInstruction,
+  type SamvaClient,
+} from "../../src/promises";
 
 declare const promiseClient: SamvaClient;
 
@@ -293,3 +298,25 @@ promiseClient.email.listSenders({ isActive: "true" });
 void Contacts.list({ limit: "10" });
 // @ts-expect-error Boolean query values are booleans at the SDK boundary.
 void Email.listSenders({ isActive: "true" });
+
+void Email.rotateDomainDkim({ id: "dom_123" });
+void Email.rotateDomainDkim({ id: "dom_123" }, { idempotencyKey: "rotation-1" });
+// @ts-expect-error the only idempotency override is in the second options argument.
+void Email.rotateDomainDkim({ id: "dom_123", idempotencyKey: "rotation-1" });
+// @ts-expect-error wire header fields are not public operation inputs.
+void Email.rotateDomainDkim({ id: "dom_123", "idempotency-key": "rotation-1" });
+const oauthConfig: Client.Config = { authToken: "token", orgSlug: "acme" };
+// @ts-expect-error API keys already select their organization.
+const apiKeyOrgConfig: Client.Config = { apiKey: "samva_sk_test", orgSlug: "acme" };
+void [oauthConfig, apiKeyOrgConfig];
+
+promiseClient.email.rotateDomainDkim(
+  { id: "dom_123" },
+  { idempotencyKey: "rotation-1", maxRetries: 0 },
+);
+// @ts-expect-error keys are only accepted in the options argument.
+promiseClient.email.rotateDomainDkim({ id: "dom_123", "idempotency-key": "rotation-1" });
+// @ts-expect-error keys are only accepted in the options argument.
+promiseClient.templates.create({ name: "Hello", idempotencyKey: "template-1" });
+// @ts-expect-error orgSlug pairs with authToken.
+createClient({ apiKey: "key", orgSlug: "acme" });

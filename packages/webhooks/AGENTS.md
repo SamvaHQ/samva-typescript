@@ -5,7 +5,7 @@ webhook. Verification requires the untouched request body and the endpoint signi
 expose that secret to browser code.
 
 Effect applications can import the typed adapter from `@samva/webhooks/effect` and install the
-optional peer `effect` at the exact version this package's `peerDependencies` names.
+optional peer `effect` from the `^4.0.4` range this package's `peerDependencies` names.
 
 Import only package subpaths declared in `package.json`. The delivery, queue, persistence, retry,
 and endpoint-management implementation is not part of this package.

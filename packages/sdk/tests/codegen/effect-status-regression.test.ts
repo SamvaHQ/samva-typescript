@@ -3,14 +3,14 @@ import { Schema, SchemaRepresentation } from "effect";
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 
 describe("representation identity", () => {
-  it("emits distinct components for a named schema reused at another status", () => {
+  it("reuses the body component while preserving each response status", () => {
     const Widget = Schema.Struct({
       id: Schema.String,
       metadata: Schema.Record(Schema.String, Schema.Unknown),
     }).annotate({ identifier: "Widget" });
     const Api = HttpApi.make("Api").add(
       HttpApiGroup.make("widgets").add(
-        HttpApiEndpoint.get("get", "/widgets/:id", { success: Widget }),
+        HttpApiEndpoint.get("get", "/widgets", { success: Widget }),
         HttpApiEndpoint.post("create", "/widgets", {
           success: Widget.pipe(HttpApiSchema.status(201)),
         }),
@@ -22,7 +22,13 @@ describe("representation identity", () => {
       Object.keys(spec.components.schemas)
         .filter((name) => name.startsWith("Widget"))
         .sort(),
-    ).toEqual(["Widget", "Widget_1"]);
+    ).toEqual(["Widget"]);
+    expect(spec.paths["/widgets"]?.get?.responses["200"]).toMatchObject({
+      content: { "application/json": { schema: { $ref: "#/components/schemas/Widget" } } },
+    });
+    expect(spec.paths["/widgets"]?.post?.responses["201"]).toMatchObject({
+      content: { "application/json": { schema: { $ref: "#/components/schemas/Widget" } } },
+    });
   });
 
   it("keeps structurally different records with the same identifier distinct", () => {
@@ -41,15 +47,17 @@ describe("representation identity", () => {
     expect(Object.keys(represented.references)).toEqual(["Merged", "Merged_1"]);
   });
 
-  it("does not merge status variants with other key-context differences", () => {
+  it("keeps different body property descriptions distinct across statuses", () => {
     const Base = Schema.Struct({
       id: Schema.String,
       metadata: Schema.Record(Schema.String, Schema.Unknown),
     }).annotate({ identifier: "Contextual" });
+    const Documented = Schema.Struct({
+      id: Schema.String.annotateKey({ description: "distinct key context" }),
+      metadata: Schema.Record(Schema.String, Schema.Unknown),
+    }).annotate({ identifier: "Contextual" });
     const plain = Schema.toCodecJson(Base.pipe(HttpApiSchema.status(200))).ast;
-    const documented = Schema.toCodecJson(
-      Base.annotateKey({ description: "distinct key context" }).pipe(HttpApiSchema.status(201)),
-    ).ast;
+    const documented = Schema.toCodecJson(Documented.pipe(HttpApiSchema.status(201))).ast;
 
     const represented = SchemaRepresentation.toRepresentations([plain, documented]);
 

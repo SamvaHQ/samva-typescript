@@ -454,7 +454,7 @@ export type CampaignEmailContent = {
   readonly timeZone?: RenderTimeZone;
   readonly inReplyToMessageId?: MessageId | null;
   readonly replyTo?: ReplyToAddresses;
-  readonly topicId?: TopicId | null | null;
+  readonly topicId?: TopicId | null;
   readonly tracking?: EmailTrackingOverrideV1;
   readonly footer?: EmailFooterOverride;
   readonly headers?: EmailCustomHeaders | null;
@@ -485,7 +485,7 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
     replyTo: Schema.optionalKey(ReplyToAddresses),
     topicId: Schema.optionalKey(
-      Schema.Union([Schema.Union([TopicId, Schema.Null]), Schema.Null]).annotate({
+      Schema.Union([TopicId, Schema.Null]).annotate({
         description:
           "The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.",
       }),
@@ -916,23 +916,32 @@ export const CampaignsListRuns504 = GatewayTimeoutError;
 export type CampaignsScheduleRunPathParams = { readonly id: CampaignId };
 export const CampaignsScheduleRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId }))();
+export type CampaignsScheduleRunHeaders = { readonly "idempotency-key"?: string | null };
+export const CampaignsScheduleRunHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type CampaignsScheduleRunRequestJson = {
   readonly scheduledFor?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly idempotencyKey?: string | null;
 };
 export const CampaignsScheduleRunRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     scheduledFor: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    idempotencyKey: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    ),
   }))();
 export type CampaignsScheduleRun201 = CampaignRun;
 export const CampaignsScheduleRun201 = CampaignRun;
@@ -1333,6 +1342,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       ),
     HttpApiEndpoint.post("campaignsScheduleRun", "/v1/campaigns/:id/runs", {
       params: CampaignsScheduleRunPathParams,
+      headers: CampaignsScheduleRunHeaders,
       payload: CampaignsScheduleRunRequestJson,
       success: CampaignsScheduleRun201.pipe(HttpApiSchema.status(201)),
       error: [
@@ -1352,7 +1362,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       .annotate(OpenApi.Summary, "Schedule a campaign run")
       .annotate(
         OpenApi.Description,
-        "Schedules an email campaign run at the absolute ISO-8601 instant in scheduledFor, or immediately when omitted. The optional idempotencyKey is scoped to the organization and replays return the original run. An email campaign must carry the brand footer: it is refused with CampaignFooterRequiredError when its footer is off and its template renders no BrandFooter, and with BrandAddressRequiredError when a brand that signs it off has no postal address.",
+        "Schedules an email campaign run at the absolute ISO-8601 instant in scheduledFor, or immediately when omitted. The optional Idempotency-Key header is scoped to the organization and replays return the original run. An email campaign must carry the brand footer: it is refused with CampaignFooterRequiredError when its footer is off and its template renders no BrandFooter, and with BrandAddressRequiredError when a brand that signs it off has no postal address.",
       ),
     HttpApiEndpoint.get("campaignsGetRun", "/v1/campaigns/:id/runs/:runId", {
       params: CampaignsGetRunPathParams,

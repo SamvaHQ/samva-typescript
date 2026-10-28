@@ -5,7 +5,6 @@ import * as Schema from "effect/Schema";
 
 import {
   ApiKeySecurityMiddleware,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -136,9 +135,8 @@ export const TopicFormsList200 = /* @__PURE__ */ (() =>
   Schema.Struct({ items: Schema.Array(TopicForm) }))();
 export type TopicFormsList401 = UnauthorizedError;
 export const TopicFormsList401 = UnauthorizedError;
-export type TopicFormsList403 = ForbiddenError | FlagDisabledError;
-export const TopicFormsList403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type TopicFormsList403 = ForbiddenError;
+export const TopicFormsList403 = ForbiddenError;
 export type TopicFormsList404 = ResourceNotFoundError;
 export const TopicFormsList404 = ResourceNotFoundError;
 export type TopicFormsList422 = ValidationError;
@@ -235,9 +233,8 @@ export type TopicFormsCreate201 = TopicForm;
 export const TopicFormsCreate201 = TopicForm;
 export type TopicFormsCreate401 = UnauthorizedError;
 export const TopicFormsCreate401 = UnauthorizedError;
-export type TopicFormsCreate403 = ForbiddenError | FlagDisabledError;
-export const TopicFormsCreate403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type TopicFormsCreate403 = ForbiddenError;
+export const TopicFormsCreate403 = ForbiddenError;
 export type TopicFormsCreate404 = ResourceNotFoundError;
 export const TopicFormsCreate404 = ResourceNotFoundError;
 export type TopicFormsCreate422 = ValidationError;
@@ -266,9 +263,8 @@ export type TopicFormsGet200 = TopicForm;
 export const TopicFormsGet200 = TopicForm;
 export type TopicFormsGet401 = UnauthorizedError;
 export const TopicFormsGet401 = UnauthorizedError;
-export type TopicFormsGet403 = ForbiddenError | FlagDisabledError;
-export const TopicFormsGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type TopicFormsGet403 = ForbiddenError;
+export const TopicFormsGet403 = ForbiddenError;
 export type TopicFormsGet404 = ResourceNotFoundError;
 export const TopicFormsGet404 = ResourceNotFoundError;
 export type TopicFormsGet422 = ValidationError;
@@ -298,9 +294,8 @@ export const TopicFormsRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean }))();
 export type TopicFormsRemove401 = UnauthorizedError;
 export const TopicFormsRemove401 = UnauthorizedError;
-export type TopicFormsRemove403 = ForbiddenError | FlagDisabledError;
-export const TopicFormsRemove403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type TopicFormsRemove403 = ForbiddenError;
+export const TopicFormsRemove403 = ForbiddenError;
 export type TopicFormsRemove404 = ResourceNotFoundError;
 export const TopicFormsRemove404 = ResourceNotFoundError;
 export type TopicFormsRemove422 = ValidationError;
@@ -331,7 +326,7 @@ export type TopicFormsUpdateRequestJson = {
   readonly confirmationMessage?: string | null;
   readonly successTitle?: string | null;
   readonly successMessage?: string | null;
-  readonly redirectUrl?: string | null | null;
+  readonly redirectUrl?: string | null;
 };
 export const TopicFormsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -429,24 +424,21 @@ export const TopicFormsUpdateRequestJson = /* @__PURE__ */ (() =>
     ),
     redirectUrl: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
+        Schema.String.check(
+          Schema.isMaxCodePoints(2048).annotate({
+            expected: "a string with at most 2048 code points",
+          }),
+        )
+          .check(
+            Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+              expected: "a string matching the RegExp ^https:\\/\\/",
             }),
           )
-            .check(
-              Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
-                expected: "a string matching the RegExp ^https:\\/\\/",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(2048).annotate({
-                expected: "a value with a length of at most 2048",
-              }),
-            ),
-          Schema.Null,
-        ]),
+          .check(
+            Schema.isMaxLength(2048).annotate({
+              expected: "a value with a length of at most 2048",
+            }),
+          ),
         Schema.Null,
       ]),
     ),
@@ -455,9 +447,8 @@ export type TopicFormsUpdate200 = TopicForm;
 export const TopicFormsUpdate200 = TopicForm;
 export type TopicFormsUpdate401 = UnauthorizedError;
 export const TopicFormsUpdate401 = UnauthorizedError;
-export type TopicFormsUpdate403 = ForbiddenError | FlagDisabledError;
-export const TopicFormsUpdate403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type TopicFormsUpdate403 = ForbiddenError;
+export const TopicFormsUpdate403 = ForbiddenError;
 export type TopicFormsUpdate404 = ResourceNotFoundError;
 export const TopicFormsUpdate404 = ResourceNotFoundError;
 export type TopicFormsUpdate422 = ValidationError;
@@ -486,7 +477,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       .annotate(OpenApi.Summary, "List topic forms")
       .annotate(
         OpenApi.Description,
-        "Lists the signup forms belonging to the visible topic. Requires topicSignup. Forms contain exact HTTPS allowed origins, bounded confirmation and success copy, an optional HTTPS redirect, and a public key for hosted or embedded signup.",
+        "Lists the signup forms belonging to the visible topic. Forms contain exact HTTPS allowed origins, bounded confirmation and success copy, an optional HTTPS redirect, and a public key for hosted or embedded signup.",
       ),
     HttpApiEndpoint.post("topicFormsCreate", "/v1/topics/:id/forms", {
       params: TopicFormsCreatePathParams,
@@ -506,7 +497,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       .annotate(OpenApi.Summary, "Create a topic form")
       .annotate(
         OpenApi.Description,
-        "Creates a signup form for the visible topic and returns 201. The server generates its opaque public key. allowedOrigins contains exact HTTPS origins; the canonical web origin and current topic link origin are also accepted. Copy is plain text and redirectUrl is HTTPS or null. Requires topicSignup.",
+        "Creates a signup form for the visible topic and returns 201. The server generates its opaque public key. allowedOrigins contains exact HTTPS origins; the canonical web origin and current topic link origin are also accepted. Copy is plain text and redirectUrl is HTTPS or null.",
       ),
     HttpApiEndpoint.get("topicFormsGet", "/v1/topics/:id/forms/:formId", {
       params: TopicFormsGetPathParams,
@@ -525,7 +516,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       .annotate(OpenApi.Summary, "Get a topic form")
       .annotate(
         OpenApi.Description,
-        "Returns a signup form belonging to the visible topic, including its public key and current link origin. Forms outside the caller namespace or organization return 404. Requires topicSignup.",
+        "Returns a signup form belonging to the visible topic, including its public key and current link origin. Forms outside the caller namespace or organization return 404.",
       ),
     HttpApiEndpoint.delete("topicFormsRemove", "/v1/topics/:id/forms/:formId", {
       params: TopicFormsRemovePathParams,
@@ -544,7 +535,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       .annotate(OpenApi.Summary, "Delete a topic form")
       .annotate(
         OpenApi.Description,
-        "Deletes a form belonging to the visible topic. Its public key immediately stops accepting signups. Existing email confirmation links keep their snapshotted copy and remain valid until expiry. Requires topicSignup.",
+        "Deletes a form belonging to the visible topic. Its public key immediately stops accepting signups. Existing email confirmation links keep their snapshotted copy and remain valid until expiry.",
       ),
     HttpApiEndpoint.patch("topicFormsUpdate", "/v1/topics/:id/forms/:formId", {
       params: TopicFormsUpdatePathParams,
@@ -564,7 +555,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       .annotate(OpenApi.Summary, "Update a topic form")
       .annotate(
         OpenApi.Description,
-        "Updates only the supplied form fields. allowedOrigins replaces the complete exact-origin allowlist; redirectUrl null clears the success redirect. The public key remains stable. Requires topicSignup.",
+        "Updates only the supplied form fields. allowedOrigins replaces the complete exact-origin allowlist; redirectUrl null clears the success redirect. The public key remains stable.",
       ),
   )
   .annotate(OpenApi.Description, "Hosted and embedded double opt-in signup forms for topics") {}

@@ -16,7 +16,7 @@ The root entrypoint is Promise-based:
 import { createClient } from "samva";
 ```
 
-The same Promise SDK is also available at `samva/promises`. Native Effect users import domain modules such as `samva/effect/email` and provide `samva/effect/client`. Both clients are generated from Samva's public OpenAPI document, while the Effect runtime does not wrap or execute the Promise client. Effect is an optional peer dependency, so Promise-only applications do not install or load it.
+The same Promise SDK is also available at `samva/promises`. Native Effect users import domain modules such as `samva/effect/email` and provide `samva/effect/client`. Both clients are generated from Samva's public OpenAPI document, while the Effect runtime does not wrap or execute the Promise samva. Effect is an optional peer dependency, so Promise-only applications do not install or load it.
 
 ## Installation
 
@@ -33,31 +33,29 @@ yarn add samva
 ```typescript
 import { createClient } from "samva";
 
-const client = createClient({
+const samva = createClient({
   baseUrl: "https://api.samva.dev",
-  apiKey: "<samva-api-key>",
+  apiKey: process.env.SAMVA_API_KEY!,
 });
 
-const { contact } = await client.contacts.findOrCreate({
+const { contact } = await samva.contacts.findOrCreate({
   lookup: { type: "email", value: "ada@example.com" },
   create: { name: "Ada Lovelace" },
 });
 
-const message = await client.messages.send({
+const message = await samva.email.send({
   to: [contact],
-  channel: "email",
-  email: {
-    subject: "Hello",
-    html: "<p>Hello World</p>",
-    text: "Hello World",
-  },
+  subject: "Hello",
+  html: "<p>Hello World</p>",
+  text: "Hello World",
   metadata: {
     externalUserId: "user_123",
   },
 });
 
-const messages = await client.messages.list({ limit: 20 });
-// Pass `messages.nextCursor` back as `cursor` for the next page; it is null on the last page.
+for await (const message of samva.messages.list.items({ limit: 20 })) {
+  console.log(message.id);
+}
 ```
 
 Creation fails with `ConflictError` (HTTP 409) when an external ID or address belongs to another
@@ -68,7 +66,7 @@ contact. The error names the conflicting field and the creation is rolled back.
 Install `effect` next to `samva` when using the Effect entrypoint:
 
 ```bash
-bun add samva effect@4.0.5
+bun add samva effect@4.0.6
 ```
 
 ```typescript
@@ -80,7 +78,7 @@ const program = Email.send({
   to: "ada@example.com",
   subject: "Welcome",
   html: "<h1>Welcome to Samva</h1>",
-}).pipe(Effect.provide(Client.layerFetch({ apiKey: "<samva-api-key>" })));
+}).pipe(Effect.provide(Client.layerFetch({ apiKey: process.env.SAMVA_API_KEY! })));
 
 const message = await Effect.runPromise(program);
 ```
@@ -137,8 +135,10 @@ Samva supports two client auth modes. Use one per `createClient` instance.
 ### API key (automation, CI, single org)
 
 ```typescript
-const client = createClient({
-  apiKey: "samva_sk_live_...",
+import { createClient } from "samva";
+
+const samva = createClient({
+  apiKey: process.env.SAMVA_API_KEY!,
   baseUrl: "https://api.samva.dev",
 });
 ```
@@ -149,16 +149,18 @@ const client = createClient({
 ### OAuth bearer (interactive, multi-org)
 
 ```typescript
-const client = createClient({
-  authToken: sessionAccessToken,
+import { createClient } from "samva";
+
+const samva = createClient({
+  authToken: process.env.SAMVA_AUTH_TOKEN!,
   baseUrl: "https://api.samva.dev",
-  headers: { "x-org-slug": "your-org-slug" },
+  orgSlug: "your-org-slug",
 });
 ```
 
 - Requests use `Authorization: Bearer <authToken>`.
 - The token is user-scoped; send the target organization slug on every request via the `x-org-slug` header.
-- There is no SDK `orgSlug` helper — pass the header directly.
+- `orgSlug` pairs with `authToken`; API keys already select their organization.
 
 For terminal workflows (`samva login`, `samva org use`, `samva email send --dry-run`), see [`@samva/cli`](https://www.npmjs.com/package/@samva/cli).
 
@@ -173,13 +175,14 @@ Author a template as TSX with `samva templates init`, then publish an exact comm
 A published template is addressed by its slug, which is the `id` in its `defineTemplate`:
 
 ```typescript
-await client.messages.send({
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+await samva.email.send({
   to: [{ email: "ada@example.com" }],
-  channel: "email",
-  email: {
-    templateSlug: "order-shipped",
-    templateData: { name: "Ada", orderId: "A-1042" },
-  },
+  templateSlug: "order-shipped",
+  templateData: { name: "Ada", orderId: "A-1042" },
 });
 ```
 
@@ -201,49 +204,28 @@ The Promise client exposes:
 - `conversations`
 - `customFields`
 - `email`
+- `events`
 - `extensionInstallations`
 - `extensions`
 - `feedback`
+- `journeys`
 - `mailboxes`
 - `media`
 - `messages`
 - `namespaces`
 - `operations`
 - `organizations`
+- `raw`
 - `scheduledMessages`
+- `subscriptions`
 - `templates`
-- `topics`
 - `topicForms`
+- `newsletters` (Preview), including `newsletters.issues` and `newsletters.domains`
+- `topics`
 - `webhooks`
 - `whoami`
 
-The Effect SDK exposes Pascal-cased domain modules with lower-camel operations:
-
-- `Agents`
-- `Analytics`
-- `ApiKeys`
-- `Attachments`
-- `Brands`
-- `Campaigns`
-- `ContactGroups`
-- `Contacts`
-- `Conversations`
-- `CustomFields`
-- `Email`
-- `ExtensionInstallations`
-- `Extensions`
-- `Feedback`
-- `Mailboxes`
-- `Media`
-- `Messages`
-- `Namespaces`
-- `Operations`
-- `Organizations`
-- `ScheduledMessages`
-- `Templates`
-- `Topics`
-- `Webhooks`
-- `Whoami`
+The Effect SDK exposes Pascal-cased domain modules; see the [namespace reference](https://samva.dev/docs/developers/typescript-sdk#namespaces) for their import paths.
 
 Effect operations take direct parameter objects: body, path, and query fields are not wrapped in `payload` or `params` envelopes. Import the modules you use from `samva/effect/<lower-kebab>` and provide `Client.layerFetch` once at the program boundary.
 
@@ -271,15 +253,17 @@ error with `Effect.catchTag` does not require importing its constructor.
 
 ### Default-on retry
 
-The Effect client retries safe operations out of the box, so you do not wrap calls in `Effect.retry`:
+Both clients retry safe operations by default:
 
-- **What retries** — read operations (`GET`/`HEAD`) and sends. Sends are safe because the client attaches an `Idempotency-Key` (below), so the server deduplicates a replayed attempt. Every other mutating operation (`create`, `update`, `remove`, …) is keyless and is never auto-retried.
+- **What retries** — reads (`GET`/`HEAD`) and requests covered by `x-idempotent` in the OpenAPI document and its optional `x-idempotent-when` condition. Both clients attach one key per logical call and reuse it across retries. Other mutations never retry.
 - **When** — only for `isRetryable` failures: throttling (`429`), transient server errors (including a transient `BillingProviderError`), and request-transport failures. `ValidationError`, `ConflictError`, `NotFound`, auth, and billing-limit `PaymentRequiredError` failures never retry.
 - **How** — jittered exponential backoff, bounded to four attempts total. A `429` honors the server's `retryAfterSeconds` hint (capped at 60s) in place of the computed delay.
 
+`contacts.startImport` retries only `mode: "new"`. Resumes use a generation fence and never retry automatically, even with an explicit key. After an ambiguous resume response, read `contacts.getImportJob` before deciding what to do next.
+
 Retry policy is read from context via the `Retry.Service` service. When it is absent, the default applies, so no operation gains a requirement. Override it with a Layer:
 
-```typescript
+```typescript sdk-typecheck-skip="Retry configuration fragment applies to the program from the Effect quick start"
 import { Effect } from "effect";
 import { isRetryable } from "samva/effect/categories";
 import * as Retry from "samva/effect/retry";
@@ -293,15 +277,32 @@ program.pipe(Effect.provide(Retry.layer({ times: 6, while: isRetryable })));
 
 ### Idempotency keys
 
-Each `messages.send` / `email.send` call generates an `Idempotency-Key` per logical call — stable across the built-in retries, distinct across calls — so a retried send never delivers twice. Pass an explicit key for cross-process deduplication (safe to replay the same request from a different machine):
+Each idempotent operation generates an `Idempotency-Key` per logical call — stable across the built-in retries, distinct across calls — so a retried send never delivers twice. Pass an explicit key for cross-process deduplication (safe to replay the same request from a different machine):
 
 ```typescript
-const send = Email.send(input, { idempotencyKey: "order-4417-receipt" });
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+await samva.email.send(
+  {
+    to: "ada@example.com",
+    subject: "Your receipt",
+    html: "<p>Thanks for your order.</p>",
+  },
+  { idempotencyKey: "order-4417-receipt" },
+);
 ```
 
-Reusing a key with identical content replays the original response; reusing it with different content fails with `ConflictError`.
+For sends, reusing a key with identical content replays the original response; different content fails with `ConflictError`. Other operations retain their documented replay and conflict behavior. The only override is `{ idempotencyKey }` in the second options argument; it is never part of params or request headers.
 
-### Stream pagination
+The Promise client accepts `maxRetries` in `createClient` and per-call options (zero disables retries). A client-level `idempotency: (operation) => key` hook supplies stable keys when needed; explicit options take precedence.
+
+### Pagination
+
+Promise lists expose lazy async iterators: `samva.contacts.list.pages(params)` yields page envelopes and `.items(params)` yields individual items. Both preserve filters and fetch the next cursor only when consumed.
+
+Effect pagination uses Streams:
 
 Every list answers `{ items, nextCursor }`: pass `nextCursor` back as `cursor` for the next page, and stop when it is null. Every list operation that pages carries two `Stream` companions, so you traverse pages without hand-rolling a cursor loop:
 
@@ -309,20 +310,22 @@ Every list answers `{ items, nextCursor }`: pass `nextCursor` back as `cursor` f
 - **`list.pages(input?)`** — a `Stream` of raw page envelopes.
 
 ```typescript
-import { Stream } from "effect";
+import { Effect, Stream } from "effect";
+import * as Client from "samva/effect/client";
 import * as Contacts from "samva/effect/contacts";
 
-// Every contact, one page fetched at a time:
-const allContacts = Stream.runCollect(Contacts.list.items());
+const program = Contacts.list
+  .items({ limit: 100, after: "2026-01-01T00:00:00Z" })
+  .pipe(
+    Stream.take(50),
+    Stream.runCollect,
+    Effect.provide(Client.layerFetch({ apiKey: process.env.SAMVA_API_KEY! })),
+  );
 
-// Bounded consumption is lazy — this fetches only as many pages as it needs:
-const firstFifty = Stream.runCollect(Contacts.list.items().pipe(Stream.take(50)));
-
-// Caller params (start cursor, limit, filters) are respected:
-const recent = Contacts.list.items({ limit: 100, after: "2026-01-01T00:00:00Z" });
+const contacts = await Effect.runPromise(program);
 ```
 
-The companions are attached uniformly to every paginated list, including `Messages.list`, `Contacts.list`, `Campaigns.list`, `Email.listDomains`, and `Webhooks.list`. Each page fetch reuses the ambient `Retry` policy. Reads retry per page; pagination does not nest retries. Pass `limit` as a number; both clients serialize it as a query string. A list bounded by design, such as `CustomFields.list`, answers `{ items }` in one response and carries no companions. Stream pagination is Effect-only.
+The companions are attached uniformly to every paginated list, including `Messages.list`, `Contacts.list`, `Campaigns.list`, `Email.listDomains`, and `Webhooks.list`. Each page fetch reuses the ambient `Retry` policy. Reads retry per page; pagination does not nest retries. Pass `limit` as a number; both clients serialize it as a query string. A list bounded by design, such as `CustomFields.list`, answers `{ items }` in one response and carries no companions. Promise pagination uses async iterators; Effect pagination uses Streams.
 
 ### Redacted secrets
 
@@ -349,33 +352,35 @@ The wire body and the Promise client keep plain strings; only the Effect surface
 
 The published `openapi.json` carries machine-readable semantics on top of the standard schema, derived from the same contract annotations the Effect SDK uses (no second taxonomy):
 
-| Extension      | Where             | Meaning                                                                                           |
-| -------------- | ----------------- | ------------------------------------------------------------------------------------------------- |
-| `x-category`   | error schemas     | The error's semantic categories (e.g. `["throttling", "transient"]`). Omitted when uncategorized. |
-| `x-retryable`  | error schemas     | `true` when the error is safe to retry.                                                           |
-| `x-idempotent` | operations        | `true` when the operation accepts an `Idempotency-Key` header.                                    |
-| `x-sensitive`  | schema properties | `true` for secret-bearing fields (plain `string` on the wire; `Redacted` in the Effect SDK).      |
+| Extension           | Where             | Meaning                                                                                           |
+| ------------------- | ----------------- | ------------------------------------------------------------------------------------------------- |
+| `x-category`        | error schemas     | The error's semantic categories (e.g. `["throttling", "transient"]`). Omitted when uncategorized. |
+| `x-retryable`       | error schemas     | `true` when the error is safe to retry.                                                           |
+| `x-idempotent`      | operations        | `true` when the operation accepts an `Idempotency-Key` header.                                    |
+| `x-idempotent-when` | operations        | Optional `{ field, equals }` condition on the request body that limits idempotent replay.         |
+| `x-sensitive`       | schema properties | `true` for secret-bearing fields (plain `string` on the wire; `Redacted` in the Effect SDK).      |
 
 These let MCP and third-party consumers read retry/idempotency/secret semantics straight from the spec.
 
 ## Usage Examples
 
-### Send Email Through Unified Messages
+### Send Email
 
 ```typescript
-const { contact } = await client.contacts.findOrCreate({
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const { contact } = await samva.contacts.findOrCreate({
   lookup: { type: "email", value: "ada@example.com" },
   create: { name: "Ada Lovelace" },
 });
 
-const response = await client.messages.send({
+const response = await samva.email.send({
   to: [contact],
-  channel: "email",
-  email: {
-    subject: "Welcome",
-    html: "<h1>Welcome to Samva</h1>",
-    text: "Welcome to Samva",
-  },
+  subject: "Welcome",
+  html: "<h1>Welcome to Samva</h1>",
+  text: "Welcome to Samva",
   metadata: {
     campaign: "welcome",
   },
@@ -385,21 +390,27 @@ const response = await client.messages.send({
 ### Native Effect Send Email
 
 ```typescript
+import { Effect } from "effect";
+import * as Client from "samva/effect/client";
 import * as Email from "samva/effect/email";
 
-const message =
-  yield *
-  Email.send({
-    to: "ada@example.com",
-    subject: "Welcome",
-    html: "<h1>Welcome to Samva</h1>",
-  });
+const program = Email.send({
+  to: "ada@example.com",
+  subject: "Welcome",
+  html: "<h1>Welcome to Samva</h1>",
+}).pipe(Effect.provide(Client.layerFetch({ apiKey: process.env.SAMVA_API_KEY! })));
+
+const message = await Effect.runPromise(program);
 ```
 
 ### List Conversations
 
 ```typescript
-const response = await client.conversations.list({
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const response = await samva.conversations.list({
   limit: 20,
   status: "active",
 });
@@ -408,7 +419,11 @@ const response = await client.conversations.list({
 ### Schedule a Message
 
 ```typescript
-const scheduled = await client.scheduledMessages.create({
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const scheduled = await samva.scheduledMessages.create({
   send: {
     to: [{ email: "ada@example.com" }],
     channel: "email",
@@ -418,13 +433,17 @@ const scheduled = await client.scheduledMessages.create({
 });
 
 // Later, cancel it before it dispatches
-await client.scheduledMessages.cancel({ id: scheduled.id });
+await samva.scheduledMessages.cancel({ id: scheduled.id });
 ```
 
 ### Create and Run a Campaign
 
 ```typescript
-const campaign = await client.campaigns.create({
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const campaign = await samva.campaigns.create({
   name: "August newsletter",
   channel: "email",
   content: {
@@ -438,12 +457,12 @@ const campaign = await client.campaigns.create({
   },
 });
 
-const run = await client.campaigns.scheduleRun({
+const run = await samva.campaigns.scheduleRun({
   id: campaign.id,
   scheduledFor: "2026-08-01T09:00:00Z",
 });
 
-const recipients = await client.campaigns.listRecipients({
+const recipients = await samva.campaigns.listRecipients({
   id: campaign.id,
   runId: run.id,
 });
@@ -455,15 +474,21 @@ Mailbox send, reply, forward, and draft send return action receipts. A successfu
 pending work; it is not a sent confirmation. Read `receipt.state` and preserve `receipt.actionId`:
 
 ```typescript
-const receipt = await client.mailboxes.sendMessage({
-  id: "mbx_...",
-  to: ["ada@example.com"],
-  subject: "Hello",
-  text: "Hello from Samva",
-  "idempotency-key": "support-message-123",
-});
+import { createClient } from "samva";
 
-const action = await client.mailboxes.getAction({ id: "mbx_...", actionId: receipt.actionId });
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const receipt = await samva.mailboxes.sendMessage(
+  {
+    id: "mbx_...",
+    to: ["ada@example.com"],
+    subject: "Hello",
+    text: "Hello from Samva",
+  },
+  { idempotencyKey: "support-message-123" },
+);
+
+const action = await samva.mailboxes.getAction({ id: "mbx_...", actionId: receipt.actionId });
 if (action.type === "sendMessage" || action.type === "reply") {
   console.log(action.state, action.send.messageId);
 }
@@ -501,8 +526,8 @@ is closed by the client, and its error carries `reason: "idleTimeout"` instead o
 It needs a runtime whose `WebSocket` accepts request headers, such as Node or Bun, or one passed
 as the `WebSocket` option.
 
-```typescript
-const events = client.mailboxes.events({ cursor: savedCursor, mailboxIds: ["mbx_..."] });
+```typescript sdk-typecheck-skip="Event loop fragment uses the application cursor store and event handler"
+const events = samva.mailboxes.events({ cursor: savedCursor, mailboxIds: ["mbx_..."] });
 for await (const event of events) {
   await handle(event.type, event.data);
   await saveCursor(event.cursor);
@@ -515,8 +540,10 @@ With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that f
 ### Custom Headers
 
 ```typescript
-const client = createClient({
-  apiKey: "<samva-api-key>",
+import { createClient } from "samva";
+
+const samva = createClient({
+  apiKey: process.env.SAMVA_API_KEY!,
   headers: {
     "X-Custom-Header": "value",
   },
@@ -526,10 +553,12 @@ const client = createClient({
 ### Error Handling
 
 ```typescript
-import { RateLimitedError, SamvaApiError, SamvaTransportError } from "samva";
+import { createClient, RateLimitedError, SamvaApiError, SamvaTransportError } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
 try {
-  const message = await client.email.send({
+  const message = await samva.email.send({
     to: "ada@example.com",
     subject: "Test",
     html: "<p>Test</p>",
@@ -555,18 +584,16 @@ subclass for failures declared by OpenAPI. Network and malformed-response failur
 ### Raw response access
 
 ```typescript
-const result = await client.raw.messages.send({
-  body: {
-    to: [{ contactId: "contact-id" }],
-    channel: "email",
-    email: { subject: "Hello", text: "Hello" },
-  },
-});
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const result = await samva.raw.messages.get({ id: "msg_7q2xk9mvt4znw8rh" });
 
 if (result.error) console.error(result.response?.status, result.error);
 ```
 
-Use `client.raw` only when you need the generated `{ data, error, request, response }` envelope or
+Use `samva.raw` only when you need the generated `{ data, error, request, response }` envelope or
 transport-level request options.
 
 ## Type Safety
@@ -574,18 +601,24 @@ transport-level request options.
 All request and response types are generated from OpenAPI schemas:
 
 ```typescript
-import type { MessagesSendData } from "samva";
+import { createClient } from "samva";
 
-const requestData: MessagesSendData = {
-  body: {
-    to: [{ contactId: "contact-id" }],
-    channel: "email",
-    email: {
-      subject: "Hello",
-      html: "<p>Hello World</p>",
-    },
-  },
-};
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
-const response = await client.messages.send(requestData.body);
+type EmailInput = Parameters<typeof samva.email.send>[0];
+
+const input = {
+  to: "ada@example.com",
+  subject: "Hello",
+  html: "<p>Hello World</p>",
+} satisfies EmailInput;
+
+const response = await samva.email.send(input);
 ```
+
+## Mailbox extensions
+
+Import `defineExtension` from `samva/mailbox`, test helpers from `samva/mailbox/test`, and
+`createWebhookHandler` from `samva/mailbox/webhook`. Handlers receive a normal Samva client:
+`ctx.samva.mailboxes.reply({ id, messageId, text })`. Event dispatch supplies deterministic
+idempotency keys through the client hook, preserving the send order across retried events.

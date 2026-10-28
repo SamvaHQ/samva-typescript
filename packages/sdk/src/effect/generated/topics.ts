@@ -121,8 +121,6 @@ export type Topic = {
   readonly defaultSenderId: EmailSenderId | null;
   readonly replyMailboxId: MailboxId | null;
   readonly templateId: TemplateId | null;
-  readonly archiveEnabled: boolean;
-  readonly publicationSlug: string | null;
   readonly subscriptions: TopicSubscriptionCounts;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -138,15 +136,6 @@ export const Topic = /* @__PURE__ */ (() =>
     defaultSenderId: Schema.Union([EmailSenderId, Schema.Null]),
     replyMailboxId: Schema.Union([MailboxId, Schema.Null]),
     templateId: Schema.Union([TemplateId, Schema.Null]),
-    archiveEnabled: Schema.Boolean,
-    publicationSlug: Schema.Union([
-      Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
-        }),
-      ),
-      Schema.Null,
-    ]),
     subscriptions: TopicSubscriptionCounts,
     createdAt: Schema.String,
     updatedAt: Schema.String,
@@ -184,55 +173,29 @@ export type TopicsList504 = GatewayTimeoutError;
 export const TopicsList504 = GatewayTimeoutError;
 export type TopicsCreateRequestJson = {
   readonly name: string;
-  readonly description?: string | null | null;
-  readonly namespaceId?: NamespaceId | null | null;
+  readonly description?: string | null;
+  readonly namespaceId?: NamespaceId | null;
   readonly default?: "opt_out" | "opt_in" | null;
-  readonly archiveEnabled?: boolean | null;
-  readonly publicationSlug?: string | null | null;
-  readonly defaultSenderId?: EmailSenderId | null | null;
-  readonly replyMailboxId?: MailboxId | null | null;
-  readonly templateId?: TemplateId | null | null;
+  readonly defaultSenderId?: EmailSenderId | null;
+  readonly replyMailboxId?: MailboxId | null;
+  readonly templateId?: TemplateId | null;
 };
 export const TopicsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     ),
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
-    namespaceId: Schema.optionalKey(
-      Schema.Union([Schema.Union([NamespaceId, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     default: Schema.optionalKey(
       Schema.Union([
         Schema.Union([Schema.Literal("opt_out"), Schema.Literal("opt_in")]),
         Schema.Null,
       ]),
     ),
-    archiveEnabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    publicationSlug: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([
-          Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
-            }),
-          ),
-          Schema.Null,
-        ]),
-        Schema.Null,
-      ]),
-    ),
-    defaultSenderId: Schema.optionalKey(
-      Schema.Union([Schema.Union([EmailSenderId, Schema.Null]), Schema.Null]),
-    ),
-    replyMailboxId: Schema.optionalKey(
-      Schema.Union([Schema.Union([MailboxId, Schema.Null]), Schema.Null]),
-    ),
-    templateId: Schema.optionalKey(
-      Schema.Union([Schema.Union([TemplateId, Schema.Null]), Schema.Null]),
-    ),
+    defaultSenderId: Schema.optionalKey(Schema.Union([EmailSenderId, Schema.Null])),
+    replyMailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Null])),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
   }))();
 export type TopicsCreate201 = Topic;
 export const TopicsCreate201 = Topic;
@@ -288,13 +251,11 @@ export type TopicsUpdatePathParams = { readonly id: TopicId };
 export const TopicsUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
 export type TopicsUpdateRequestJson = {
   readonly name?: string | null;
-  readonly description?: string | null | null;
+  readonly description?: string | null;
   readonly default?: "opt_out" | "opt_in" | null;
-  readonly archiveEnabled?: boolean | null;
-  readonly publicationSlug?: string | null | null;
-  readonly defaultSenderId?: EmailSenderId | null | null;
-  readonly replyMailboxId?: MailboxId | null | null;
-  readonly templateId?: TemplateId | null | null;
+  readonly defaultSenderId?: EmailSenderId | null;
+  readonly replyMailboxId?: MailboxId | null;
+  readonly templateId?: TemplateId | null;
 };
 export const TopicsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -306,38 +267,16 @@ export const TopicsUpdateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    description: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-    ),
+    description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     default: Schema.optionalKey(
       Schema.Union([
         Schema.Union([Schema.Literal("opt_out"), Schema.Literal("opt_in")]),
         Schema.Null,
       ]),
     ),
-    archiveEnabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    publicationSlug: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([
-          Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u")).annotate({
-              expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
-            }),
-          ),
-          Schema.Null,
-        ]),
-        Schema.Null,
-      ]),
-    ),
-    defaultSenderId: Schema.optionalKey(
-      Schema.Union([Schema.Union([EmailSenderId, Schema.Null]), Schema.Null]),
-    ),
-    replyMailboxId: Schema.optionalKey(
-      Schema.Union([Schema.Union([MailboxId, Schema.Null]), Schema.Null]),
-    ),
-    templateId: Schema.optionalKey(
-      Schema.Union([Schema.Union([TemplateId, Schema.Null]), Schema.Null]),
-    ),
+    defaultSenderId: Schema.optionalKey(Schema.Union([EmailSenderId, Schema.Null])),
+    replyMailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Null])),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
   }))();
 export type TopicsUpdate200 = Topic;
 export const TopicsUpdate200 = Topic;
@@ -541,7 +480,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       .annotate(OpenApi.Summary, "Create a topic")
       .annotate(
         OpenApi.Description,
-        "Creates a topic in the caller's or requested namespace. The subscription default is opt_out when omitted. Publishing defaults must be compatible with that namespace. An organization holds at most 200 topics.",
+        "Creates a topic in the caller's or requested namespace. The subscription default is opt_out when omitted. Sending defaults must be compatible with that namespace. An organization holds at most 200 topics.",
       ),
     HttpApiEndpoint.get("topicsGet", "/v1/topics/:id", {
       params: TopicsGetPathParams,
@@ -560,7 +499,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       .annotate(OpenApi.Summary, "Get a topic")
       .annotate(
         OpenApi.Description,
-        "Returns a visible topic, its publishing defaults, and explicit subscription counts by channel and status. Individual subscriptions are read through listSubscriptions.",
+        "Returns a visible topic, its sending defaults, and explicit subscription counts by channel and status. Individual subscriptions are read through listSubscriptions.",
       ),
     HttpApiEndpoint.delete("topicsRemove", "/v1/topics/:id", {
       params: TopicsRemovePathParams,
@@ -601,7 +540,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       .annotate(OpenApi.Summary, "Update a topic")
       .annotate(
         OpenApi.Description,
-        "Updates named fields. Changing the default does not change any explicit subscription status. Null clears a publishing default.",
+        "Updates named fields. Changing the default does not change any explicit subscription status. Null clears a sending default.",
       ),
     HttpApiEndpoint.post("topicsSetDefault", "/v1/topics/:id/default", {
       params: TopicsSetDefaultPathParams,

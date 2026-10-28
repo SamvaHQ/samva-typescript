@@ -1,3 +1,55 @@
+## samva@0.30.0
+
+### One Idempotency Option Across the SDK
+
+**Breaking:** Pass idempotency keys in the second options argument as `{ idempotencyKey }`.
+Raw HTTP callers send `Idempotency-Key`; body and query spellings are removed. Both clients
+supply a fresh key for every idempotent operation and reuse it across automatic retries.
+
+The Promise client retries reads and idempotent mutations, accepts client-level and per-call
+`maxRetries`, and adds lazy `.pages()` and `.items()` async iterators to cursor lists.
+OAuth clients can select an organization with `orgSlug`.
+
+**Breaking:** Import mailbox extension helpers from `samva/mailbox`, `samva/mailbox/test`, and
+`samva/mailbox/webhook`. Handlers receive the normal client and call
+`ctx.samva.mailboxes.reply({ id, messageId, text })`. Event dispatch preserves deterministic
+send keys. The CLI extension scaffold uses these imports and flat calls.
+
+For `samva events send`, pass `--idempotency-key` instead of embedding a key in `--data`.
+
+### Agent definitions hold integration grants
+
+`AgentDefinition.integrationIds` is replaced by `integrations`, a list of grants. Each grant names
+the integration, the tools the agent may use (`all`, `readOnly`, or `selected` with `names`), and
+the tools that always wait for a person (`requireApproval`). Replace each id in `integrationIds`
+with `{ integrationId, tools: { kind: "all" }, requireApproval: [] }`.
+
+Publishing an agent now fails with a validation error on `definition.integrations` when a grant
+names an integration the organization has not installed or a tool its app does not have.
+
+### Newsletters own issue publishing
+
+Use `newsletters` for newsletter management, `newsletters.issues` for issue authoring, and
+`newsletters.domains` for custom domains on the Promise client. Effect callers import
+`samva/effect/newsletters`, `samva/effect/newsletter-issues`, and `samva/effect/newsletter-domains`.
+
+The API uses `/v1/newsletters/:id/issues/*` and `/v1/newsletters/:id/domains/*`; CLI commands use
+`samva newsletters`. Topic issue routes, SDK namespaces, MCP `issues_*` tools, and topic archive
+fields are removed. Newsletter mutations accept one optional `Idempotency-Key` header. Consent,
+subscriptions, sending defaults, and campaign audiences continue to use `topicId`.
+
+Discover archive domains with `newsletters.domains.list` or `samva newsletters domains list`.
+The hostname-ordered response includes verification snapshots and an opaque `nextCursor`.
+
+### Accept Effect 4.0.x
+
+`samva` and `@samva/webhooks` accept `effect@^4.0.4` as their optional peer. Install 4.0.6, or any
+later 4.0.x, next to those packages when using the Effect entrypoints.
+
+### Issue frontmatter carries an optional date
+
+The `frontmatter` that `topicIssues.check` and `topicIssues.render` return includes an optional `date` (`YYYY-MM-DD`), the value a layout's `<IssueDate />` prints.
+
 ## samva@0.29.1
 
 ### Use Effect 4.0.5 with the SDK and webhook adapter

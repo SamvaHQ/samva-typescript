@@ -877,9 +877,9 @@ export type WebhooksUpdateRequestJson = {
     | "mailbox.message.failed"
     | "journey.webhook"
   > | null;
-  readonly channels?: ReadonlyArray<"email"> | null | null;
-  readonly mailboxIds?: readonly [MailboxId, ...Array<MailboxId>] | null | null;
-  readonly namespaceId?: NamespaceId | null | null;
+  readonly channels?: ReadonlyArray<"email"> | null;
+  readonly mailboxIds?: readonly [MailboxId, ...Array<MailboxId>] | null;
+  readonly namespaceId?: NamespaceId | null;
   readonly headers?: { readonly [x: string]: string } | null;
   readonly status?: "active" | "disabled" | null;
 };
@@ -954,24 +954,16 @@ export const WebhooksUpdateRequestJson = /* @__PURE__ */ (() =>
     ),
     channels: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Array(Schema.Literal("email")).check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          ),
-          Schema.Null,
-        ]),
+        Schema.Array(Schema.Literal("email")).check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
         Schema.Null,
       ]),
     ),
     mailboxIds: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.TupleWithRest(Schema.Tuple([MailboxId]), [MailboxId]), Schema.Null]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.TupleWithRest(Schema.Tuple([MailboxId]), [MailboxId]), Schema.Null]),
     ),
-    namespaceId: Schema.optionalKey(
-      Schema.Union([Schema.Union([NamespaceId, Schema.Null]), Schema.Null]),
-    ),
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     headers: Schema.optionalKey(
       Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
     ),

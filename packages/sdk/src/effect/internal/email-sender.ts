@@ -3,7 +3,7 @@ import { Effect } from "effect";
 import { replyToEmailsPayload } from "../../normalize";
 import { EmailGroup } from "../generated/email";
 import { generateIdempotencyKey, withRetry } from "../retry";
-import type { FlatRaw, Service } from "./client";
+import { type FlatRaw, Service } from "./client";
 import { callEndpoint, type OperationResult, type RequestArg, stripUndefined } from "./operation";
 import type { ErgonomicEmailList, SendOptions } from "./send";
 
@@ -18,7 +18,11 @@ export const addEmailSender = Effect.fn("Email.addSender")(function* (
   input: EmailAddSenderInput,
   options?: SendOptions,
 ) {
-  const idempotencyKey = options?.idempotencyKey ?? (yield* generateIdempotencyKey);
+  const client = yield* Service;
+  const idempotencyKey =
+    options?.idempotencyKey ??
+    client.idempotency?.("emailAddSender") ??
+    (yield* generateIdempotencyKey);
   const { replyToEmails, ...sender } = input;
   return yield* withRetry(
     callEndpoint(EmailGroup, "emailAddSender", {

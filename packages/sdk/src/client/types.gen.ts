@@ -869,13 +869,13 @@ export type MailboxDraftState = "saved" | "locked" | "sent";
 
 export type UpdateMailboxDraftPayload = {
   to?: Array<string> | null | undefined;
-  cc?: Array<string> | null | null | undefined;
-  bcc?: Array<string> | null | null | undefined;
-  replyTo?: Array<string> | null | null | undefined;
-  subject?: string | null | null | undefined;
-  text?: string | null | null | undefined;
-  html?: string | null | null | undefined;
-  attachments?: Array<EmailAttachment> | null | null | undefined;
+  cc?: Array<string> | null | undefined;
+  bcc?: Array<string> | null | undefined;
+  replyTo?: Array<string> | null | undefined;
+  subject?: string | null | undefined;
+  text?: string | null | undefined;
+  html?: string | null | undefined;
+  attachments?: Array<EmailAttachment> | null | undefined;
 };
 
 export type CreateMailboxDraftPayload = {
@@ -1088,13 +1088,13 @@ export type MailboxNote = {
 
 export type UpdateMailboxNotePayload = {
   body?: string | null | undefined;
-  color?: string | null | null | undefined;
+  color?: string | null | undefined;
   pinned?: boolean | null | undefined;
 };
 
 export type CreateMailboxNotePayload = {
   body: string;
-  color?: string | null | null | undefined;
+  color?: string | null | undefined;
   pinned?: boolean | null | undefined;
 };
 
@@ -1157,7 +1157,7 @@ export type UpdateMailboxThreadPayload = {
   priority?: MailboxThreadPriority | null | undefined;
   read?: boolean | null | undefined;
   starred?: boolean | null | undefined;
-  snoozedUntil?: string | null | null | undefined;
+  snoozedUntil?: string | null | undefined;
 };
 
 export type MailboxThread = {
@@ -1232,31 +1232,13 @@ export type MailboxLabel = {
 
 export type UpdateMailboxLabelPayload = {
   displayName?: string | null | undefined;
-  color?:
-    | "billing"
-    | "domain"
-    | "agent"
-    | "routing"
-    | "important"
-    | "neutral"
-    | null
-    | null
-    | undefined;
+  color?: "billing" | "domain" | "agent" | "routing" | "important" | "neutral" | null | undefined;
 };
 
 export type CreateMailboxLabelPayload = {
   slug: string;
   displayName: string;
-  color?:
-    | "billing"
-    | "domain"
-    | "agent"
-    | "routing"
-    | "important"
-    | "neutral"
-    | null
-    | null
-    | undefined;
+  color?: "billing" | "domain" | "agent" | "routing" | "important" | "neutral" | null | undefined;
 };
 
 export type MailboxLabelList = {
@@ -1288,7 +1270,7 @@ export type MailboxPolicyOutcomeKind = "requireApproval" | "deny";
 export type UpdateMailboxPolicyPayload = {
   name?: string | null | undefined;
   outcome?: MailboxPolicyOutcomeKind | null | undefined;
-  reason?: string | null | null | undefined;
+  reason?: string | null | undefined;
   enabled?: boolean | null | undefined;
 };
 
@@ -1445,7 +1427,7 @@ export type MailboxMetadataWritable = {
 export type MailboxStatus = "active" | "paused";
 
 export type UpdateMailboxEndpointPayload = {
-  displayName?: string | null | null | undefined;
+  displayName?: string | null | undefined;
   default?: true | null | undefined;
 };
 
@@ -1905,9 +1887,9 @@ export type UpdateWebhookPayload = {
       >
     | null
     | undefined;
-  channels?: Array<"email"> | null | null | undefined;
-  mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | null | undefined;
-  namespaceId?: NamespaceId | null | null | undefined;
+  channels?: Array<"email"> | null | undefined;
+  mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
+  namespaceId?: NamespaceId | null | undefined;
   headers?:
     | {
         [key: string]: string;
@@ -2289,7 +2271,7 @@ export type UpdateTemplatePayload = {
     name?: string | null | undefined;
     slug?: string | null | undefined;
     entryPath?: string | null | undefined;
-    description?: string | null | null | undefined;
+    description?: string | null | undefined;
     category?:
       | "transactional"
       | "marketing"
@@ -2299,14 +2281,13 @@ export type UpdateTemplatePayload = {
       | "reminder"
       | "alert"
       | null
-      | null
       | undefined;
-    fromDefault?: TemplateFromDefault | null | null | undefined;
-    replyToDefault?: Array<string> | null | null | undefined;
+    fromDefault?: TemplateFromDefault | null | undefined;
+    replyToDefault?: Array<string> | null | undefined;
     /**
      * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
      */
-    trackingDefault?: TemplateTrackingDefault | null | null | undefined;
+    trackingDefault?: TemplateTrackingDefault | null | undefined;
     isActive?: boolean | null | undefined;
     /**
      * Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.
@@ -2319,7 +2300,7 @@ export type AddTemplateEntryPayload = {
   entryPath: string;
   name: string;
   slug: string;
-  description?: string | null | null | undefined;
+  description?: string | null | undefined;
   category?:
     | "transactional"
     | "marketing"
@@ -2328,7 +2309,6 @@ export type AddTemplateEntryPayload = {
     | "verification"
     | "reminder"
     | "alert"
-    | null
     | null
     | undefined;
 };
@@ -2358,10 +2338,6 @@ export type CreateTemplateFromWebsitePayload = {
    * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
    */
   namespaceId?: NamespaceId | null | undefined;
-  /**
-   * Repeating a request with the same key, address, name, and namespace returns the project the first one created, even if the site has since stopped answering. The same key with another address, name, or namespace is refused with a 409.
-   */
-  idempotencyKey: string;
 };
 
 export type CreateTemplatePayload = {
@@ -2370,7 +2346,7 @@ export type CreateTemplatePayload = {
   slug?: string | null | undefined;
   galleryTemplateId?: string | null | undefined;
   useBrand?: boolean | null | undefined;
-  description?: string | null | null | undefined;
+  description?: string | null | undefined;
   category?:
     | "transactional"
     | "marketing"
@@ -2379,7 +2355,6 @@ export type CreateTemplatePayload = {
     | "verification"
     | "reminder"
     | "alert"
-    | null
     | null
     | undefined;
   isActive?: boolean | null | undefined;
@@ -2391,7 +2366,6 @@ export type CreateTemplatePayload = {
    * Share the new organization-level project with every namespace: namespace-scoped keys read and send its entries but cannot change them. Defaults to false. Not with `namespaceId`, and not from a namespace-scoped key.
    */
   shared?: boolean | null | undefined;
-  idempotencyKey: string;
 };
 
 export type TemplateFamily = {
@@ -2458,65 +2432,90 @@ export type AnalyticsQueryError = {
   message: string;
 };
 
-export type TopicIssueRenderPayload = {
+export type NewsletterId = string;
+
+export type PublicationDomainPage = {
+  items: Array<{
+    organizationId: OrganizationId;
+    topicId: TopicId;
+    hostname: string;
+    canonicalHostname: string;
+    phase: "pending" | "active" | "removing" | "removed" | "conflict";
+    active: boolean;
+    hostnameStatus: string | null;
+    sslStatus: string | null;
+    cname: {
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    };
+    verificationRecords: Array<{
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    }>;
+    verificationErrors: Array<string>;
+  }>;
+  nextCursor: string | null;
+};
+
+export type PublicationDomainCursor = string;
+
+export type NewsletterIssueRenderPayload = {
   path: string;
   expectedRevision: string;
   fixture: string;
   target: "email" | "web";
 };
 
-export type TopicIssueCheckPayload = {
+export type NewsletterIssueCheckPayload = {
   path: string;
   expectedRevision: string;
 };
 
-export type TopicIssueSavePayload = {
+export type NewsletterIssueSavePayload = {
   expectedRevision: string;
   expectedHead: string;
   message: string;
-  idempotencyKey: string;
 };
 
-export type TopicIssueRemovePayload = {
+export type NewsletterIssueRemovePayload = {
   path: string;
-  idempotencyKey: string;
   expectedRevision: string;
 };
 
-export type TopicIssueUpdatePayload = {
+export type NewsletterIssueUpdatePayload = {
   path: string;
   content: string;
-  idempotencyKey: string;
   expectedRevision: string;
 };
 
-export type TopicIssueCreatePayload = {
+export type NewsletterIssueCreatePayload = {
   path: string;
   content: string;
-  idempotencyKey: string;
   expectedRevision?: string | null | undefined;
 };
 
-export type TopicIssueDocument = {
+export type NewsletterIssueDocument = {
   projectId: TemplateProjectId;
   revision: string;
   path: string;
   content: string;
 };
 
-export type TopicIssueList = {
+export type NewsletterIssueList = {
   projectId: TemplateProjectId | null;
   revision: string | null;
-  items: Array<TopicIssueListItem>;
+  items: Array<NewsletterIssueListItem>;
 };
 
-export type TopicIssueListItem = {
+export type NewsletterIssueListItem = {
   path: string;
   title: string | null;
-  latestSend: TopicIssueSend | null;
+  latestSend: NewsletterIssueSend | null;
 };
 
-export type TopicIssueSend = {
+export type NewsletterIssueSend = {
   campaignId: CampaignId;
   run: CampaignLatestRun;
 };
@@ -2541,6 +2540,33 @@ export type CampaignLatestRun = {
   estimatedCompletionAt: string | null;
 };
 
+export type Newsletter = {
+  id: NewsletterId;
+  topicId: TopicId;
+  namespaceId: NamespaceId | null;
+  name: string;
+  description: string | null;
+  issueProjectId: TemplateProjectId | null;
+  archiveEnabled: boolean;
+  publicationSlug: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewsletterUpdatePayload = {
+  archiveEnabled?: boolean | null | undefined;
+  publicationSlug?: string | null | undefined;
+};
+
+export type NewsletterCreatePayload = {
+  topicId?: TopicId | null | undefined;
+  name?: string | null | undefined;
+  description?: string | null | undefined;
+  namespaceId?: NamespaceId | null | undefined;
+  archiveEnabled?: boolean | null | undefined;
+  publicationSlug?: string | null | undefined;
+};
+
 export type TopicForm = {
   id: string;
   publicKey: string;
@@ -2562,7 +2588,7 @@ export type TopicFormUpdatePayload = {
   confirmationMessage?: string | null | undefined;
   successTitle?: string | null | undefined;
   successMessage?: string | null | undefined;
-  redirectUrl?: string | null | null | undefined;
+  redirectUrl?: string | null | undefined;
 };
 
 export type TopicFormCreatePayload = {
@@ -2627,8 +2653,6 @@ export type Topic = {
   defaultSenderId: EmailSenderId | null;
   replyMailboxId: MailboxId | null;
   templateId: TemplateId | null;
-  archiveEnabled: boolean;
-  publicationSlug: string | null;
   subscriptions: TopicSubscriptionCounts;
   createdAt: string;
   updatedAt: string;
@@ -2645,25 +2669,21 @@ export type EmailSenderId = string;
 
 export type TopicUpdatePayload = {
   name?: string | null | undefined;
-  description?: string | null | null | undefined;
+  description?: string | null | undefined;
   default?: "opt_out" | "opt_in" | null | undefined;
-  archiveEnabled?: boolean | null | undefined;
-  publicationSlug?: string | null | null | undefined;
-  defaultSenderId?: EmailSenderId | null | null | undefined;
-  replyMailboxId?: MailboxId | null | null | undefined;
-  templateId?: TemplateId | null | null | undefined;
+  defaultSenderId?: EmailSenderId | null | undefined;
+  replyMailboxId?: MailboxId | null | undefined;
+  templateId?: TemplateId | null | undefined;
 };
 
 export type TopicCreatePayload = {
   name: string;
-  description?: string | null | null | undefined;
-  namespaceId?: NamespaceId | null | null | undefined;
+  description?: string | null | undefined;
+  namespaceId?: NamespaceId | null | undefined;
   default?: "opt_out" | "opt_in" | null | undefined;
-  archiveEnabled?: boolean | null | undefined;
-  publicationSlug?: string | null | null | undefined;
-  defaultSenderId?: EmailSenderId | null | null | undefined;
-  replyMailboxId?: MailboxId | null | null | undefined;
-  templateId?: TemplateId | null | null | undefined;
+  defaultSenderId?: EmailSenderId | null | undefined;
+  replyMailboxId?: MailboxId | null | undefined;
+  templateId?: TemplateId | null | undefined;
 };
 
 export type TopicSubscriptionCheck = {
@@ -2844,7 +2864,7 @@ export type AgentModel = "standard" | "max";
 
 export type AgentMode = "live" | "supervised";
 
-export type AgentIntegrationReference = string;
+export type IntegrationId = string;
 
 export type AgentId = string;
 
@@ -2865,6 +2885,18 @@ export type PublishAgentResponse = {
   published: boolean;
 };
 
+export type Agent = {
+  id: AgentId;
+  name: string;
+  namespaceId: NamespaceId | null;
+  revision: string;
+  draft: AgentDefinition;
+  publishedVersion: number | null;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PublishAgentPayload = {
   revision: string;
 };
@@ -2878,7 +2910,7 @@ export type AgentDefinition = {
   instructions: string;
   knowledge: string;
   endpointIds: Array<MailboxEndpointId>;
-  integrationIds: Array<AgentIntegrationReference>;
+  integrations: Array<AgentIntegrationGrant>;
   mode: AgentMode;
   model: AgentModel;
   workingHours: WorkingHours | null;
@@ -2896,6 +2928,24 @@ export type WorkingHoursRange = {
   closes: ClockTime;
 };
 
+export type AgentIntegrationGrant = {
+  integrationId: IntegrationId;
+  tools: AgentToolScope;
+  requireApproval: Array<string>;
+};
+
+export type AgentToolScope =
+  | {
+      kind: "all";
+    }
+  | {
+      kind: "readOnly";
+    }
+  | {
+      kind: "selected";
+      names: Array<string>;
+    };
+
 export type DeleteAgentResponse = {
   id: AgentId;
   deleted: true;
@@ -2906,18 +2956,6 @@ export type UpdateAgentPayload = {
 };
 
 export type AgentName = string;
-
-export type Agent = {
-  id: AgentId;
-  name: string;
-  namespaceId: NamespaceId | null;
-  revision: string;
-  draft: AgentDefinition;
-  publishedVersion: number | null;
-  publishedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 export type CreateAgentPayload = {
   name: AgentName;
@@ -3302,6 +3340,18 @@ export type JourneyCustomEventTrigger = {
   eventName: JourneyCustomEventName;
 };
 
+export type Journey = {
+  id: JourneyId;
+  name: string;
+  status: JourneyStatus;
+  revision: string;
+  draft: JourneyDefinition;
+  publishedVersion: number | null;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type JourneyStatus = "draft" | "active" | "paused" | "archived";
 
 export type PublishJourneyPayload = {
@@ -3323,18 +3373,6 @@ export type UpdateJourneyPayload = {
 };
 
 export type JourneyName = string;
-
-export type Journey = {
-  id: JourneyId;
-  name: string;
-  status: JourneyStatus;
-  revision: string;
-  draft: JourneyDefinition;
-  publishedVersion: number | null;
-  publishedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 export type CreateJourneyPayload = {
   name: JourneyName;
@@ -3392,7 +3430,6 @@ export type CreateEventPayload = {
   name: string;
   properties?: JsonObjectWritable | null | undefined;
   occurredAt?: string | null | undefined;
-  idempotencyKey?: string | null | undefined;
 };
 
 export type ContactEventReference =
@@ -3606,11 +3643,11 @@ export type ContactIdentityInput = {
 };
 
 export type ContactProfileUpdate = {
-  firstName?: string | null | null | undefined;
-  lastName?: string | null | null | undefined;
-  company?: string | null | null | undefined;
-  jobTitle?: string | null | null | undefined;
-  location?: ContactLocation | null | null | undefined;
+  firstName?: string | null | undefined;
+  lastName?: string | null | undefined;
+  company?: string | null | undefined;
+  jobTitle?: string | null | undefined;
+  location?: ContactLocation | null | undefined;
   customFields?: ContactCustomFieldsWritable | null | undefined;
 };
 
@@ -4692,12 +4729,12 @@ export type CampaignContentMetadataWritable = {
   [key: string]: JsonValueWritable | undefined;
 } | null;
 
-export type CampaignConversationRef = ConversationId | null | null;
+export type CampaignConversationRef = ConversationId | null;
 
 /**
  * Omit to inherit the topic mailbox; null disables mailbox inheritance. An explicit email.replyTo overrides an inherited mailbox.
  */
-export type CampaignReplyMailbox = MailboxId | null | null;
+export type CampaignReplyMailbox = MailboxId | null;
 
 export type CampaignFrom = {
   email: string;
@@ -4721,7 +4758,7 @@ export type CampaignEmailContent = {
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
-  topicId?: TopicId | null | null | undefined;
+  topicId?: TopicId | null | undefined;
   tracking?: EmailTrackingOverrideV1 | undefined;
   footer?: EmailFooterOverride | undefined;
   headers?: EmailCustomHeaders | null | undefined;
@@ -4760,7 +4797,7 @@ export type EmailTrackingOverrideV1 = {
   clicks?: boolean | undefined;
 };
 
-export type ReplyToAddresses = Array<string> | null | null;
+export type ReplyToAddresses = Array<string> | null;
 
 export type TemplateData = JsonObject | null;
 
@@ -4879,7 +4916,7 @@ export type CampaignEmailInput = {
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
-  topicId?: TopicId | null | null | undefined;
+  topicId?: TopicId | null | undefined;
   tracking?: EmailTrackingOverrideV1 | undefined;
   footer?: EmailFooterOverride | undefined;
   headers?: EmailCustomHeadersWritable | null | undefined;
@@ -4944,7 +4981,7 @@ export type ScheduledMessage = {
 };
 
 export type SendMessagePayload = {
-  conversationId?: ConversationId | null | null | undefined;
+  conversationId?: ConversationId | null | undefined;
   metadata?: MessageMetadata | undefined;
   channel: "email";
   to: EmailRecipients;
@@ -4963,7 +5000,7 @@ export type MessageMetadataWritable = {
 } | null;
 
 export type EmailSendMessagePayload = {
-  conversationId?: ConversationId | null | null | undefined;
+  conversationId?: ConversationId | null | undefined;
   metadata?: MessageMetadata | undefined;
   channel: "email";
   to: EmailRecipients;
@@ -4990,7 +5027,7 @@ export type EmailContent = {
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
-  topicId?: TopicId | null | null | undefined;
+  topicId?: TopicId | null | undefined;
   tracking?: EmailTrackingOverrideV1 | undefined;
   footer?: EmailFooterOverride | undefined;
   headers?: EmailCustomHeaders | null | undefined;
@@ -5013,7 +5050,7 @@ export type EmailContentWritable = {
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
-  topicId?: TopicId | null | null | undefined;
+  topicId?: TopicId | null | undefined;
   tracking?: EmailTrackingOverrideV1 | undefined;
   footer?: EmailFooterOverride | undefined;
   headers?: EmailCustomHeadersWritable | null | undefined;
@@ -5024,7 +5061,7 @@ export type EmailSender = {
   name?: string | null | undefined;
 } | null;
 
-export type EmailBccRecipients = Array<EmailRecipient> | null | null;
+export type EmailBccRecipients = Array<EmailRecipient> | null;
 
 export type EmailRecipient =
   | {
@@ -5033,10 +5070,10 @@ export type EmailRecipient =
   | {
       email: string;
       name?: string | null | undefined;
-      displayName?: string | null | null | undefined;
+      displayName?: string | null | undefined;
     };
 
-export type EmailCcRecipients = Array<EmailRecipient> | null | null;
+export type EmailCcRecipients = Array<EmailRecipient> | null;
 
 export type EmailRecipients = Array<EmailRecipient>;
 
@@ -5048,7 +5085,7 @@ export type ScheduledMessagePage = {
 };
 
 export type DispatchSendMessagePayload = {
-  conversationId?: ConversationId | null | null | undefined;
+  conversationId?: ConversationId | null | undefined;
   metadata?: MessageMetadataWritable | undefined;
   channel: "email";
   to: EmailRecipients;
@@ -5075,7 +5112,7 @@ export type EmailDispatchContent = {
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
-  topicId?: TopicId | null | null | undefined;
+  topicId?: TopicId | null | undefined;
   tracking?: EmailTrackingOverrideV1 | undefined;
   footer?: EmailFooterOverride | undefined;
   headers?: EmailCustomHeadersWritable | null | undefined;
@@ -5454,7 +5491,7 @@ export type MessagesListResponse = MessagesListResponses[keyof MessagesListRespo
 
 export type MessagesSendData = {
   body: {
-    conversationId?: ConversationId | null | null | undefined;
+    conversationId?: ConversationId | null | undefined;
     metadata?: MessageMetadataWritable | undefined;
     channel: "email";
     to: EmailRecipients;
@@ -5923,7 +5960,7 @@ export type MessagesGetEmailResponse = MessagesGetEmailResponses[keyof MessagesG
 
 export type MessagesValidateEmailData = {
   body: {
-    conversationId?: ConversationId | null | null | undefined;
+    conversationId?: ConversationId | null | undefined;
     metadata?: MessageMetadataWritable | undefined;
     channel: "email";
     to: EmailRecipients;
@@ -6298,8 +6335,10 @@ export type ScheduledMessagesCreateData = {
     send: DispatchSendMessagePayload;
     scheduledFor: string;
     timezone?: IanaTimezone | null | undefined;
-    idempotencyKey?: string | null | undefined;
     referenceId?: string | null | undefined;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
   };
   path?: never;
   query?: never;
@@ -6961,7 +7000,9 @@ export type CampaignsListRunsResponse =
 export type CampaignsScheduleRunData = {
   body: {
     scheduledFor?: string | null | undefined;
-    idempotencyKey?: string | null | undefined;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
   };
   path: {
     id: CampaignId;
@@ -8448,12 +8489,12 @@ export type EmailSetDefaultDomainResponse =
 
 export type EmailUpdateDomainConfigData = {
   body: {
-    openTracking?: boolean | null | null | undefined;
-    clickTracking?: boolean | null | null | undefined;
-    replyTo?: Array<string> | null | null | undefined;
-    topicId?: TopicId | null | null | undefined;
-    footerEnabled?: boolean | null | null | undefined;
-    brandSlug?: string | null | null | undefined;
+    openTracking?: boolean | null | undefined;
+    clickTracking?: boolean | null | undefined;
+    replyTo?: Array<string> | null | undefined;
+    topicId?: TopicId | null | undefined;
+    footerEnabled?: boolean | null | undefined;
+    brandSlug?: string | null | undefined;
   };
   path: {
     id: EmailDomainId;
@@ -8944,8 +8985,8 @@ export type EmailAddSenderData = {
   body: {
     email: string;
     domainId?: EmailDomainId | null | undefined;
-    name?: string | null | null | undefined;
-    replyToEmails?: Array<string> | null | null | undefined;
+    name?: string | null | undefined;
+    replyToEmails?: Array<string> | null | undefined;
     namespaceId?: NamespaceId | null | undefined;
   };
   headers: {
@@ -9870,7 +9911,7 @@ export type EmailUpdateBlockData = {
     reason?: string | null | undefined;
     notes?: string | null | undefined;
     isActive?: boolean | null | undefined;
-    expiresAt?: string | null | null | undefined;
+    expiresAt?: string | null | undefined;
   };
   path: {
     id: BlockedEmailId;
@@ -10092,7 +10133,6 @@ export type EmailCreateForwardingRuleData = {
           [key: string]: JsonValueWritable | undefined;
         }
       | null
-      | null
       | undefined;
   };
   path?: never;
@@ -10209,14 +10249,13 @@ export type EmailUpdateForwardingRuleData = {
     forwardTo?: Array<string> | null | undefined;
     preserveHeaders?: boolean | null | undefined;
     appendNote?: string | null | undefined;
-    conditions?: ForwardingConditions | null | null | undefined;
+    conditions?: ForwardingConditions | null | undefined;
     priority?: number | null | undefined;
     isActive?: boolean | null | undefined;
     metadata?:
       | {
           [key: string]: JsonValueWritable | undefined;
         }
-      | null
       | null
       | undefined;
   };
@@ -11227,7 +11266,7 @@ export type ConversationsCreateData = {
     urgency?: "low" | "medium" | "high" | "critical" | null | undefined;
     complexity?: "simple" | "moderate" | "complex" | null | undefined;
     metadata?: JsonObjectWritable | null | undefined;
-    context?: ConversationContextWritable | null | null | undefined;
+    context?: ConversationContextWritable | null | undefined;
     tags?: Array<string> | null | undefined;
     categories?: Array<string> | null | undefined;
     isTest?: boolean | null | undefined;
@@ -11326,16 +11365,16 @@ export type ConversationsGetByIdResponse =
 export type ConversationsUpdateData = {
   body: {
     title?: string | null | undefined;
-    description?: string | null | null | undefined;
-    externalId?: string | null | null | undefined;
-    parentConversationId?: ConversationId | null | null | undefined;
+    description?: string | null | undefined;
+    externalId?: string | null | undefined;
+    parentConversationId?: ConversationId | null | undefined;
     primaryChannel?: "email" | null | undefined;
     status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
-    statusReason?: string | null | null | undefined;
+    statusReason?: string | null | undefined;
     priority?: number | null | undefined;
     urgency?: "low" | "medium" | "high" | "critical" | null | undefined;
     complexity?: "simple" | "moderate" | "complex" | null | undefined;
-    context?: ConversationContextWritable | null | null | undefined;
+    context?: ConversationContextWritable | null | undefined;
     metadata?: JsonObjectWritable | null | undefined;
     isTest?: boolean | null | undefined;
     isInternal?: boolean | null | undefined;
@@ -11905,16 +11944,16 @@ export type ContactsCreateData = {
   body: {
     namespaceId?: NamespaceId | null | undefined;
     name: string;
-    displayName?: string | null | null | undefined;
-    avatar?: string | null | null | undefined;
+    displayName?: string | null | undefined;
+    avatar?: string | null | undefined;
     identities?: Array<ContactIdentityInput> | null | undefined;
-    profile?: ContactProfileWritable | null | null | undefined;
-    preferences?: ContactPreferences | null | null | undefined;
+    profile?: ContactProfileWritable | null | undefined;
+    preferences?: ContactPreferences | null | undefined;
     tags?: Array<string> | null | undefined;
     status?: "active" | "paused" | "blocked" | "archived" | null | undefined;
-    statusReason?: string | null | null | undefined;
-    externalId?: string | null | null | undefined;
-    metadata?: JsonObjectWritable | null | null | undefined;
+    statusReason?: string | null | undefined;
+    externalId?: string | null | undefined;
+    metadata?: JsonObjectWritable | null | undefined;
   };
   path?: never;
   query?: never;
@@ -12032,11 +12071,11 @@ export type ContactsFindOrCreateData = {
     create?:
       | {
           name?: string | null | undefined;
-          displayName?: string | null | null | undefined;
-          avatar?: string | null | null | undefined;
+          displayName?: string | null | undefined;
+          avatar?: string | null | undefined;
           identities?: Array<ContactIdentityInput> | null | undefined;
-          profile?: ContactProfileWritable | null | null | undefined;
-          externalId?: string | null | null | undefined;
+          profile?: ContactProfileWritable | null | undefined;
+          externalId?: string | null | undefined;
         }
       | null
       | undefined;
@@ -12204,13 +12243,13 @@ export type ContactsGetResponse = ContactsGetResponses[keyof ContactsGetResponse
 export type ContactsUpdateData = {
   body: {
     name?: string | null | undefined;
-    displayName?: string | null | null | undefined;
-    avatar?: string | null | null | undefined;
+    displayName?: string | null | undefined;
+    avatar?: string | null | undefined;
     profile?: ContactProfileUpdate | null | undefined;
-    preferences?: ContactPreferences | null | null | undefined;
+    preferences?: ContactPreferences | null | undefined;
     status?: "active" | "paused" | "blocked" | "archived" | null | undefined;
-    statusReason?: string | null | null | undefined;
-    externalId?: string | null | null | undefined;
+    statusReason?: string | null | undefined;
+    externalId?: string | null | undefined;
     metadata?: JsonObjectWritable | null | undefined;
   };
   path: {
@@ -12638,9 +12677,9 @@ export type ContactsPlanImportErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -12740,13 +12779,15 @@ export type ContactsStartImportData = {
           ];
         };
         planHash: string;
-        idempotencyKey: string;
       }
     | {
         mode: "resume";
         jobId: ContactImportJobId;
         expectedGeneration: number;
       };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path?: never;
   query?: never;
   url: "/v1/contacts/imports";
@@ -12762,9 +12803,9 @@ export type ContactsStartImportErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -13231,7 +13272,9 @@ export type EventsCreateData = {
     name: string;
     properties?: JsonObjectWritable | null | undefined;
     occurredAt?: string | null | undefined;
-    idempotencyKey?: string | null | undefined;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
   };
   path?: never;
   query?: never;
@@ -13291,6 +13334,9 @@ export type EventsCreateResponse = EventsCreateResponses[keyof EventsCreateRespo
 export type EventsBatchData = {
   body: {
     events: [CreateEventPayload, ...Array<CreateEventPayload>];
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
   };
   path?: never;
   query?: never;
@@ -14715,18 +14761,17 @@ export type ContactGroupsListResponse =
 export type ContactGroupsCreateData = {
   body: {
     name: string;
-    description?: string | null | null | undefined;
+    description?: string | null | undefined;
     type?: "static" | "dynamic" | "smart" | null | undefined;
     criteria?:
       | {
           [key: string]: JsonValueWritable | undefined;
         }
       | null
-      | null
       | undefined;
     color?: "clay" | "sand" | "moss" | "sky" | "plum" | "rose" | null | null | undefined;
-    icon?: string | null | null | undefined;
-    parentGroupId?: ContactGroupId | null | null | undefined;
+    icon?: string | null | undefined;
+    parentGroupId?: ContactGroupId | null | undefined;
     isActive?: boolean | null | undefined;
   };
   path?: never;
@@ -14911,18 +14956,17 @@ export type ContactGroupsGetByIdResponse =
 export type ContactGroupsUpdateData = {
   body: {
     name?: string | null | undefined;
-    description?: string | null | null | undefined;
+    description?: string | null | undefined;
     type?: "static" | "dynamic" | "smart" | null | undefined;
     criteria?:
       | {
           [key: string]: JsonValueWritable | undefined;
         }
       | null
-      | null
       | undefined;
     color?: "clay" | "sand" | "moss" | "sky" | "plum" | "rose" | null | null | undefined;
-    icon?: string | null | null | undefined;
-    parentGroupId?: ContactGroupId | null | null | undefined;
+    icon?: string | null | undefined;
+    parentGroupId?: ContactGroupId | null | undefined;
     isActive?: boolean | null | undefined;
   };
   path: {
@@ -15315,7 +15359,7 @@ export type CustomFieldsCreateData = {
     label: string;
     type: "text" | "number" | "boolean" | "date" | "select";
     options?: Array<string> | null | undefined;
-    defaultValue?: string | null | null | undefined;
+    defaultValue?: string | null | undefined;
     isRequired?: boolean | null | undefined;
     sortOrder?: number | null | undefined;
   };
@@ -15429,7 +15473,7 @@ export type CustomFieldsUpdateData = {
   body: {
     label?: string | null | undefined;
     options?: Array<string> | null | undefined;
-    defaultValue?: string | null | null | undefined;
+    defaultValue?: string | null | undefined;
     isRequired?: boolean | null | undefined;
     sortOrder?: number | null | undefined;
   };
@@ -15537,14 +15581,12 @@ export type TopicsListResponse = TopicsListResponses[keyof TopicsListResponses];
 export type TopicsCreateData = {
   body: {
     name: string;
-    description?: string | null | null | undefined;
-    namespaceId?: NamespaceId | null | null | undefined;
+    description?: string | null | undefined;
+    namespaceId?: NamespaceId | null | undefined;
     default?: "opt_out" | "opt_in" | null | undefined;
-    archiveEnabled?: boolean | null | undefined;
-    publicationSlug?: string | null | null | undefined;
-    defaultSenderId?: EmailSenderId | null | null | undefined;
-    replyMailboxId?: MailboxId | null | null | undefined;
-    templateId?: TemplateId | null | null | undefined;
+    defaultSenderId?: EmailSenderId | null | undefined;
+    replyMailboxId?: MailboxId | null | undefined;
+    templateId?: TemplateId | null | undefined;
   };
   path?: never;
   query?: never;
@@ -15750,13 +15792,11 @@ export type TopicsGetResponse = TopicsGetResponses[keyof TopicsGetResponses];
 export type TopicsUpdateData = {
   body: {
     name?: string | null | undefined;
-    description?: string | null | null | undefined;
+    description?: string | null | undefined;
     default?: "opt_out" | "opt_in" | null | undefined;
-    archiveEnabled?: boolean | null | undefined;
-    publicationSlug?: string | null | null | undefined;
-    defaultSenderId?: EmailSenderId | null | null | undefined;
-    replyMailboxId?: MailboxId | null | null | undefined;
-    templateId?: TemplateId | null | null | undefined;
+    defaultSenderId?: EmailSenderId | null | undefined;
+    replyMailboxId?: MailboxId | null | undefined;
+    templateId?: TemplateId | null | undefined;
   };
   path: {
     id: TopicId;
@@ -15985,9 +16025,9 @@ export type TopicFormsListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -16041,9 +16081,9 @@ export type TopicFormsCreateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -16089,9 +16129,9 @@ export type TopicFormsRemoveErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -16139,9 +16179,9 @@ export type TopicFormsGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -16178,7 +16218,7 @@ export type TopicFormsUpdateData = {
     confirmationMessage?: string | null | undefined;
     successTitle?: string | null | undefined;
     successMessage?: string | null | undefined;
-    redirectUrl?: string | null | null | undefined;
+    redirectUrl?: string | null | undefined;
   };
   path: {
     id: TopicId;
@@ -16194,9 +16234,9 @@ export type TopicFormsUpdateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -16226,16 +16266,295 @@ export type TopicFormsUpdateResponses = {
 
 export type TopicFormsUpdateResponse = TopicFormsUpdateResponses[keyof TopicFormsUpdateResponses];
 
-export type TopicIssuesListData = {
+export type NewslettersListData = {
   body?: never;
-  path: {
-    id: TopicId;
+  path?: never;
+  query?: {
+    namespaceId?: NamespaceId | null | undefined;
   };
-  query?: never;
-  url: "/v1/topics/{id}/issues";
+  url: "/v1/newsletters";
 };
 
-export type TopicIssuesListErrors = {
+export type NewslettersListErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewslettersListError = NewslettersListErrors[keyof NewslettersListErrors];
+
+export type NewslettersListResponses = {
+  /**
+   * Success
+   */
+  200: {
+    items: Array<Newsletter>;
+  };
+};
+
+export type NewslettersListResponse = NewslettersListResponses[keyof NewslettersListResponses];
+
+export type NewslettersCreateData = {
+  body: {
+    topicId?: TopicId | null | undefined;
+    name?: string | null | undefined;
+    description?: string | null | undefined;
+    namespaceId?: NamespaceId | null | undefined;
+    archiveEnabled?: boolean | null | undefined;
+    publicationSlug?: string | null | undefined;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/newsletters";
+};
+
+export type NewslettersCreateErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewslettersCreateError = NewslettersCreateErrors[keyof NewslettersCreateErrors];
+
+export type NewslettersCreateResponses = {
+  /**
+   * Newsletter
+   */
+  201: Newsletter;
+};
+
+export type NewslettersCreateResponse =
+  NewslettersCreateResponses[keyof NewslettersCreateResponses];
+
+export type NewslettersRemoveData = {
+  body?: never;
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
+  path: {
+    id: NewsletterId;
+  };
+  query?: never;
+  url: "/v1/newsletters/{id}";
+};
+
+export type NewslettersRemoveErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewslettersRemoveError = NewslettersRemoveErrors[keyof NewslettersRemoveErrors];
+
+export type NewslettersRemoveResponses = {
+  /**
+   * Success
+   */
+  200: {
+    success: boolean;
+  };
+};
+
+export type NewslettersRemoveResponse =
+  NewslettersRemoveResponses[keyof NewslettersRemoveResponses];
+
+export type NewslettersGetData = {
+  body?: never;
+  path: {
+    id: NewsletterId;
+  };
+  query?: never;
+  url: "/v1/newsletters/{id}";
+};
+
+export type NewslettersGetErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewslettersGetError = NewslettersGetErrors[keyof NewslettersGetErrors];
+
+export type NewslettersGetResponses = {
+  /**
+   * Newsletter
+   */
+  200: Newsletter;
+};
+
+export type NewslettersGetResponse = NewslettersGetResponses[keyof NewslettersGetResponses];
+
+export type NewslettersUpdateData = {
+  body: {
+    archiveEnabled?: boolean | null | undefined;
+    publicationSlug?: string | null | undefined;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
+  path: {
+    id: NewsletterId;
+  };
+  query?: never;
+  url: "/v1/newsletters/{id}";
+};
+
+export type NewslettersUpdateErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewslettersUpdateError = NewslettersUpdateErrors[keyof NewslettersUpdateErrors];
+
+export type NewslettersUpdateResponses = {
+  /**
+   * Newsletter
+   */
+  200: Newsletter;
+};
+
+export type NewslettersUpdateResponse =
+  NewslettersUpdateResponses[keyof NewslettersUpdateResponses];
+
+export type NewsletterIssuesListData = {
+  body?: never;
+  path: {
+    id: NewsletterId;
+  };
+  query?: never;
+  url: "/v1/newsletters/{id}/issues";
+};
+
+export type NewsletterIssuesListErrors = {
   /**
    * UnauthorizedError
    */
@@ -16266,32 +16585,36 @@ export type TopicIssuesListErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesListError = TopicIssuesListErrors[keyof TopicIssuesListErrors];
+export type NewsletterIssuesListError =
+  NewsletterIssuesListErrors[keyof NewsletterIssuesListErrors];
 
-export type TopicIssuesListResponses = {
+export type NewsletterIssuesListResponses = {
   /**
-   * TopicIssueList
+   * NewsletterIssueList
    */
-  200: TopicIssueList;
+  200: NewsletterIssueList;
 };
 
-export type TopicIssuesListResponse = TopicIssuesListResponses[keyof TopicIssuesListResponses];
+export type NewsletterIssuesListResponse =
+  NewsletterIssuesListResponses[keyof NewsletterIssuesListResponses];
 
-export type TopicIssuesUpdateData = {
+export type NewsletterIssuesUpdateData = {
   body: {
     path: string;
     content: string;
-    idempotencyKey: string;
     expectedRevision: string;
   };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues";
+  url: "/v1/newsletters/{id}/issues";
 };
 
-export type TopicIssuesUpdateErrors = {
+export type NewsletterIssuesUpdateErrors = {
   /**
    * UnauthorizedError
    */
@@ -16322,9 +16645,10 @@ export type TopicIssuesUpdateErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesUpdateError = TopicIssuesUpdateErrors[keyof TopicIssuesUpdateErrors];
+export type NewsletterIssuesUpdateError =
+  NewsletterIssuesUpdateErrors[keyof NewsletterIssuesUpdateErrors];
 
-export type TopicIssuesUpdateResponses = {
+export type NewsletterIssuesUpdateResponses = {
   /**
    * Success
    */
@@ -16416,24 +16740,26 @@ export type TopicIssuesUpdateResponses = {
   };
 };
 
-export type TopicIssuesUpdateResponse =
-  TopicIssuesUpdateResponses[keyof TopicIssuesUpdateResponses];
+export type NewsletterIssuesUpdateResponse =
+  NewsletterIssuesUpdateResponses[keyof NewsletterIssuesUpdateResponses];
 
-export type TopicIssuesCreateData = {
+export type NewsletterIssuesCreateData = {
   body: {
     path: string;
     content: string;
-    idempotencyKey: string;
     expectedRevision?: string | null | undefined;
   };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues";
+  url: "/v1/newsletters/{id}/issues";
 };
 
-export type TopicIssuesCreateErrors = {
+export type NewsletterIssuesCreateErrors = {
   /**
    * UnauthorizedError
    */
@@ -16464,9 +16790,10 @@ export type TopicIssuesCreateErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesCreateError = TopicIssuesCreateErrors[keyof TopicIssuesCreateErrors];
+export type NewsletterIssuesCreateError =
+  NewsletterIssuesCreateErrors[keyof NewsletterIssuesCreateErrors];
 
-export type TopicIssuesCreateResponses = {
+export type NewsletterIssuesCreateResponses = {
   /**
    * Success
    */
@@ -16558,19 +16885,19 @@ export type TopicIssuesCreateResponses = {
   };
 };
 
-export type TopicIssuesCreateResponse =
-  TopicIssuesCreateResponses[keyof TopicIssuesCreateResponses];
+export type NewsletterIssuesCreateResponse =
+  NewsletterIssuesCreateResponses[keyof NewsletterIssuesCreateResponses];
 
-export type TopicIssuesOpenData = {
+export type NewsletterIssuesOpenData = {
   body?: never;
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues/workspace";
+  url: "/v1/newsletters/{id}/issues/workspace";
 };
 
-export type TopicIssuesOpenErrors = {
+export type NewsletterIssuesOpenErrors = {
   /**
    * UnauthorizedError
    */
@@ -16601,9 +16928,10 @@ export type TopicIssuesOpenErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesOpenError = TopicIssuesOpenErrors[keyof TopicIssuesOpenErrors];
+export type NewsletterIssuesOpenError =
+  NewsletterIssuesOpenErrors[keyof NewsletterIssuesOpenErrors];
 
-export type TopicIssuesOpenResponses = {
+export type NewsletterIssuesOpenResponses = {
   /**
    * Success
    */
@@ -16695,21 +17023,22 @@ export type TopicIssuesOpenResponses = {
   };
 };
 
-export type TopicIssuesOpenResponse = TopicIssuesOpenResponses[keyof TopicIssuesOpenResponses];
+export type NewsletterIssuesOpenResponse =
+  NewsletterIssuesOpenResponses[keyof NewsletterIssuesOpenResponses];
 
-export type TopicIssuesGetData = {
+export type NewsletterIssuesGetData = {
   body?: never;
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query: {
     path: string;
     expectedRevision: string;
   };
-  url: "/v1/topics/{id}/issues/document";
+  url: "/v1/newsletters/{id}/issues/document";
 };
 
-export type TopicIssuesGetErrors = {
+export type NewsletterIssuesGetErrors = {
   /**
    * UnauthorizedError
    */
@@ -16740,31 +17069,34 @@ export type TopicIssuesGetErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesGetError = TopicIssuesGetErrors[keyof TopicIssuesGetErrors];
+export type NewsletterIssuesGetError = NewsletterIssuesGetErrors[keyof NewsletterIssuesGetErrors];
 
-export type TopicIssuesGetResponses = {
+export type NewsletterIssuesGetResponses = {
   /**
-   * TopicIssueDocument
+   * NewsletterIssueDocument
    */
-  200: TopicIssueDocument;
+  200: NewsletterIssueDocument;
 };
 
-export type TopicIssuesGetResponse = TopicIssuesGetResponses[keyof TopicIssuesGetResponses];
+export type NewsletterIssuesGetResponse =
+  NewsletterIssuesGetResponses[keyof NewsletterIssuesGetResponses];
 
-export type TopicIssuesRemoveData = {
+export type NewsletterIssuesRemoveData = {
   body: {
     path: string;
-    idempotencyKey: string;
     expectedRevision: string;
   };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues/remove";
+  url: "/v1/newsletters/{id}/issues/remove";
 };
 
-export type TopicIssuesRemoveErrors = {
+export type NewsletterIssuesRemoveErrors = {
   /**
    * UnauthorizedError
    */
@@ -16795,9 +17127,10 @@ export type TopicIssuesRemoveErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesRemoveError = TopicIssuesRemoveErrors[keyof TopicIssuesRemoveErrors];
+export type NewsletterIssuesRemoveError =
+  NewsletterIssuesRemoveErrors[keyof NewsletterIssuesRemoveErrors];
 
-export type TopicIssuesRemoveResponses = {
+export type NewsletterIssuesRemoveResponses = {
   /**
    * Success
    */
@@ -16889,24 +17222,26 @@ export type TopicIssuesRemoveResponses = {
   };
 };
 
-export type TopicIssuesRemoveResponse =
-  TopicIssuesRemoveResponses[keyof TopicIssuesRemoveResponses];
+export type NewsletterIssuesRemoveResponse =
+  NewsletterIssuesRemoveResponses[keyof NewsletterIssuesRemoveResponses];
 
-export type TopicIssuesSaveData = {
+export type NewsletterIssuesSaveData = {
   body: {
     expectedRevision: string;
     expectedHead: string;
     message: string;
-    idempotencyKey: string;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
   };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues/save";
+  url: "/v1/newsletters/{id}/issues/save";
 };
 
-export type TopicIssuesSaveErrors = {
+export type NewsletterIssuesSaveErrors = {
   /**
    * UnauthorizedError
    */
@@ -16937,9 +17272,10 @@ export type TopicIssuesSaveErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesSaveError = TopicIssuesSaveErrors[keyof TopicIssuesSaveErrors];
+export type NewsletterIssuesSaveError =
+  NewsletterIssuesSaveErrors[keyof NewsletterIssuesSaveErrors];
 
-export type TopicIssuesSaveResponses = {
+export type NewsletterIssuesSaveResponses = {
   /**
    * Success
    */
@@ -17016,21 +17352,25 @@ export type TopicIssuesSaveResponses = {
   };
 };
 
-export type TopicIssuesSaveResponse = TopicIssuesSaveResponses[keyof TopicIssuesSaveResponses];
+export type NewsletterIssuesSaveResponse =
+  NewsletterIssuesSaveResponses[keyof NewsletterIssuesSaveResponses];
 
-export type TopicIssuesCheckData = {
+export type NewsletterIssuesCheckData = {
   body: {
     path: string;
     expectedRevision: string;
   };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues/check";
+  url: "/v1/newsletters/{id}/issues/check";
 };
 
-export type TopicIssuesCheckErrors = {
+export type NewsletterIssuesCheckErrors = {
   /**
    * UnauthorizedError
    */
@@ -17061,9 +17401,10 @@ export type TopicIssuesCheckErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesCheckError = TopicIssuesCheckErrors[keyof TopicIssuesCheckErrors];
+export type NewsletterIssuesCheckError =
+  NewsletterIssuesCheckErrors[keyof NewsletterIssuesCheckErrors];
 
-export type TopicIssuesCheckResponses = {
+export type NewsletterIssuesCheckResponses = {
   /**
    * Success
    */
@@ -17088,6 +17429,7 @@ export type TopicIssuesCheckResponses = {
           path: string;
           frontmatter: {
             title: string;
+            date?: string | undefined;
             slug: string;
             topic: string;
             preheader?: string | undefined;
@@ -17171,23 +17513,27 @@ export type TopicIssuesCheckResponses = {
   };
 };
 
-export type TopicIssuesCheckResponse = TopicIssuesCheckResponses[keyof TopicIssuesCheckResponses];
+export type NewsletterIssuesCheckResponse =
+  NewsletterIssuesCheckResponses[keyof NewsletterIssuesCheckResponses];
 
-export type TopicIssuesRenderData = {
+export type NewsletterIssuesRenderData = {
   body: {
     path: string;
     expectedRevision: string;
     fixture: string;
     target: "email" | "web";
   };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues/render";
+  url: "/v1/newsletters/{id}/issues/render";
 };
 
-export type TopicIssuesRenderErrors = {
+export type NewsletterIssuesRenderErrors = {
   /**
    * UnauthorizedError
    */
@@ -17218,9 +17564,10 @@ export type TopicIssuesRenderErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesRenderError = TopicIssuesRenderErrors[keyof TopicIssuesRenderErrors];
+export type NewsletterIssuesRenderError =
+  NewsletterIssuesRenderErrors[keyof NewsletterIssuesRenderErrors];
 
-export type TopicIssuesRenderResponses = {
+export type NewsletterIssuesRenderResponses = {
   /**
    * Success
    */
@@ -17245,6 +17592,7 @@ export type TopicIssuesRenderResponses = {
           path: string;
           frontmatter: {
             title: string;
+            date?: string | undefined;
             slug: string;
             topic: string;
             preheader?: string | undefined;
@@ -17374,19 +17722,19 @@ export type TopicIssuesRenderResponses = {
   };
 };
 
-export type TopicIssuesRenderResponse =
-  TopicIssuesRenderResponses[keyof TopicIssuesRenderResponses];
+export type NewsletterIssuesRenderResponse =
+  NewsletterIssuesRenderResponses[keyof NewsletterIssuesRenderResponses];
 
-export type TopicIssuesHeadData = {
+export type NewsletterIssuesHeadData = {
   body?: never;
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/issues/head";
+  url: "/v1/newsletters/{id}/issues/head";
 };
 
-export type TopicIssuesHeadErrors = {
+export type NewsletterIssuesHeadErrors = {
   /**
    * UnauthorizedError
    */
@@ -17417,9 +17765,10 @@ export type TopicIssuesHeadErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesHeadError = TopicIssuesHeadErrors[keyof TopicIssuesHeadErrors];
+export type NewsletterIssuesHeadError =
+  NewsletterIssuesHeadErrors[keyof NewsletterIssuesHeadErrors];
 
-export type TopicIssuesHeadResponses = {
+export type NewsletterIssuesHeadResponses = {
   /**
    * Success
    */
@@ -17430,20 +17779,21 @@ export type TopicIssuesHeadResponses = {
   };
 };
 
-export type TopicIssuesHeadResponse = TopicIssuesHeadResponses[keyof TopicIssuesHeadResponses];
+export type NewsletterIssuesHeadResponse =
+  NewsletterIssuesHeadResponses[keyof NewsletterIssuesHeadResponses];
 
-export type TopicIssuesHistoryData = {
+export type NewsletterIssuesHistoryData = {
   body?: never;
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: {
     limit?: number | null | undefined;
   };
-  url: "/v1/topics/{id}/issues/history";
+  url: "/v1/newsletters/{id}/issues/history";
 };
 
-export type TopicIssuesHistoryErrors = {
+export type NewsletterIssuesHistoryErrors = {
   /**
    * UnauthorizedError
    */
@@ -17474,9 +17824,10 @@ export type TopicIssuesHistoryErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicIssuesHistoryError = TopicIssuesHistoryErrors[keyof TopicIssuesHistoryErrors];
+export type NewsletterIssuesHistoryError =
+  NewsletterIssuesHistoryErrors[keyof NewsletterIssuesHistoryErrors];
 
-export type TopicIssuesHistoryResponses = {
+export type NewsletterIssuesHistoryResponses = {
   /**
    * Success
    */
@@ -17493,22 +17844,80 @@ export type TopicIssuesHistoryResponses = {
   };
 };
 
-export type TopicIssuesHistoryResponse =
-  TopicIssuesHistoryResponses[keyof TopicIssuesHistoryResponses];
+export type NewsletterIssuesHistoryResponse =
+  NewsletterIssuesHistoryResponses[keyof NewsletterIssuesHistoryResponses];
 
-export type TopicPublicationDomainsAddData = {
+export type NewsletterDomainsListData = {
+  body?: never;
+  path: {
+    id: NewsletterId;
+  };
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: PublicationDomainCursor | null | undefined;
+  };
+  url: "/v1/newsletters/{id}/domains";
+};
+
+export type NewsletterDomainsListErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewsletterDomainsListError =
+  NewsletterDomainsListErrors[keyof NewsletterDomainsListErrors];
+
+export type NewsletterDomainsListResponses = {
+  /**
+   * PublicationDomainPage
+   */
+  200: PublicationDomainPage;
+};
+
+export type NewsletterDomainsListResponse =
+  NewsletterDomainsListResponses[keyof NewsletterDomainsListResponses];
+
+export type NewsletterDomainsAddData = {
   body: {
     hostname: string;
-    idempotencyKey: string;
+  };
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
   };
   path: {
-    id: TopicId;
+    id: NewsletterId;
   };
   query?: never;
-  url: "/v1/topics/{id}/publication/domains";
+  url: "/v1/newsletters/{id}/domains";
 };
 
-export type TopicPublicationDomainsAddErrors = {
+export type NewsletterDomainsAddErrors = {
   /**
    * UnauthorizedError
    */
@@ -17539,10 +17948,10 @@ export type TopicPublicationDomainsAddErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicPublicationDomainsAddError =
-  TopicPublicationDomainsAddErrors[keyof TopicPublicationDomainsAddErrors];
+export type NewsletterDomainsAddError =
+  NewsletterDomainsAddErrors[keyof NewsletterDomainsAddErrors];
 
-export type TopicPublicationDomainsAddResponses = {
+export type NewsletterDomainsAddResponses = {
   /**
    * Success
    */
@@ -17569,96 +17978,23 @@ export type TopicPublicationDomainsAddResponses = {
   };
 };
 
-export type TopicPublicationDomainsAddResponse =
-  TopicPublicationDomainsAddResponses[keyof TopicPublicationDomainsAddResponses];
+export type NewsletterDomainsAddResponse =
+  NewsletterDomainsAddResponses[keyof NewsletterDomainsAddResponses];
 
-export type TopicPublicationDomainsRemoveData = {
+export type NewsletterDomainsRemoveData = {
   body?: never;
+  headers?: {
+    "idempotency-key"?: string | null | undefined;
+  };
   path: {
-    id: TopicId;
-    hostname: string;
-  };
-  query: {
-    idempotencyKey: string;
-  };
-  url: "/v1/topics/{id}/publication/domains/{hostname}";
-};
-
-export type TopicPublicationDomainsRemoveErrors = {
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError | FlagDisabledError
-   */
-  403: ForbiddenError | FlagDisabledError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type TopicPublicationDomainsRemoveError =
-  TopicPublicationDomainsRemoveErrors[keyof TopicPublicationDomainsRemoveErrors];
-
-export type TopicPublicationDomainsRemoveResponses = {
-  /**
-   * Success
-   */
-  200: {
-    organizationId: OrganizationId;
-    topicId: TopicId;
-    hostname: string;
-    canonicalHostname: string;
-    phase: "pending" | "active" | "removing" | "removed" | "conflict";
-    active: boolean;
-    hostnameStatus: string | null;
-    sslStatus: string | null;
-    cname: {
-      type: "CNAME" | "TXT";
-      name: string;
-      value: string;
-    };
-    verificationRecords: Array<{
-      type: "CNAME" | "TXT";
-      name: string;
-      value: string;
-    }>;
-    verificationErrors: Array<string>;
-  };
-};
-
-export type TopicPublicationDomainsRemoveResponse =
-  TopicPublicationDomainsRemoveResponses[keyof TopicPublicationDomainsRemoveResponses];
-
-export type TopicPublicationDomainsGetData = {
-  body?: never;
-  path: {
-    id: TopicId;
+    id: NewsletterId;
     hostname: string;
   };
   query?: never;
-  url: "/v1/topics/{id}/publication/domains/{hostname}";
+  url: "/v1/newsletters/{id}/domains/{hostname}";
 };
 
-export type TopicPublicationDomainsGetErrors = {
+export type NewsletterDomainsRemoveErrors = {
   /**
    * UnauthorizedError
    */
@@ -17689,10 +18025,10 @@ export type TopicPublicationDomainsGetErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TopicPublicationDomainsGetError =
-  TopicPublicationDomainsGetErrors[keyof TopicPublicationDomainsGetErrors];
+export type NewsletterDomainsRemoveError =
+  NewsletterDomainsRemoveErrors[keyof NewsletterDomainsRemoveErrors];
 
-export type TopicPublicationDomainsGetResponses = {
+export type NewsletterDomainsRemoveResponses = {
   /**
    * Success
    */
@@ -17719,8 +18055,82 @@ export type TopicPublicationDomainsGetResponses = {
   };
 };
 
-export type TopicPublicationDomainsGetResponse =
-  TopicPublicationDomainsGetResponses[keyof TopicPublicationDomainsGetResponses];
+export type NewsletterDomainsRemoveResponse =
+  NewsletterDomainsRemoveResponses[keyof NewsletterDomainsRemoveResponses];
+
+export type NewsletterDomainsGetData = {
+  body?: never;
+  path: {
+    id: NewsletterId;
+    hostname: string;
+  };
+  query?: never;
+  url: "/v1/newsletters/{id}/domains/{hostname}";
+};
+
+export type NewsletterDomainsGetErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NewsletterDomainsGetError =
+  NewsletterDomainsGetErrors[keyof NewsletterDomainsGetErrors];
+
+export type NewsletterDomainsGetResponses = {
+  /**
+   * Success
+   */
+  200: {
+    organizationId: OrganizationId;
+    topicId: TopicId;
+    hostname: string;
+    canonicalHostname: string;
+    phase: "pending" | "active" | "removing" | "removed" | "conflict";
+    active: boolean;
+    hostnameStatus: string | null;
+    sslStatus: string | null;
+    cname: {
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    };
+    verificationRecords: Array<{
+      type: "CNAME" | "TXT";
+      name: string;
+      value: string;
+    }>;
+    verificationErrors: Array<string>;
+  };
+};
+
+export type NewsletterDomainsGetResponse =
+  NewsletterDomainsGetResponses[keyof NewsletterDomainsGetResponses];
 
 export type AnalyticsGetStatsData = {
   body?: never;
@@ -18143,7 +18553,7 @@ export type TemplatesCreateData = {
     slug?: string | null | undefined;
     galleryTemplateId?: string | null | undefined;
     useBrand?: boolean | null | undefined;
-    description?: string | null | null | undefined;
+    description?: string | null | undefined;
     category?:
       | "transactional"
       | "marketing"
@@ -18152,7 +18562,6 @@ export type TemplatesCreateData = {
       | "verification"
       | "reminder"
       | "alert"
-      | null
       | null
       | undefined;
     isActive?: boolean | null | undefined;
@@ -18164,7 +18573,9 @@ export type TemplatesCreateData = {
      * Share the new organization-level project with every namespace: namespace-scoped keys read and send its entries but cannot change them. Defaults to false. Not with `namespaceId`, and not from a namespace-scoped key.
      */
     shared?: boolean | null | undefined;
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path?: never;
   query?: never;
@@ -18715,7 +19126,7 @@ export type TemplatesUpdateData = {
       name?: string | null | undefined;
       slug?: string | null | undefined;
       entryPath?: string | null | undefined;
-      description?: string | null | null | undefined;
+      description?: string | null | undefined;
       category?:
         | "transactional"
         | "marketing"
@@ -18725,14 +19136,13 @@ export type TemplatesUpdateData = {
         | "reminder"
         | "alert"
         | null
-        | null
         | undefined;
-      fromDefault?: TemplateFromDefault | null | null | undefined;
-      replyToDefault?: Array<string> | null | null | undefined;
+      fromDefault?: TemplateFromDefault | null | undefined;
+      replyToDefault?: Array<string> | null | undefined;
       /**
        * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
        */
-      trackingDefault?: TemplateTrackingDefault | null | null | undefined;
+      trackingDefault?: TemplateTrackingDefault | null | undefined;
       isActive?: boolean | null | undefined;
       /**
        * Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.
@@ -18800,10 +19210,9 @@ export type TemplatesCreateFromWebsiteData = {
      * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
      */
     namespaceId?: NamespaceId | null | undefined;
-    /**
-     * Repeating a request with the same key, address, name, and namespace returns the project the first one created, even if the site has since stopped answering. The same key with another address, name, or namespace is refused with a 409.
-     */
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path?: never;
   query?: never;
@@ -18859,7 +19268,7 @@ export type TemplatesAddEntryData = {
     entryPath: string;
     name: string;
     slug: string;
-    description?: string | null | null | undefined;
+    description?: string | null | undefined;
     category?:
       | "transactional"
       | "marketing"
@@ -18868,7 +19277,6 @@ export type TemplatesAddEntryData = {
       | "verification"
       | "reminder"
       | "alert"
-      | null
       | null
       | undefined;
   };
@@ -18929,7 +19337,9 @@ export type TemplatesPatchWorkspaceData = {
       path: string;
       content: string | null;
     }>;
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -19281,7 +19691,9 @@ export type TemplatesPutWorkspaceAssetData = {
     path: string;
     contentBase64: string;
     replace: boolean;
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -19429,7 +19841,9 @@ export type TemplatesResolveWorkspaceConflictData = {
       | {
           content: string | null;
         };
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -19572,7 +19986,9 @@ export type TemplatesSaveWorkspaceData = {
     expectedRevision: string;
     expectedHead: string;
     message: string;
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -19699,7 +20115,9 @@ export type TemplatesRestoreWorkspaceData = {
   body: {
     expectedRevision: string;
     commit: string;
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -19982,6 +20400,7 @@ export type TemplatesCheckWorkspaceResponses = {
           path: string;
           frontmatter: {
             title: string;
+            date?: string | undefined;
             slug: string;
             topic: string;
             preheader?: string | undefined;
@@ -20139,6 +20558,7 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
           path: string;
           frontmatter: {
             title: string;
+            date?: string | undefined;
             slug: string;
             topic: string;
             preheader?: string | undefined;
@@ -20939,7 +21359,9 @@ export type TemplatesAttachWorkspaceResourceData = {
         contentBase64: string;
       }>;
     };
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -21075,7 +21497,9 @@ export type TemplatesAttachWorkspaceResourceResponse =
 export type TemplatesRemoveWorkspaceResourceData = {
   body: {
     expectedRevision: string;
-    idempotencyKey: string;
+  };
+  headers: {
+    "idempotency-key": string;
   };
   path: {
     id: TemplateId;
@@ -21810,9 +22234,9 @@ export type WebhooksUpdateData = {
         >
       | null
       | undefined;
-    channels?: Array<"email"> | null | null | undefined;
-    mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | null | undefined;
-    namespaceId?: NamespaceId | null | null | undefined;
+    channels?: Array<"email"> | null | undefined;
+    mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
+    namespaceId?: NamespaceId | null | undefined;
     headers?:
       | {
           [key: string]: string | undefined;
@@ -22288,7 +22712,7 @@ export type OrganizationsUpdateData = {
     name?: string | null | undefined;
     slug?: string | null | undefined;
     avatarUrl?: string | null | null | undefined;
-    defaultRegion?: PhoneRegion | null | null | undefined;
+    defaultRegion?: PhoneRegion | null | undefined;
     timezone?: IanaTimezone | null | undefined;
     isActive?: boolean | null | undefined;
     metadata?:
@@ -22297,8 +22721,8 @@ export type OrganizationsUpdateData = {
         }
       | null
       | undefined;
-    replyToDefault?: Array<string> | null | null | undefined;
-    emailFooterEnabledDefault?: boolean | null | null | undefined;
+    replyToDefault?: Array<string> | null | undefined;
+    emailFooterEnabledDefault?: boolean | null | undefined;
   };
   path?: never;
   query?: never;
@@ -23529,7 +23953,7 @@ export type MailboxesRemoveEndpointResponse =
 
 export type MailboxesUpdateEndpointData = {
   body: {
-    displayName?: string | null | null | undefined;
+    displayName?: string | null | undefined;
     default?: true | null | undefined;
   };
   path: {
@@ -24155,7 +24579,7 @@ export type MailboxesUpdatePolicyData = {
   body: {
     name?: string | null | undefined;
     outcome?: MailboxPolicyOutcomeKind | null | undefined;
-    reason?: string | null | null | undefined;
+    reason?: string | null | undefined;
     enabled?: boolean | null | undefined;
   };
   path: {
@@ -24307,16 +24731,7 @@ export type MailboxesCreateLabelData = {
   body: {
     slug: string;
     displayName: string;
-    color?:
-      | "billing"
-      | "domain"
-      | "agent"
-      | "routing"
-      | "important"
-      | "neutral"
-      | null
-      | null
-      | undefined;
+    color?: "billing" | "domain" | "agent" | "routing" | "important" | "neutral" | null | undefined;
   };
   path: {
     id: MailboxId;
@@ -24422,16 +24837,7 @@ export type MailboxesDeleteLabelResponse =
 export type MailboxesUpdateLabelData = {
   body: {
     displayName?: string | null | undefined;
-    color?:
-      | "billing"
-      | "domain"
-      | "agent"
-      | "routing"
-      | "important"
-      | "neutral"
-      | null
-      | null
-      | undefined;
+    color?: "billing" | "domain" | "agent" | "routing" | "important" | "neutral" | null | undefined;
   };
   path: {
     id: MailboxId;
@@ -24596,7 +25002,7 @@ export type MailboxesUpdateThreadData = {
     priority?: MailboxThreadPriority | null | undefined;
     read?: boolean | null | undefined;
     starred?: boolean | null | undefined;
-    snoozedUntil?: string | null | null | undefined;
+    snoozedUntil?: string | null | undefined;
   };
   path: {
     id: MailboxId;
@@ -24912,7 +25318,7 @@ export type MailboxesListThreadNotesResponse =
 export type MailboxesCreateNoteData = {
   body: {
     body: string;
-    color?: string | null | null | undefined;
+    color?: string | null | undefined;
     pinned?: boolean | null | undefined;
   };
   path: {
@@ -25015,7 +25421,7 @@ export type MailboxesDeleteNoteResponse =
 export type MailboxesUpdateNoteData = {
   body: {
     body?: string | null | undefined;
-    color?: string | null | null | undefined;
+    color?: string | null | undefined;
     pinned?: boolean | null | undefined;
   };
   path: {
@@ -25985,13 +26391,13 @@ export type MailboxesGetDraftResponse =
 export type MailboxesUpdateDraftData = {
   body: {
     to?: Array<string> | null | undefined;
-    cc?: Array<string> | null | null | undefined;
-    bcc?: Array<string> | null | null | undefined;
-    replyTo?: Array<string> | null | null | undefined;
-    subject?: string | null | null | undefined;
-    text?: string | null | null | undefined;
-    html?: string | null | null | undefined;
-    attachments?: Array<EmailAttachment> | null | null | undefined;
+    cc?: Array<string> | null | undefined;
+    bcc?: Array<string> | null | undefined;
+    replyTo?: Array<string> | null | undefined;
+    subject?: string | null | undefined;
+    text?: string | null | undefined;
+    html?: string | null | undefined;
+    attachments?: Array<EmailAttachment> | null | undefined;
   };
   path: {
     id: MailboxId;

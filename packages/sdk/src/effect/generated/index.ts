@@ -23,14 +23,15 @@ import { MailboxesGroup } from "./mailboxes";
 import { MediaGroup } from "./media";
 import { MessagesGroup } from "./messages";
 import { NamespacesGroup } from "./namespaces";
+import { NewsletterDomainsGroup } from "./newsletter-domains";
+import { NewsletterIssuesGroup } from "./newsletter-issues";
+import { NewslettersGroup } from "./newsletters";
 import { OperationsGroup } from "./operations";
 import { OrganizationsGroup } from "./organizations";
-import { PublicationDomainsGroup } from "./publication-domains";
 import { ScheduledMessagesGroup } from "./scheduled-messages";
 import { SubscriptionsGroup } from "./subscriptions";
 import { TemplatesGroup } from "./templates";
 import { TopicFormsGroup } from "./topic-forms";
-import { TopicIssuesGroup } from "./topic-issues";
 import { TopicsGroup } from "./topics";
 import { WebhooksGroup } from "./webhooks";
 import { WhoamiGroup } from "./whoami";
@@ -81,6 +82,12 @@ export * from "./scheduled-messages";
 
 export * from "./namespaces";
 
+export * from "./newsletters";
+
+export * from "./newsletter-domains";
+
+export * from "./newsletter-issues";
+
 export * from "./operations";
 
 export * from "./organizations";
@@ -92,10 +99,6 @@ export * from "./templates";
 export * from "./topics";
 
 export * from "./topic-forms";
-
-export * from "./topic-issues";
-
-export * from "./publication-domains";
 
 export * from "./webhooks";
 
@@ -132,14 +135,15 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     MessagesGroup,
     ScheduledMessagesGroup,
     NamespacesGroup,
+    NewslettersGroup,
+    NewsletterDomainsGroup,
+    NewsletterIssuesGroup,
     OperationsGroup,
     OrganizationsGroup,
     SubscriptionsGroup,
     TemplatesGroup,
     TopicsGroup,
     TopicFormsGroup,
-    TopicIssuesGroup,
-    PublicationDomainsGroup,
     WebhooksGroup,
     WhoamiGroup,
   ) {}

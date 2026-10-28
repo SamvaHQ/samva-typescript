@@ -85,12 +85,31 @@ export const BatchEventsResult = /* @__PURE__ */ (() =>
       }),
     ),
   }).annotate({ identifier: "BatchEventsResult" }))();
+export type EventsCreateHeaders = { readonly "idempotency-key"?: string | null };
+export const EventsCreateHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EventsCreateRequestJson = {
   readonly contact: ContactEventReference;
   readonly name: string;
   readonly properties?: JsonObject | null;
   readonly occurredAt?: string | null;
-  readonly idempotencyKey?: string | null;
 };
 export const EventsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -114,22 +133,6 @@ export const EventsCreateRequestJson = /* @__PURE__ */ (() =>
       ),
     properties: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
     occurredAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    idempotencyKey: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
-    ),
   }))();
 export type EventsCreate200 = ContactEvent;
 export const EventsCreate200 = ContactEvent;
@@ -151,6 +154,26 @@ export type EventsCreate502 = BillingProviderError;
 export const EventsCreate502 = BillingProviderError;
 export type EventsCreate504 = GatewayTimeoutError;
 export const EventsCreate504 = GatewayTimeoutError;
+export type EventsBatchHeaders = { readonly "idempotency-key"?: string | null };
+export const EventsBatchHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
 export type EventsBatchRequestJson = {
   readonly events: readonly [CreateEventPayload, ...Array<CreateEventPayload>];
 };
@@ -178,6 +201,7 @@ export const EventsBatch504 = GatewayTimeoutError;
 export class EventsGroup extends HttpApiGroup.make("Events")
   .add(
     HttpApiEndpoint.post("eventsCreate", "/v1/events", {
+      headers: EventsCreateHeaders,
       payload: EventsCreateRequestJson,
       success: EventsCreate200,
       error: [
@@ -200,6 +224,7 @@ export class EventsGroup extends HttpApiGroup.make("Events")
         "Records a custom contact event. Identify the contact by exactly one ID, external ID, or email. A missing email or external ID creates a contact; an unknown contact ID returns 404. An organization-scoped idempotency key replays the original event. Event names use letters, digits, underscores, hyphens, and dots, up to 255 characters; contact. and samva. prefixes are reserved. Properties allow at most 50 keys and 32 KiB of UTF-8 JSON. Events are retained for 90 days.",
       ),
     HttpApiEndpoint.post("eventsBatch", "/v1/events/batch", {
+      headers: EventsBatchHeaders,
       payload: EventsBatchRequestJson,
       success: EventsBatch200,
       error: [
@@ -216,7 +241,7 @@ export class EventsGroup extends HttpApiGroup.make("Events")
       .annotate(OpenApi.Summary, "Record contact events in a batch")
       .annotate(
         OpenApi.Description,
-        "Validates the full request shape, contact references, and event names before processing. A schema failure rejects the entire batch without writes. Between 1 and 100 valid entries are then processed in input order, with independent indexed results for properties limits, contact resolution, and idempotency.",
+        "Validates the full request shape, contact references, and event names before processing. A schema failure rejects the entire batch without writes. Between 1 and 100 valid entries are then processed in input order, with independent indexed results for properties limits, contact resolution, and domain validation. An optional Idempotency-Key header scopes the batch; retries reuse each entry's original receipt by its position in the batch.",
       ),
   )
   .annotate(OpenApi.Description, "Custom contact event ingestion") {}

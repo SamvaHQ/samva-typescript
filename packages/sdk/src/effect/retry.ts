@@ -1,12 +1,12 @@
 /**
  * Default-on retry for the Effect SDK.
  *
- * Every retry-safe operation — reads and idempotency-keyed sends — retries out
+ * Every retry-safe operation — reads and idempotent mutations — retries out
  * of the box: transient failures back off with jittered exponential delay, and
  * `429 RateLimitedError` honors the server's `retryAfterSeconds` hint (capped).
  * Eligibility is decided by the {@link isRetryable} category predicate; the set
- * of retry-safe operations is decided by the module adapter (GET/HEAD reads and keyed
- * sends), so keyless mutating operations are never auto-retried.
+ * of retry-safe operations is decided by the module adapter (GET/HEAD reads and idempotent
+ * mutations), so keyless mutating operations are never auto-retried.
  *
  * The policy is read from context via {@link Service} using
  * `Effect.serviceOption`, so the default applies when the service is absent and
@@ -120,7 +120,7 @@ const HEX = "0123456789abcdef";
 /**
  * Generate a v4-shaped idempotency key through Effect's `Random` service —
  * deterministic under a seeded/`TestClock` runtime and platform-neutral (no Web
- * Crypto or bare `Math.random` at the call site). Facade sends evaluate this
+ * Crypto or bare `Math.random` at the call site). Facade operations evaluate this
  * once per logical call so the key is stable across auto-retries within the call
  * and distinct across calls.
  */

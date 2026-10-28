@@ -1,10 +1,10 @@
 import { verifyRequest } from "@samva/webhooks";
 
-import { createSamvaClient, type Fetch } from "./client";
+import { createClient } from "../promises/client";
 import { dispatchEvent, errorMessage } from "./dispatch";
 import type { ExtensionDefinition } from "./types";
 
-/* oxlint-disable samva/no-try-catch-or-throw -- the Fetch webhook adapter converts verification and dispatch failures into HTTP responses */
+type Fetch = NonNullable<Parameters<typeof createClient>[0]["fetch"]>;
 
 export function createWebhookHandler(
   extension: ExtensionDefinition,
@@ -15,10 +15,10 @@ export function createWebhookHandler(
     fetch?: Fetch;
   },
 ): (request: Request) => Promise<Response> {
-  const client = createSamvaClient({
+  const client = createClient({
     fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
     baseUrl: options.apiOrigin ?? "https://api.samva.dev",
-    headers: { "x-api-key": options.apiKey },
+    apiKey: options.apiKey,
   });
   return async (request) => {
     let eventId: string;

@@ -7,9 +7,9 @@ import * as Client from "../../src/effect/client";
 import * as Contacts from "../../src/effect/contacts";
 import * as Email from "../../src/effect/email";
 import * as Messages from "../../src/effect/messages";
+import * as NewsletterIssues from "../../src/effect/newsletter-issues";
 import * as Organizations from "../../src/effect/organizations";
 import * as Subscriptions from "../../src/effect/subscriptions";
-import * as TopicIssues from "../../src/effect/topic-issues";
 import * as Topics from "../../src/effect/topics";
 import { createClient as createPromiseClient, type SamvaClient } from "../../src/promises";
 
@@ -29,8 +29,9 @@ type CallShapeCell = {
 const cells = [
   {
     name: "topic issue history numeric limit",
-    promise: (client) => client.topicIssues.history({ id: "unsub_1234567890abcdef", limit: 10 }),
-    effect: () => TopicIssues.history({ id: "unsub_1234567890abcdef", limit: 10 }),
+    promise: (client) =>
+      client.newsletters.issues.history({ id: "nl_1234567890abcdef", limit: 10 }),
+    effect: () => NewsletterIssues.history({ id: "nl_1234567890abcdef", limit: 10 }),
   },
   {
     name: "campaign create pins a saved topic issue",
@@ -65,8 +66,10 @@ const cells = [
   },
   {
     name: "required body without optional fields",
-    promise: (client) => client.campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh" }),
-    effect: () => Campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh" }),
+    promise: (client) =>
+      client.campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh" }, { idempotencyKey: "run-1" }),
+    effect: () =>
+      Campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh" }, { idempotencyKey: "run-1" }),
   },
   {
     name: "boolean query filter",
@@ -269,23 +272,20 @@ const cells = [
     effect: () => Organizations.get(),
   },
   {
-    // The Effect facade hoists `idempotencyKey` into the `idempotency-key`
-    // header; the Promise leg takes the generated flat params. Only
-    // `confirmationName` goes on the wire body either way.
     name: "idempotent payload",
     promise: (client) =>
-      client.organizations.delete({ "idempotency-key": "idem_1", confirmationName: "Acme" }),
-    effect: () => Organizations.delete({ confirmationName: "Acme", idempotencyKey: "idem_1" }),
+      client.organizations.delete({ confirmationName: "Acme" }, { idempotencyKey: "idem_1" }),
+    effect: () => Organizations.delete({ confirmationName: "Acme" }, { idempotencyKey: "idem_1" }),
   },
   {
     name: "idempotent path",
     promise: (client) =>
-      client.email.rotateDomainDkim({
-        id: "dom_7q2xk9mvt4znw8rh",
-        "idempotency-key": "rotation-1",
-      }),
+      client.email.rotateDomainDkim(
+        { id: "dom_7q2xk9mvt4znw8rh" },
+        { idempotencyKey: "rotation-1" },
+      ),
     effect: () =>
-      Email.rotateDomainDkim({ id: "dom_7q2xk9mvt4znw8rh", idempotencyKey: "rotation-1" }),
+      Email.rotateDomainDkim({ id: "dom_7q2xk9mvt4znw8rh" }, { idempotencyKey: "rotation-1" }),
   },
   {
     name: "ergonomic idempotent sender payload",
@@ -478,7 +478,7 @@ describe("Promise and Effect direct call-shape parity", () => {
       if (cell.name === "topic issue history numeric limit") {
         const query = new URL(promiseRequest.path, "https://samva.dev").searchParams;
         expect(promiseRequest.path.split("?")[0]).toBe(
-          "/v1/topics/unsub_1234567890abcdef/issues/history",
+          "/v1/newsletters/nl_1234567890abcdef/issues/history",
         );
         expect(query.get("limit")).toBe("10");
       }
@@ -556,8 +556,15 @@ describe("omitted all-optional request bodies", () => {
     const cell = {
       name: "explicit null",
       promise: (client) =>
-        client.campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh", scheduledFor: null }),
-      effect: () => Campaigns.scheduleRun({ id: "camp_7q2xk9mvt4znw8rh", scheduledFor: null }),
+        client.campaigns.scheduleRun(
+          { id: "camp_7q2xk9mvt4znw8rh", scheduledFor: null },
+          { idempotencyKey: "run-1" },
+        ),
+      effect: () =>
+        Campaigns.scheduleRun(
+          { id: "camp_7q2xk9mvt4znw8rh", scheduledFor: null },
+          { idempotencyKey: "run-1" },
+        ),
     } satisfies CallShapeCell;
     const [promiseRequest, effectRequest] = await Promise.all([
       capturePromise(cell),
@@ -595,7 +602,7 @@ describe("Promise send idempotency", () => {
     });
   }
 
-  it("keeps a key the caller set as a request header", async () => {
+  it("ignores a key supplied as a request header", async () => {
     const request = await capturePromise({
       name: "header key",
       promise: (client) =>
@@ -606,6 +613,7 @@ describe("Promise send idempotency", () => {
       effect: () => Effect.void,
     });
 
-    expect(request.idempotencyKey).toBe("receipt:order-4417");
+    expect(request.idempotencyKey).not.toBe("receipt:order-4417");
+    expect(request.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
