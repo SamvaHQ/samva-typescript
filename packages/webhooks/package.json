@@ -1,6 +1,6 @@
 {
   "name": "@samva/webhooks",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "description": "Runtime-neutral verification for Samva webhook deliveries",
   "keywords": [
     "samva",

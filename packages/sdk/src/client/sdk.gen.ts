@@ -5126,7 +5126,7 @@ export class Conversations {
   /**
    * List conversations
    *
-   * Returns conversation summaries, most recently active first, filterable by status, channel, contact, and creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. A conversation that gains activity while you page moves ahead of the cursor, so a walk lists each conversation at most once. Read a conversation's contacts, metadata, and resolution with `GET /v1/conversations/{id}`.
+   * Returns conversation summaries, most recently active first, filterable by status, channel, contact, mailbox, and creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. A conversation that gains activity while you page moves ahead of the cursor, so a walk lists each conversation at most once. Read a conversation's contacts, metadata, and resolution with `GET /v1/conversations/{id}`.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -5135,6 +5135,7 @@ export class Conversations {
       status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
       channel?: "email" | null | undefined;
       contactId?: ContactId | null | undefined;
+      mailboxId?: MailboxId | null | undefined;
       after?: string | null | undefined;
       before?: string | null | undefined;
     },
@@ -5150,6 +5151,7 @@ export class Conversations {
             { in: "query", key: "status" },
             { in: "query", key: "channel" },
             { in: "query", key: "contactId" },
+            { in: "query", key: "mailboxId" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
           ],

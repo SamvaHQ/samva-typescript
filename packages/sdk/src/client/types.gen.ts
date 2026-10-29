@@ -11211,6 +11211,7 @@ export type ConversationsListData = {
     status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
     channel?: "email" | null | undefined;
     contactId?: ContactId | null | undefined;
+    mailboxId?: MailboxId | null | undefined;
     after?: string | null | undefined;
     before?: string | null | undefined;
   };

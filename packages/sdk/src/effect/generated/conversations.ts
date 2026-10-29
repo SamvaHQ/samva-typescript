@@ -13,6 +13,7 @@ import {
   InternalError,
   JsonObject,
   JsonValue,
+  MailboxId,
   MessagePage,
   ResourceNotFoundError,
   UnauthorizedError,
@@ -271,6 +272,7 @@ export type ConversationsListQuery = {
   readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null;
   readonly channel?: "email" | null;
   readonly contactId?: ContactId | null;
+  readonly mailboxId?: MailboxId | null;
   readonly after?: string | null;
   readonly before?: string | null;
 };
@@ -304,6 +306,7 @@ export const ConversationsListQuery = /* @__PURE__ */ (() =>
     ),
     channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
     contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
+    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Null])),
     after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
@@ -788,7 +791,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       .annotate(OpenApi.Summary, "List conversations")
       .annotate(
         OpenApi.Description,
-        "Returns conversation summaries, most recently active first, filterable by status, channel, contact, and creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. A conversation that gains activity while you page moves ahead of the cursor, so a walk lists each conversation at most once. Read a conversation's contacts, metadata, and resolution with `GET /v1/conversations/{id}`.",
+        "Returns conversation summaries, most recently active first, filterable by status, channel, contact, mailbox, and creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. A conversation that gains activity while you page moves ahead of the cursor, so a walk lists each conversation at most once. Read a conversation's contacts, metadata, and resolution with `GET /v1/conversations/{id}`.",
       ),
     HttpApiEndpoint.post("conversationsCreate", "/v1/conversations", {
       payload: ConversationsCreateRequestJson,

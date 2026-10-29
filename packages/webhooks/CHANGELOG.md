@@ -1,3 +1,9 @@
+## @samva/webhooks@0.31.0
+
+### Filter conversations by mailbox
+
+Pass `mailboxId` to `conversations.list` to list only conversations in that mailbox. Combine it with the existing contact, channel, status, and date filters.
+
 ## @samva/webhooks@0.30.0
 
 ### One Idempotency Option Across the SDK
