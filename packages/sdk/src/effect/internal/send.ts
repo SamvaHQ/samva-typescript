@@ -10,7 +10,7 @@ import {
 import { buildEmailSendPayload, buildMessagesSendPayload } from "../../normalize";
 import { MediaGroup } from "../generated/media";
 import { MessagesGroup } from "../generated/messages";
-import type { SendMessagePayload } from "../generated/scheduled-messages";
+import type { SendMessagePayload } from "../generated/shared";
 import { generateIdempotencyKey, withRetry } from "../retry";
 import { type Interface, Service } from "./client";
 import { callEndpoint, type OperationResult, stripUndefined } from "./operation";

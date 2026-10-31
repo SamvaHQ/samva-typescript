@@ -685,8 +685,21 @@ export type ContactsCreateRequestJson = {
 export const ContactsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-    name: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.String.check(
+      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+    ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     avatar: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     identities: Schema.optionalKey(Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null])),
     profile: Schema.optionalKey(Schema.Union([ContactProfile, Schema.Null])),
@@ -777,8 +790,30 @@ export type ContactsUpdateRequestJson = {
 };
 export const ContactsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     avatar: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     profile: Schema.optionalKey(Schema.Union([ContactProfileUpdate, Schema.Null])),
     preferences: Schema.optionalKey(Schema.Union([ContactPreferences, Schema.Null])),
@@ -1344,8 +1379,34 @@ export const ContactsFindOrCreateRequestJson = /* @__PURE__ */ (() =>
     create: Schema.optionalKey(
       Schema.Union([
         Schema.Struct({
-          name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          name: Schema.optionalKey(
+            Schema.Union([
+              Schema.String.check(
+                Schema.isMaxCodePoints(120).annotate({
+                  expected: "a string with at most 120 code points",
+                }),
+              ).check(
+                Schema.isMaxLength(120).annotate({
+                  expected: "a value with a length of at most 120",
+                }),
+              ),
+              Schema.Null,
+            ]),
+          ),
+          displayName: Schema.optionalKey(
+            Schema.Union([
+              Schema.String.check(
+                Schema.isMaxCodePoints(120).annotate({
+                  expected: "a string with at most 120 code points",
+                }),
+              ).check(
+                Schema.isMaxLength(120).annotate({
+                  expected: "a value with a length of at most 120",
+                }),
+              ),
+              Schema.Null,
+            ]),
+          ),
           avatar: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
           identities: Schema.optionalKey(
             Schema.Union([Schema.Array(ContactIdentityInput), Schema.Null]),

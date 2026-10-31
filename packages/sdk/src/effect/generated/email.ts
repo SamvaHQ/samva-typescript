@@ -3526,7 +3526,18 @@ export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     email: Schema.String,
     domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     replyToEmails: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
   }))();

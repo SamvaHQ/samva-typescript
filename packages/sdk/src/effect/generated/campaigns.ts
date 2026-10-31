@@ -13,7 +13,6 @@ import {
   CampaignContentMetadata,
   CampaignConversationRef,
   CampaignFooterRequiredError,
-  CampaignFrom,
   CampaignId,
   CampaignLatestRun,
   CampaignReplyMailbox,
@@ -43,6 +42,7 @@ import {
   ResourceNotFoundError,
   SenderNotReadyError,
   SendsSeries,
+  ServiceUnavailableError,
   TemplateData,
   TemplateId,
   TemplateInputContractId,
@@ -54,6 +54,17 @@ import {
   __SamvaRuntimeAbsoluteInstant,
 } from "./shared";
 
+export type CampaignFrom = { readonly email: string; readonly name?: string | null } | null;
+export const CampaignFrom = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      email: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+    Schema.Null,
+  ]).annotate({ identifier: "CampaignFrom" }))();
 export type CampaignPolicy = { readonly pageSize?: number | null };
 export const CampaignPolicy = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -765,7 +776,9 @@ export type CampaignsCreateRequestJson = {
 };
 export const CampaignsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.String,
+    name: Schema.String.check(
+      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+    ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
     channel: Schema.Literal("email"),
     content: CampaignContentInput,
     audience: CampaignAudience,
@@ -775,6 +788,8 @@ export type CampaignsCreate201 = Campaign;
 export const CampaignsCreate201 = Campaign;
 export type CampaignsCreate401 = UnauthorizedError;
 export const CampaignsCreate401 = UnauthorizedError;
+export type CampaignsCreate402 = PaymentRequiredError;
+export const CampaignsCreate402 = PaymentRequiredError;
 export type CampaignsCreate403 = FlagDisabledError | ForbiddenError;
 export const CampaignsCreate403 = /* @__PURE__ */ (() =>
   Schema.Union([FlagDisabledError, ForbiddenError]))();
@@ -782,6 +797,8 @@ export type CampaignsCreate422 = ValidationError;
 export const CampaignsCreate422 = ValidationError;
 export type CampaignsCreate500 = InternalError;
 export const CampaignsCreate500 = InternalError;
+export type CampaignsCreate502 = BillingProviderError;
+export const CampaignsCreate502 = BillingProviderError;
 export type CampaignsCreate504 = GatewayTimeoutError;
 export const CampaignsCreate504 = GatewayTimeoutError;
 export type CampaignsGetPathParams = { readonly id: CampaignId };
@@ -811,7 +828,18 @@ export type CampaignsUpdateRequestJson = {
 };
 export const CampaignsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     content: Schema.optionalKey(Schema.Union([CampaignContentInput, Schema.Null])),
     audience: Schema.optionalKey(Schema.Union([CampaignAudience, Schema.Null])),
     policy: Schema.optionalKey(Schema.Union([CampaignPolicy, Schema.Null])),
@@ -947,6 +975,8 @@ export type CampaignsScheduleRun201 = CampaignRun;
 export const CampaignsScheduleRun201 = CampaignRun;
 export type CampaignsScheduleRun401 = UnauthorizedError;
 export const CampaignsScheduleRun401 = UnauthorizedError;
+export type CampaignsScheduleRun402 = PaymentRequiredError;
+export const CampaignsScheduleRun402 = PaymentRequiredError;
 export type CampaignsScheduleRun403 = FlagDisabledError | ForbiddenError;
 export const CampaignsScheduleRun403 = /* @__PURE__ */ (() =>
   Schema.Union([FlagDisabledError, ForbiddenError]))();
@@ -970,10 +1000,12 @@ export const CampaignsScheduleRun422 = /* @__PURE__ */ (() =>
   ]))();
 export type CampaignsScheduleRun500 = InternalError;
 export const CampaignsScheduleRun500 = InternalError;
-export type CampaignsScheduleRun502 = ExternalServiceError;
-export const CampaignsScheduleRun502 = ExternalServiceError;
-export type CampaignsScheduleRun503 = SenderNotReadyError;
-export const CampaignsScheduleRun503 = SenderNotReadyError;
+export type CampaignsScheduleRun502 = ExternalServiceError | BillingProviderError;
+export const CampaignsScheduleRun502 = /* @__PURE__ */ (() =>
+  Schema.Union([ExternalServiceError, BillingProviderError]))();
+export type CampaignsScheduleRun503 = SenderNotReadyError | ServiceUnavailableError;
+export const CampaignsScheduleRun503 = /* @__PURE__ */ (() =>
+  Schema.Union([SenderNotReadyError, ServiceUnavailableError]))();
 export type CampaignsScheduleRun504 = GatewayTimeoutError;
 export const CampaignsScheduleRun504 = GatewayTimeoutError;
 export type CampaignsGetRunPathParams = { readonly id: CampaignId; readonly runId: CampaignRunId };
@@ -1125,6 +1157,8 @@ export type CampaignsResumeRun200 = CampaignRunAction;
 export const CampaignsResumeRun200 = CampaignRunAction;
 export type CampaignsResumeRun401 = UnauthorizedError;
 export const CampaignsResumeRun401 = UnauthorizedError;
+export type CampaignsResumeRun402 = PaymentRequiredError;
+export const CampaignsResumeRun402 = PaymentRequiredError;
 export type CampaignsResumeRun403 = ForbiddenError;
 export const CampaignsResumeRun403 = ForbiddenError;
 export type CampaignsResumeRun404 = ResourceNotFoundError;
@@ -1135,8 +1169,9 @@ export type CampaignsResumeRun422 = ValidationError;
 export const CampaignsResumeRun422 = ValidationError;
 export type CampaignsResumeRun500 = InternalError;
 export const CampaignsResumeRun500 = InternalError;
-export type CampaignsResumeRun502 = ExternalServiceError;
-export const CampaignsResumeRun502 = ExternalServiceError;
+export type CampaignsResumeRun502 = ExternalServiceError | BillingProviderError;
+export const CampaignsResumeRun502 = /* @__PURE__ */ (() =>
+  Schema.Union([ExternalServiceError, BillingProviderError]))();
 export type CampaignsResumeRun504 = GatewayTimeoutError;
 export const CampaignsResumeRun504 = GatewayTimeoutError;
 export type CampaignsPreviewRequestJson = {
@@ -1166,6 +1201,8 @@ export const CampaignsPreview422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type CampaignsPreview500 = InternalError;
 export const CampaignsPreview500 = InternalError;
+export type CampaignsPreview503 = ServiceUnavailableError;
+export const CampaignsPreview503 = ServiceUnavailableError;
 export type CampaignsPreview504 = GatewayTimeoutError;
 export const CampaignsPreview504 = GatewayTimeoutError;
 export type CampaignsSendTestRequestJson = {
@@ -1216,9 +1253,12 @@ export const CampaignsSendTest500 = InternalError;
 export type CampaignsSendTest502 = BillingProviderError | ExternalServiceError;
 export const CampaignsSendTest502 = /* @__PURE__ */ (() =>
   Schema.Union([BillingProviderError, ExternalServiceError]))();
-export type CampaignsSendTest503 = SenderNotReadyError | DeliveryUnavailableError;
+export type CampaignsSendTest503 =
+  | ServiceUnavailableError
+  | SenderNotReadyError
+  | DeliveryUnavailableError;
 export const CampaignsSendTest503 = /* @__PURE__ */ (() =>
-  Schema.Union([SenderNotReadyError, DeliveryUnavailableError]))();
+  Schema.Union([ServiceUnavailableError, SenderNotReadyError, DeliveryUnavailableError]))();
 export type CampaignsSendTest504 = GatewayTimeoutError;
 export const CampaignsSendTest504 = GatewayTimeoutError;
 
@@ -1247,9 +1287,11 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       success: CampaignsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
         CampaignsCreate401.pipe(HttpApiSchema.status(401)),
+        CampaignsCreate402.pipe(HttpApiSchema.status(402)),
         CampaignsCreate403.pipe(HttpApiSchema.status(403)),
         CampaignsCreate422.pipe(HttpApiSchema.status(422)),
         CampaignsCreate500,
+        CampaignsCreate502.pipe(HttpApiSchema.status(502)),
         CampaignsCreate504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -1347,6 +1389,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       success: CampaignsScheduleRun201.pipe(HttpApiSchema.status(201)),
       error: [
         CampaignsScheduleRun401.pipe(HttpApiSchema.status(401)),
+        CampaignsScheduleRun402.pipe(HttpApiSchema.status(402)),
         CampaignsScheduleRun403.pipe(HttpApiSchema.status(403)),
         CampaignsScheduleRun404.pipe(HttpApiSchema.status(404)),
         CampaignsScheduleRun409.pipe(HttpApiSchema.status(409)),
@@ -1466,6 +1509,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       success: CampaignsResumeRun200,
       error: [
         CampaignsResumeRun401.pipe(HttpApiSchema.status(401)),
+        CampaignsResumeRun402.pipe(HttpApiSchema.status(402)),
         CampaignsResumeRun403.pipe(HttpApiSchema.status(403)),
         CampaignsResumeRun404.pipe(HttpApiSchema.status(404)),
         CampaignsResumeRun409.pipe(HttpApiSchema.status(409)),
@@ -1478,7 +1522,10 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "campaigns.resumeRun")
       .annotate(OpenApi.Summary, "Resume a campaign run")
-      .annotate(OpenApi.Description, "Resumes a paused campaign run and returns the updated run."),
+      .annotate(
+        OpenApi.Description,
+        "Resumes a paused campaign run and returns the updated run. Campaigns need a paid plan: on Free this is refused with PaymentRequiredError.",
+      ),
     HttpApiEndpoint.post("campaignsPreview", "/v1/campaigns/preview", {
       payload: CampaignsPreviewRequestJson,
       success: CampaignsPreview200,
@@ -1489,6 +1536,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
         CampaignsPreview409.pipe(HttpApiSchema.status(409)),
         CampaignsPreview422.pipe(HttpApiSchema.status(422)),
         CampaignsPreview500,
+        CampaignsPreview503.pipe(HttpApiSchema.status(503)),
         CampaignsPreview504.pipe(HttpApiSchema.status(504)),
       ],
     })

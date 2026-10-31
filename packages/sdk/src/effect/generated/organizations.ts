@@ -12,10 +12,12 @@ import {
   IanaTimezone,
   InternalError,
   JsonValue,
+  MailboxId,
   OperationAccepted,
   PaymentRequiredError,
   ResourceNotFoundError,
   UnauthorizedError,
+  UserId,
   ValidationError,
 } from "./shared";
 
@@ -91,7 +93,11 @@ export const Organization = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "Organization" }))();
 export type OrganizationsCreateRequestJson = { readonly name: string };
 export const OrganizationsCreateRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({ name: Schema.String }))();
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+    ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
+  }))();
 export type OrganizationsCreate200 = Organization;
 export const OrganizationsCreate200 = Organization;
 export type OrganizationsCreate401 = UnauthorizedError;
@@ -135,7 +141,18 @@ export type OrganizationsUpdateRequestJson = {
 };
 export const OrganizationsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     avatarUrl: Schema.optionalKey(
       Schema.Union([
@@ -245,6 +262,64 @@ export type OrganizationsDelete500 = InternalError;
 export const OrganizationsDelete500 = InternalError;
 export type OrganizationsDelete504 = GatewayTimeoutError;
 export const OrganizationsDelete504 = GatewayTimeoutError;
+export type OrganizationsAssignPersonalMailboxPathParams = { readonly userId: UserId };
+export const OrganizationsAssignPersonalMailboxPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ userId: UserId }))();
+export type OrganizationsAssignPersonalMailboxRequestJson = { readonly mailboxAddress: string };
+export const OrganizationsAssignPersonalMailboxRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ mailboxAddress: Schema.String }))();
+export type OrganizationsAssignPersonalMailbox200 = { readonly mailboxId: MailboxId };
+export const OrganizationsAssignPersonalMailbox200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ mailboxId: MailboxId }))();
+export type OrganizationsAssignPersonalMailbox401 = UnauthorizedError;
+export const OrganizationsAssignPersonalMailbox401 = UnauthorizedError;
+export type OrganizationsAssignPersonalMailbox402 = PaymentRequiredError;
+export const OrganizationsAssignPersonalMailbox402 = PaymentRequiredError;
+export type OrganizationsAssignPersonalMailbox403 = ForbiddenError;
+export const OrganizationsAssignPersonalMailbox403 = ForbiddenError;
+export type OrganizationsAssignPersonalMailbox404 = ResourceNotFoundError;
+export const OrganizationsAssignPersonalMailbox404 = ResourceNotFoundError;
+export type OrganizationsAssignPersonalMailbox409 = ConflictError;
+export const OrganizationsAssignPersonalMailbox409 = ConflictError;
+export type OrganizationsAssignPersonalMailbox422 = ValidationError;
+export const OrganizationsAssignPersonalMailbox422 = ValidationError;
+export type OrganizationsAssignPersonalMailbox500 = InternalError;
+export const OrganizationsAssignPersonalMailbox500 = InternalError;
+export type OrganizationsAssignPersonalMailbox502 = BillingProviderError;
+export const OrganizationsAssignPersonalMailbox502 = BillingProviderError;
+export type OrganizationsAssignPersonalMailbox504 = GatewayTimeoutError;
+export const OrganizationsAssignPersonalMailbox504 = GatewayTimeoutError;
+export type OrganizationsGetPersonalMailboxAddressOptions200 = {
+  readonly domains: ReadonlyArray<string>;
+  readonly defaultDomain: string;
+};
+export const OrganizationsGetPersonalMailboxAddressOptions200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ domains: Schema.Array(Schema.String), defaultDomain: Schema.String }))();
+export type OrganizationsGetPersonalMailboxAddressOptions401 = UnauthorizedError;
+export const OrganizationsGetPersonalMailboxAddressOptions401 = UnauthorizedError;
+export type OrganizationsGetPersonalMailboxAddressOptions403 = ForbiddenError;
+export const OrganizationsGetPersonalMailboxAddressOptions403 = ForbiddenError;
+export type OrganizationsGetPersonalMailboxAddressOptions422 = ValidationError;
+export const OrganizationsGetPersonalMailboxAddressOptions422 = ValidationError;
+export type OrganizationsGetPersonalMailboxAddressOptions500 = InternalError;
+export const OrganizationsGetPersonalMailboxAddressOptions500 = InternalError;
+export type OrganizationsGetPersonalMailboxAddressOptions504 = GatewayTimeoutError;
+export const OrganizationsGetPersonalMailboxAddressOptions504 = GatewayTimeoutError;
+export type OrganizationsListPersonalMailboxAssignments200 = {
+  readonly items: ReadonlyArray<{ readonly userId: UserId }>;
+};
+export const OrganizationsListPersonalMailboxAssignments200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(Schema.Struct({ userId: UserId })) }))();
+export type OrganizationsListPersonalMailboxAssignments401 = UnauthorizedError;
+export const OrganizationsListPersonalMailboxAssignments401 = UnauthorizedError;
+export type OrganizationsListPersonalMailboxAssignments403 = ForbiddenError;
+export const OrganizationsListPersonalMailboxAssignments403 = ForbiddenError;
+export type OrganizationsListPersonalMailboxAssignments422 = ValidationError;
+export const OrganizationsListPersonalMailboxAssignments422 = ValidationError;
+export type OrganizationsListPersonalMailboxAssignments500 = InternalError;
+export const OrganizationsListPersonalMailboxAssignments500 = InternalError;
+export type OrganizationsListPersonalMailboxAssignments504 = GatewayTimeoutError;
+export const OrganizationsListPersonalMailboxAssignments504 = GatewayTimeoutError;
 export type OrganizationsGetTrustTier200 = {
   readonly tier: "screened" | "probation" | "established";
   readonly changedAt: string;
@@ -574,6 +649,75 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       .annotate(
         OpenApi.Description,
         "Starts an owner-authorized organization deletion operation, confirming the organization name in the request. Repeating the same request with the same Idempotency-Key returns the existing organization-scoped operation.",
+      ),
+    HttpApiEndpoint.post(
+      "organizationsAssignPersonalMailbox",
+      "/v1/organizations/members/:userId/personal-mailbox",
+      {
+        params: OrganizationsAssignPersonalMailboxPathParams,
+        payload: OrganizationsAssignPersonalMailboxRequestJson,
+        success: OrganizationsAssignPersonalMailbox200,
+        error: [
+          OrganizationsAssignPersonalMailbox401.pipe(HttpApiSchema.status(401)),
+          OrganizationsAssignPersonalMailbox402.pipe(HttpApiSchema.status(402)),
+          OrganizationsAssignPersonalMailbox403.pipe(HttpApiSchema.status(403)),
+          OrganizationsAssignPersonalMailbox404.pipe(HttpApiSchema.status(404)),
+          OrganizationsAssignPersonalMailbox409.pipe(HttpApiSchema.status(409)),
+          OrganizationsAssignPersonalMailbox422.pipe(HttpApiSchema.status(422)),
+          OrganizationsAssignPersonalMailbox500,
+          OrganizationsAssignPersonalMailbox502.pipe(HttpApiSchema.status(502)),
+          OrganizationsAssignPersonalMailbox504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "organizations.assignPersonalMailbox")
+      .annotate(OpenApi.Summary, "Assign a personal mailbox")
+      .annotate(
+        OpenApi.Description,
+        "Assigns a personal address to an existing member. Only organization owners and admins may assign it; the member receives the sole user grant. Returns the mailbox ID without granting the assigner access.",
+      ),
+    HttpApiEndpoint.get(
+      "organizationsGetPersonalMailboxAddressOptions",
+      "/v1/organizations/personal-mailboxes/address-options",
+      {
+        success: OrganizationsGetPersonalMailboxAddressOptions200,
+        error: [
+          OrganizationsGetPersonalMailboxAddressOptions401.pipe(HttpApiSchema.status(401)),
+          OrganizationsGetPersonalMailboxAddressOptions403.pipe(HttpApiSchema.status(403)),
+          OrganizationsGetPersonalMailboxAddressOptions422.pipe(HttpApiSchema.status(422)),
+          OrganizationsGetPersonalMailboxAddressOptions500,
+          OrganizationsGetPersonalMailboxAddressOptions504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "organizations.getPersonalMailboxAddressOptions")
+      .annotate(OpenApi.Summary, "Get personal address domains")
+      .annotate(
+        OpenApi.Description,
+        "Returns this organization's verified active receiving domains and a default domain. When none are available, returns the organization's hosted mail domain. Only organization owners and admins may read these options.",
+      ),
+    HttpApiEndpoint.get(
+      "organizationsListPersonalMailboxAssignments",
+      "/v1/organizations/personal-mailboxes/assignments",
+      {
+        success: OrganizationsListPersonalMailboxAssignments200,
+        error: [
+          OrganizationsListPersonalMailboxAssignments401.pipe(HttpApiSchema.status(401)),
+          OrganizationsListPersonalMailboxAssignments403.pipe(HttpApiSchema.status(403)),
+          OrganizationsListPersonalMailboxAssignments422.pipe(HttpApiSchema.status(422)),
+          OrganizationsListPersonalMailboxAssignments500,
+          OrganizationsListPersonalMailboxAssignments504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "organizations.listPersonalMailboxAssignments")
+      .annotate(OpenApi.Summary, "List members with personal mailboxes")
+      .annotate(
+        OpenApi.Description,
+        "Returns the user IDs with a personal mailbox in this organization, including paused mailboxes. Only organization owners and admins may list assignments. This grants no mailbox access.",
       ),
     HttpApiEndpoint.get("organizationsGetTrustTier", "/v1/organizations/trust-tier", {
       success: OrganizationsGetTrustTier200,

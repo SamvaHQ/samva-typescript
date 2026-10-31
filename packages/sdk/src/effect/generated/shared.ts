@@ -521,17 +521,6 @@ export const EmailCustomHeaders = /* @__PURE__ */ (() =>
         identifier: "EmailCustomHeaders",
       }),
     ))();
-export type CampaignFrom = { readonly email: string; readonly name?: string | null } | null;
-export const CampaignFrom = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Struct({
-      email: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      ),
-      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    }),
-    Schema.Null,
-  ]).annotate({ identifier: "CampaignFrom" }))();
 export type ConversationId = string & EffectBrand.Brand<"ConversationId">;
 export const ConversationId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -588,6 +577,28 @@ export const SendsSeries = /* @__PURE__ */ (() =>
       "Daily email sends for the last 14 calendar days in the organization's own timezone, oldest first and zero-filled. Always fourteen entries; an entity that has never sent reports fourteen zeroes.",
     identifier: "SendsSeries",
   }))();
+export type CampaignFromInput = { readonly email: string; readonly name?: string | null } | null;
+export const CampaignFromInput = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      email: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+    }),
+    Schema.Null,
+  ]).annotate({ identifier: "CampaignFromInput" }))();
 export class FlagDisabledError extends Schema.TaggedError<FlagDisabledError>()(
   "FlagDisabledError",
   Schema.Struct({ flag: Schema.String, message: Schema.String }),
@@ -727,6 +738,15 @@ export class SenderNotReadyError extends Schema.TaggedError<SenderNotReadyError>
         Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
         Schema.Null,
       ]),
+    ),
+  }),
+) {}
+export class ServiceUnavailableError extends Schema.TaggedError<ServiceUnavailableError>()(
+  "ServiceUnavailableError",
+  Schema.Struct({
+    message: Schema.String,
+    retryAfterSeconds: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
     ),
   }),
 ) {}
@@ -1334,7 +1354,18 @@ export const EmailSender = /* @__PURE__ */ (() =>
       email: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
       ),
-      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
     }),
     Schema.Null,
   ]).annotate({ identifier: "EmailSender" }))();
@@ -1548,7 +1579,9 @@ export type CreateMailboxLabelPayload = {
 export const CreateMailboxLabelPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String,
-    displayName: Schema.String,
+    displayName: Schema.String.check(
+      Schema.isMaxCodePoints(40).annotate({ expected: "a string with at most 40 code points" }),
+    ).check(Schema.isMaxLength(40).annotate({ expected: "a value with a length of at most 40" })),
     color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -2253,7 +2286,18 @@ export type UpdateMailboxEndpointPayload = {
 };
 export const UpdateMailboxEndpointPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     default: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
   }).annotate({ identifier: "UpdateMailboxEndpointPayload" }))();
 export type UpdateMailboxLabelPayload = {
@@ -2262,7 +2306,16 @@ export type UpdateMailboxLabelPayload = {
 };
 export const UpdateMailboxLabelPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(40).annotate({ expected: "a string with at most 40 code points" }),
+        ).check(
+          Schema.isMaxLength(40).annotate({ expected: "a value with a length of at most 40" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -3069,7 +3122,15 @@ export const NewsletterCreatePayload = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
         Schema.Null,
       ]),
     ),
@@ -3114,7 +3175,18 @@ export const SubscribePayload = /* @__PURE__ */ (() =>
     topicId: TopicId,
     from: Schema.Struct({
       email: Schema.String,
-      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
     }).annotate({
       description:
         "Your verified email sender. The ordinary send pipeline selects its domain and customer brand.",
@@ -3226,8 +3298,30 @@ export const EmailRecipient = /* @__PURE__ */ (() =>
     Schema.Struct({ contactId: ContactId }),
     Schema.Struct({
       email: Schema.String,
-      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      displayName: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
     }),
   ]).annotate({ identifier: "EmailRecipient" }))();
 export type TopicContactById = { readonly contactId: ContactId };
@@ -3431,7 +3525,13 @@ export const TopicCreatePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
+    )
+      .check(
+        Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+      ),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     default: Schema.optionalKey(
@@ -3458,7 +3558,15 @@ export const TopicUpdatePayload = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
         Schema.Null,
       ]),
     ),
@@ -3642,7 +3750,18 @@ export const CreateMailboxEndpointPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     channel: MailboxChannel,
     address: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
   }).annotate({ identifier: "CreateMailboxEndpointPayload" }))();
 export type UpdateMailboxPayload = {
   readonly name?: string | null;
@@ -3654,7 +3773,15 @@ export const UpdateMailboxPayload = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
         Schema.Null,
       ]),
     ),
@@ -3808,6 +3935,8 @@ export const UpdateMailboxPolicyPayload = /* @__PURE__ */ (() =>
 export type UpdateMailboxThreadPayload = {
   readonly folder?: MailboxThreadFolder | null;
   readonly priority?: MailboxThreadPriority | null;
+  readonly done?: boolean | null;
+  readonly closed?: boolean | null;
   readonly read?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozedUntil?: string | null;
@@ -3816,6 +3945,8 @@ export const UpdateMailboxThreadPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
     priority: Schema.optionalKey(Schema.Union([MailboxThreadPriority, Schema.Null])),
+    done: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    closed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozedUntil: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
@@ -4531,7 +4662,9 @@ export const CreateMailboxPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     endpoint: CreateMailboxEndpointPayload,
-    name: Schema.String,
+    name: Schema.String.check(
+      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+    ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
     slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     metadata: Schema.optionalKey(Schema.Union([MailboxMetadata, Schema.Null])),
   }).annotate({ identifier: "CreateMailboxPayload" }))();
@@ -4927,7 +5060,7 @@ export type CampaignContentInput = {
   readonly channel: "email";
   readonly email: CampaignEmailInput;
   readonly issue?: { readonly path: string; readonly commit: string } | null;
-  readonly from?: CampaignFrom;
+  readonly from?: CampaignFromInput;
   readonly replyMailboxId?: CampaignReplyMailbox;
   readonly conversationId?: CampaignConversationRef;
   readonly metadata?: CampaignContentMetadata;
@@ -4972,7 +5105,7 @@ export const CampaignContentInput = /* @__PURE__ */ (() =>
           "Render a saved Markdown issue from the audience topic's repository. Its saved title and preheader supply the email content; templateData supplies recipient fallbacks.",
       }),
     ),
-    from: Schema.optionalKey(CampaignFrom),
+    from: Schema.optionalKey(CampaignFromInput),
     replyMailboxId: Schema.optionalKey(CampaignReplyMailbox),
     conversationId: Schema.optionalKey(CampaignConversationRef),
     metadata: Schema.optionalKey(CampaignContentMetadata),
@@ -4998,6 +5131,27 @@ export const EmailSendMessagePayload = /* @__PURE__ */ (() =>
     from: Schema.optionalKey(EmailSender),
     email: EmailContent,
   }).annotate({ identifier: "EmailSendMessagePayload" }))();
+export type SendMessagePayload = {
+  readonly conversationId?: ConversationId | null;
+  readonly metadata?: MessageMetadata;
+  readonly channel: "email";
+  readonly to: EmailRecipients;
+  readonly cc?: EmailCcRecipients;
+  readonly bcc?: EmailBccRecipients;
+  readonly from?: EmailSender;
+  readonly email: EmailContent;
+};
+export const SendMessagePayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("email"),
+    to: EmailRecipients,
+    cc: Schema.optionalKey(EmailCcRecipients),
+    bcc: Schema.optionalKey(EmailBccRecipients),
+    from: Schema.optionalKey(EmailSender),
+    email: EmailContent,
+  }).annotate({ identifier: "SendMessagePayload" }))();
 export type JourneyCondition = {
   readonly match: "all" | "any";
   readonly predicates: readonly [JourneyPredicate, ...Array<JourneyPredicate>];

@@ -1140,6 +1140,13 @@ export type MailboxThreadState = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  doneAt: string | null;
+  closedAt: string | null;
+  closedBy: {
+    kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    id: string;
+    displayName?: string | null | undefined;
+  } | null;
 };
 
 export type MailboxLabelId = string;
@@ -1155,6 +1162,8 @@ export type MailboxThreadLabels = {
 export type UpdateMailboxThreadPayload = {
   folder?: MailboxThreadFolder | null | undefined;
   priority?: MailboxThreadPriority | null | undefined;
+  done?: boolean | null | undefined;
+  closed?: boolean | null | undefined;
   read?: boolean | null | undefined;
   starred?: boolean | null | undefined;
   snoozedUntil?: string | null | undefined;
@@ -1176,6 +1185,13 @@ export type MailboxThread = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  doneAt: string | null;
+  closedAt: string | null;
+  closedBy: {
+    kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    id: string;
+    displayName?: string | null | undefined;
+  } | null;
   lastActivityAt: string;
   conversationId: ConversationId;
   participants: Array<MailboxThreadParticipant>;
@@ -1218,8 +1234,123 @@ export type MailboxThreadSummary = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  doneAt: string | null;
+  closedAt: string | null;
+  closedBy: {
+    kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    id: string;
+    displayName?: string | null | undefined;
+  } | null;
   lastActivityAt: string;
 };
+
+export type OrganizationMailboxThreadPage = {
+  items: Array<OrganizationMailboxThreadSummary>;
+  nextCursor: string | null;
+};
+
+export type OrganizationMailboxThreadSummary = {
+  id: MailboxThreadId;
+  channel: MailboxChannel;
+  endpointId: MailboxEndpointId | null;
+  subject: string | null;
+  preview: string | null;
+  from: MailboxThreadSender | null;
+  messageCount: number;
+  hasAttachments: boolean;
+  hasDraft: boolean;
+  folder: MailboxThreadFolder;
+  priority: MailboxThreadPriority;
+  labels: Array<MailboxLabelId>;
+  read: boolean;
+  starred: boolean;
+  snoozedUntil: string | null;
+  doneAt: string | null;
+  closedAt: string | null;
+  closedBy: {
+    kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    id: string;
+    displayName?: string | null | undefined;
+  } | null;
+  lastActivityAt: string;
+  mailbox: MailboxThreadMailbox;
+};
+
+export type MailboxThreadMailbox = {
+  id: MailboxId;
+  address: string | null;
+  kind: "personal" | "shared";
+};
+
+export type OrganizationMailboxDraftPage = {
+  items: Array<OrganizationMailboxDraftSummary>;
+  nextCursor: string | null;
+};
+
+export type OrganizationMailboxDraftSummary = {
+  id: MailboxDraftId;
+  channel: MailboxChannel;
+  threadId: MailboxThreadId | null;
+  inReplyToMessageId: MessageId | null;
+  state: MailboxDraftState;
+  lockedByActionId: MailboxActionId | null;
+  to: Array<string>;
+  subject: string | null;
+  createdAt: string;
+  updatedAt: string;
+  mailbox: MailboxThreadMailbox;
+};
+
+export type MailboxNeedsYou = {
+  items: Array<MailboxNeedsYouItem>;
+  nextCursor: string | null;
+  /**
+   * All items this caller may decide, independent of the current page.
+   */
+  counts: {
+    heldSends: number;
+    quarantinedMessages: number;
+    total: number;
+  };
+};
+
+export type MailboxNeedsYouItem =
+  | {
+      type: "heldSend";
+      id: MailboxActionId;
+      mailbox: MailboxThreadMailbox;
+      threadId: MailboxThreadId | null;
+      draftId: MailboxDraftId | null;
+      proposedBy: {
+        kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+        id: string;
+        displayName?: string | null | undefined;
+      };
+      source:
+        | "humanUi"
+        | "externalApi"
+        | "aiSdkTool"
+        | "extension"
+        | "externalAgent"
+        | "samvaManagedAgent"
+        | "system";
+      createdAt: string;
+    }
+  | {
+      type: "quarantinedMessage";
+      id: MessageId;
+      mailbox: MailboxThreadMailbox;
+      reason:
+        | "spam"
+        | "dmarc"
+        | "virus"
+        | "virus_unscanned"
+        | "phishing"
+        | "fraud"
+        | "prompt_injection";
+      source: "receipt" | "classifier";
+      heldAt: string;
+    };
 
 export type MailboxLabel = {
   id: MailboxLabelId;
@@ -1394,6 +1525,8 @@ export type MailboxAgentActivity = {
 
 export type Mailbox = {
   id: MailboxId;
+  kind: MailboxKind;
+  owner: UserId | null;
   namespaceId: NamespaceId | null;
   slug: string;
   name: string;
@@ -1425,6 +1558,11 @@ export type MailboxMetadataWritable = {
 };
 
 export type MailboxStatus = "active" | "paused";
+
+/**
+ * Whether a mailbox belongs to one person or is shared with a team.
+ */
+export type MailboxKind = "personal" | "shared";
 
 export type UpdateMailboxEndpointPayload = {
   displayName?: string | null | undefined;
@@ -1461,6 +1599,8 @@ export type MailboxPage = {
 
 export type MailboxSummary = {
   id: MailboxId;
+  kind: MailboxKind;
+  owner: UserId | null;
   namespaceId: NamespaceId | null;
   slug: string;
   name: string;
@@ -1477,7 +1617,7 @@ export type Whoami = {
 export type WhoamiUserCredential = {
   type: "user";
   user: WhoamiUser;
-  role: "member" | "admin" | "owner";
+  role: "mail_user" | "member" | "admin" | "owner";
 };
 
 export type WhoamiUser = {
@@ -2098,6 +2238,12 @@ export type CreateBrand = {
 
 export type BrandList = {
   items: Array<Brand>;
+};
+
+export type ServiceUnavailableError = {
+  _tag: "ServiceUnavailableError";
+  message: string;
+  retryAfterSeconds: number;
 };
 
 export type TemplateSourceError = {
@@ -4893,11 +5039,16 @@ export type CampaignContentInput = {
       }
     | null
     | undefined;
-  from?: CampaignFrom | undefined;
+  from?: CampaignFromInput | undefined;
   replyMailboxId?: CampaignReplyMailbox | undefined;
   conversationId?: CampaignConversationRef | undefined;
   metadata?: CampaignContentMetadataWritable | undefined;
 };
+
+export type CampaignFromInput = {
+  email: string;
+  name?: string | null | undefined;
+} | null;
 
 export type CampaignEmailInput = {
   subject?: string | null | undefined;
@@ -4967,7 +5118,7 @@ export type ScheduledMessage = {
   status: "pending" | "dispatching" | "paused" | "dispatched" | "cancelled" | "failed";
   scheduledFor: string;
   timezone: string;
-  send: SendMessagePayload;
+  send: StoredSendMessagePayload;
   messageId: MessageId | null;
   idempotencyKey: string | null;
   referenceId: string | null;
@@ -4980,14 +5131,20 @@ export type ScheduledMessage = {
   updatedAt: string;
 };
 
-export type SendMessagePayload = {
+export type StoredSendMessagePayload = {
   conversationId?: ConversationId | null | undefined;
   metadata?: MessageMetadata | undefined;
   channel: "email";
-  to: EmailRecipients;
-  cc?: EmailCcRecipients | undefined;
-  bcc?: EmailBccRecipients | undefined;
-  from?: EmailSender | undefined;
+  to: Array<SavedEmailRecipient>;
+  cc?: Array<SavedEmailRecipient> | null | undefined;
+  bcc?: Array<SavedEmailRecipient> | null | undefined;
+  from?:
+    | {
+        email: string;
+        name?: string | null | undefined;
+      }
+    | null
+    | undefined;
   email: EmailContent;
 };
 
@@ -4998,17 +5155,6 @@ export type MessageMetadata = {
 export type MessageMetadataWritable = {
   [key: string]: JsonValueWritable | undefined;
 } | null;
-
-export type EmailSendMessagePayload = {
-  conversationId?: ConversationId | null | undefined;
-  metadata?: MessageMetadata | undefined;
-  channel: "email";
-  to: EmailRecipients;
-  cc?: EmailCcRecipients | undefined;
-  bcc?: EmailBccRecipients | undefined;
-  from?: EmailSender | undefined;
-  email: EmailContent;
-};
 
 export type EmailContent = {
   subject?: string | null | undefined;
@@ -5056,14 +5202,7 @@ export type EmailContentWritable = {
   headers?: EmailCustomHeadersWritable | null | undefined;
 };
 
-export type EmailSender = {
-  email: string;
-  name?: string | null | undefined;
-} | null;
-
-export type EmailBccRecipients = Array<EmailRecipient> | null;
-
-export type EmailRecipient =
+export type SavedEmailRecipient =
   | {
       contactId: ContactId;
     }
@@ -5072,10 +5211,6 @@ export type EmailRecipient =
       name?: string | null | undefined;
       displayName?: string | null | undefined;
     };
-
-export type EmailCcRecipients = Array<EmailRecipient> | null;
-
-export type EmailRecipients = Array<EmailRecipient>;
 
 export type ScheduledMessageId = string;
 
@@ -5118,6 +5253,27 @@ export type EmailDispatchContent = {
   headers?: EmailCustomHeadersWritable | null | undefined;
 };
 
+export type EmailSender = {
+  email: string;
+  name?: string | null | undefined;
+} | null;
+
+export type EmailBccRecipients = Array<EmailRecipient> | null;
+
+export type EmailRecipient =
+  | {
+      contactId: ContactId;
+    }
+  | {
+      email: string;
+      name?: string | null | undefined;
+      displayName?: string | null | undefined;
+    };
+
+export type EmailCcRecipients = Array<EmailRecipient> | null;
+
+export type EmailRecipients = Array<EmailRecipient>;
+
 export type OperationPage = {
   items: Array<Operation>;
   nextCursor: string | null;
@@ -5157,6 +5313,17 @@ export type ValidateEmailResponse = {
   };
 };
 
+export type EmailSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadata | undefined;
+  channel: "email";
+  to: EmailRecipients;
+  cc?: EmailCcRecipients | undefined;
+  bcc?: EmailBccRecipients | undefined;
+  from?: EmailSender | undefined;
+  email: EmailContent;
+};
+
 export type MessageReceipt = {
   id: MessageId;
   status:
@@ -5186,6 +5353,17 @@ export type MessageReceipt = {
   reviewExpectedAt: string | null;
   skippedRecipients: Array<SkippedRecipient>;
   createdAt: string;
+};
+
+export type SendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadata | undefined;
+  channel: "email";
+  to: EmailRecipients;
+  cc?: EmailCcRecipients | undefined;
+  bcc?: EmailBccRecipients | undefined;
+  from?: EmailSender | undefined;
+  email: EmailContent;
 };
 
 export type EmailAddress = {
@@ -6599,6 +6777,10 @@ export type CampaignsPreviewErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -6669,9 +6851,9 @@ export type CampaignsSendTestErrors = {
    */
   502: BillingProviderError | ExternalServiceError;
   /**
-   * SenderNotReadyError | DeliveryUnavailableError
+   * ServiceUnavailableError | SenderNotReadyError | DeliveryUnavailableError
    */
-  503: SenderNotReadyError | DeliveryUnavailableError;
+  503: ServiceUnavailableError | SenderNotReadyError | DeliveryUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -6754,6 +6936,10 @@ export type CampaignsCreateErrors = {
    */
   401: UnauthorizedError;
   /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
    * FlagDisabledError | ForbiddenError
    */
   403: FlagDisabledError | ForbiddenError;
@@ -6765,6 +6951,10 @@ export type CampaignsCreateErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
   /**
    * GatewayTimeoutError
    */
@@ -7017,6 +7207,10 @@ export type CampaignsScheduleRunErrors = {
    */
   401: UnauthorizedError;
   /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
    * FlagDisabledError | ForbiddenError
    */
   403: FlagDisabledError | ForbiddenError;
@@ -7042,13 +7236,13 @@ export type CampaignsScheduleRunErrors = {
    */
   500: InternalError;
   /**
-   * ExternalServiceError
+   * ExternalServiceError | BillingProviderError
    */
-  502: ExternalServiceError;
+  502: ExternalServiceError | BillingProviderError;
   /**
-   * SenderNotReadyError
+   * SenderNotReadyError | ServiceUnavailableError
    */
-  503: SenderNotReadyError;
+  503: SenderNotReadyError | ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -7239,6 +7433,10 @@ export type CampaignsResumeRunErrors = {
    */
   401: UnauthorizedError;
   /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
    * ForbiddenError
    */
   403: ForbiddenError;
@@ -7259,9 +7457,9 @@ export type CampaignsResumeRunErrors = {
    */
   500: InternalError;
   /**
-   * ExternalServiceError
+   * ExternalServiceError | BillingProviderError
    */
-  502: ExternalServiceError;
+  502: ExternalServiceError | BillingProviderError;
   /**
    * GatewayTimeoutError
    */
@@ -16581,6 +16779,10 @@ export type NewsletterIssuesListErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -16640,6 +16842,10 @@ export type NewsletterIssuesUpdateErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -16786,6 +16992,10 @@ export type NewsletterIssuesCreateErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -16923,6 +17133,10 @@ export type NewsletterIssuesOpenErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -17065,6 +17279,10 @@ export type NewsletterIssuesGetErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -17122,6 +17340,10 @@ export type NewsletterIssuesRemoveErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -17268,6 +17490,10 @@ export type NewsletterIssuesSaveErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -17396,6 +17622,10 @@ export type NewsletterIssuesCheckErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -17559,6 +17789,10 @@ export type NewsletterIssuesRenderErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -17761,6 +17995,10 @@ export type NewsletterIssuesHeadErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -17819,6 +18057,10 @@ export type NewsletterIssuesHistoryErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -18609,6 +18851,10 @@ export type TemplatesCreateErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -19246,6 +19492,10 @@ export type TemplatesCreateFromWebsiteErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -19374,6 +19624,10 @@ export type TemplatesPatchWorkspaceErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -19512,6 +19766,10 @@ export type TemplatesOpenWorkspaceErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -19653,6 +19911,10 @@ export type TemplatesDiffWorkspaceErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -19728,6 +19990,10 @@ export type TemplatesPutWorkspaceAssetErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -19879,6 +20145,10 @@ export type TemplatesResolveWorkspaceConflictErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -20024,6 +20294,10 @@ export type TemplatesSaveWorkspaceErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -20152,6 +20426,10 @@ export type TemplatesRestoreWorkspaceErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -20299,6 +20577,10 @@ export type TemplatesWorkspaceHistoryErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -20367,6 +20649,10 @@ export type TemplatesCheckWorkspaceErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -20525,6 +20811,10 @@ export type TemplatesRenderWorkspaceFixtureErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -20732,6 +21022,10 @@ export type TemplatesPublishErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -21267,6 +21561,10 @@ export type TemplatesGetGitRepositoryErrors = {
    */
   500: InternalError;
   /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
    * GatewayTimeoutError
    */
   504: GatewayTimeoutError;
@@ -21324,6 +21622,10 @@ export type TemplatesIssueGitCredentialErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -21396,6 +21698,10 @@ export type TemplatesAttachWorkspaceResourceErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -21535,6 +21841,10 @@ export type TemplatesRemoveWorkspaceResourceErrors = {
    * InternalError
    */
   500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */
@@ -22824,6 +23134,164 @@ export type OrganizationsGetProfileResponses = {
 
 export type OrganizationsGetProfileResponse =
   OrganizationsGetProfileResponses[keyof OrganizationsGetProfileResponses];
+
+export type OrganizationsAssignPersonalMailboxData = {
+  body: {
+    mailboxAddress: string;
+  };
+  path: {
+    userId: UserId;
+  };
+  query?: never;
+  url: "/v1/organizations/members/{userId}/personal-mailbox";
+};
+
+export type OrganizationsAssignPersonalMailboxErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type OrganizationsAssignPersonalMailboxError =
+  OrganizationsAssignPersonalMailboxErrors[keyof OrganizationsAssignPersonalMailboxErrors];
+
+export type OrganizationsAssignPersonalMailboxResponses = {
+  /**
+   * Success
+   */
+  200: {
+    mailboxId: MailboxId;
+  };
+};
+
+export type OrganizationsAssignPersonalMailboxResponse =
+  OrganizationsAssignPersonalMailboxResponses[keyof OrganizationsAssignPersonalMailboxResponses];
+
+export type OrganizationsListPersonalMailboxAssignmentsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/organizations/personal-mailboxes/assignments";
+};
+
+export type OrganizationsListPersonalMailboxAssignmentsErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type OrganizationsListPersonalMailboxAssignmentsError =
+  OrganizationsListPersonalMailboxAssignmentsErrors[keyof OrganizationsListPersonalMailboxAssignmentsErrors];
+
+export type OrganizationsListPersonalMailboxAssignmentsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    items: Array<{
+      userId: UserId;
+    }>;
+  };
+};
+
+export type OrganizationsListPersonalMailboxAssignmentsResponse =
+  OrganizationsListPersonalMailboxAssignmentsResponses[keyof OrganizationsListPersonalMailboxAssignmentsResponses];
+
+export type OrganizationsGetPersonalMailboxAddressOptionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/organizations/personal-mailboxes/address-options";
+};
+
+export type OrganizationsGetPersonalMailboxAddressOptionsErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type OrganizationsGetPersonalMailboxAddressOptionsError =
+  OrganizationsGetPersonalMailboxAddressOptionsErrors[keyof OrganizationsGetPersonalMailboxAddressOptionsErrors];
+
+export type OrganizationsGetPersonalMailboxAddressOptionsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    domains: Array<string>;
+    defaultDomain: string;
+  };
+};
+
+export type OrganizationsGetPersonalMailboxAddressOptionsResponse =
+  OrganizationsGetPersonalMailboxAddressOptionsResponses[keyof OrganizationsGetPersonalMailboxAddressOptionsResponses];
 
 export type OrganizationsGetTrustTierData = {
   body?: never;
@@ -24888,6 +25356,167 @@ export type MailboxesUpdateLabelResponses = {
 export type MailboxesUpdateLabelResponse =
   MailboxesUpdateLabelResponses[keyof MailboxesUpdateLabelResponses];
 
+export type MailboxesGetNeedsYouData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: Cursor | null | undefined;
+  };
+  url: "/v1/mailboxes/needs-you";
+};
+
+export type MailboxesGetNeedsYouErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesGetNeedsYouError =
+  MailboxesGetNeedsYouErrors[keyof MailboxesGetNeedsYouErrors];
+
+export type MailboxesGetNeedsYouResponses = {
+  /**
+   * MailboxNeedsYou
+   */
+  200: MailboxNeedsYou;
+};
+
+export type MailboxesGetNeedsYouResponse =
+  MailboxesGetNeedsYouResponses[keyof MailboxesGetNeedsYouResponses];
+
+export type MailboxesListOrganizationDraftsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: Cursor | null | undefined;
+    mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
+    kind?: "personal" | "shared" | null | undefined;
+    threadId?: MailboxThreadId | null | undefined;
+  };
+  url: "/v1/mailboxes/drafts";
+};
+
+export type MailboxesListOrganizationDraftsErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesListOrganizationDraftsError =
+  MailboxesListOrganizationDraftsErrors[keyof MailboxesListOrganizationDraftsErrors];
+
+export type MailboxesListOrganizationDraftsResponses = {
+  /**
+   * OrganizationMailboxDraftPage
+   */
+  200: OrganizationMailboxDraftPage;
+};
+
+export type MailboxesListOrganizationDraftsResponse =
+  MailboxesListOrganizationDraftsResponses[keyof MailboxesListOrganizationDraftsResponses];
+
+export type MailboxesListOrganizationThreadsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: Cursor | null | undefined;
+    after?: string | null | undefined;
+    before?: string | null | undefined;
+    q?: string | null | undefined;
+    state?: "active" | "done" | null | undefined;
+    folder?: MailboxThreadFolder | null | undefined;
+    label?: MailboxLabelId | null | undefined;
+    unread?: boolean | null | undefined;
+    starred?: boolean | null | undefined;
+    snoozed?: boolean | null | undefined;
+    mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
+    kind?: "personal" | "shared" | null | undefined;
+    conversation?: ConversationId | null | undefined;
+  };
+  url: "/v1/mailboxes/threads";
+};
+
+export type MailboxesListOrganizationThreadsErrors = {
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesListOrganizationThreadsError =
+  MailboxesListOrganizationThreadsErrors[keyof MailboxesListOrganizationThreadsErrors];
+
+export type MailboxesListOrganizationThreadsResponses = {
+  /**
+   * OrganizationMailboxThreadPage
+   */
+  200: OrganizationMailboxThreadPage;
+};
+
+export type MailboxesListOrganizationThreadsResponse =
+  MailboxesListOrganizationThreadsResponses[keyof MailboxesListOrganizationThreadsResponses];
+
 export type MailboxesListThreadsData = {
   body?: never;
   path: {
@@ -24899,6 +25528,7 @@ export type MailboxesListThreadsData = {
     after?: string | null | undefined;
     before?: string | null | undefined;
     q?: string | null | undefined;
+    state?: "active" | "done" | null | undefined;
     folder?: MailboxThreadFolder | null | undefined;
     label?: MailboxLabelId | null | undefined;
     unread?: boolean | null | undefined;
@@ -25001,6 +25631,8 @@ export type MailboxesUpdateThreadData = {
   body: {
     folder?: MailboxThreadFolder | null | undefined;
     priority?: MailboxThreadPriority | null | undefined;
+    done?: boolean | null | undefined;
+    closed?: boolean | null | undefined;
     read?: boolean | null | undefined;
     starred?: boolean | null | undefined;
     snoozedUntil?: string | null | undefined;

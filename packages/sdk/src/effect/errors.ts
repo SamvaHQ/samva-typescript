@@ -18,6 +18,7 @@ export {
   RateLimitedError,
   ResourceNotFoundError,
   SenderNotReadyError,
+  ServiceUnavailableError,
   UnauthorizedError,
   ValidationError,
   TemplateSourceError,

@@ -502,6 +502,8 @@ import type {
   MailboxesGetMessageRawErrors,
   MailboxesGetMessageRawResponses,
   MailboxesGetMessageResponses,
+  MailboxesGetNeedsYouErrors,
+  MailboxesGetNeedsYouResponses,
   MailboxesGetPolicyErrors,
   MailboxesGetPolicyResponses,
   MailboxesGetResponses,
@@ -522,6 +524,10 @@ import type {
   MailboxesListGrantsResponses,
   MailboxesListLabelsErrors,
   MailboxesListLabelsResponses,
+  MailboxesListOrganizationDraftsErrors,
+  MailboxesListOrganizationDraftsResponses,
+  MailboxesListOrganizationThreadsErrors,
+  MailboxesListOrganizationThreadsResponses,
   MailboxesListPoliciesErrors,
   MailboxesListPoliciesResponses,
   MailboxesListQuarantineErrors,
@@ -686,6 +692,8 @@ import type {
   OperationsListResponses,
   OperationsRetryErrors,
   OperationsRetryResponses,
+  OrganizationsAssignPersonalMailboxErrors,
+  OrganizationsAssignPersonalMailboxResponses,
   OrganizationsCreateAvatarUploadErrors,
   OrganizationsCreateAvatarUploadResponses,
   OrganizationsCreateErrors,
@@ -693,6 +701,8 @@ import type {
   OrganizationsDeleteErrors,
   OrganizationsDeleteResponses,
   OrganizationsGetErrors,
+  OrganizationsGetPersonalMailboxAddressOptionsErrors,
+  OrganizationsGetPersonalMailboxAddressOptionsResponses,
   OrganizationsGetProfileErrors,
   OrganizationsGetProfileResponses,
   OrganizationsGetResponses,
@@ -700,6 +710,8 @@ import type {
   OrganizationsGetTrustTierResponses,
   OrganizationsGetUsageErrors,
   OrganizationsGetUsageResponses,
+  OrganizationsListPersonalMailboxAssignmentsErrors,
+  OrganizationsListPersonalMailboxAssignmentsResponses,
   OrganizationsUpdateErrors,
   OrganizationsUpdateResponses,
   PhoneRegion,
@@ -2092,7 +2104,7 @@ export class Campaigns {
   /**
    * Resume a campaign run
    *
-   * Resumes a paused campaign run and returns the updated run.
+   * Resumes a paused campaign run and returns the updated run. Campaigns need a paid plan: on Free this is refused with PaymentRequiredError.
    */
   public static resumeRun<ThrowOnError extends boolean = false>(
     parameters: {
@@ -12772,6 +12784,118 @@ export class Organizations {
   }
 
   /**
+   * Assign a personal mailbox
+   *
+   * Assigns a personal address to an existing member. Only organization owners and admins may assign it; the member receives the sole user grant. Returns the mailbox ID without granting the assigner access.
+   */
+  public static assignPersonalMailbox<ThrowOnError extends boolean = false>(
+    parameters: {
+      userId: UserId;
+      mailboxAddress: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    OrganizationsAssignPersonalMailboxResponses,
+    OrganizationsAssignPersonalMailboxErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "userId" },
+            { in: "body", key: "mailboxAddress" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsAssignPersonalMailbox",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          OrganizationsAssignPersonalMailboxResponses,
+          OrganizationsAssignPersonalMailboxErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/members/{userId}/personal-mailbox",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * List members with personal mailboxes
+   *
+   * Returns the user IDs with a personal mailbox in this organization, including paused mailboxes. Only organization owners and admins may list assignments. This grants no mailbox access.
+   */
+  public static listPersonalMailboxAssignments<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    OrganizationsListPersonalMailboxAssignmentsResponses,
+    OrganizationsListPersonalMailboxAssignmentsErrors,
+    ThrowOnError
+  > {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsListPersonalMailboxAssignments",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          OrganizationsListPersonalMailboxAssignmentsResponses,
+          OrganizationsListPersonalMailboxAssignmentsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/personal-mailboxes/assignments",
+          ...options,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get personal address domains
+   *
+   * Returns this organization's verified active receiving domains and a default domain. When none are available, returns the organization's hosted mail domain. Only organization owners and admins may read these options.
+   */
+  public static getPersonalMailboxAddressOptions<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    OrganizationsGetPersonalMailboxAddressOptionsResponses,
+    OrganizationsGetPersonalMailboxAddressOptionsErrors,
+    ThrowOnError
+  > {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsGetPersonalMailboxAddressOptions",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          OrganizationsGetPersonalMailboxAddressOptionsResponses,
+          OrganizationsGetPersonalMailboxAddressOptionsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/personal-mailboxes/address-options",
+          ...options,
+          headers,
+        }),
+    );
+  }
+
+  /**
    * Get organization trust tier and sending limits
    *
    * Returns the current trust tier, plan and probation sending limits, and measured probation graduation progress. Limits are additional to billing allowance, domain readiness, and enforcement. Graduation is evaluated on delivery events.
@@ -13359,7 +13483,7 @@ export class Mailboxes {
   /**
    * Delete a mailbox
    *
-   * Deletes a mailbox with its endpoints, threads, drafts, and history. The messages it received stay with the organization. The mailbox leaves every API key scope and webhook endpoint filter that named it; a key or endpoint left with no mailbox is disabled.
+   * Deletes a mailbox with its endpoints, threads, drafts, and history. The messages it received retain their privacy. The mailbox leaves every API key scope and webhook endpoint filter that named it; a key or endpoint left with no mailbox is disabled. A signed-in organization owner may delete a former member's personal mailbox without reading it.
    */
   public static remove<ThrowOnError extends boolean = false>(
     parameters: {
@@ -14326,6 +14450,170 @@ export class Mailboxes {
   }
 
   /**
+   * List mailbox decisions awaiting you
+   *
+   * Returns held sends this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.
+   */
+  public static getNeedsYou<ThrowOnError extends boolean = false>(
+    parameters?: {
+      limit?: number | null | undefined;
+      cursor?: Cursor | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesGetNeedsYouResponses, MailboxesGetNeedsYouErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGetNeedsYou",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesGetNeedsYouResponses,
+          MailboxesGetNeedsYouErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/needs-you",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * List your drafts across mailboxes
+   *
+   * Lists only the caller's own unsent drafts in mailboxes where they may write drafts, newest first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes and threadId narrows to one thread. Each row carries its mailbox identity. Teammates' and agents' drafts are excluded. Pass nextCursor as cursor for the next page.
+   */
+  public static listOrganizationDrafts<ThrowOnError extends boolean = false>(
+    parameters?: {
+      limit?: number | null | undefined;
+      cursor?: Cursor | null | undefined;
+      mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
+      kind?: "personal" | "shared" | null | undefined;
+      threadId?: MailboxThreadId | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesListOrganizationDraftsResponses,
+    MailboxesListOrganizationDraftsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+            { in: "query", key: "mailboxId" },
+            { in: "query", key: "kind" },
+            { in: "query", key: "threadId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListOrganizationDrafts",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesListOrganizationDraftsResponses,
+          MailboxesListOrganizationDraftsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/drafts",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * List threads across your mailboxes
+   *
+   * Lists only threads in mailboxes the caller can read, newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes the caller's Done and shared closed threads; state=done selects the caller's Done plus closed shared threads, without duplicates. Other filters and cursor pagination match the per-mailbox list.
+   */
+  public static listOrganizationThreads<ThrowOnError extends boolean = false>(
+    parameters?: {
+      limit?: number | null | undefined;
+      cursor?: Cursor | null | undefined;
+      after?: string | null | undefined;
+      before?: string | null | undefined;
+      q?: string | null | undefined;
+      state?: "active" | "done" | null | undefined;
+      folder?: MailboxThreadFolder | null | undefined;
+      label?: MailboxLabelId | null | undefined;
+      unread?: boolean | null | undefined;
+      starred?: boolean | null | undefined;
+      snoozed?: boolean | null | undefined;
+      mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
+      kind?: "personal" | "shared" | null | undefined;
+      conversation?: ConversationId | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesListOrganizationThreadsResponses,
+    MailboxesListOrganizationThreadsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+            { in: "query", key: "after" },
+            { in: "query", key: "before" },
+            { in: "query", key: "q" },
+            { in: "query", key: "state" },
+            { in: "query", key: "folder" },
+            { in: "query", key: "label" },
+            { in: "query", key: "unread" },
+            { in: "query", key: "starred" },
+            { in: "query", key: "snoozed" },
+            { in: "query", key: "mailboxId" },
+            { in: "query", key: "kind" },
+            { in: "query", key: "conversation" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListOrganizationThreads",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesListOrganizationThreadsResponses,
+          MailboxesListOrganizationThreadsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/threads",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
    * List threads in a mailbox
    *
    * Returns thread summaries, most recent activity first. `after` and `before` filter by last activity, so an agent polling for new mail passes the last time it looked. `q` is a full-text search over subjects, senders, and message text; `folder`, `label`, `unread`, and `starred` narrow the list. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. A thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once.
@@ -14338,6 +14626,7 @@ export class Mailboxes {
       after?: string | null | undefined;
       before?: string | null | undefined;
       q?: string | null | undefined;
+      state?: "active" | "done" | null | undefined;
       folder?: MailboxThreadFolder | null | undefined;
       label?: MailboxLabelId | null | undefined;
       unread?: boolean | null | undefined;
@@ -14357,6 +14646,7 @@ export class Mailboxes {
             { in: "query", key: "after" },
             { in: "query", key: "before" },
             { in: "query", key: "q" },
+            { in: "query", key: "state" },
             { in: "query", key: "folder" },
             { in: "query", key: "label" },
             { in: "query", key: "unread" },
@@ -14426,7 +14716,7 @@ export class Mailboxes {
   /**
    * Update a mailbox thread
    *
-   * Updates the fields you name and keeps the rest. `folder` and `priority` are shared with everyone on the mailbox; `read`, `starred`, and `snoozedUntil` are the caller's own. Labels are not updated here: use `POST` and `DELETE` on `/v1/mailboxes/{id}/threads/{threadId}/labels`. Returns where the thread stands, not its messages: read those with `GET .../threads/{threadId}`.
+   * Updates the fields you name and keeps the rest. `folder`, `priority`, and `closed` are shared with everyone on the mailbox; `done`, `read`, `starred`, and `snoozedUntil` are the caller's own. The Done list includes the caller's Done and shared closed conversations; changing `done` does not reopen Close. Personal mailboxes refuse `closed`; archive them with `folder: archived`. Neither Done nor Close publishes webhook or event-stream events. A new live message clears Done for all readers and reopens Close. Labels are not updated here: use `POST` and `DELETE` on `/v1/mailboxes/{id}/threads/{threadId}/labels`. Returns where the thread stands, not its messages: read those with `GET .../threads/{threadId}`.
    */
   public static updateThread<ThrowOnError extends boolean = false>(
     parameters: {
@@ -14434,6 +14724,8 @@ export class Mailboxes {
       threadId: MailboxThreadId;
       folder?: MailboxThreadFolder | null | undefined;
       priority?: MailboxThreadPriority | null | undefined;
+      done?: boolean | null | undefined;
+      closed?: boolean | null | undefined;
       read?: boolean | null | undefined;
       starred?: boolean | null | undefined;
       snoozedUntil?: string | null | undefined;
@@ -14449,6 +14741,8 @@ export class Mailboxes {
             { in: "path", key: "threadId" },
             { in: "body", key: "folder" },
             { in: "body", key: "priority" },
+            { in: "body", key: "done" },
+            { in: "body", key: "closed" },
             { in: "body", key: "read" },
             { in: "body", key: "starred" },
             { in: "body", key: "snoozedUntil" },
@@ -17558,6 +17852,18 @@ Object.assign(Organizations.update, { operation: "organizationsUpdate" });
 
 Object.assign(Organizations.getProfile, { operation: "organizationsGetProfile" });
 
+Object.assign(Organizations.assignPersonalMailbox, {
+  operation: "organizationsAssignPersonalMailbox",
+});
+
+Object.assign(Organizations.listPersonalMailboxAssignments, {
+  operation: "organizationsListPersonalMailboxAssignments",
+});
+
+Object.assign(Organizations.getPersonalMailboxAddressOptions, {
+  operation: "organizationsGetPersonalMailboxAddressOptions",
+});
+
 Object.assign(Organizations.getTrustTier, { operation: "organizationsGetTrustTier" });
 
 Object.assign(Organizations.createAvatarUpload, { operation: "organizationsCreateAvatarUpload" });
@@ -17635,6 +17941,12 @@ Object.assign(Mailboxes.createLabel, { operation: "mailboxesCreateLabel" });
 Object.assign(Mailboxes.deleteLabel, { operation: "mailboxesDeleteLabel" });
 
 Object.assign(Mailboxes.updateLabel, { operation: "mailboxesUpdateLabel" });
+
+Object.assign(Mailboxes.getNeedsYou, { operation: "mailboxesGetNeedsYou" });
+
+Object.assign(Mailboxes.listOrganizationDrafts, { operation: "mailboxesListOrganizationDrafts" });
+
+Object.assign(Mailboxes.listOrganizationThreads, { operation: "mailboxesListOrganizationThreads" });
 
 Object.assign(Mailboxes.listThreads, { operation: "mailboxesListThreads" });
 

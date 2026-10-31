@@ -1222,9 +1222,7 @@ export const WebhookEventJsonSchemas: Readonly<
           contactId: { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
           status: { type: "string", enum: ["active", "paused", "blocked", "archived"] },
           name: { type: "string" },
-          displayName: {
-            anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }],
-          },
+          displayName: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           identities: {
             type: "array",
             items: {
@@ -1239,9 +1237,7 @@ export const WebhookEventJsonSchemas: Readonly<
             },
           },
           tags: { type: "array", items: { type: "string" } },
-          externalId: {
-            anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }],
-          },
+          externalId: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           createdAt: { type: "string" },
           updatedAt: { type: "string" },
         },
@@ -1263,9 +1259,7 @@ export const WebhookEventJsonSchemas: Readonly<
           contactId: { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
           status: { type: "string", enum: ["active", "paused", "blocked", "archived"] },
           name: { type: "string" },
-          displayName: {
-            anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }],
-          },
+          displayName: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           identities: {
             type: "array",
             items: {
@@ -1280,9 +1274,7 @@ export const WebhookEventJsonSchemas: Readonly<
             },
           },
           tags: { type: "array", items: { type: "string" } },
-          externalId: {
-            anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }],
-          },
+          externalId: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           createdAt: { type: "string" },
           updatedAt: { type: "string" },
         },
@@ -1304,9 +1296,7 @@ export const WebhookEventJsonSchemas: Readonly<
           contactId: { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
           status: { type: "string", enum: ["active", "paused", "blocked", "archived"] },
           name: { type: "string" },
-          displayName: {
-            anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }],
-          },
+          displayName: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           identities: {
             type: "array",
             items: {
@@ -1321,9 +1311,7 @@ export const WebhookEventJsonSchemas: Readonly<
             },
           },
           tags: { type: "array", items: { type: "string" } },
-          externalId: {
-            anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }],
-          },
+          externalId: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           createdAt: { type: "string" },
           updatedAt: { type: "string" },
         },
@@ -1553,7 +1541,7 @@ export const WebhookEventJsonSchemas: Readonly<
         properties: {
           conversationId: { type: "string", pattern: "^conv_[0-9a-hjkmnp-tv-z]{16,24}$" },
           organizationId: { type: "string", pattern: "^org_[0-9a-hjkmnp-tv-z]{16,24}$" },
-          title: { anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }] },
+          title: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           channels: {
             type: "array",
             items: { type: "string", enum: ["sms", "whatsapp", "email"] },
@@ -1565,12 +1553,8 @@ export const WebhookEventJsonSchemas: Readonly<
           },
           primaryContactId: {
             anyOf: [
-              {
-                anyOf: [
-                  { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                  { type: "null" },
-                ],
-              },
+              { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
               { type: "null" },
             ],
           },
@@ -1602,7 +1586,7 @@ export const WebhookEventJsonSchemas: Readonly<
         properties: {
           conversationId: { type: "string", pattern: "^conv_[0-9a-hjkmnp-tv-z]{16,24}$" },
           organizationId: { type: "string", pattern: "^org_[0-9a-hjkmnp-tv-z]{16,24}$" },
-          title: { anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }] },
+          title: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           channels: {
             type: "array",
             items: { type: "string", enum: ["sms", "whatsapp", "email"] },
@@ -1614,12 +1598,8 @@ export const WebhookEventJsonSchemas: Readonly<
           },
           primaryContactId: {
             anyOf: [
-              {
-                anyOf: [
-                  { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                  { type: "null" },
-                ],
-              },
+              { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
               { type: "null" },
             ],
           },
@@ -1651,7 +1631,7 @@ export const WebhookEventJsonSchemas: Readonly<
         properties: {
           conversationId: { type: "string", pattern: "^conv_[0-9a-hjkmnp-tv-z]{16,24}$" },
           organizationId: { type: "string", pattern: "^org_[0-9a-hjkmnp-tv-z]{16,24}$" },
-          title: { anyOf: [{ anyOf: [{ type: "string" }, { type: "null" }] }, { type: "null" }] },
+          title: { anyOf: [{ type: "string" }, { type: "null" }, { type: "null" }] },
           channels: {
             type: "array",
             items: { type: "string", enum: ["sms", "whatsapp", "email"] },
@@ -1663,12 +1643,8 @@ export const WebhookEventJsonSchemas: Readonly<
           },
           primaryContactId: {
             anyOf: [
-              {
-                anyOf: [
-                  { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                  { type: "null" },
-                ],
-              },
+              { type: "string", pattern: "^contact_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
               { type: "null" },
             ],
           },

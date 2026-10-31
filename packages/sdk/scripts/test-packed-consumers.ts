@@ -234,7 +234,7 @@ if (isKnownEvent(future.event) || future.event.type !== "future.event") {
 );
 await installPacked(promiseDirectory, false);
 run([tsc, "--project", "tsconfig.json"], promiseDirectory);
-run(["bun", "consumer.ts"], promiseDirectory);
+run(["bun", "run", "consumer.ts"], promiseDirectory);
 
 const missingEffect = Bun.spawnSync({
   cmd: ["bun", "-e", 'import "effect"'],
@@ -563,11 +563,12 @@ for (const fixture of [promiseFixture, effectFixture]) {
 );
 await installPacked(effectDirectory, true);
 run([tsc, "--project", "tsconfig.json"], effectDirectory);
-run(["bun", "consumer.ts"], effectDirectory);
+run(["bun", "run", "consumer.ts"], effectDirectory);
 
 run(
   [
     "bun",
+    "run",
     join(sdkRoot, "scripts/check-tree-shaking.ts"),
     join(effectDirectory, "node_modules/samva/dist"),
   ],

@@ -126,8 +126,8 @@ for (const [path, source] of outputs) {
     // Formatting is part of generation; compare the same formatted artifacts.
     const formatter = Bun.spawn(
       [
-        "bunx",
-        "--no-install",
+        "bun",
+        "run",
         "oxfmt",
         `--config=${resolve(root, "../../oxfmt.config.ts")}`,
         `--stdin-filepath=${destination}`,
@@ -144,5 +144,5 @@ for (const [path, source] of outputs) {
 }
 if (!check) {
   const paths = [...outputs.keys()].map((path) => resolve(root, path));
-  await Bun.$`bunx --no-install oxfmt --config=${resolve(root, "../../oxfmt.config.ts")} ${paths}`;
+  await Bun.$`bun run oxfmt --config=${resolve(root, "../../oxfmt.config.ts")} ${paths}`;
 }

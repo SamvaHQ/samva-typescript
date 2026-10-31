@@ -16,6 +16,7 @@ import {
   NewsletterId,
   OrganizationId,
   ResourceNotFoundError,
+  ServiceUnavailableError,
   TemplateProjectId,
   TemplateSourceError,
   UnauthorizedError,
@@ -140,6 +141,8 @@ export const NewsletterIssuesList422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesList500 = InternalError;
 export const NewsletterIssuesList500 = InternalError;
+export type NewsletterIssuesList503 = ServiceUnavailableError;
+export const NewsletterIssuesList503 = ServiceUnavailableError;
 export type NewsletterIssuesList504 = GatewayTimeoutError;
 export const NewsletterIssuesList504 = GatewayTimeoutError;
 export type NewsletterIssuesCreatePathParams = { readonly id: NewsletterId };
@@ -646,6 +649,8 @@ export const NewsletterIssuesCreate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesCreate500 = InternalError;
 export const NewsletterIssuesCreate500 = InternalError;
+export type NewsletterIssuesCreate503 = ServiceUnavailableError;
+export const NewsletterIssuesCreate503 = ServiceUnavailableError;
 export type NewsletterIssuesCreate504 = GatewayTimeoutError;
 export const NewsletterIssuesCreate504 = GatewayTimeoutError;
 export type NewsletterIssuesUpdatePathParams = { readonly id: NewsletterId };
@@ -1145,6 +1150,8 @@ export const NewsletterIssuesUpdate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesUpdate500 = InternalError;
 export const NewsletterIssuesUpdate500 = InternalError;
+export type NewsletterIssuesUpdate503 = ServiceUnavailableError;
+export const NewsletterIssuesUpdate503 = ServiceUnavailableError;
 export type NewsletterIssuesUpdate504 = GatewayTimeoutError;
 export const NewsletterIssuesUpdate504 = GatewayTimeoutError;
 export type NewsletterIssuesCheckPathParams = { readonly id: NewsletterId };
@@ -1636,6 +1643,8 @@ export const NewsletterIssuesCheck422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesCheck500 = InternalError;
 export const NewsletterIssuesCheck500 = InternalError;
+export type NewsletterIssuesCheck503 = ServiceUnavailableError;
+export const NewsletterIssuesCheck503 = ServiceUnavailableError;
 export type NewsletterIssuesCheck504 = GatewayTimeoutError;
 export const NewsletterIssuesCheck504 = GatewayTimeoutError;
 export type NewsletterIssuesGetPathParams = { readonly id: NewsletterId };
@@ -1689,6 +1698,8 @@ export const NewsletterIssuesGet422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesGet500 = InternalError;
 export const NewsletterIssuesGet500 = InternalError;
+export type NewsletterIssuesGet503 = ServiceUnavailableError;
+export const NewsletterIssuesGet503 = ServiceUnavailableError;
 export type NewsletterIssuesGet504 = GatewayTimeoutError;
 export const NewsletterIssuesGet504 = GatewayTimeoutError;
 export type NewsletterIssuesHeadPathParams = { readonly id: NewsletterId };
@@ -1723,6 +1734,8 @@ export const NewsletterIssuesHead422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesHead500 = InternalError;
 export const NewsletterIssuesHead500 = InternalError;
+export type NewsletterIssuesHead503 = ServiceUnavailableError;
+export const NewsletterIssuesHead503 = ServiceUnavailableError;
 export type NewsletterIssuesHead504 = GatewayTimeoutError;
 export const NewsletterIssuesHead504 = GatewayTimeoutError;
 export type NewsletterIssuesHistoryPathParams = { readonly id: NewsletterId };
@@ -1806,6 +1819,8 @@ export const NewsletterIssuesHistory422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesHistory500 = InternalError;
 export const NewsletterIssuesHistory500 = InternalError;
+export type NewsletterIssuesHistory503 = ServiceUnavailableError;
+export const NewsletterIssuesHistory503 = ServiceUnavailableError;
 export type NewsletterIssuesHistory504 = GatewayTimeoutError;
 export const NewsletterIssuesHistory504 = GatewayTimeoutError;
 export type NewsletterIssuesRemovePathParams = { readonly id: NewsletterId };
@@ -2303,6 +2318,8 @@ export const NewsletterIssuesRemove422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesRemove500 = InternalError;
 export const NewsletterIssuesRemove500 = InternalError;
+export type NewsletterIssuesRemove503 = ServiceUnavailableError;
+export const NewsletterIssuesRemove503 = ServiceUnavailableError;
 export type NewsletterIssuesRemove504 = GatewayTimeoutError;
 export const NewsletterIssuesRemove504 = GatewayTimeoutError;
 export type NewsletterIssuesRenderPathParams = { readonly id: NewsletterId };
@@ -3086,6 +3103,8 @@ export const NewsletterIssuesRender422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesRender500 = InternalError;
 export const NewsletterIssuesRender500 = InternalError;
+export type NewsletterIssuesRender503 = ServiceUnavailableError;
+export const NewsletterIssuesRender503 = ServiceUnavailableError;
 export type NewsletterIssuesRender504 = GatewayTimeoutError;
 export const NewsletterIssuesRender504 = GatewayTimeoutError;
 export type NewsletterIssuesSavePathParams = { readonly id: NewsletterId };
@@ -3446,6 +3465,8 @@ export const NewsletterIssuesSave422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesSave500 = InternalError;
 export const NewsletterIssuesSave500 = InternalError;
+export type NewsletterIssuesSave503 = ServiceUnavailableError;
+export const NewsletterIssuesSave503 = ServiceUnavailableError;
 export type NewsletterIssuesSave504 = GatewayTimeoutError;
 export const NewsletterIssuesSave504 = GatewayTimeoutError;
 export type NewsletterIssuesOpenPathParams = { readonly id: NewsletterId };
@@ -3888,6 +3909,8 @@ export const NewsletterIssuesOpen422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type NewsletterIssuesOpen500 = InternalError;
 export const NewsletterIssuesOpen500 = InternalError;
+export type NewsletterIssuesOpen503 = ServiceUnavailableError;
+export const NewsletterIssuesOpen503 = ServiceUnavailableError;
 export type NewsletterIssuesOpen504 = GatewayTimeoutError;
 export const NewsletterIssuesOpen504 = GatewayTimeoutError;
 
@@ -3903,6 +3926,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesList409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesList422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesList500,
+        NewsletterIssuesList503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesList504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -3925,6 +3949,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesCreate409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesCreate422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesCreate500,
+        NewsletterIssuesCreate503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesCreate504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -3947,6 +3972,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesUpdate409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesUpdate422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesUpdate500,
+        NewsletterIssuesUpdate503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesUpdate504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -3969,6 +3995,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesCheck409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesCheck422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesCheck500,
+        NewsletterIssuesCheck503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesCheck504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -3990,6 +4017,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesGet409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesGet422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesGet500,
+        NewsletterIssuesGet503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesGet504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -4010,6 +4038,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesHead409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesHead422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesHead500,
+        NewsletterIssuesHead503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesHead504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -4031,6 +4060,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesHistory409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesHistory422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesHistory500,
+        NewsletterIssuesHistory503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesHistory504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -4053,6 +4083,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesRemove409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesRemove422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesRemove500,
+        NewsletterIssuesRemove503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesRemove504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -4075,6 +4106,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesRender409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesRender422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesRender500,
+        NewsletterIssuesRender503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesRender504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -4097,6 +4129,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesSave409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesSave422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesSave500,
+        NewsletterIssuesSave503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesSave504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -4117,6 +4150,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
         NewsletterIssuesOpen409.pipe(HttpApiSchema.status(409)),
         NewsletterIssuesOpen422.pipe(HttpApiSchema.status(422)),
         NewsletterIssuesOpen500,
+        NewsletterIssuesOpen503.pipe(HttpApiSchema.status(503)),
         NewsletterIssuesOpen504.pipe(HttpApiSchema.status(504)),
       ],
     })

@@ -7,6 +7,7 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
+  ContactId,
   ConversationId,
   Cursor,
   EmailAttachments,
@@ -50,6 +51,18 @@ export const ScheduledMessageId = /* @__PURE__ */ (() =>
       identifier: "ScheduledMessageId",
     }),
   ).pipe(Schema.brand("ScheduledMessageId")))();
+export type SavedEmailRecipient =
+  | { readonly contactId: ContactId }
+  | { readonly email: string; readonly name?: string | null; readonly displayName?: string | null };
+export const SavedEmailRecipient = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({ contactId: ContactId }),
+    Schema.Struct({
+      email: Schema.String,
+      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    }),
+  ]).annotate({ identifier: "SavedEmailRecipient" }))();
 export type EmailDispatchContent = {
   readonly subject?: string | null;
   readonly html?: string | null;
@@ -103,27 +116,39 @@ export const EmailDispatchContent = /* @__PURE__ */ (() =>
     footer: Schema.optionalKey(EmailFooterOverride),
     headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
   }).annotate({ identifier: "EmailDispatchContent" }))();
-export type SendMessagePayload = {
+export type StoredSendMessagePayload = {
   readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;
   readonly channel: "email";
-  readonly to: EmailRecipients;
-  readonly cc?: EmailCcRecipients;
-  readonly bcc?: EmailBccRecipients;
-  readonly from?: EmailSender;
+  readonly to: ReadonlyArray<SavedEmailRecipient>;
+  readonly cc?: ReadonlyArray<SavedEmailRecipient> | null;
+  readonly bcc?: ReadonlyArray<SavedEmailRecipient> | null;
+  readonly from?: { readonly email: string; readonly name?: string | null } | null;
   readonly email: EmailContent;
 };
-export const SendMessagePayload = /* @__PURE__ */ (() =>
+export const StoredSendMessagePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
     metadata: Schema.optionalKey(MessageMetadata),
     channel: Schema.Literal("email"),
-    to: EmailRecipients,
-    cc: Schema.optionalKey(EmailCcRecipients),
-    bcc: Schema.optionalKey(EmailBccRecipients),
-    from: Schema.optionalKey(EmailSender),
+    to: Schema.Array(SavedEmailRecipient).check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    cc: Schema.optionalKey(Schema.Union([Schema.Array(SavedEmailRecipient), Schema.Null])),
+    bcc: Schema.optionalKey(Schema.Union([Schema.Array(SavedEmailRecipient), Schema.Null])),
+    from: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          email: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+          name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
     email: EmailContent,
-  }).annotate({ identifier: "SendMessagePayload" }))();
+  }).annotate({ identifier: "StoredSendMessagePayload" }))();
 export type DispatchSendMessagePayload = {
   readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;
@@ -150,7 +175,7 @@ export type ScheduledMessage = {
   readonly status: "pending" | "dispatching" | "paused" | "dispatched" | "cancelled" | "failed";
   readonly scheduledFor: string;
   readonly timezone: string;
-  readonly send: SendMessagePayload;
+  readonly send: StoredSendMessagePayload;
   readonly messageId: MessageId | null;
   readonly idempotencyKey: string | null;
   readonly referenceId: string | null;
@@ -175,7 +200,7 @@ export const ScheduledMessage = /* @__PURE__ */ (() =>
     ]),
     scheduledFor: Schema.String,
     timezone: Schema.String,
-    send: SendMessagePayload,
+    send: StoredSendMessagePayload,
     messageId: Schema.Union([MessageId, Schema.Null]),
     idempotencyKey: Schema.Union([Schema.String, Schema.Null]),
     referenceId: Schema.Union([Schema.String, Schema.Null]),

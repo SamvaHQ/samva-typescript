@@ -58,7 +58,18 @@ export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
     topicId: TopicId,
     from: Schema.Struct({
       email: Schema.String,
-      name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
     }).annotate({
       description:
         "Your verified email sender. The ordinary send pipeline selects its domain and customer brand.",

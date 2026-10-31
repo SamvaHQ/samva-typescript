@@ -107,7 +107,15 @@ export const NewslettersCreateRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
         Schema.Null,
       ]),
     ),

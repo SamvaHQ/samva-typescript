@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.31.0",
+  "version": "0.32.0",
   "description": "TypeScript SDK for the Samva email API",
   "keywords": [
     "api-client",
@@ -222,17 +222,17 @@
     "generate:openapi": "bun run scripts/openapi.ts",
     "generate:promises": "bun run codegen/generate-promises.ts && bun run scripts/generate-promise-errors.ts && oxfmt --config=../../oxfmt.config.ts src/client src/promises/errors.gen.ts src/promises/types.gen.ts",
     "generate:effect": "bun run codegen/generate-effect.ts && oxfmt --config=../../oxfmt.config.ts src/effect/generated src/effect/generated-metadata.ts && bun run codegen/normalize-effect.ts",
-    "generate": "bun run --filter @samva/openapi build && bun generate:openapi && bun generate:promises && bun generate:effect",
+    "generate": "bun run --filter @samva/openapi build && bun run generate:openapi && bun run generate:promises && bun run generate:effect",
     "test": "vitest run --root ../.. --project packages packages/sdk/tests",
-    "test:generation": "bun scripts/check-generation.ts",
-    "test:packed": "bun run build && bun scripts/test-packed-consumers.ts",
-    "test:tarball": "bun run build && bun scripts/check-tarball.ts",
-    "test:startup": "bun run build && bun scripts/check-startup.ts",
-    "test:tree-shaking": "bun run build && bun scripts/check-tree-shaking.ts",
+    "test:generation": "bun run scripts/check-generation.ts",
+    "test:packed": "bun run build && bun run scripts/test-packed-consumers.ts",
+    "test:tarball": "bun run build && bun run scripts/check-tarball.ts",
+    "test:startup": "bun run build && bun run scripts/check-startup.ts",
+    "test:tree-shaking": "bun run build && bun run scripts/check-tree-shaking.ts",
     "typecheck": "effect-tsgo tsrs --noEmit && effect-tsgo tsrs --noEmit -p codegen/tsconfig.json && effect-tsgo tsrs --noEmit -p tests/tsconfig.json && effect-tsgo tsrs --noEmit --project tests/parity/tsconfig.json"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.31.0"
+    "@samva/webhooks": "workspace:0.32.0"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",

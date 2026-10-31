@@ -184,7 +184,13 @@ export const TopicsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
+    )
+      .check(
+        Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+      ),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     default: Schema.optionalKey(
@@ -263,7 +269,15 @@ export const TopicsUpdateRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
         Schema.Null,
       ]),
     ),

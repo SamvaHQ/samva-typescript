@@ -24,6 +24,7 @@ export type SamvaApiErrorTag =
   | "RateLimitedError"
   | "ResourceNotFoundError"
   | "SenderNotReadyError"
+  | "ServiceUnavailableError"
   | "TemplateSourceError"
   | "UnauthorizedError"
   | "ValidationError";
@@ -487,6 +488,25 @@ export class SenderNotReadyError extends SamvaApiError<"SenderNotReadyError"> {
   }
 }
 
+type ServiceUnavailableErrorPayload = {
+  readonly _tag: "ServiceUnavailableError";
+  readonly message: string;
+  readonly retryAfterSeconds: number;
+};
+
+export class ServiceUnavailableError extends SamvaApiError<"ServiceUnavailableError"> {
+  readonly _tag = "ServiceUnavailableError" as const;
+  declare readonly "retryAfterSeconds": number;
+
+  constructor(
+    payload: Omit<ServiceUnavailableErrorPayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("ServiceUnavailableError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 type TemplateSourceErrorPayload = {
   readonly _tag: "TemplateSourceError";
   readonly diagnostics: Array<{
@@ -607,6 +627,7 @@ export type AnySamvaApiError =
   | RateLimitedError
   | ResourceNotFoundError
   | SenderNotReadyError
+  | ServiceUnavailableError
   | TemplateSourceError
   | UnauthorizedError
   | ValidationError;
@@ -634,6 +655,7 @@ const constructors = {
   RateLimitedError: RateLimitedError,
   ResourceNotFoundError: ResourceNotFoundError,
   SenderNotReadyError: SenderNotReadyError,
+  ServiceUnavailableError: ServiceUnavailableError,
   TemplateSourceError: TemplateSourceError,
   UnauthorizedError: UnauthorizedError,
   ValidationError: ValidationError,
@@ -1499,6 +1521,18 @@ const payloadSchemas = {
       retryAfterSeconds: { anyOf: [{ type: "number" }, { type: "null" }] },
     },
     required: ["_tag", "message", "sender"],
+    additionalProperties: false,
+    "x-category": ["transient"],
+    "x-retryable": true,
+  },
+  ServiceUnavailableError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["ServiceUnavailableError"] },
+      message: { type: "string" },
+      retryAfterSeconds: { type: "number" },
+    },
+    required: ["_tag", "message", "retryAfterSeconds"],
     additionalProperties: false,
     "x-category": ["transient"],
     "x-retryable": true,

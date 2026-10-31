@@ -1985,9 +1985,7 @@ export const ContactCreatedEventSchema = Schema.StructWithRest(
         ),
         status: Schema.Literals(["active", "paused", "blocked", "archived"]),
         name: Schema.String,
-        displayName: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         identities: Schema.Array(
           Schema.StructWithRest(
             Schema.Struct({
@@ -2006,9 +2004,7 @@ export const ContactCreatedEventSchema = Schema.StructWithRest(
           ),
         ),
         tags: Schema.Array(Schema.String),
-        externalId: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         createdAt: Schema.String,
         updatedAt: Schema.String,
       }),
@@ -2044,9 +2040,7 @@ export const ContactUpdatedEventSchema = Schema.StructWithRest(
         ),
         status: Schema.Literals(["active", "paused", "blocked", "archived"]),
         name: Schema.String,
-        displayName: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         identities: Schema.Array(
           Schema.StructWithRest(
             Schema.Struct({
@@ -2065,9 +2059,7 @@ export const ContactUpdatedEventSchema = Schema.StructWithRest(
           ),
         ),
         tags: Schema.Array(Schema.String),
-        externalId: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         createdAt: Schema.String,
         updatedAt: Schema.String,
       }),
@@ -2103,9 +2095,7 @@ export const ContactDeletedEventSchema = Schema.StructWithRest(
         ),
         status: Schema.Literals(["active", "paused", "blocked", "archived"]),
         name: Schema.String,
-        displayName: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         identities: Schema.Array(
           Schema.StructWithRest(
             Schema.Struct({
@@ -2124,9 +2114,7 @@ export const ContactDeletedEventSchema = Schema.StructWithRest(
           ),
         ),
         tags: Schema.Array(Schema.String),
-        externalId: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         createdAt: Schema.String,
         updatedAt: Schema.String,
       }),
@@ -2468,22 +2456,18 @@ export const ConversationCreatedEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        title: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         channels: Schema.Array(Schema.Literals(["sms", "whatsapp", "email"])),
         primaryChannel: Schema.Literals(["sms", "whatsapp", "email"]),
         status: Schema.Literals(["active", "waiting", "resolved", "escalated", "archived"]),
         primaryContactId: Schema.optionalKey(
           Schema.Union([
-            Schema.Union([
-              Schema.String.check(
-                Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-                  expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
-                }),
-              ),
-              Schema.Null,
-            ]),
+            Schema.String.check(
+              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
+              }),
+            ),
+            Schema.Null,
             Schema.Null,
           ]),
         ),
@@ -2525,22 +2509,18 @@ export const ConversationUpdatedEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        title: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         channels: Schema.Array(Schema.Literals(["sms", "whatsapp", "email"])),
         primaryChannel: Schema.Literals(["sms", "whatsapp", "email"]),
         status: Schema.Literals(["active", "waiting", "resolved", "escalated", "archived"]),
         primaryContactId: Schema.optionalKey(
           Schema.Union([
-            Schema.Union([
-              Schema.String.check(
-                Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-                  expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
-                }),
-              ),
-              Schema.Null,
-            ]),
+            Schema.String.check(
+              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
+              }),
+            ),
+            Schema.Null,
             Schema.Null,
           ]),
         ),
@@ -2582,22 +2562,18 @@ export const ConversationArchivedEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        title: Schema.optionalKey(
-          Schema.Union([Schema.Union([Schema.String, Schema.Null]), Schema.Null]),
-        ),
+        title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null, Schema.Null])),
         channels: Schema.Array(Schema.Literals(["sms", "whatsapp", "email"])),
         primaryChannel: Schema.Literals(["sms", "whatsapp", "email"]),
         status: Schema.Literals(["active", "waiting", "resolved", "escalated", "archived"]),
         primaryContactId: Schema.optionalKey(
           Schema.Union([
-            Schema.Union([
-              Schema.String.check(
-                Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-                  expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
-                }),
-              ),
-              Schema.Null,
-            ]),
+            Schema.String.check(
+              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
+              }),
+            ),
+            Schema.Null,
             Schema.Null,
           ]),
         ),
@@ -2808,81 +2784,51 @@ export const DomainUpdatedEventSchema = Schema.StructWithRest(
         dns: Schema.StructWithRest(
           Schema.Struct({
             observed: Schema.Boolean,
-            total: Schema.Finite.check(
-              Schema.isInt().annotate({
-                expected: "an integer",
+            total: Schema.Int.check(
+              Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                expected: "a value greater than or equal to -9007199254740991",
               }),
-            )
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
-            satisfied: Schema.Finite.check(
-              Schema.isInt().annotate({
-                expected: "an integer",
+            ).check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
               }),
-            )
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
-            missing: Schema.Finite.check(
-              Schema.isInt().annotate({
-                expected: "an integer",
+            ),
+            satisfied: Schema.Int.check(
+              Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                expected: "a value greater than or equal to -9007199254740991",
               }),
-            )
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
-            mismatch: Schema.Finite.check(
-              Schema.isInt().annotate({
-                expected: "an integer",
+            ).check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
               }),
-            )
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
-            unknown: Schema.Finite.check(
-              Schema.isInt().annotate({
-                expected: "an integer",
+            ),
+            missing: Schema.Int.check(
+              Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                expected: "a value greater than or equal to -9007199254740991",
               }),
-            )
-              .check(
-                Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                  expected: "a value greater than or equal to -9007199254740991",
-                }),
-              )
-              .check(
-                Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                  expected: "a value less than or equal to 9007199254740991",
-                }),
-              ),
+            ).check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+            mismatch: Schema.Int.check(
+              Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                expected: "a value greater than or equal to -9007199254740991",
+              }),
+            ).check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
+            unknown: Schema.Int.check(
+              Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                expected: "a value greater than or equal to -9007199254740991",
+              }),
+            ).check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ),
           }),
           [
             Schema.Record(
@@ -3178,21 +3124,15 @@ export const FlowRegistrationUpdatedEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^wafver_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        versionNumber: Schema.Finite.check(
-          Schema.isInt().annotate({
-            expected: "an integer",
+        versionNumber: Schema.Int.check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
           }),
-        )
-          .check(
-            Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-              expected: "a value greater than or equal to -9007199254740991",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
+        ).check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
         wabaId: Schema.String,
         providerFlowId: Schema.Union([Schema.String, Schema.Null]),
         name: Schema.String,
@@ -3204,38 +3144,26 @@ export const FlowRegistrationUpdatedEventSchema = Schema.StructWithRest(
               message: Schema.String,
               path: Schema.optionalKey(Schema.String),
               line: Schema.optionalKey(
-                Schema.Finite.check(
-                  Schema.isInt().annotate({
-                    expected: "an integer",
+                Schema.Int.check(
+                  Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                    expected: "a value greater than or equal to -9007199254740991",
                   }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                      expected: "a value greater than or equal to -9007199254740991",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
+                ).check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
               ),
               column: Schema.optionalKey(
-                Schema.Finite.check(
-                  Schema.isInt().annotate({
-                    expected: "an integer",
+                Schema.Int.check(
+                  Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+                    expected: "a value greater than or equal to -9007199254740991",
                   }),
-                )
-                  .check(
-                    Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-                      expected: "a value greater than or equal to -9007199254740991",
-                    }),
-                  )
-                  .check(
-                    Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-                      expected: "a value less than or equal to 9007199254740991",
-                    }),
-                  ),
+                ).check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ),
               ),
             }),
             [
@@ -4719,21 +4647,15 @@ export const JourneyWebhookEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        journeyVersion: Schema.Finite.check(
-          Schema.isInt().annotate({
-            expected: "an integer",
+        journeyVersion: Schema.Int.check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
           }),
-        )
-          .check(
-            Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-              expected: "a value greater than or equal to -9007199254740991",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
+        ).check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
         runId: Schema.String.check(
           Schema.isPattern(new RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^jrun_[0-9a-hjkmnp-tv-z]{16,24}$",

@@ -31,13 +31,14 @@ export const WhoamiOrganization = /* @__PURE__ */ (() =>
 export type WhoamiUserCredential = {
   readonly type: "user";
   readonly user: WhoamiUser;
-  readonly role: "member" | "admin" | "owner";
+  readonly role: "mail_user" | "member" | "admin" | "owner";
 };
 export const WhoamiUserCredential = /* @__PURE__ */ (() =>
   Schema.Struct({
     type: Schema.Literal("user"),
     user: WhoamiUser,
     role: Schema.Union([
+      Schema.Literal("mail_user"),
       Schema.Literal("member"),
       Schema.Literal("admin"),
       Schema.Literal("owner"),

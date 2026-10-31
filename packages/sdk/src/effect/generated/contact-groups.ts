@@ -209,7 +209,9 @@ export type ContactGroupsCreateRequestJson = {
 };
 export const ContactGroupsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.String,
+    name: Schema.String.check(
+      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+    ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     type: Schema.optionalKey(
       Schema.Union([
@@ -425,7 +427,18 @@ export type ContactGroupsUpdateRequestJson = {
 };
 export const ContactGroupsUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     type: Schema.optionalKey(
       Schema.Union([

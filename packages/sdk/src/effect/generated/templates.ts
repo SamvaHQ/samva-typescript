@@ -19,6 +19,7 @@ import {
   RenderLocale,
   RenderTimeZone,
   ResourceNotFoundError,
+  ServiceUnavailableError,
   SuccessResponse,
   TemplateFromDefault,
   TemplateId,
@@ -651,6 +652,8 @@ export const TemplatesCreate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesCreate500 = InternalError;
 export const TemplatesCreate500 = InternalError;
+export type TemplatesCreate503 = ServiceUnavailableError;
+export const TemplatesCreate503 = ServiceUnavailableError;
 export type TemplatesCreate504 = GatewayTimeoutError;
 export const TemplatesCreate504 = GatewayTimeoutError;
 export type TemplatesGetByIdPathParams = { readonly id: TemplateId };
@@ -1528,6 +1531,8 @@ export const TemplatesPublish422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesPublish500 = InternalError;
 export const TemplatesPublish500 = InternalError;
+export type TemplatesPublish503 = ServiceUnavailableError;
+export const TemplatesPublish503 = ServiceUnavailableError;
 export type TemplatesPublish504 = GatewayTimeoutError;
 export const TemplatesPublish504 = GatewayTimeoutError;
 export type TemplatesGetPublicationPathParams = {
@@ -2206,6 +2211,8 @@ export const TemplatesGetGitRepository422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesGetGitRepository500 = InternalError;
 export const TemplatesGetGitRepository500 = InternalError;
+export type TemplatesGetGitRepository503 = ServiceUnavailableError;
+export const TemplatesGetGitRepository503 = ServiceUnavailableError;
 export type TemplatesGetGitRepository504 = GatewayTimeoutError;
 export const TemplatesGetGitRepository504 = GatewayTimeoutError;
 export type TemplatesIssueGitCredentialPathParams = { readonly id: TemplateId };
@@ -2246,6 +2253,8 @@ export const TemplatesIssueGitCredential422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesIssueGitCredential500 = InternalError;
 export const TemplatesIssueGitCredential500 = InternalError;
+export type TemplatesIssueGitCredential503 = ServiceUnavailableError;
+export const TemplatesIssueGitCredential503 = ServiceUnavailableError;
 export type TemplatesIssueGitCredential504 = GatewayTimeoutError;
 export const TemplatesIssueGitCredential504 = GatewayTimeoutError;
 export type TemplatesOpenWorkspacePathParams = { readonly id: TemplateId };
@@ -2687,6 +2696,8 @@ export const TemplatesOpenWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesOpenWorkspace500 = InternalError;
 export const TemplatesOpenWorkspace500 = InternalError;
+export type TemplatesOpenWorkspace503 = ServiceUnavailableError;
+export const TemplatesOpenWorkspace503 = ServiceUnavailableError;
 export type TemplatesOpenWorkspace504 = GatewayTimeoutError;
 export const TemplatesOpenWorkspace504 = GatewayTimeoutError;
 export type TemplatesPatchWorkspacePathParams = { readonly id: TemplateId };
@@ -3179,6 +3190,8 @@ export const TemplatesPatchWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesPatchWorkspace500 = InternalError;
 export const TemplatesPatchWorkspace500 = InternalError;
+export type TemplatesPatchWorkspace503 = ServiceUnavailableError;
+export const TemplatesPatchWorkspace503 = ServiceUnavailableError;
 export type TemplatesPatchWorkspace504 = GatewayTimeoutError;
 export const TemplatesPatchWorkspace504 = GatewayTimeoutError;
 export type TemplatesPutWorkspaceAssetPathParams = { readonly id: TemplateId };
@@ -3655,6 +3668,8 @@ export const TemplatesPutWorkspaceAsset422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesPutWorkspaceAsset500 = InternalError;
 export const TemplatesPutWorkspaceAsset500 = InternalError;
+export type TemplatesPutWorkspaceAsset503 = ServiceUnavailableError;
+export const TemplatesPutWorkspaceAsset503 = ServiceUnavailableError;
 export type TemplatesPutWorkspaceAsset504 = GatewayTimeoutError;
 export const TemplatesPutWorkspaceAsset504 = GatewayTimeoutError;
 export type TemplatesCheckWorkspacePathParams = { readonly id: TemplateId };
@@ -4093,6 +4108,8 @@ export const TemplatesCheckWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesCheckWorkspace500 = InternalError;
 export const TemplatesCheckWorkspace500 = InternalError;
+export type TemplatesCheckWorkspace503 = ServiceUnavailableError;
+export const TemplatesCheckWorkspace503 = ServiceUnavailableError;
 export type TemplatesCheckWorkspace504 = GatewayTimeoutError;
 export const TemplatesCheckWorkspace504 = GatewayTimeoutError;
 export type TemplatesResolveWorkspaceConflictPathParams = { readonly id: TemplateId };
@@ -4571,6 +4588,8 @@ export const TemplatesResolveWorkspaceConflict422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesResolveWorkspaceConflict500 = InternalError;
 export const TemplatesResolveWorkspaceConflict500 = InternalError;
+export type TemplatesResolveWorkspaceConflict503 = ServiceUnavailableError;
+export const TemplatesResolveWorkspaceConflict503 = ServiceUnavailableError;
 export type TemplatesResolveWorkspaceConflict504 = GatewayTimeoutError;
 export const TemplatesResolveWorkspaceConflict504 = GatewayTimeoutError;
 export type TemplatesDiffWorkspacePathParams = { readonly id: TemplateId };
@@ -4679,6 +4698,8 @@ export const TemplatesDiffWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesDiffWorkspace500 = InternalError;
 export const TemplatesDiffWorkspace500 = InternalError;
+export type TemplatesDiffWorkspace503 = ServiceUnavailableError;
+export const TemplatesDiffWorkspace503 = ServiceUnavailableError;
 export type TemplatesDiffWorkspace504 = GatewayTimeoutError;
 export const TemplatesDiffWorkspace504 = GatewayTimeoutError;
 export type TemplatesRenderWorkspaceFixturePathParams = { readonly id: TemplateId };
@@ -5411,6 +5432,8 @@ export const TemplatesRenderWorkspaceFixture422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesRenderWorkspaceFixture500 = InternalError;
 export const TemplatesRenderWorkspaceFixture500 = InternalError;
+export type TemplatesRenderWorkspaceFixture503 = ServiceUnavailableError;
+export const TemplatesRenderWorkspaceFixture503 = ServiceUnavailableError;
 export type TemplatesRenderWorkspaceFixture504 = GatewayTimeoutError;
 export const TemplatesRenderWorkspaceFixture504 = GatewayTimeoutError;
 export type TemplatesWorkspaceHistoryPathParams = { readonly id: TemplateId };
@@ -5505,6 +5528,8 @@ export const TemplatesWorkspaceHistory422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesWorkspaceHistory500 = InternalError;
 export const TemplatesWorkspaceHistory500 = InternalError;
+export type TemplatesWorkspaceHistory503 = ServiceUnavailableError;
+export const TemplatesWorkspaceHistory503 = ServiceUnavailableError;
 export type TemplatesWorkspaceHistory504 = GatewayTimeoutError;
 export const TemplatesWorkspaceHistory504 = GatewayTimeoutError;
 export type TemplatesAttachWorkspaceResourcePathParams = { readonly id: TemplateId };
@@ -6024,6 +6049,8 @@ export const TemplatesAttachWorkspaceResource422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesAttachWorkspaceResource500 = InternalError;
 export const TemplatesAttachWorkspaceResource500 = InternalError;
+export type TemplatesAttachWorkspaceResource503 = ServiceUnavailableError;
+export const TemplatesAttachWorkspaceResource503 = ServiceUnavailableError;
 export type TemplatesAttachWorkspaceResource504 = GatewayTimeoutError;
 export const TemplatesAttachWorkspaceResource504 = GatewayTimeoutError;
 export type TemplatesRemoveWorkspaceResourcePathParams = {
@@ -6483,6 +6510,8 @@ export const TemplatesRemoveWorkspaceResource422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesRemoveWorkspaceResource500 = InternalError;
 export const TemplatesRemoveWorkspaceResource500 = InternalError;
+export type TemplatesRemoveWorkspaceResource503 = ServiceUnavailableError;
+export const TemplatesRemoveWorkspaceResource503 = ServiceUnavailableError;
 export type TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
 export const TemplatesRemoveWorkspaceResource504 = GatewayTimeoutError;
 export type TemplatesRestoreWorkspacePathParams = { readonly id: TemplateId };
@@ -6979,6 +7008,8 @@ export const TemplatesRestoreWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesRestoreWorkspace500 = InternalError;
 export const TemplatesRestoreWorkspace500 = InternalError;
+export type TemplatesRestoreWorkspace503 = ServiceUnavailableError;
+export const TemplatesRestoreWorkspace503 = ServiceUnavailableError;
 export type TemplatesRestoreWorkspace504 = GatewayTimeoutError;
 export const TemplatesRestoreWorkspace504 = GatewayTimeoutError;
 export type TemplatesSaveWorkspacePathParams = { readonly id: TemplateId };
@@ -7321,6 +7352,8 @@ export const TemplatesSaveWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesSaveWorkspace500 = InternalError;
 export const TemplatesSaveWorkspace500 = InternalError;
+export type TemplatesSaveWorkspace503 = ServiceUnavailableError;
+export const TemplatesSaveWorkspace503 = ServiceUnavailableError;
 export type TemplatesSaveWorkspace504 = GatewayTimeoutError;
 export const TemplatesSaveWorkspace504 = GatewayTimeoutError;
 export type TemplatesListFamiliesQuery = {
@@ -7574,6 +7607,8 @@ export const TemplatesCreateFromWebsite422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
 export type TemplatesCreateFromWebsite500 = InternalError;
 export const TemplatesCreateFromWebsite500 = InternalError;
+export type TemplatesCreateFromWebsite503 = ServiceUnavailableError;
+export const TemplatesCreateFromWebsite503 = ServiceUnavailableError;
 export type TemplatesCreateFromWebsite504 = GatewayTimeoutError;
 export const TemplatesCreateFromWebsite504 = GatewayTimeoutError;
 export type TemplatesAddEntryPathParams = { readonly id: TemplateProjectId };
@@ -7691,6 +7726,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesCreate409.pipe(HttpApiSchema.status(409)),
         TemplatesCreate422.pipe(HttpApiSchema.status(422)),
         TemplatesCreate500,
+        TemplatesCreate503.pipe(HttpApiSchema.status(503)),
         TemplatesCreate504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -7814,6 +7850,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesPublish409.pipe(HttpApiSchema.status(409)),
         TemplatesPublish422.pipe(HttpApiSchema.status(422)),
         TemplatesPublish500,
+        TemplatesPublish503.pipe(HttpApiSchema.status(503)),
         TemplatesPublish504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -7882,6 +7919,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesGetGitRepository409.pipe(HttpApiSchema.status(409)),
         TemplatesGetGitRepository422.pipe(HttpApiSchema.status(422)),
         TemplatesGetGitRepository500,
+        TemplatesGetGitRepository503.pipe(HttpApiSchema.status(503)),
         TemplatesGetGitRepository504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -7906,6 +7944,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
           TemplatesIssueGitCredential409.pipe(HttpApiSchema.status(409)),
           TemplatesIssueGitCredential422.pipe(HttpApiSchema.status(422)),
           TemplatesIssueGitCredential500,
+          TemplatesIssueGitCredential503.pipe(HttpApiSchema.status(503)),
           TemplatesIssueGitCredential504.pipe(HttpApiSchema.status(504)),
         ],
       },
@@ -7927,6 +7966,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesOpenWorkspace409.pipe(HttpApiSchema.status(409)),
         TemplatesOpenWorkspace422.pipe(HttpApiSchema.status(422)),
         TemplatesOpenWorkspace500,
+        TemplatesOpenWorkspace503.pipe(HttpApiSchema.status(503)),
         TemplatesOpenWorkspace504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -7949,6 +7989,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesPatchWorkspace409.pipe(HttpApiSchema.status(409)),
         TemplatesPatchWorkspace422.pipe(HttpApiSchema.status(422)),
         TemplatesPatchWorkspace500,
+        TemplatesPatchWorkspace503.pipe(HttpApiSchema.status(503)),
         TemplatesPatchWorkspace504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -7971,6 +8012,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesPutWorkspaceAsset409.pipe(HttpApiSchema.status(409)),
         TemplatesPutWorkspaceAsset422.pipe(HttpApiSchema.status(422)),
         TemplatesPutWorkspaceAsset500,
+        TemplatesPutWorkspaceAsset503.pipe(HttpApiSchema.status(503)),
         TemplatesPutWorkspaceAsset504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -7992,6 +8034,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesCheckWorkspace409.pipe(HttpApiSchema.status(409)),
         TemplatesCheckWorkspace422.pipe(HttpApiSchema.status(422)),
         TemplatesCheckWorkspace500,
+        TemplatesCheckWorkspace503.pipe(HttpApiSchema.status(503)),
         TemplatesCheckWorkspace504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -8017,6 +8060,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
           TemplatesResolveWorkspaceConflict409.pipe(HttpApiSchema.status(409)),
           TemplatesResolveWorkspaceConflict422.pipe(HttpApiSchema.status(422)),
           TemplatesResolveWorkspaceConflict500,
+          TemplatesResolveWorkspaceConflict503.pipe(HttpApiSchema.status(503)),
           TemplatesResolveWorkspaceConflict504.pipe(HttpApiSchema.status(504)),
         ],
       },
@@ -8039,6 +8083,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesDiffWorkspace409.pipe(HttpApiSchema.status(409)),
         TemplatesDiffWorkspace422.pipe(HttpApiSchema.status(422)),
         TemplatesDiffWorkspace500,
+        TemplatesDiffWorkspace503.pipe(HttpApiSchema.status(503)),
         TemplatesDiffWorkspace504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -8063,6 +8108,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
           TemplatesRenderWorkspaceFixture409.pipe(HttpApiSchema.status(409)),
           TemplatesRenderWorkspaceFixture422.pipe(HttpApiSchema.status(422)),
           TemplatesRenderWorkspaceFixture500,
+          TemplatesRenderWorkspaceFixture503.pipe(HttpApiSchema.status(503)),
           TemplatesRenderWorkspaceFixture504.pipe(HttpApiSchema.status(504)),
         ],
       },
@@ -8085,6 +8131,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesWorkspaceHistory409.pipe(HttpApiSchema.status(409)),
         TemplatesWorkspaceHistory422.pipe(HttpApiSchema.status(422)),
         TemplatesWorkspaceHistory500,
+        TemplatesWorkspaceHistory503.pipe(HttpApiSchema.status(503)),
         TemplatesWorkspaceHistory504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -8110,6 +8157,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
           TemplatesAttachWorkspaceResource409.pipe(HttpApiSchema.status(409)),
           TemplatesAttachWorkspaceResource422.pipe(HttpApiSchema.status(422)),
           TemplatesAttachWorkspaceResource500,
+          TemplatesAttachWorkspaceResource503.pipe(HttpApiSchema.status(503)),
           TemplatesAttachWorkspaceResource504.pipe(HttpApiSchema.status(504)),
         ],
       },
@@ -8136,6 +8184,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
           TemplatesRemoveWorkspaceResource409.pipe(HttpApiSchema.status(409)),
           TemplatesRemoveWorkspaceResource422.pipe(HttpApiSchema.status(422)),
           TemplatesRemoveWorkspaceResource500,
+          TemplatesRemoveWorkspaceResource503.pipe(HttpApiSchema.status(503)),
           TemplatesRemoveWorkspaceResource504.pipe(HttpApiSchema.status(504)),
         ],
       },
@@ -8159,6 +8208,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesRestoreWorkspace409.pipe(HttpApiSchema.status(409)),
         TemplatesRestoreWorkspace422.pipe(HttpApiSchema.status(422)),
         TemplatesRestoreWorkspace500,
+        TemplatesRestoreWorkspace503.pipe(HttpApiSchema.status(503)),
         TemplatesRestoreWorkspace504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -8181,6 +8231,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesSaveWorkspace409.pipe(HttpApiSchema.status(409)),
         TemplatesSaveWorkspace422.pipe(HttpApiSchema.status(422)),
         TemplatesSaveWorkspace500,
+        TemplatesSaveWorkspace503.pipe(HttpApiSchema.status(503)),
         TemplatesSaveWorkspace504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -8369,6 +8420,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesCreateFromWebsite409.pipe(HttpApiSchema.status(409)),
         TemplatesCreateFromWebsite422.pipe(HttpApiSchema.status(422)),
         TemplatesCreateFromWebsite500,
+        TemplatesCreateFromWebsite503.pipe(HttpApiSchema.status(503)),
         TemplatesCreateFromWebsite504.pipe(HttpApiSchema.status(504)),
       ],
     })

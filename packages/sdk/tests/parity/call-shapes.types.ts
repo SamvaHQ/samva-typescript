@@ -65,6 +65,29 @@ promiseClient.contacts.getActivityTimeline({ id: "contact_123", cursor: "next", 
 
 promiseClient.organizations.get();
 
+promiseClient.organizations.assignPersonalMailbox({
+  userId: "user_7q2xk9mvt4znw8rh",
+  mailboxAddress: "ada@example.com",
+});
+const personalAssignmentEffect = Organizations.assignPersonalMailbox({
+  userId: "user_7q2xk9mvt4znw8rh",
+  mailboxAddress: "ada@example.com",
+});
+void personalAssignmentEffect;
+promiseClient.organizations.listPersonalMailboxAssignments();
+const personalAssignmentsEffect = Organizations.listPersonalMailboxAssignments();
+void personalAssignmentsEffect;
+promiseClient.organizations.getPersonalMailboxAddressOptions();
+const personalAddressOptionsEffect = Organizations.getPersonalMailboxAddressOptions();
+void personalAddressOptionsEffect;
+// @ts-expect-error assigning an address requires the target user.
+const missingPersonalUser = Organizations.assignPersonalMailbox({
+  mailboxAddress: "ada@example.com",
+});
+void missingPersonalUser;
+// @ts-expect-error assigning a user requires a personal address.
+promiseClient.organizations.assignPersonalMailbox({ userId: "user_7q2xk9mvt4znw8rh" });
+
 const promiseMedia = promiseClient.media.create({
   filename: "receipt.pdf",
   contentType: "application/pdf",

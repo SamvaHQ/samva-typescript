@@ -55,6 +55,12 @@ import {
   ValidationError,
 } from "./shared";
 
+export type MailboxKind = "personal" | "shared";
+export const MailboxKind = /* @__PURE__ */ (() =>
+  Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]).annotate({
+    description: "Whether a mailbox belongs to one person or is shared with a team.",
+    identifier: "MailboxKind",
+  }))();
 export type MailboxStatus = "active" | "paused";
 export const MailboxStatus = /* @__PURE__ */ (() =>
   Schema.Union([Schema.Literal("active"), Schema.Literal("paused")]).annotate({
@@ -467,6 +473,17 @@ export const MailboxEndpoint = /* @__PURE__ */ (() =>
     source: Schema.Union([Schema.Literal("samvaHosted"), Schema.Literal("verifiedDomain")]),
     domainId: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxEndpoint" }))();
+export type MailboxThreadMailbox = {
+  readonly id: MailboxId;
+  readonly address: string | null;
+  readonly kind: "personal" | "shared";
+};
+export const MailboxThreadMailbox = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    address: Schema.Union([Schema.String, Schema.Null]),
+    kind: Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]),
+  }).annotate({ identifier: "MailboxThreadMailbox" }))();
 export type MailboxCopiedAttachment = {
   readonly filename: string;
   readonly content?: string | null;
@@ -490,6 +507,8 @@ export const MailboxCopiedAttachment = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "MailboxCopiedAttachment" }))();
 export type MailboxSummary = {
   readonly id: MailboxId;
+  readonly kind: MailboxKind;
+  readonly owner: UserId | null;
   readonly namespaceId: NamespaceId | null;
   readonly slug: string;
   readonly name: string;
@@ -500,6 +519,8 @@ export type MailboxSummary = {
 export const MailboxSummary = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MailboxId,
+    kind: MailboxKind,
+    owner: Schema.Union([UserId, Schema.Null]),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     slug: Schema.String,
     name: Schema.String,
@@ -913,6 +934,13 @@ export type MailboxThreadSummary = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly doneAt: string | null;
+  readonly closedAt: string | null;
+  readonly closedBy: {
+    readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    readonly id: string;
+    readonly displayName?: string | null;
+  } | null;
   readonly lastActivityAt: string;
 };
 export const MailboxThreadSummary = /* @__PURE__ */ (() =>
@@ -942,6 +970,23 @@ export const MailboxThreadSummary = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    doneAt: Schema.Union([Schema.String, Schema.Null]),
+    closedAt: Schema.Union([Schema.String, Schema.Null]),
+    closedBy: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Union([
+          Schema.Literal("user"),
+          Schema.Literal("apiKey"),
+          Schema.Literal("extension"),
+          Schema.Literal("externalAgent"),
+          Schema.Literal("samvaAgent"),
+          Schema.Literal("system"),
+        ]),
+        id: Schema.String,
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      }),
+      Schema.Null,
+    ]),
     lastActivityAt: Schema.String,
   }).annotate({ identifier: "MailboxThreadSummary" }))();
 export type MailboxThreadState = {
@@ -952,6 +997,13 @@ export type MailboxThreadState = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly doneAt: string | null;
+  readonly closedAt: string | null;
+  readonly closedBy: {
+    readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    readonly id: string;
+    readonly displayName?: string | null;
+  } | null;
 };
 export const MailboxThreadState = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -962,6 +1014,23 @@ export const MailboxThreadState = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    doneAt: Schema.Union([Schema.String, Schema.Null]),
+    closedAt: Schema.Union([Schema.String, Schema.Null]),
+    closedBy: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Union([
+          Schema.Literal("user"),
+          Schema.Literal("apiKey"),
+          Schema.Literal("extension"),
+          Schema.Literal("externalAgent"),
+          Schema.Literal("samvaAgent"),
+          Schema.Literal("system"),
+        ]),
+        id: Schema.String,
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      }),
+      Schema.Null,
+    ]),
   }).annotate({ identifier: "MailboxThreadState" }))();
 export type MailboxThread = {
   readonly id: MailboxThreadId;
@@ -979,6 +1048,13 @@ export type MailboxThread = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly doneAt: string | null;
+  readonly closedAt: string | null;
+  readonly closedBy: {
+    readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    readonly id: string;
+    readonly displayName?: string | null;
+  } | null;
   readonly lastActivityAt: string;
   readonly conversationId: ConversationId;
   readonly participants: ReadonlyArray<MailboxThreadParticipant>;
@@ -1011,6 +1087,23 @@ export const MailboxThread = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    doneAt: Schema.Union([Schema.String, Schema.Null]),
+    closedAt: Schema.Union([Schema.String, Schema.Null]),
+    closedBy: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Union([
+          Schema.Literal("user"),
+          Schema.Literal("apiKey"),
+          Schema.Literal("extension"),
+          Schema.Literal("externalAgent"),
+          Schema.Literal("samvaAgent"),
+          Schema.Literal("system"),
+        ]),
+        id: Schema.String,
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      }),
+      Schema.Null,
+    ]),
     lastActivityAt: Schema.String,
     conversationId: ConversationId,
     participants: Schema.Array(MailboxThreadParticipant),
@@ -1052,6 +1145,8 @@ export const MailboxNote = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "MailboxNote" }))();
 export type Mailbox = {
   readonly id: MailboxId;
+  readonly kind: MailboxKind;
+  readonly owner: UserId | null;
   readonly namespaceId: NamespaceId | null;
   readonly slug: string;
   readonly name: string;
@@ -1066,6 +1161,8 @@ export type Mailbox = {
 export const Mailbox = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MailboxId,
+    kind: MailboxKind,
+    owner: Schema.Union([UserId, Schema.Null]),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     slug: Schema.String,
     name: Schema.String,
@@ -1077,6 +1174,191 @@ export const Mailbox = /* @__PURE__ */ (() =>
     endpoints: Schema.Array(MailboxEndpoint),
     updatedAt: Schema.String,
   }).annotate({ identifier: "Mailbox" }))();
+export type OrganizationMailboxDraftSummary = {
+  readonly id: MailboxDraftId;
+  readonly channel: MailboxChannel;
+  readonly threadId: MailboxThreadId | null;
+  readonly inReplyToMessageId: MessageId | null;
+  readonly state: MailboxDraftState;
+  readonly lockedByActionId: MailboxActionId | null;
+  readonly to: ReadonlyArray<string>;
+  readonly subject: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly mailbox: MailboxThreadMailbox;
+};
+export const OrganizationMailboxDraftSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxDraftId,
+    channel: MailboxChannel,
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+    state: MailboxDraftState,
+    lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
+    to: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    mailbox: MailboxThreadMailbox,
+  }).annotate({ identifier: "OrganizationMailboxDraftSummary" }))();
+export type MailboxNeedsYouItem =
+  | {
+      readonly type: "heldSend";
+      readonly id: MailboxActionId;
+      readonly mailbox: MailboxThreadMailbox;
+      readonly threadId: MailboxThreadId | null;
+      readonly draftId: MailboxDraftId | null;
+      readonly proposedBy: {
+        readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+        readonly id: string;
+        readonly displayName?: string | null;
+      };
+      readonly source:
+        | "humanUi"
+        | "externalApi"
+        | "aiSdkTool"
+        | "extension"
+        | "externalAgent"
+        | "samvaManagedAgent"
+        | "system";
+      readonly createdAt: string;
+    }
+  | {
+      readonly type: "quarantinedMessage";
+      readonly id: MessageId;
+      readonly mailbox: MailboxThreadMailbox;
+      readonly reason:
+        | "spam"
+        | "dmarc"
+        | "virus"
+        | "virus_unscanned"
+        | "phishing"
+        | "fraud"
+        | "prompt_injection";
+      readonly source: "receipt" | "classifier";
+      readonly heldAt: string;
+    };
+export const MailboxNeedsYouItem = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      type: Schema.Literal("heldSend"),
+      id: MailboxActionId,
+      mailbox: MailboxThreadMailbox,
+      threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+      draftId: Schema.Union([MailboxDraftId, Schema.Null]),
+      proposedBy: Schema.Struct({
+        kind: Schema.Union([
+          Schema.Literal("user"),
+          Schema.Literal("apiKey"),
+          Schema.Literal("extension"),
+          Schema.Literal("externalAgent"),
+          Schema.Literal("samvaAgent"),
+          Schema.Literal("system"),
+        ]),
+        id: Schema.String,
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      }),
+      source: Schema.Union([
+        Schema.Literal("humanUi"),
+        Schema.Literal("externalApi"),
+        Schema.Literal("aiSdkTool"),
+        Schema.Literal("extension"),
+        Schema.Literal("externalAgent"),
+        Schema.Literal("samvaManagedAgent"),
+        Schema.Literal("system"),
+      ]),
+      createdAt: Schema.String,
+    }),
+    Schema.Struct({
+      type: Schema.Literal("quarantinedMessage"),
+      id: MessageId,
+      mailbox: MailboxThreadMailbox,
+      reason: Schema.Union([
+        Schema.Literal("spam"),
+        Schema.Literal("dmarc"),
+        Schema.Literal("virus"),
+        Schema.Literal("virus_unscanned"),
+        Schema.Literal("phishing"),
+        Schema.Literal("fraud"),
+        Schema.Literal("prompt_injection"),
+      ]),
+      source: Schema.Union([Schema.Literal("receipt"), Schema.Literal("classifier")]),
+      heldAt: Schema.String,
+    }),
+  ]).annotate({ identifier: "MailboxNeedsYouItem" }))();
+export type OrganizationMailboxThreadSummary = {
+  readonly id: MailboxThreadId;
+  readonly channel: MailboxChannel;
+  readonly endpointId: MailboxEndpointId | null;
+  readonly subject: string | null;
+  readonly preview: string | null;
+  readonly from: MailboxThreadSender | null;
+  readonly messageCount: number;
+  readonly hasAttachments: boolean;
+  readonly hasDraft: boolean;
+  readonly folder: MailboxThreadFolder;
+  readonly priority: MailboxThreadPriority;
+  readonly labels: ReadonlyArray<MailboxLabelId>;
+  readonly read: boolean;
+  readonly starred: boolean;
+  readonly snoozedUntil: string | null;
+  readonly doneAt: string | null;
+  readonly closedAt: string | null;
+  readonly closedBy: {
+    readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    readonly id: string;
+    readonly displayName?: string | null;
+  } | null;
+  readonly lastActivityAt: string;
+  readonly mailbox: MailboxThreadMailbox;
+};
+export const OrganizationMailboxThreadSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxThreadId,
+    channel: MailboxChannel,
+    endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    preview: Schema.Union([Schema.String, Schema.Null]),
+    from: Schema.Union([MailboxThreadSender, Schema.Null]),
+    messageCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    hasAttachments: Schema.Boolean,
+    hasDraft: Schema.Boolean,
+    folder: MailboxThreadFolder,
+    priority: MailboxThreadPriority,
+    labels: Schema.Array(MailboxLabelId),
+    read: Schema.Boolean,
+    starred: Schema.Boolean,
+    snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    doneAt: Schema.Union([Schema.String, Schema.Null]),
+    closedAt: Schema.Union([Schema.String, Schema.Null]),
+    closedBy: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Union([
+          Schema.Literal("user"),
+          Schema.Literal("apiKey"),
+          Schema.Literal("extension"),
+          Schema.Literal("externalAgent"),
+          Schema.Literal("samvaAgent"),
+          Schema.Literal("system"),
+        ]),
+        id: Schema.String,
+        displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      }),
+      Schema.Null,
+    ]),
+    lastActivityAt: Schema.String,
+    mailbox: MailboxThreadMailbox,
+  }).annotate({ identifier: "OrganizationMailboxThreadSummary" }))();
 export type MailboxSendSnapshot = {
   readonly channel: "email";
   readonly draftRevision: number;
@@ -1433,6 +1715,75 @@ export const MailboxNotePage = /* @__PURE__ */ (() =>
     items: Schema.Array(MailboxNote),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxNotePage" }))();
+export type OrganizationMailboxDraftPage = {
+  readonly items: ReadonlyArray<OrganizationMailboxDraftSummary>;
+  readonly nextCursor: string | null;
+};
+export const OrganizationMailboxDraftPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(OrganizationMailboxDraftSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "OrganizationMailboxDraftPage" }))();
+export type MailboxNeedsYou = {
+  readonly items: ReadonlyArray<MailboxNeedsYouItem>;
+  readonly nextCursor: string | null;
+  readonly counts: {
+    readonly heldSends: number;
+    readonly quarantinedMessages: number;
+    readonly total: number;
+  };
+};
+export const MailboxNeedsYou = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxNeedsYouItem),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+    counts: Schema.Struct({
+      heldSends: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      quarantinedMessages: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }).annotate({
+      description: "All items this caller may decide, independent of the current page.",
+    }),
+  }).annotate({ identifier: "MailboxNeedsYou" }))();
+export type OrganizationMailboxThreadPage = {
+  readonly items: ReadonlyArray<OrganizationMailboxThreadSummary>;
+  readonly nextCursor: string | null;
+};
+export const OrganizationMailboxThreadPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(OrganizationMailboxThreadSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "OrganizationMailboxThreadPage" }))();
 export type MailboxSendAction = {
   readonly id: MailboxActionId;
   readonly source:
@@ -1577,7 +1928,9 @@ export const MailboxesCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     endpoint: CreateMailboxEndpointPayload,
-    name: Schema.String,
+    name: Schema.String.check(
+      Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
+    ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
     slug: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     metadata: Schema.optionalKey(Schema.Union([MailboxMetadata, Schema.Null])),
   }))();
@@ -1648,7 +2001,15 @@ export const MailboxesUpdateRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
+        )
+          .check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
         Schema.Null,
       ]),
     ),
@@ -2203,7 +2564,18 @@ export const MailboxesCreateEndpointRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     channel: MailboxChannel,
     address: Schema.String,
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
   }))();
 export type MailboxesCreateEndpoint201 = Mailbox;
 export const MailboxesCreateEndpoint201 = Mailbox;
@@ -2254,7 +2626,18 @@ export type MailboxesUpdateEndpointRequestJson = {
 };
 export const MailboxesUpdateEndpointRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     default: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
   }))();
 export type MailboxesUpdateEndpoint200 = Mailbox;
@@ -2479,7 +2862,9 @@ export type MailboxesCreateLabelRequestJson = {
 export const MailboxesCreateLabelRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String,
-    displayName: Schema.String,
+    displayName: Schema.String.check(
+      Schema.isMaxCodePoints(40).annotate({ expected: "a string with at most 40 code points" }),
+    ).check(Schema.isMaxLength(40).annotate({ expected: "a value with a length of at most 40" })),
     color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -2542,7 +2927,16 @@ export type MailboxesUpdateLabelRequestJson = {
 };
 export const MailboxesUpdateLabelRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    displayName: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(40).annotate({ expected: "a string with at most 40 code points" }),
+        ).check(
+          Schema.isMaxLength(40).annotate({ expected: "a value with a length of at most 40" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     color: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -3293,6 +3687,7 @@ export type MailboxesListThreadsQuery = {
   readonly after?: string | null;
   readonly before?: string | null;
   readonly q?: string | null;
+  readonly state?: "active" | "done" | null;
   readonly folder?: MailboxThreadFolder | null;
   readonly label?: MailboxLabelId | null;
   readonly unread?: boolean | null;
@@ -3318,6 +3713,9 @@ export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
     after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     q: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    state: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Literal("active"), Schema.Literal("done")]), Schema.Null]),
+    ),
     folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
     label: Schema.optionalKey(Schema.Union([MailboxLabelId, Schema.Null])),
     unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
@@ -3367,6 +3765,8 @@ export const MailboxesUpdateThreadPathParams = /* @__PURE__ */ (() =>
 export type MailboxesUpdateThreadRequestJson = {
   readonly folder?: MailboxThreadFolder | null;
   readonly priority?: MailboxThreadPriority | null;
+  readonly done?: boolean | null;
+  readonly closed?: boolean | null;
   readonly read?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozedUntil?: string | null;
@@ -3375,6 +3775,8 @@ export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
     priority: Schema.optionalKey(Schema.Union([MailboxThreadPriority, Schema.Null])),
+    done: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    closed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozedUntil: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
@@ -3654,6 +4056,151 @@ export type MailboxesUpdateNote500 = InternalError;
 export const MailboxesUpdateNote500 = InternalError;
 export type MailboxesUpdateNote504 = GatewayTimeoutError;
 export const MailboxesUpdateNote504 = GatewayTimeoutError;
+export type MailboxesListOrganizationDraftsQuery = {
+  readonly limit?: number | null;
+  readonly cursor?: Cursor | null;
+  readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId> | null;
+  readonly kind?: "personal" | "shared" | null;
+  readonly threadId?: MailboxThreadId | null;
+};
+export const MailboxesListOrganizationDraftsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId), Schema.Null])),
+    kind: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]),
+        Schema.Null,
+      ]),
+    ),
+    threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
+  }))();
+export type MailboxesListOrganizationDrafts200 = OrganizationMailboxDraftPage;
+export const MailboxesListOrganizationDrafts200 = OrganizationMailboxDraftPage;
+export type MailboxesListOrganizationDrafts401 = UnauthorizedError;
+export const MailboxesListOrganizationDrafts401 = UnauthorizedError;
+export type MailboxesListOrganizationDrafts403 = ForbiddenError;
+export const MailboxesListOrganizationDrafts403 = ForbiddenError;
+export type MailboxesListOrganizationDrafts404 = ResourceNotFoundError;
+export const MailboxesListOrganizationDrafts404 = ResourceNotFoundError;
+export type MailboxesListOrganizationDrafts422 = ValidationError;
+export const MailboxesListOrganizationDrafts422 = ValidationError;
+export type MailboxesListOrganizationDrafts500 = InternalError;
+export const MailboxesListOrganizationDrafts500 = InternalError;
+export type MailboxesListOrganizationDrafts504 = GatewayTimeoutError;
+export const MailboxesListOrganizationDrafts504 = GatewayTimeoutError;
+export type MailboxesGetNeedsYouQuery = {
+  readonly limit?: number | null;
+  readonly cursor?: Cursor | null;
+};
+export const MailboxesGetNeedsYouQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+  }))();
+export type MailboxesGetNeedsYou200 = MailboxNeedsYou;
+export const MailboxesGetNeedsYou200 = MailboxNeedsYou;
+export type MailboxesGetNeedsYou401 = UnauthorizedError;
+export const MailboxesGetNeedsYou401 = UnauthorizedError;
+export type MailboxesGetNeedsYou403 = ForbiddenError;
+export const MailboxesGetNeedsYou403 = ForbiddenError;
+export type MailboxesGetNeedsYou422 = ValidationError;
+export const MailboxesGetNeedsYou422 = ValidationError;
+export type MailboxesGetNeedsYou500 = InternalError;
+export const MailboxesGetNeedsYou500 = InternalError;
+export type MailboxesGetNeedsYou504 = GatewayTimeoutError;
+export const MailboxesGetNeedsYou504 = GatewayTimeoutError;
+export type MailboxesListOrganizationThreadsQuery = {
+  readonly limit?: number | null;
+  readonly cursor?: Cursor | null;
+  readonly after?: string | null;
+  readonly before?: string | null;
+  readonly q?: string | null;
+  readonly state?: "active" | "done" | null;
+  readonly folder?: MailboxThreadFolder | null;
+  readonly label?: MailboxLabelId | null;
+  readonly unread?: boolean | null;
+  readonly starred?: boolean | null;
+  readonly snoozed?: boolean | null;
+  readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId> | null;
+  readonly kind?: "personal" | "shared" | null;
+  readonly conversation?: ConversationId | null;
+};
+export const MailboxesListOrganizationThreadsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    q: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    state: Schema.optionalKey(
+      Schema.Union([Schema.Union([Schema.Literal("active"), Schema.Literal("done")]), Schema.Null]),
+    ),
+    folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
+    label: Schema.optionalKey(Schema.Union([MailboxLabelId, Schema.Null])),
+    unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId), Schema.Null])),
+    kind: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]),
+        Schema.Null,
+      ]),
+    ),
+    conversation: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+  }))();
+export type MailboxesListOrganizationThreads200 = OrganizationMailboxThreadPage;
+export const MailboxesListOrganizationThreads200 = OrganizationMailboxThreadPage;
+export type MailboxesListOrganizationThreads401 = UnauthorizedError;
+export const MailboxesListOrganizationThreads401 = UnauthorizedError;
+export type MailboxesListOrganizationThreads403 = ForbiddenError;
+export const MailboxesListOrganizationThreads403 = ForbiddenError;
+export type MailboxesListOrganizationThreads404 = ResourceNotFoundError;
+export const MailboxesListOrganizationThreads404 = ResourceNotFoundError;
+export type MailboxesListOrganizationThreads422 = ValidationError;
+export const MailboxesListOrganizationThreads422 = ValidationError;
+export type MailboxesListOrganizationThreads500 = InternalError;
+export const MailboxesListOrganizationThreads500 = InternalError;
+export type MailboxesListOrganizationThreads504 = GatewayTimeoutError;
+export const MailboxesListOrganizationThreads504 = GatewayTimeoutError;
 
 export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
   .add(
@@ -3734,7 +4281,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Delete a mailbox")
       .annotate(
         OpenApi.Description,
-        "Deletes a mailbox with its endpoints, threads, drafts, and history. The messages it received stay with the organization. The mailbox leaves every API key scope and webhook endpoint filter that named it; a key or endpoint left with no mailbox is disabled.",
+        "Deletes a mailbox with its endpoints, threads, drafts, and history. The messages it received retain their privacy. The mailbox leaves every API key scope and webhook endpoint filter that named it; a key or endpoint left with no mailbox is disabled. A signed-in organization owner may delete a former member's personal mailbox without reading it.",
       ),
     HttpApiEndpoint.patch("mailboxesUpdate", "/v1/mailboxes/:id", {
       params: MailboxesUpdatePathParams,
@@ -4734,7 +5281,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Update a mailbox thread")
       .annotate(
         OpenApi.Description,
-        "Updates the fields you name and keeps the rest. `folder` and `priority` are shared with everyone on the mailbox; `read`, `starred`, and `snoozedUntil` are the caller's own. Labels are not updated here: use `POST` and `DELETE` on `/v1/mailboxes/{id}/threads/{threadId}/labels`. Returns where the thread stands, not its messages: read those with `GET .../threads/{threadId}`.",
+        "Updates the fields you name and keeps the rest. `folder`, `priority`, and `closed` are shared with everyone on the mailbox; `done`, `read`, `starred`, and `snoozedUntil` are the caller's own. The Done list includes the caller's Done and shared closed conversations; changing `done` does not reopen Close. Personal mailboxes refuse `closed`; archive them with `folder: archived`. Neither Done nor Close publishes webhook or event-stream events. A new live message clears Done for all readers and reopens Close. Labels are not updated here: use `POST` and `DELETE` on `/v1/mailboxes/{id}/threads/{threadId}/labels`. Returns where the thread stands, not its messages: read those with `GET .../threads/{threadId}`.",
       ),
     HttpApiEndpoint.get(
       "mailboxesGetThreadContent",
@@ -4911,6 +5458,62 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(
         OpenApi.Description,
         "Updates the fields you name and keeps the rest. Only the note's author may.",
+      ),
+    HttpApiEndpoint.get("mailboxesListOrganizationDrafts", "/v1/mailboxes/drafts", {
+      query: MailboxesListOrganizationDraftsQuery,
+      success: MailboxesListOrganizationDrafts200,
+      error: [
+        MailboxesListOrganizationDrafts401.pipe(HttpApiSchema.status(401)),
+        MailboxesListOrganizationDrafts403.pipe(HttpApiSchema.status(403)),
+        MailboxesListOrganizationDrafts404.pipe(HttpApiSchema.status(404)),
+        MailboxesListOrganizationDrafts422.pipe(HttpApiSchema.status(422)),
+        MailboxesListOrganizationDrafts500,
+        MailboxesListOrganizationDrafts504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listOrganizationDrafts")
+      .annotate(OpenApi.Summary, "List your drafts across mailboxes")
+      .annotate(
+        OpenApi.Description,
+        "Lists only the caller's own unsent drafts in mailboxes where they may write drafts, newest first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes and threadId narrows to one thread. Each row carries its mailbox identity. Teammates' and agents' drafts are excluded. Pass nextCursor as cursor for the next page.",
+      ),
+    HttpApiEndpoint.get("mailboxesGetNeedsYou", "/v1/mailboxes/needs-you", {
+      query: MailboxesGetNeedsYouQuery,
+      success: MailboxesGetNeedsYou200,
+      error: [
+        MailboxesGetNeedsYou401.pipe(HttpApiSchema.status(401)),
+        MailboxesGetNeedsYou403.pipe(HttpApiSchema.status(403)),
+        MailboxesGetNeedsYou422.pipe(HttpApiSchema.status(422)),
+        MailboxesGetNeedsYou500,
+        MailboxesGetNeedsYou504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.getNeedsYou")
+      .annotate(OpenApi.Summary, "List mailbox decisions awaiting you")
+      .annotate(
+        OpenApi.Description,
+        "Returns held sends this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.",
+      ),
+    HttpApiEndpoint.get("mailboxesListOrganizationThreads", "/v1/mailboxes/threads", {
+      query: MailboxesListOrganizationThreadsQuery,
+      success: MailboxesListOrganizationThreads200,
+      error: [
+        MailboxesListOrganizationThreads401.pipe(HttpApiSchema.status(401)),
+        MailboxesListOrganizationThreads403.pipe(HttpApiSchema.status(403)),
+        MailboxesListOrganizationThreads404.pipe(HttpApiSchema.status(404)),
+        MailboxesListOrganizationThreads422.pipe(HttpApiSchema.status(422)),
+        MailboxesListOrganizationThreads500,
+        MailboxesListOrganizationThreads504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listOrganizationThreads")
+      .annotate(OpenApi.Summary, "List threads across your mailboxes")
+      .annotate(
+        OpenApi.Description,
+        "Lists only threads in mailboxes the caller can read, newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes the caller's Done and shared closed threads; state=done selects the caller's Done plus closed shared threads, without duplicates. Other filters and cursor pagination match the per-mailbox list.",
       ),
   )
   .annotate(
