@@ -17,6 +17,7 @@ import {
   GatewayTimeoutError,
   InternalError,
   JsonValue,
+  MailboxId,
   MediaId,
   MessageId,
   NamespaceId,
@@ -739,6 +740,7 @@ export const ReceivingStatus = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "ReceivingStatus" }))();
 export type EmailDomainPage = {
   readonly items: ReadonlyArray<{
+    readonly unknownRecipientMailboxId: MailboxId | null;
     readonly id: EmailDomainId;
     readonly domain: string;
     readonly phase: "dns-setup" | "provisioning" | "verifying" | "ready" | "degraded" | "failed";
@@ -757,6 +759,10 @@ export const EmailDomainPage = /* @__PURE__ */ (() =>
   Schema.Struct({
     items: Schema.Array(
       Schema.Struct({
+        unknownRecipientMailboxId: Schema.Union([MailboxId, Schema.Null]).annotate({
+          description:
+            "The active mailbox on this domain that receives unknown addresses when catch-all has no webhook endpoint, or null to drop them without a bounce.",
+        }),
         id: EmailDomainId,
         domain: Schema.String,
         phase: Schema.Union([
@@ -783,6 +789,7 @@ export const EmailDomainPage = /* @__PURE__ */ (() =>
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "EmailDomainPage" }))();
 export type EmailDomainDetailed = {
+  readonly unknownRecipientMailboxId: MailboxId | null;
   readonly id: EmailDomainId;
   readonly domain: string;
   readonly phase: "dns-setup" | "provisioning" | "verifying" | "ready" | "degraded" | "failed";
@@ -805,6 +812,10 @@ export type EmailDomainDetailed = {
 };
 export const EmailDomainDetailed = /* @__PURE__ */ (() =>
   Schema.Struct({
+    unknownRecipientMailboxId: Schema.Union([MailboxId, Schema.Null]).annotate({
+      description:
+        "The active mailbox on this domain that receives unknown addresses when catch-all has no webhook endpoint, or null to drop them without a bounce.",
+    }),
     id: EmailDomainId,
     domain: Schema.String,
     phase: Schema.Union([
@@ -2065,6 +2076,7 @@ export type EmailGetCatchAllConfigQuery = { readonly domainId: EmailDomainId };
 export const EmailGetCatchAllConfigQuery = /* @__PURE__ */ (() =>
   Schema.Struct({ domainId: EmailDomainId }))();
 export type EmailGetCatchAllConfig200 = {
+  readonly unknownRecipientMailboxId: MailboxId | null;
   readonly enabled: boolean;
   readonly endpointId: WebhookEndpointId | null;
   readonly emailCount: number;
@@ -2072,6 +2084,10 @@ export type EmailGetCatchAllConfig200 = {
 };
 export const EmailGetCatchAllConfig200 = /* @__PURE__ */ (() =>
   Schema.Struct({
+    unknownRecipientMailboxId: Schema.Union([MailboxId, Schema.Null]).annotate({
+      description:
+        "The active mailbox on this domain that receives unknown addresses when catch-all has no webhook endpoint, or null to drop them without a bounce.",
+    }),
     enabled: Schema.Boolean,
     endpointId: Schema.Union([WebhookEndpointId, Schema.Null]),
     emailCount: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
@@ -2102,11 +2118,18 @@ export const EmailGetCatchAllConfig504 = GatewayTimeoutError;
 export type EmailUpdateCatchAllConfigRequestJson = {
   readonly domainId: EmailDomainId;
   readonly endpointId?: WebhookEndpointId | null;
+  readonly unknownRecipientMailboxId?: MailboxId | null;
 };
 export const EmailUpdateCatchAllConfigRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     domainId: EmailDomainId,
     endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
+    unknownRecipientMailboxId: Schema.optionalKey(
+      Schema.Union([MailboxId, Schema.Null]).annotate({
+        description:
+          "An active mailbox in this organization with an email address on this domain. Receives unknown addresses only when catch-all has no webhook endpoint. Null drops unknown addresses without a bounce; omission leaves the setting unchanged.",
+      }),
+    ),
   }))();
 export type EmailUpdateCatchAllConfig200 = { readonly success: true };
 export const EmailUpdateCatchAllConfig200 = /* @__PURE__ */ (() =>
@@ -4095,7 +4118,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Get catch-all configuration")
       .annotate(
         OpenApi.Description,
-        "Returns the catch-all receiving configuration for a domain, including the webhook endpoint that receives its inbound mail and its email counts.",
+        "Returns the catch-all receiving configuration for a domain, including its webhook endpoint, unknown-address mailbox (null means drop), and email counts.",
       ),
     HttpApiEndpoint.patch("emailUpdateCatchAllConfig", "/v1/email/catch-all/config", {
       payload: EmailUpdateCatchAllConfigRequestJson,
@@ -4114,7 +4137,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Update catch-all configuration")
       .annotate(
         OpenApi.Description,
-        "Updates a domain's catch-all receiving configuration: the webhook endpoint that receives its inbound mail.",
+        "Updates a domain's catch-all webhook endpoint or unknown-address mailbox. The mailbox must be active, in the same organization, and have an email address on the domain. Omitted fields stay unchanged; `unknownRecipientMailboxId: null` drops unknown addresses without a bounce. A webhook endpoint takes precedence over the unknown-address setting.",
       ),
     HttpApiEndpoint.get("emailGetCatchAllStats", "/v1/email/catch-all/stats", {
       query: EmailGetCatchAllStatsQuery,
@@ -4517,7 +4540,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Enable catch-all receiving")
       .annotate(
         OpenApi.Description,
-        "Enables catch-all inbound receiving for a verified domain. `endpointId` is one of the organization's webhook endpoints; every address on the domain delivers `message.received` to it. Omit it to deliver through forwarding rules alone, which needs at least one active forwarding rule covering the domain. Mail that matches neither a rule nor an endpoint is rejected as an unknown recipient. Responds with 201.",
+        "Enables catch-all inbound receiving for a verified domain without requiring a destination. `endpointId` is one of the organization's webhook endpoints; every address on the domain delivers `message.received` to it. Without an endpoint, forwarding rules and active mailboxes receive matching addresses. Unknown addresses reach `unknownRecipientMailboxId` when configured, otherwise they are dropped without a bounce. Responds with 201.",
       ),
     HttpApiEndpoint.post("emailEnableReceiving", "/v1/email/domains/:id/enable-receiving", {
       params: EmailEnableReceivingPathParams,
@@ -4537,7 +4560,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Enable inbound email for a domain")
       .annotate(
         OpenApi.Description,
-        "Enables inbound receiving for a verified domain and returns the recipient addresses it accepts. Set `catchAll` to route every address on the domain; that needs a destination: a webhook endpoint, supplied as `endpointId` or already configured on the domain, or at least one active forwarding rule that covers the domain. Mail that matches neither is rejected, never accepted and dropped.",
+        "Enables inbound receiving for a verified domain and returns the recipient addresses it accepts. Set `catchAll` to accept every address on the domain. No destination is required to enable receiving. With no webhook endpoint, mail reaches matching forwarding rules and active mailboxes; unknown addresses reach `unknownRecipientMailboxId` when configured, otherwise they are dropped without a bounce.",
       ),
     HttpApiEndpoint.get("emailGetReceivingStatus", "/v1/email/domains/:id/receiving-status", {
       params: EmailGetReceivingStatusPathParams,
@@ -4556,7 +4579,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Get receiving setup status")
       .annotate(
         OpenApi.Description,
-        "Reports each prerequisite for receiving a domain's mail at Samva, in order: sending verified, a destination (a webhook endpoint or an active forwarding rule), receiving enabled, and the inbound MX record. The MX answer is a live DNS lookup that names the current target when mail is routed elsewhere.",
+        "Reports sending verification, configured destinations (webhook endpoint, forwarding rules, and mailboxes), receiving enablement, and the inbound MX record. Receiving can be enabled before a destination is configured. The MX answer is a live DNS lookup that names the current target when mail is routed elsewhere.",
       ),
     HttpApiEndpoint.post("emailDetectRegistrar", "/v1/email/domains/:id/registrar", {
       params: EmailDetectRegistrarPathParams,

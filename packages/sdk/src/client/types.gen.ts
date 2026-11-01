@@ -4479,6 +4479,10 @@ export type DomainConnectCompleteResult = {
 };
 
 export type EmailDomainDetailed = {
+  /**
+   * The active mailbox on this domain that receives unknown addresses when catch-all has no webhook endpoint, or null to drop them without a bounce.
+   */
+  unknownRecipientMailboxId: MailboxId | null;
   id: EmailDomainId;
   domain: string;
   phase: "dns-setup" | "provisioning" | "verifying" | "ready" | "degraded" | "failed";
@@ -4650,6 +4654,10 @@ export type EmailDomainProvisioningExecution = {
 
 export type EmailDomainPage = {
   items: Array<{
+    /**
+     * The active mailbox on this domain that receives unknown addresses when catch-all has no webhook endpoint, or null to drop them without a bounce.
+     */
+    unknownRecipientMailboxId: MailboxId | null;
     id: EmailDomainId;
     domain: string;
     phase: "dns-setup" | "provisioning" | "verifying" | "ready" | "degraded" | "failed";
@@ -9679,6 +9687,10 @@ export type EmailGetCatchAllConfigResponses = {
    * Success
    */
   200: {
+    /**
+     * The active mailbox on this domain that receives unknown addresses when catch-all has no webhook endpoint, or null to drop them without a bounce.
+     */
+    unknownRecipientMailboxId: MailboxId | null;
     enabled: boolean;
     endpointId: WebhookEndpointId | null;
     emailCount: number;
@@ -9693,6 +9705,10 @@ export type EmailUpdateCatchAllConfigData = {
   body: {
     domainId: EmailDomainId;
     endpointId?: WebhookEndpointId | null | undefined;
+    /**
+     * An active mailbox in this organization with an email address on this domain. Receives unknown addresses only when catch-all has no webhook endpoint. Null drops unknown addresses without a bounce; omission leaves the setting unchanged.
+     */
+    unknownRecipientMailboxId?: MailboxId | null | undefined;
   };
   path?: never;
   query?: never;

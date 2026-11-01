@@ -136,6 +136,7 @@ const domainsPage = (page: number, totalPages: number) => ({
     {
       id: `dom_7q2xk9mvt4znw8r${page}`,
       domain: `example${page}.com`,
+      unknownRecipientMailboxId: null,
       namespaceId: null,
       phase: "ready",
       isDefault: false,

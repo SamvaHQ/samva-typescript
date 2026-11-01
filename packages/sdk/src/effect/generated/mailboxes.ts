@@ -4436,7 +4436,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Resume a mailbox send")
       .annotate(
         OpenApi.Description,
-        "Resumes the same action only after its previous execution is confirmed ended and safe continuation is possible. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval, reset the original deadline, replace the message identity, or resubmit an accepted or uncertain send.",
+        "Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.",
       ),
     HttpApiEndpoint.get("mailboxesGetAgentActivity", "/v1/mailboxes/:id/agent-activity", {
       params: MailboxesGetAgentActivityPathParams,

@@ -2184,8 +2184,14 @@ export type TemplatesGetGitRepository200 = {
 export const TemplatesGetGitRepository200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     remote: Schema.String.check(
-      Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
-        expected: "a string matching the RegExp ^https:\\/\\/",
+      Schema.isPattern(
+        new RegExp(
+          "^https:\\/\\/|^http:\\/\\/127\\.0\\.0\\.1:(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])\\/git\\/[a-z0-9-]+\\/[a-z0-9-]+\\.git$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^https:\\/\\/|^http:\\/\\/127\\.0\\.0\\.1:(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])\\/git\\/[a-z0-9-]+\\/[a-z0-9-]+\\.git$",
       }),
     ),
     defaultBranch: Schema.String.check(
@@ -2230,8 +2236,14 @@ export type TemplatesIssueGitCredential200 = {
 export const TemplatesIssueGitCredential200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     remote: Schema.String.check(
-      Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
-        expected: "a string matching the RegExp ^https:\\/\\/",
+      Schema.isPattern(
+        new RegExp(
+          "^https:\\/\\/|^http:\\/\\/127\\.0\\.0\\.1:(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])\\/git\\/[a-z0-9-]+\\/[a-z0-9-]+\\.git$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^https:\\/\\/|^http:\\/\\/127\\.0\\.0\\.1:(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])\\/git\\/[a-z0-9-]+\\/[a-z0-9-]+\\.git$",
       }),
     ),
     username: Schema.Literal("x-access-token"),

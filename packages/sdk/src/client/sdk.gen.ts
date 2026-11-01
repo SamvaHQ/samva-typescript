@@ -2976,7 +2976,7 @@ export class Email {
   /**
    * Enable inbound email for a domain
    *
-   * Enables inbound receiving for a verified domain and returns the recipient addresses it accepts. Set `catchAll` to route every address on the domain; that needs a destination: a webhook endpoint, supplied as `endpointId` or already configured on the domain, or at least one active forwarding rule that covers the domain. Mail that matches neither is rejected, never accepted and dropped.
+   * Enables inbound receiving for a verified domain and returns the recipient addresses it accepts. Set `catchAll` to accept every address on the domain. No destination is required to enable receiving. With no webhook endpoint, mail reaches matching forwarding rules and active mailboxes; unknown addresses reach `unknownRecipientMailboxId` when configured, otherwise they are dropped without a bounce.
    */
   public static enableReceiving<ThrowOnError extends boolean = false>(
     parameters: {
@@ -3030,7 +3030,7 @@ export class Email {
   /**
    * Get receiving setup status
    *
-   * Reports each prerequisite for receiving a domain's mail at Samva, in order: sending verified, a destination (a webhook endpoint or an active forwarding rule), receiving enabled, and the inbound MX record. The MX answer is a live DNS lookup that names the current target when mail is routed elsewhere.
+   * Reports sending verification, configured destinations (webhook endpoint, forwarding rules, and mailboxes), receiving enablement, and the inbound MX record. Receiving can be enabled before a destination is configured. The MX answer is a live DNS lookup that names the current target when mail is routed elsewhere.
    */
   public static getReceivingStatus<ThrowOnError extends boolean = false>(
     parameters: {
@@ -3675,7 +3675,7 @@ export class Email {
   /**
    * Enable catch-all receiving
    *
-   * Enables catch-all inbound receiving for a verified domain. `endpointId` is one of the organization's webhook endpoints; every address on the domain delivers `message.received` to it. Omit it to deliver through forwarding rules alone, which needs at least one active forwarding rule covering the domain. Mail that matches neither a rule nor an endpoint is rejected as an unknown recipient. Responds with 201.
+   * Enables catch-all inbound receiving for a verified domain without requiring a destination. `endpointId` is one of the organization's webhook endpoints; every address on the domain delivers `message.received` to it. Without an endpoint, forwarding rules and active mailboxes receive matching addresses. Unknown addresses reach `unknownRecipientMailboxId` when configured, otherwise they are dropped without a bounce. Responds with 201.
    */
   public static enableCatchAll<ThrowOnError extends boolean = false>(
     parameters: {
@@ -3750,7 +3750,7 @@ export class Email {
   /**
    * Get catch-all configuration
    *
-   * Returns the catch-all receiving configuration for a domain, including the webhook endpoint that receives its inbound mail and its email counts.
+   * Returns the catch-all receiving configuration for a domain, including its webhook endpoint, unknown-address mailbox (null means drop), and email counts.
    */
   public static getCatchAllConfig<ThrowOnError extends boolean = false>(
     parameters: {
@@ -3781,12 +3781,13 @@ export class Email {
   /**
    * Update catch-all configuration
    *
-   * Updates a domain's catch-all receiving configuration: the webhook endpoint that receives its inbound mail.
+   * Updates a domain's catch-all webhook endpoint or unknown-address mailbox. The mailbox must be active, in the same organization, and have an email address on the domain. Omitted fields stay unchanged; `unknownRecipientMailboxId: null` drops unknown addresses without a bounce. A webhook endpoint takes precedence over the unknown-address setting.
    */
   public static updateCatchAllConfig<ThrowOnError extends boolean = false>(
     parameters: {
       domainId: EmailDomainId;
       endpointId?: WebhookEndpointId | null | undefined;
+      unknownRecipientMailboxId?: MailboxId | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -3801,6 +3802,7 @@ export class Email {
           args: [
             { in: "body", key: "domainId" },
             { in: "body", key: "endpointId" },
+            { in: "body", key: "unknownRecipientMailboxId" },
           ],
         },
       ],
@@ -16156,7 +16158,7 @@ export class Mailboxes {
   /**
    * Resume a mailbox send
    *
-   * Resumes the same action only after its previous execution is confirmed ended and safe continuation is possible. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval, reset the original deadline, replace the message identity, or resubmit an accepted or uncertain send.
+   * Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.
    */
   public static retryAction<ThrowOnError extends boolean = false>(
     parameters: {

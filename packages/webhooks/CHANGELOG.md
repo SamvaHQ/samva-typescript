@@ -1,3 +1,24 @@
+## @samva/webhooks@0.33.0
+
+### Use template Git credentials in local development
+
+The Effect SDK accepts loopback Git remotes in template repository and credential responses from
+the local development server. Production template repositories continue to require HTTPS.
+
+### Receive mail on your own domain
+
+Enable catch-all receiving before creating a mailbox, webhook endpoint, or forwarding rule.
+Domain reads include `unknownRecipientMailboxId`. Set it through `email.updateCatchAllConfig`
+to deliver unknown addresses to an active mailbox on the same domain, or pass `null` to drop
+them without a bounce. Matching forwarding rules, mailbox addresses, and catch-all webhooks
+keep their routing.
+
+### Clarify mailbox Retry availability
+
+SDK documentation and CLI help explain that an eligible queued mailbox action can be retried while
+cleanup from an ended send attempt waits. Retry preserves existing delays and the original deadline;
+running send attempts and attempts with unknown status remain protected.
+
 ## @samva/webhooks@0.32.0
 
 ### Validate resource names
