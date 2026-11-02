@@ -424,9 +424,16 @@ export type WebhookDeliveryPage = {
     readonly attempts: ReadonlyArray<{
       readonly id: WebhookAttemptId;
       readonly deliveryId: WebhookDeliveryId;
-      readonly kind: "automatic" | "manual";
+      readonly kind: "automatic" | "manual" | "replay";
+      readonly queueMessageId: string | null;
       readonly attemptNumber: number;
-      readonly classification: "success" | "http-error" | "network-error" | "timeout" | "cancelled";
+      readonly classification:
+        | "success"
+        | "http-error"
+        | "network-error"
+        | "timeout"
+        | "cancelled"
+        | "skipped";
       readonly attemptedAt: string;
       readonly responseStatus: number | null;
       readonly responseHeaders: { readonly [x: string]: string } | null;
@@ -472,7 +479,12 @@ export const WebhookDeliveryPage = /* @__PURE__ */ (() =>
           Schema.Struct({
             id: WebhookAttemptId,
             deliveryId: WebhookDeliveryId,
-            kind: Schema.Union([Schema.Literal("automatic"), Schema.Literal("manual")]),
+            kind: Schema.Union([
+              Schema.Literal("automatic"),
+              Schema.Literal("manual"),
+              Schema.Literal("replay"),
+            ]),
+            queueMessageId: Schema.Union([Schema.String, Schema.Null]),
             attemptNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
               .check(
                 Schema.isLessThanOrEqualTo(9007199254740991).annotate({
@@ -486,6 +498,7 @@ export const WebhookDeliveryPage = /* @__PURE__ */ (() =>
               Schema.Literal("network-error"),
               Schema.Literal("timeout"),
               Schema.Literal("cancelled"),
+              Schema.Literal("skipped"),
             ]),
             attemptedAt: Schema.String,
             responseStatus: Schema.Union([
@@ -1300,7 +1313,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       .annotate(OpenApi.Summary, "List webhook delivery logs")
       .annotate(
         OpenApi.Description,
-        "Returns a webhook endpoint's deliveries, newest first, each naming the event type and time it was made for, with its nested attempt diagnostics. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
+        "Returns a webhook endpoint's deliveries, newest first, each naming the event type and time it was made for, with its nested attempt diagnostics. A replay of a terminal delivery records a skipped replay receipt without another HTTP request or a change to its automatic retry lifecycle. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
       ),
     HttpApiEndpoint.post("webhooksRegenerateSecret", "/v1/webhooks/:id/rotate-secret", {
       params: WebhooksRegenerateSecretPathParams,

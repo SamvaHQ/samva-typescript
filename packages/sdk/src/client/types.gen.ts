@@ -1896,9 +1896,16 @@ export type WebhookDeliveryPage = {
     attempts: Array<{
       id: WebhookAttemptId;
       deliveryId: WebhookDeliveryId;
-      kind: "automatic" | "manual";
+      kind: "automatic" | "manual" | "replay";
+      queueMessageId: string | null;
       attemptNumber: number;
-      classification: "success" | "http-error" | "network-error" | "timeout" | "cancelled";
+      classification:
+        | "success"
+        | "http-error"
+        | "network-error"
+        | "timeout"
+        | "cancelled"
+        | "skipped";
       attemptedAt: string;
       responseStatus: number | null;
       responseHeaders: {

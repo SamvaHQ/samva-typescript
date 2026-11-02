@@ -1,3 +1,11 @@
+## @samva/webhooks@0.34.0
+
+### Inspect skipped webhook replays
+
+`webhooks.getLogs` includes terminal queue replays as attempts with `kind: "replay"`,
+`classification: "skipped"`, and a `queueMessageId`. These receipts record processing
+without another HTTP request or an automatic attempt increment.
+
 ## @samva/webhooks@0.33.0
 
 ### Use template Git credentials in local development

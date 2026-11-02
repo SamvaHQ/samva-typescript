@@ -12454,7 +12454,7 @@ export class Webhooks {
   /**
    * List webhook delivery logs
    *
-   * Returns a webhook endpoint's deliveries, newest first, each naming the event type and time it was made for, with its nested attempt diagnostics. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns a webhook endpoint's deliveries, newest first, each naming the event type and time it was made for, with its nested attempt diagnostics. A replay of a terminal delivery records a skipped replay receipt without another HTTP request or a change to its automatic retry lifecycle. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static getLogs<ThrowOnError extends boolean = false>(
     parameters: {
