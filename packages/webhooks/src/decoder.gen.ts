@@ -1602,7 +1602,7 @@ const validate1436 = (value: unknown): boolean =>
   Object.hasOwn(value, "occurredAt") &&
   (!Object.hasOwn(value, "id") || validate779(value["id"])) &&
   (!Object.hasOwn(value, "campaign") || validate592(value["campaign"])) &&
-  (!Object.hasOwn(value, "channel") || validate1443(value["channel"])) &&
+  (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "threadId") || validate1444(value["threadId"])) &&
   (!Object.hasOwn(value, "from") || validate1445(value["from"])) &&
   (!Object.hasOwn(value, "to") || validate45(value["to"])) &&
@@ -1612,8 +1612,6 @@ const validate1436 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "replyText") || validate8(value["replyText"])) &&
   (!Object.hasOwn(value, "attachments") || validate1463(value["attachments"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"]));
-const validate1443 = (value: unknown): boolean =>
-  typeof value === "string" && (value === "email" || value === "whatsapp" || value === "sms");
 const validate1444 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
@@ -2002,7 +2000,7 @@ const validate1736 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "threadId") || validate1444(value["threadId"])) &&
   (!Object.hasOwn(value, "actionId") || validate1489(value["actionId"])) &&
   (!Object.hasOwn(value, "messageId") || validate779(value["messageId"])) &&
-  (!Object.hasOwn(value, "channel") || validate1443(value["channel"])) &&
+  (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "recipient") || validate2(value["recipient"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"])) &&
   (!Object.hasOwn(value, "status") || validate1747(value["status"]));
@@ -2036,7 +2034,7 @@ const validate1751 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "threadId") || validate1444(value["threadId"])) &&
   (!Object.hasOwn(value, "actionId") || validate1489(value["actionId"])) &&
   (!Object.hasOwn(value, "messageId") || validate779(value["messageId"])) &&
-  (!Object.hasOwn(value, "channel") || validate1443(value["channel"])) &&
+  (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "recipient") || validate2(value["recipient"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"])) &&
   (!Object.hasOwn(value, "status") || validate1762(value["status"]));
@@ -2070,7 +2068,7 @@ const validate1766 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "threadId") || validate1444(value["threadId"])) &&
   (!Object.hasOwn(value, "actionId") || validate1489(value["actionId"])) &&
   (!Object.hasOwn(value, "messageId") || validate779(value["messageId"])) &&
-  (!Object.hasOwn(value, "channel") || validate1443(value["channel"])) &&
+  (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "recipient") || validate2(value["recipient"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"])) &&
   (!Object.hasOwn(value, "status") || validate1777(value["status"])) &&

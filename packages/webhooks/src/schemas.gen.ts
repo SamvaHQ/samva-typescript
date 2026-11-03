@@ -3362,7 +3362,7 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
               ]),
             ),
             channel: Schema.optionalKey(
-              Schema.Literals(["email", "whatsapp", "sms"]).annotate({
+              Schema.Literals(["sms", "whatsapp", "email"]).annotate({
                 description:
                   "Deliveries recorded before this field existed omit it; they are email.",
               }),
@@ -3575,7 +3575,7 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
               ]),
             ),
             channel: Schema.optionalKey(
-              Schema.Literals(["email", "whatsapp", "sms"]).annotate({
+              Schema.Literals(["sms", "whatsapp", "email"]).annotate({
                 description:
                   "Deliveries recorded before this field existed omit it; they are email.",
               }),
@@ -4199,7 +4199,7 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
               ]),
             ),
             channel: Schema.optionalKey(
-              Schema.Literals(["email", "whatsapp", "sms"]).annotate({
+              Schema.Literals(["sms", "whatsapp", "email"]).annotate({
                 description:
                   "Deliveries recorded before this field existed omit it; they are email.",
               }),
@@ -4461,7 +4461,7 @@ export const MailboxMessageDeliveredEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        channel: Schema.Literals(["email", "whatsapp", "sms"]).annotate({
+        channel: Schema.Literals(["sms", "whatsapp", "email"]).annotate({
           description: "The channel an endpoint, thread, or message belongs to.",
         }),
         recipient: Schema.String.annotate({
@@ -4525,7 +4525,7 @@ export const MailboxMessageReadEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        channel: Schema.Literals(["email", "whatsapp", "sms"]).annotate({
+        channel: Schema.Literals(["sms", "whatsapp", "email"]).annotate({
           description: "The channel an endpoint, thread, or message belongs to.",
         }),
         recipient: Schema.String.annotate({
@@ -4589,7 +4589,7 @@ export const MailboxMessageFailedEventSchema = Schema.StructWithRest(
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
-        channel: Schema.Literals(["email", "whatsapp", "sms"]).annotate({
+        channel: Schema.Literals(["sms", "whatsapp", "email"]).annotate({
           description: "The channel an endpoint, thread, or message belongs to.",
         }),
         recipient: Schema.String.annotate({

@@ -43,7 +43,7 @@ const writeConsumer = async (directory: string, source: string): Promise<void> =
       {
         compilerOptions: {
           target: "ES2024",
-          lib: ["ES2024", "DOM", "DOM.Iterable"],
+          lib: ["ES2024", "ESNext.Disposable", "DOM", "DOM.Iterable"],
           module: "Preserve",
           moduleResolution: "bundler",
           strict: true,
@@ -366,6 +366,7 @@ const domainPage = (page: number) => ({
       phase: "ready",
       isDefault: page === 1,
       namespaceId: null,
+      unknownRecipientMailboxId: null,
       deliverability: { bounceRate: 0, complaintRate: 0, windowSends: 0, sendingStatus: "enabled" },
       series: Array.from({ length: 14 }, () => 0),
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -562,7 +563,11 @@ for (const fixture of [promiseFixture, effectFixture]) {
 `,
 );
 await installPacked(effectDirectory, true);
-run([tsc, "--project", "tsconfig.json"], effectDirectory);
+const selectedEffect = JSON.parse(
+  await readFile(join(effectDirectory, "node_modules/effect/package.json"), "utf8"),
+) as { readonly version: string };
+process.stdout.write(`Packed selected Effect ${selectedEffect.version}\n`);
+run([tsc, "--project", "tsconfig.json", "--skipLibCheck", "false"], effectDirectory);
 run(["bun", "run", "consumer.ts"], effectDirectory);
 
 run(
@@ -574,6 +579,27 @@ run(
   ],
   sdkRoot,
 );
+
+// Building against the catalog cannot prove the oldest advertised optional peer.
+const peerFloor = /^\^(\d+\.\d+\.\d+)$/.exec(sdkManifest.peerDependencies.effect)?.[1];
+if (peerFloor === undefined) {
+  throw new Error("Packed peer-floor check requires an explicit caret release range");
+}
+const effectConsumerManifestPath = join(effectDirectory, "package.json");
+const effectConsumerManifest = JSON.parse(await readFile(effectConsumerManifestPath, "utf8")) as {
+  dependencies: Record<string, string>;
+};
+effectConsumerManifest.dependencies.effect = peerFloor;
+await writeFile(effectConsumerManifestPath, `${JSON.stringify(effectConsumerManifest, null, 2)}\n`);
+run(["bun", "install", "--ignore-scripts"], effectDirectory);
+const installedEffect = JSON.parse(
+  await readFile(join(effectDirectory, "node_modules/effect/package.json"), "utf8"),
+) as { readonly version: string };
+if (installedEffect.version !== peerFloor)
+  throw new Error("Packed consumer did not install the peer floor");
+run([tsc, "--project", "tsconfig.json", "--skipLibCheck", "false"], effectDirectory);
+run(["bun", "run", "consumer.ts"], effectDirectory);
+process.stdout.write(`Packed Effect peer floor ${peerFloor}: declarations and runtime passed\n`);
 
 await rm(temporaryRoot, { recursive: true, force: true });
 process.stdout.write("Packed Promise and Effect consumers passed\n");

@@ -2243,7 +2243,7 @@ export const WebhookEventJsonSchemas: Readonly<
               },
               channel: {
                 type: "string",
-                enum: ["email", "whatsapp", "sms"],
+                enum: ["sms", "whatsapp", "email"],
                 description:
                   "Deliveries recorded before this field existed omit it; they are email.",
               },
@@ -2384,7 +2384,7 @@ export const WebhookEventJsonSchemas: Readonly<
               },
               channel: {
                 type: "string",
-                enum: ["email", "whatsapp", "sms"],
+                enum: ["sms", "whatsapp", "email"],
                 description:
                   "Deliveries recorded before this field existed omit it; they are email.",
               },
@@ -2821,7 +2821,7 @@ export const WebhookEventJsonSchemas: Readonly<
               },
               channel: {
                 type: "string",
-                enum: ["email", "whatsapp", "sms"],
+                enum: ["sms", "whatsapp", "email"],
                 description:
                   "Deliveries recorded before this field existed omit it; they are email.",
               },
@@ -2999,7 +2999,7 @@ export const WebhookEventJsonSchemas: Readonly<
           messageId: { type: "string", pattern: "^msg_[0-9a-hjkmnp-tv-z]{16,24}$" },
           channel: {
             type: "string",
-            enum: ["email", "whatsapp", "sms"],
+            enum: ["sms", "whatsapp", "email"],
             description: "The channel an endpoint, thread, or message belongs to.",
           },
           recipient: { type: "string", description: "The address or number the status is about." },
@@ -3047,7 +3047,7 @@ export const WebhookEventJsonSchemas: Readonly<
           messageId: { type: "string", pattern: "^msg_[0-9a-hjkmnp-tv-z]{16,24}$" },
           channel: {
             type: "string",
-            enum: ["email", "whatsapp", "sms"],
+            enum: ["sms", "whatsapp", "email"],
             description: "The channel an endpoint, thread, or message belongs to.",
           },
           recipient: { type: "string", description: "The address or number the status is about." },
@@ -3095,7 +3095,7 @@ export const WebhookEventJsonSchemas: Readonly<
           messageId: { type: "string", pattern: "^msg_[0-9a-hjkmnp-tv-z]{16,24}$" },
           channel: {
             type: "string",
-            enum: ["email", "whatsapp", "sms"],
+            enum: ["sms", "whatsapp", "email"],
             description: "The channel an endpoint, thread, or message belongs to.",
           },
           recipient: { type: "string", description: "The address or number the status is about." },

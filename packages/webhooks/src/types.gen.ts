@@ -1045,7 +1045,7 @@ export type MailboxMessageReceivedEvent = {
             readonly [x: string]: JsonValue;
           })
         | null;
-      readonly channel?: "email" | "whatsapp" | "sms";
+      readonly channel?: "sms" | "whatsapp" | "email";
       readonly threadId: string;
       readonly from: { readonly address: string; readonly name?: string | null } & {
         readonly [x: string]: JsonValue;
@@ -1102,7 +1102,7 @@ export type MailboxMessageSentEvent = {
             readonly [x: string]: JsonValue;
           })
         | null;
-      readonly channel?: "email" | "whatsapp" | "sms";
+      readonly channel?: "sms" | "whatsapp" | "email";
       readonly threadId: string;
       readonly from: { readonly address: string; readonly name?: string | null } & {
         readonly [x: string]: JsonValue;
@@ -1297,7 +1297,7 @@ export type MailboxMessageReleasedEvent = {
             readonly [x: string]: JsonValue;
           })
         | null;
-      readonly channel?: "email" | "whatsapp" | "sms";
+      readonly channel?: "sms" | "whatsapp" | "email";
       readonly threadId: string;
       readonly from: { readonly address: string; readonly name?: string | null } & {
         readonly [x: string]: JsonValue;
@@ -1373,7 +1373,7 @@ export type MailboxMessageDeliveredEvent = {
     readonly threadId: string;
     readonly actionId: string;
     readonly messageId: string;
-    readonly channel: "email" | "whatsapp" | "sms";
+    readonly channel: "sms" | "whatsapp" | "email";
     readonly recipient: string;
     readonly occurredAt: string;
     readonly status: "delivered";
@@ -1389,7 +1389,7 @@ export type MailboxMessageReadEvent = {
     readonly threadId: string;
     readonly actionId: string;
     readonly messageId: string;
-    readonly channel: "email" | "whatsapp" | "sms";
+    readonly channel: "sms" | "whatsapp" | "email";
     readonly recipient: string;
     readonly occurredAt: string;
     readonly status: "read";
@@ -1405,7 +1405,7 @@ export type MailboxMessageFailedEvent = {
     readonly threadId: string;
     readonly actionId: string;
     readonly messageId: string;
-    readonly channel: "email" | "whatsapp" | "sms";
+    readonly channel: "sms" | "whatsapp" | "email";
     readonly recipient: string;
     readonly occurredAt: string;
     readonly status: "failed";
