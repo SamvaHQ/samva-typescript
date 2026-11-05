@@ -10,6 +10,31 @@ import responses from "./template-responses.json" with { type: "json" };
 describe("template response transport parity", () => {
   const id = responses.publication.templateId;
 
+  it("reads every template channel through both clients", async () => {
+    const fetch = async (input: string | URL | Request) => {
+      const path = new URL(input instanceof Request ? input.url : input).pathname;
+      return Response.json(
+        path === "/v1/templates"
+          ? { items: responses.templateSummaries, nextCursor: null }
+          : responses.templates.find((template) => path.endsWith(`/${template.id}`)),
+      );
+    };
+    const client = createClient({ apiKey: "samva_sk_test", fetch });
+    const layer = Layer.provide(
+      Client.layer({ apiKey: "samva_sk_test" }),
+      Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fetch)),
+    );
+    const page = { items: responses.templateSummaries, nextCursor: null };
+    expect(await client.templates.list()).toEqual(page);
+    expect(await Effect.runPromise(Templates.list().pipe(Effect.provide(layer)))).toEqual(page);
+    for (const template of responses.templates) {
+      expect(await client.templates.getById({ id: template.id })).toEqual(template);
+      expect(
+        await Effect.runPromise(Templates.getById({ id: template.id }).pipe(Effect.provide(layer))),
+      ).toEqual(template);
+    }
+  });
+
   it("reads a compiled publication and its rendered brand footer", async () => {
     const fetch = async () => Response.json(responses.publication);
     const client = createClient({ apiKey: "samva_sk_test", fetch });

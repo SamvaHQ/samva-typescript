@@ -13,11 +13,11 @@ import {
   ContactIdentity,
   ContactIdentityId,
   ConversationId,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
   JsonObject,
+  MalformedRequestError,
   MessageId,
   NamespaceId,
   PaymentRequiredError,
@@ -63,18 +63,29 @@ export const ContactLocation = /* @__PURE__ */ (() =>
     timezone: Schema.String,
   }).annotate({ identifier: "ContactLocation" }))();
 export type ContactPreferences = {
-  readonly preferredChannels?: ReadonlyArray<"email"> | null;
+  readonly preferredChannels?: ReadonlyArray<"sms" | "whatsapp" | "email"> | null;
   readonly language?: string | null;
   readonly timezone?: string | null;
   readonly notifications?: {
     readonly email?: boolean | null;
+    readonly sms?: boolean | null;
+    readonly whatsapp?: boolean | null;
     readonly quiet_hours?: { readonly start: string; readonly end: string } | null;
   } | null;
 };
 export const ContactPreferences = /* @__PURE__ */ (() =>
   Schema.Struct({
     preferredChannels: Schema.optionalKey(
-      Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+      Schema.Union([
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("sms"),
+            Schema.Literal("whatsapp"),
+            Schema.Literal("email"),
+          ]),
+        ),
+        Schema.Null,
+      ]),
     ),
     language: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     timezone: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
@@ -82,6 +93,8 @@ export const ContactPreferences = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.Struct({
           email: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+          sms: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+          whatsapp: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
           quiet_hours: Schema.optionalKey(
             Schema.Union([
               Schema.Struct({ start: Schema.String, end: Schema.String }),
@@ -96,7 +109,7 @@ export const ContactPreferences = /* @__PURE__ */ (() =>
 export type ContactImportJobId = string & EffectBrand.Brand<"ContactImportJobId">;
 export const ContactImportJobId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^cimport_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^cimport_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^cimport_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "ContactImportJobId",
     }),
@@ -290,7 +303,7 @@ export type ContactSummary = {
   readonly displayName: string | null;
   readonly status: "active" | "paused" | "blocked" | "archived";
   readonly email: string | null;
-  readonly channels: ReadonlyArray<"email">;
+  readonly channels: ReadonlyArray<"sms" | "whatsapp" | "email">;
   readonly tags: ReadonlyArray<string>;
   readonly lists: ReadonlyArray<ContactListMembership>;
   readonly customFields?: ContactCustomFields | null;
@@ -310,7 +323,9 @@ export const ContactSummary = /* @__PURE__ */ (() =>
       Schema.Literal("archived"),
     ]),
     email: Schema.Union([Schema.String, Schema.Null]),
-    channels: Schema.Array(Schema.Literal("email")),
+    channels: Schema.Array(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
     tags: Schema.Array(Schema.String),
     lists: Schema.Array(ContactListMembership),
     customFields: Schema.optionalKey(Schema.Union([ContactCustomFields, Schema.Null])),
@@ -611,15 +626,15 @@ export const Contact = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "Contact" }))();
 export type ContactsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly namespaceId?: NamespaceId | null;
-  readonly search?: string | null;
-  readonly status?: "active" | "paused" | "blocked" | "archived" | null;
-  readonly fields?: string | null;
-  readonly customField?: string | null;
-  readonly customFieldValue?: string | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly namespaceId?: NamespaceId;
+  readonly search?: string;
+  readonly status?: "active" | "paused" | "blocked" | "archived";
+  readonly fields?: string;
+  readonly customField?: string;
+  readonly customFieldValue?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const ContactsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -636,28 +651,27 @@ export const ContactsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(NamespaceId),
+    search: Schema.optionalKey(Schema.String),
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("active"),
-          Schema.Literal("paused"),
-          Schema.Literal("blocked"),
-          Schema.Literal("archived"),
-        ]),
-        Schema.Null,
+        Schema.Literal("active"),
+        Schema.Literal("paused"),
+        Schema.Literal("blocked"),
+        Schema.Literal("archived"),
       ]),
     ),
-    fields: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    customField: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    customFieldValue: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    fields: Schema.optionalKey(Schema.String),
+    customField: Schema.optionalKey(Schema.String),
+    customFieldValue: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type ContactsList200 = ContactPage;
 export const ContactsList200 = ContactPage;
+export type ContactsList400 = MalformedRequestError;
+export const ContactsList400 = MalformedRequestError;
 export type ContactsList401 = UnauthorizedError;
 export const ContactsList401 = UnauthorizedError;
 export type ContactsList403 = ForbiddenError;
@@ -722,6 +736,8 @@ export const ContactsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsCreate201 = Contact;
 export const ContactsCreate201 = Contact;
+export type ContactsCreate400 = MalformedRequestError;
+export const ContactsCreate400 = MalformedRequestError;
 export type ContactsCreate401 = UnauthorizedError;
 export const ContactsCreate401 = UnauthorizedError;
 export type ContactsCreate402 = PaymentRequiredError;
@@ -744,6 +760,8 @@ export type ContactsGetPathParams = { readonly id: ContactId };
 export const ContactsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsGet200 = Contact;
 export const ContactsGet200 = Contact;
+export type ContactsGet400 = MalformedRequestError;
+export const ContactsGet400 = MalformedRequestError;
 export type ContactsGet401 = UnauthorizedError;
 export const ContactsGet401 = UnauthorizedError;
 export type ContactsGet403 = ForbiddenError;
@@ -761,6 +779,8 @@ export const ContactsRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ i
 export type ContactsRemove200 = { readonly success: boolean };
 export const ContactsRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean }))();
+export type ContactsRemove400 = MalformedRequestError;
+export const ContactsRemove400 = MalformedRequestError;
 export type ContactsRemove401 = UnauthorizedError;
 export const ContactsRemove401 = UnauthorizedError;
 export type ContactsRemove403 = ForbiddenError;
@@ -834,6 +854,8 @@ export const ContactsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsUpdate200 = Contact;
 export const ContactsUpdate200 = Contact;
+export type ContactsUpdate400 = MalformedRequestError;
+export const ContactsUpdate400 = MalformedRequestError;
 export type ContactsUpdate401 = UnauthorizedError;
 export const ContactsUpdate401 = UnauthorizedError;
 export type ContactsUpdate402 = PaymentRequiredError;
@@ -855,8 +877,8 @@ export const ContactsGetActivityTimelinePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ContactId }))();
 export type ContactsGetActivityTimelineQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly channel?: "email" | null;
+  readonly cursor?: string;
+  readonly channel?: "sms" | "whatsapp" | "email";
 };
 export const ContactsGetActivityTimelineQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -873,11 +895,15 @@ export const ContactsGetActivityTimelineQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    channel: Schema.optionalKey(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
   }))();
 export type ContactsGetActivityTimeline200 = ContactActivityPage;
 export const ContactsGetActivityTimeline200 = ContactActivityPage;
+export type ContactsGetActivityTimeline400 = MalformedRequestError;
+export const ContactsGetActivityTimeline400 = MalformedRequestError;
 export type ContactsGetActivityTimeline401 = UnauthorizedError;
 export const ContactsGetActivityTimeline401 = UnauthorizedError;
 export type ContactsGetActivityTimeline403 = ForbiddenError;
@@ -963,6 +989,8 @@ export const ContactsGetEngagement200 = /* @__PURE__ */ (() =>
         ),
     ),
   }))();
+export type ContactsGetEngagement400 = MalformedRequestError;
+export const ContactsGetEngagement400 = MalformedRequestError;
 export type ContactsGetEngagement401 = UnauthorizedError;
 export const ContactsGetEngagement401 = UnauthorizedError;
 export type ContactsGetEngagement403 = ForbiddenError;
@@ -980,7 +1008,7 @@ export const ContactsGetGroupMembershipsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ContactId }))();
 export type ContactsGetGroupMembershipsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const ContactsGetGroupMembershipsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -997,10 +1025,12 @@ export const ContactsGetGroupMembershipsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type ContactsGetGroupMemberships200 = ContactGroupMembershipPage;
 export const ContactsGetGroupMemberships200 = ContactGroupMembershipPage;
+export type ContactsGetGroupMemberships400 = MalformedRequestError;
+export const ContactsGetGroupMemberships400 = MalformedRequestError;
 export type ContactsGetGroupMemberships401 = UnauthorizedError;
 export const ContactsGetGroupMemberships401 = UnauthorizedError;
 export type ContactsGetGroupMemberships403 = ForbiddenError;
@@ -1029,6 +1059,8 @@ export const ContactsAddIdentityRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsAddIdentity200 = Contact;
 export const ContactsAddIdentity200 = Contact;
+export type ContactsAddIdentity400 = MalformedRequestError;
+export const ContactsAddIdentity400 = MalformedRequestError;
 export type ContactsAddIdentity401 = UnauthorizedError;
 export const ContactsAddIdentity401 = UnauthorizedError;
 export type ContactsAddIdentity403 = ForbiddenError;
@@ -1051,6 +1083,8 @@ export const ContactsRemoveIdentityPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ContactId, identityId: ContactIdentityId }))();
 export type ContactsRemoveIdentity200 = Contact;
 export const ContactsRemoveIdentity200 = Contact;
+export type ContactsRemoveIdentity400 = MalformedRequestError;
+export const ContactsRemoveIdentity400 = MalformedRequestError;
 export type ContactsRemoveIdentity401 = UnauthorizedError;
 export const ContactsRemoveIdentity401 = UnauthorizedError;
 export type ContactsRemoveIdentity403 = ForbiddenError;
@@ -1066,13 +1100,17 @@ export const ContactsRemoveIdentity504 = GatewayTimeoutError;
 export type ContactsSetConsentPathParams = {
   readonly id: ContactId;
   readonly identityId: ContactIdentityId;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
 };
 export const ContactsSetConsentPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: ContactId,
     identityId: ContactIdentityId,
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
   }))();
 export type ContactsSetConsentRequestJson = {
   readonly status: "opted_in" | "opted_out";
@@ -1098,6 +1136,8 @@ export const ContactsSetConsentRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsSetConsent200 = Contact;
 export const ContactsSetConsent200 = Contact;
+export type ContactsSetConsent400 = MalformedRequestError;
+export const ContactsSetConsent400 = MalformedRequestError;
 export type ContactsSetConsent401 = UnauthorizedError;
 export const ContactsSetConsent401 = UnauthorizedError;
 export type ContactsSetConsent403 = ForbiddenError;
@@ -1117,6 +1157,8 @@ export const ContactsAddTagsRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ContactsAddTags200 = Contact;
 export const ContactsAddTags200 = Contact;
+export type ContactsAddTags400 = MalformedRequestError;
+export const ContactsAddTags400 = MalformedRequestError;
 export type ContactsAddTags401 = UnauthorizedError;
 export const ContactsAddTags401 = UnauthorizedError;
 export type ContactsAddTags403 = ForbiddenError;
@@ -1137,6 +1179,8 @@ export const ContactsRemoveTagsRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ContactsRemoveTags200 = Contact;
 export const ContactsRemoveTags200 = Contact;
+export type ContactsRemoveTags400 = MalformedRequestError;
+export const ContactsRemoveTags400 = MalformedRequestError;
 export type ContactsRemoveTags401 = UnauthorizedError;
 export const ContactsRemoveTags401 = UnauthorizedError;
 export type ContactsRemoveTags403 = ForbiddenError;
@@ -1184,6 +1228,8 @@ export const ContactsBulkDelete200 = /* @__PURE__ */ (() =>
         }),
       ),
   }))();
+export type ContactsBulkDelete400 = MalformedRequestError;
+export const ContactsBulkDelete400 = MalformedRequestError;
 export type ContactsBulkDelete401 = UnauthorizedError;
 export const ContactsBulkDelete401 = UnauthorizedError;
 export type ContactsBulkDelete403 = ForbiddenError;
@@ -1214,6 +1260,8 @@ export const ContactsBulkUpdateStatusRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsBulkUpdateStatus200 = BulkUpdateResult;
 export const ContactsBulkUpdateStatus200 = BulkUpdateResult;
+export type ContactsBulkUpdateStatus400 = MalformedRequestError;
+export const ContactsBulkUpdateStatus400 = MalformedRequestError;
 export type ContactsBulkUpdateStatus401 = UnauthorizedError;
 export const ContactsBulkUpdateStatus401 = UnauthorizedError;
 export type ContactsBulkUpdateStatus402 = PaymentRequiredError;
@@ -1247,6 +1295,8 @@ export const ContactsBulkUpdateTagsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsBulkUpdateTags200 = BulkUpdateResult;
 export const ContactsBulkUpdateTags200 = BulkUpdateResult;
+export type ContactsBulkUpdateTags400 = MalformedRequestError;
+export const ContactsBulkUpdateTags400 = MalformedRequestError;
 export type ContactsBulkUpdateTags401 = UnauthorizedError;
 export const ContactsBulkUpdateTags401 = UnauthorizedError;
 export type ContactsBulkUpdateTags403 = ForbiddenError;
@@ -1321,6 +1371,8 @@ export const ContactsExport200 = /* @__PURE__ */ (() =>
         }),
       ),
   }))();
+export type ContactsExport400 = MalformedRequestError;
+export const ContactsExport400 = MalformedRequestError;
 export type ContactsExport401 = UnauthorizedError;
 export const ContactsExport401 = UnauthorizedError;
 export type ContactsExport403 = ForbiddenError;
@@ -1346,6 +1398,8 @@ export const ContactsFindRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ContactsFind200 = Contact | null;
 export const ContactsFind200 = /* @__PURE__ */ (() => Schema.Union([Contact, Schema.Null]))();
+export type ContactsFind400 = MalformedRequestError;
+export const ContactsFind400 = MalformedRequestError;
 export type ContactsFind401 = UnauthorizedError;
 export const ContactsFind401 = UnauthorizedError;
 export type ContactsFind403 = ForbiddenError;
@@ -1421,6 +1475,8 @@ export const ContactsFindOrCreateRequestJson = /* @__PURE__ */ (() =>
 export type ContactsFindOrCreate200 = { readonly contact: Contact; readonly created: boolean };
 export const ContactsFindOrCreate200 = /* @__PURE__ */ (() =>
   Schema.Struct({ contact: Contact, created: Schema.Boolean }))();
+export type ContactsFindOrCreate400 = MalformedRequestError;
+export const ContactsFindOrCreate400 = MalformedRequestError;
 export type ContactsFindOrCreate401 = UnauthorizedError;
 export const ContactsFindOrCreate401 = UnauthorizedError;
 export type ContactsFindOrCreate402 = PaymentRequiredError;
@@ -1439,24 +1495,21 @@ export type ContactsFindOrCreate502 = BillingProviderError;
 export const ContactsFindOrCreate502 = BillingProviderError;
 export type ContactsFindOrCreate504 = GatewayTimeoutError;
 export const ContactsFindOrCreate504 = GatewayTimeoutError;
-export type ContactsStartImportHeaders = { readonly "idempotency-key"?: string | null };
+export type ContactsStartImportHeaders = { readonly "idempotency-key"?: string };
 export const ContactsStartImportHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type ContactsStartImportRequestJson =
@@ -1803,6 +1856,8 @@ export const ContactsStartImport202 = /* @__PURE__ */ (() =>
     ]),
     resumable: Schema.Boolean,
   }))();
+export type ContactsStartImport400 = MalformedRequestError;
+export const ContactsStartImport400 = MalformedRequestError;
 export type ContactsStartImport401 = UnauthorizedError;
 export const ContactsStartImport401 = UnauthorizedError;
 export type ContactsStartImport402 = PaymentRequiredError;
@@ -2017,6 +2072,8 @@ export const ContactsGetImportJob200 = /* @__PURE__ */ (() =>
     ]),
     resumable: Schema.Boolean,
   }))();
+export type ContactsGetImportJob400 = MalformedRequestError;
+export const ContactsGetImportJob400 = MalformedRequestError;
 export type ContactsGetImportJob401 = UnauthorizedError;
 export const ContactsGetImportJob401 = UnauthorizedError;
 export type ContactsGetImportJob403 = ForbiddenError;
@@ -2302,6 +2359,8 @@ export const ContactsPlanImport200 = /* @__PURE__ */ (() =>
     ),
     diagnosticsTruncated: Schema.Boolean,
   }))();
+export type ContactsPlanImport400 = MalformedRequestError;
+export const ContactsPlanImport400 = MalformedRequestError;
 export type ContactsPlanImport401 = UnauthorizedError;
 export const ContactsPlanImport401 = UnauthorizedError;
 export type ContactsPlanImport403 = ForbiddenError;
@@ -2321,6 +2380,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       query: ContactsListQuery,
       success: ContactsList200,
       error: [
+        ContactsList400.pipe(HttpApiSchema.status(400)),
         ContactsList401.pipe(HttpApiSchema.status(401)),
         ContactsList403.pipe(HttpApiSchema.status(403)),
         ContactsList422.pipe(HttpApiSchema.status(422)),
@@ -2339,6 +2399,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsCreateRequestJson,
       success: ContactsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        ContactsCreate400.pipe(HttpApiSchema.status(400)),
         ContactsCreate401.pipe(HttpApiSchema.status(401)),
         ContactsCreate402.pipe(HttpApiSchema.status(402)),
         ContactsCreate403.pipe(HttpApiSchema.status(403)),
@@ -2361,6 +2422,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       params: ContactsGetPathParams,
       success: ContactsGet200,
       error: [
+        ContactsGet400.pipe(HttpApiSchema.status(400)),
         ContactsGet401.pipe(HttpApiSchema.status(401)),
         ContactsGet403.pipe(HttpApiSchema.status(403)),
         ContactsGet404.pipe(HttpApiSchema.status(404)),
@@ -2380,6 +2442,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       params: ContactsRemovePathParams,
       success: ContactsRemove200,
       error: [
+        ContactsRemove400.pipe(HttpApiSchema.status(400)),
         ContactsRemove401.pipe(HttpApiSchema.status(401)),
         ContactsRemove403.pipe(HttpApiSchema.status(403)),
         ContactsRemove404.pipe(HttpApiSchema.status(404)),
@@ -2398,6 +2461,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsUpdateRequestJson,
       success: ContactsUpdate200,
       error: [
+        ContactsUpdate400.pipe(HttpApiSchema.status(400)),
         ContactsUpdate401.pipe(HttpApiSchema.status(401)),
         ContactsUpdate402.pipe(HttpApiSchema.status(402)),
         ContactsUpdate403.pipe(HttpApiSchema.status(403)),
@@ -2420,6 +2484,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       query: ContactsGetActivityTimelineQuery,
       success: ContactsGetActivityTimeline200,
       error: [
+        ContactsGetActivityTimeline400.pipe(HttpApiSchema.status(400)),
         ContactsGetActivityTimeline401.pipe(HttpApiSchema.status(401)),
         ContactsGetActivityTimeline403.pipe(HttpApiSchema.status(403)),
         ContactsGetActivityTimeline404.pipe(HttpApiSchema.status(404)),
@@ -2439,6 +2504,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       params: ContactsGetEngagementPathParams,
       success: ContactsGetEngagement200,
       error: [
+        ContactsGetEngagement400.pipe(HttpApiSchema.status(400)),
         ContactsGetEngagement401.pipe(HttpApiSchema.status(401)),
         ContactsGetEngagement403.pipe(HttpApiSchema.status(403)),
         ContactsGetEngagement404.pipe(HttpApiSchema.status(404)),
@@ -2459,6 +2525,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       query: ContactsGetGroupMembershipsQuery,
       success: ContactsGetGroupMemberships200,
       error: [
+        ContactsGetGroupMemberships400.pipe(HttpApiSchema.status(400)),
         ContactsGetGroupMemberships401.pipe(HttpApiSchema.status(401)),
         ContactsGetGroupMemberships403.pipe(HttpApiSchema.status(403)),
         ContactsGetGroupMemberships404.pipe(HttpApiSchema.status(404)),
@@ -2479,6 +2546,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsAddIdentityRequestJson,
       success: ContactsAddIdentity200,
       error: [
+        ContactsAddIdentity400.pipe(HttpApiSchema.status(400)),
         ContactsAddIdentity401.pipe(HttpApiSchema.status(401)),
         ContactsAddIdentity403.pipe(HttpApiSchema.status(403)),
         ContactsAddIdentity404.pipe(HttpApiSchema.status(404)),
@@ -2499,6 +2567,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       params: ContactsRemoveIdentityPathParams,
       success: ContactsRemoveIdentity200,
       error: [
+        ContactsRemoveIdentity400.pipe(HttpApiSchema.status(400)),
         ContactsRemoveIdentity401.pipe(HttpApiSchema.status(401)),
         ContactsRemoveIdentity403.pipe(HttpApiSchema.status(403)),
         ContactsRemoveIdentity404.pipe(HttpApiSchema.status(404)),
@@ -2522,6 +2591,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
         payload: ContactsSetConsentRequestJson,
         success: ContactsSetConsent200,
         error: [
+          ContactsSetConsent400.pipe(HttpApiSchema.status(400)),
           ContactsSetConsent401.pipe(HttpApiSchema.status(401)),
           ContactsSetConsent403.pipe(HttpApiSchema.status(403)),
           ContactsSetConsent404.pipe(HttpApiSchema.status(404)),
@@ -2543,6 +2613,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsAddTagsRequestJson,
       success: ContactsAddTags200,
       error: [
+        ContactsAddTags400.pipe(HttpApiSchema.status(400)),
         ContactsAddTags401.pipe(HttpApiSchema.status(401)),
         ContactsAddTags403.pipe(HttpApiSchema.status(403)),
         ContactsAddTags404.pipe(HttpApiSchema.status(404)),
@@ -2563,6 +2634,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsRemoveTagsRequestJson,
       success: ContactsRemoveTags200,
       error: [
+        ContactsRemoveTags400.pipe(HttpApiSchema.status(400)),
         ContactsRemoveTags401.pipe(HttpApiSchema.status(401)),
         ContactsRemoveTags403.pipe(HttpApiSchema.status(403)),
         ContactsRemoveTags404.pipe(HttpApiSchema.status(404)),
@@ -2582,6 +2654,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsBulkDeleteRequestJson,
       success: ContactsBulkDelete200,
       error: [
+        ContactsBulkDelete400.pipe(HttpApiSchema.status(400)),
         ContactsBulkDelete401.pipe(HttpApiSchema.status(401)),
         ContactsBulkDelete403.pipe(HttpApiSchema.status(403)),
         ContactsBulkDelete422.pipe(HttpApiSchema.status(422)),
@@ -2601,6 +2674,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsBulkUpdateStatusRequestJson,
       success: ContactsBulkUpdateStatus200,
       error: [
+        ContactsBulkUpdateStatus400.pipe(HttpApiSchema.status(400)),
         ContactsBulkUpdateStatus401.pipe(HttpApiSchema.status(401)),
         ContactsBulkUpdateStatus402.pipe(HttpApiSchema.status(402)),
         ContactsBulkUpdateStatus403.pipe(HttpApiSchema.status(403)),
@@ -2621,6 +2695,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsBulkUpdateTagsRequestJson,
       success: ContactsBulkUpdateTags200,
       error: [
+        ContactsBulkUpdateTags400.pipe(HttpApiSchema.status(400)),
         ContactsBulkUpdateTags401.pipe(HttpApiSchema.status(401)),
         ContactsBulkUpdateTags403.pipe(HttpApiSchema.status(403)),
         ContactsBulkUpdateTags422.pipe(HttpApiSchema.status(422)),
@@ -2639,6 +2714,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsExportRequestJson,
       success: ContactsExport200,
       error: [
+        ContactsExport400.pipe(HttpApiSchema.status(400)),
         ContactsExport401.pipe(HttpApiSchema.status(401)),
         ContactsExport403.pipe(HttpApiSchema.status(403)),
         ContactsExport422.pipe(HttpApiSchema.status(422)),
@@ -2657,6 +2733,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsFindRequestJson,
       success: ContactsFind200,
       error: [
+        ContactsFind400.pipe(HttpApiSchema.status(400)),
         ContactsFind401.pipe(HttpApiSchema.status(401)),
         ContactsFind403.pipe(HttpApiSchema.status(403)),
         ContactsFind404.pipe(HttpApiSchema.status(404)),
@@ -2677,6 +2754,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsFindOrCreateRequestJson,
       success: ContactsFindOrCreate200,
       error: [
+        ContactsFindOrCreate400.pipe(HttpApiSchema.status(400)),
         ContactsFindOrCreate401.pipe(HttpApiSchema.status(401)),
         ContactsFindOrCreate402.pipe(HttpApiSchema.status(402)),
         ContactsFindOrCreate403.pipe(HttpApiSchema.status(403)),
@@ -2700,6 +2778,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsStartImportRequestJson,
       success: ContactsStartImport202.pipe(HttpApiSchema.status(202)),
       error: [
+        ContactsStartImport400.pipe(HttpApiSchema.status(400)),
         ContactsStartImport401.pipe(HttpApiSchema.status(401)),
         ContactsStartImport402.pipe(HttpApiSchema.status(402)),
         ContactsStartImport403.pipe(HttpApiSchema.status(403)),
@@ -2722,6 +2801,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       params: ContactsGetImportJobPathParams,
       success: ContactsGetImportJob200,
       error: [
+        ContactsGetImportJob400.pipe(HttpApiSchema.status(400)),
         ContactsGetImportJob401.pipe(HttpApiSchema.status(401)),
         ContactsGetImportJob403.pipe(HttpApiSchema.status(403)),
         ContactsGetImportJob404.pipe(HttpApiSchema.status(404)),
@@ -2741,6 +2821,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       payload: ContactsPlanImportRequestJson,
       success: ContactsPlanImport200,
       error: [
+        ContactsPlanImport400.pipe(HttpApiSchema.status(400)),
         ContactsPlanImport401.pipe(HttpApiSchema.status(401)),
         ContactsPlanImport403.pipe(HttpApiSchema.status(403)),
         ContactsPlanImport404.pipe(HttpApiSchema.status(404)),

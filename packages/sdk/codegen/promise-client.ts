@@ -644,26 +644,60 @@ interface Signature {
 const signature = (
   operation: Operation,
   onReference: (typeName: string) => void,
+  schemas: ReadonlyMap<string, Ir>,
 ): Signature | undefined => {
+  const objectBody = (schema: Ir, seen = new Set<string>()): Ir | undefined => {
+    if (schema.$ref === undefined) return schema.type === "object" ? schema : undefined;
+    const name = refToName(schema.$ref);
+    const target = schemas.get(name);
+    return target === undefined || seen.has(name)
+      ? undefined
+      : objectBody(target, new Set([...seen, name]));
+  };
   const locations = ["header", "path", "query"] as const;
   const body = operation.body;
-  // A discriminated object union is already a flat request. Flattening its members separately
-  // loses their relationship; wrapping it adds a field that the HTTP contract does not have.
+  // Named channel variants stay flat; inline unions with other parameters keep their published
+  // nested body input. Root unions without other parameters are already flat.
   if (
     body !== undefined &&
     body.schema.logicalOperator === "or" &&
-    body.schema.items?.every((item) => item.type === "object") &&
-    locations.every((location) =>
-      operation.parameters[location].every(
-        (parameter) => parameter.name.toLowerCase() === "idempotency-key",
-      ),
-    )
+    body.schema.items?.every((item) => objectBody(item) !== undefined) &&
+    (body.schema.items.every((item) => item.$ref !== undefined) ||
+      locations.every((location) =>
+        operation.parameters[location].every(
+          (parameter) => parameter.name.toLowerCase() === "idempotency-key",
+        ),
+      ))
   ) {
+    const parameters = signature({ ...operation, body: undefined }, onReference, schemas);
+    const bodyType = schemaToType(body.schema, onReference);
+    if (parameters === undefined)
+      return { required: body.required, members: [], fields: [], wholeBody: bodyType };
+    const bodyNames = new Set(
+      body.schema.items.flatMap((item) => Object.keys(objectBody(item)?.properties ?? {})),
+    );
+    const fields = parameters.fields.map((field) =>
+      bodyNames.has(field.key)
+        ? { ...field, key: `${field.in}_${field.key}`, map: field.map ?? field.key }
+        : field,
+    );
     return {
-      required: body.required,
+      required: body.required || parameters.required,
       members: [],
-      fields: [],
-      wholeBody: schemaToType(body.schema, onReference),
+      fields,
+      wholeBody: {
+        kind: "intersection",
+        members: [
+          {
+            kind: "object",
+            members: parameters.members.map((member, index) => ({
+              ...member,
+              name: fields[index]!.key,
+            })),
+          },
+          bodyType,
+        ],
+      },
     };
   }
   const flattenBody =
@@ -821,11 +855,17 @@ const renderMethod = (
     );
     parameters.push(`parameters${method.signature.required ? "" : "?"}: ${parametersType}`);
     const args = `[${method.signature.fields.map(fieldLiteral).join(", ")}]`;
-    statements.push(
-      method.signature.wholeBody === undefined
-        ? `const params = ${names.runtime("buildClientParams")}([parameters], [${objectLiteral([`args: ${args}`])}]);`
-        : "const params = { body: parameters };",
-    );
+    if (method.signature.wholeBody !== undefined && method.signature.fields.length === 0) {
+      statements.push("const params = { body: parameters };");
+    } else {
+      statements.push(
+        `const params = ${names.runtime("buildClientParams")}([parameters], [${objectLiteral([`args: ${args}`])}]);`,
+      );
+      if (method.signature.wholeBody !== undefined)
+        statements.push(
+          `params.body = Object.fromEntries(Object.entries(parameters).filter(([key]) => !${JSON.stringify(method.signature.fields.map((field) => field.key))}.includes(key)));`,
+        );
+    }
     request.push("...params");
   }
   if (
@@ -872,6 +912,7 @@ const renderSdk = (
   // Class tree: one root per tag, one nested class per operationId segment.
   const roots = new Map<string, ClassNode>();
   const methodsInOrder: Array<SdkMethod> = [];
+  const schemas = new Map(parsed.schemas);
   if (parsed.operations.length === 0) throw new Error("The OpenAPI document has no operations");
   for (const operation of parsed.operations) {
     const referencedTypes: Array<string> = [];
@@ -882,7 +923,7 @@ const renderSdk = (
         new Set(),
         `${operation.id} method`,
       ),
-      signature: signature(operation, (name) => referencedTypes.push(name)),
+      signature: signature(operation, (name) => referencedTypes.push(name), schemas),
       referencedTypes,
     };
     const newsletterNamespace =

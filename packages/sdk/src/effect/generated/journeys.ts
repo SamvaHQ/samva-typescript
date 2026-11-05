@@ -9,7 +9,6 @@ import {
   BillingProviderError,
   ConflictError,
   ContactId,
-  Cursor,
   FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
@@ -18,6 +17,7 @@ import {
   JourneyName,
   JourneyNodeId,
   JsonObject,
+  MalformedRequestError,
   MessageId,
   PaymentRequiredError,
   ResourceNotFoundError,
@@ -36,7 +36,7 @@ export const JourneyStatus = /* @__PURE__ */ (() =>
 export type JourneyId = string & EffectBrand.Brand<"JourneyId">;
 export const JourneyId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "JourneyId",
     }),
@@ -52,7 +52,7 @@ export const JourneyRunStatus = /* @__PURE__ */ (() =>
 export type JourneyRunId = string & EffectBrand.Brand<"JourneyRunId">;
 export const JourneyRunId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^jrun_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "JourneyRunId",
     }),
@@ -418,13 +418,13 @@ export const JourneyVersion = /* @__PURE__ */ (() =>
     publishedAt: Schema.String,
   }).annotate({ identifier: "JourneyVersion" }))();
 export type JourneysListQuery = {
-  readonly status?: JourneyStatus | null;
+  readonly status?: JourneyStatus;
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const JourneysListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    status: Schema.optionalKey(Schema.Union([JourneyStatus, Schema.Null])),
+    status: Schema.optionalKey(JourneyStatus),
     limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.annotate({ description: "Items per page, at most 100." })
@@ -438,10 +438,12 @@ export const JourneysListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type JourneysList200 = JourneyPage;
 export const JourneysList200 = JourneyPage;
+export type JourneysList400 = MalformedRequestError;
+export const JourneysList400 = MalformedRequestError;
 export type JourneysList401 = UnauthorizedError;
 export const JourneysList401 = UnauthorizedError;
 export type JourneysList403 = ForbiddenError;
@@ -460,6 +462,8 @@ export const JourneysCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ name: JourneyName, definition: JourneyDefinition }))();
 export type JourneysCreate201 = Journey;
 export const JourneysCreate201 = Journey;
+export type JourneysCreate400 = MalformedRequestError;
+export const JourneysCreate400 = MalformedRequestError;
 export type JourneysCreate401 = UnauthorizedError;
 export const JourneysCreate401 = UnauthorizedError;
 export type JourneysCreate402 = PaymentRequiredError;
@@ -483,6 +487,8 @@ export type JourneysGetPathParams = { readonly id: JourneyId };
 export const JourneysGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysGet200 = Journey;
 export const JourneysGet200 = Journey;
+export type JourneysGet400 = MalformedRequestError;
+export const JourneysGet400 = MalformedRequestError;
 export type JourneysGet401 = UnauthorizedError;
 export const JourneysGet401 = UnauthorizedError;
 export type JourneysGet403 = ForbiddenError;
@@ -499,6 +505,8 @@ export type JourneysRemovePathParams = { readonly id: JourneyId };
 export const JourneysRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysRemove200 = DeleteJourneyResponse;
 export const JourneysRemove200 = DeleteJourneyResponse;
+export type JourneysRemove400 = MalformedRequestError;
+export const JourneysRemove400 = MalformedRequestError;
 export type JourneysRemove401 = UnauthorizedError;
 export const JourneysRemove401 = UnauthorizedError;
 export type JourneysRemove403 = ForbiddenError;
@@ -520,6 +528,8 @@ export const JourneysUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ name: JourneyName }))();
 export type JourneysUpdate200 = Journey;
 export const JourneysUpdate200 = Journey;
+export type JourneysUpdate400 = MalformedRequestError;
+export const JourneysUpdate400 = MalformedRequestError;
 export type JourneysUpdate401 = UnauthorizedError;
 export const JourneysUpdate401 = UnauthorizedError;
 export type JourneysUpdate403 = ForbiddenError;
@@ -536,6 +546,8 @@ export type JourneysArchivePathParams = { readonly id: JourneyId };
 export const JourneysArchivePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysArchive200 = Journey;
 export const JourneysArchive200 = Journey;
+export type JourneysArchive400 = MalformedRequestError;
+export const JourneysArchive400 = MalformedRequestError;
 export type JourneysArchive401 = UnauthorizedError;
 export const JourneysArchive401 = UnauthorizedError;
 export type JourneysArchive403 = ForbiddenError;
@@ -566,6 +578,8 @@ export const JourneysReplaceDraftRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type JourneysReplaceDraft200 = Journey;
 export const JourneysReplaceDraft200 = Journey;
+export type JourneysReplaceDraft400 = MalformedRequestError;
+export const JourneysReplaceDraft400 = MalformedRequestError;
 export type JourneysReplaceDraft401 = UnauthorizedError;
 export const JourneysReplaceDraft401 = UnauthorizedError;
 export type JourneysReplaceDraft402 = PaymentRequiredError;
@@ -589,6 +603,8 @@ export type JourneysPausePathParams = { readonly id: JourneyId };
 export const JourneysPausePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysPause200 = Journey;
 export const JourneysPause200 = Journey;
+export type JourneysPause400 = MalformedRequestError;
+export const JourneysPause400 = MalformedRequestError;
 export type JourneysPause401 = UnauthorizedError;
 export const JourneysPause401 = UnauthorizedError;
 export type JourneysPause403 = ForbiddenError;
@@ -614,6 +630,8 @@ export const JourneysPublishRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type JourneysPublish200 = Journey;
 export const JourneysPublish200 = Journey;
+export type JourneysPublish400 = MalformedRequestError;
+export const JourneysPublish400 = MalformedRequestError;
 export type JourneysPublish401 = UnauthorizedError;
 export const JourneysPublish401 = UnauthorizedError;
 export type JourneysPublish402 = PaymentRequiredError;
@@ -637,6 +655,8 @@ export type JourneysResumePathParams = { readonly id: JourneyId };
 export const JourneysResumePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: JourneyId }))();
 export type JourneysResume200 = Journey;
 export const JourneysResume200 = Journey;
+export type JourneysResume400 = MalformedRequestError;
+export const JourneysResume400 = MalformedRequestError;
 export type JourneysResume401 = UnauthorizedError;
 export const JourneysResume401 = UnauthorizedError;
 export type JourneysResume402 = PaymentRequiredError;
@@ -660,15 +680,15 @@ export type JourneysListRunsPathParams = { readonly id: JourneyId };
 export const JourneysListRunsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: JourneyId }))();
 export type JourneysListRunsQuery = {
-  readonly status?: JourneyRunStatus | null;
-  readonly contactId?: ContactId | null;
+  readonly status?: JourneyRunStatus;
+  readonly contactId?: ContactId;
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const JourneysListRunsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    status: Schema.optionalKey(Schema.Union([JourneyRunStatus, Schema.Null])),
-    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
+    status: Schema.optionalKey(JourneyRunStatus),
+    contactId: Schema.optionalKey(ContactId),
     limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.annotate({ description: "Items per page, at most 100." })
@@ -682,10 +702,12 @@ export const JourneysListRunsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type JourneysListRuns200 = JourneyRunPage;
 export const JourneysListRuns200 = JourneyRunPage;
+export type JourneysListRuns400 = MalformedRequestError;
+export const JourneysListRuns400 = MalformedRequestError;
 export type JourneysListRuns401 = UnauthorizedError;
 export const JourneysListRuns401 = UnauthorizedError;
 export type JourneysListRuns403 = ForbiddenError;
@@ -703,6 +725,8 @@ export const JourneysGetRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: JourneyId, runId: JourneyRunId }))();
 export type JourneysGetRun200 = JourneyRunDetail;
 export const JourneysGetRun200 = JourneyRunDetail;
+export type JourneysGetRun400 = MalformedRequestError;
+export const JourneysGetRun400 = MalformedRequestError;
 export type JourneysGetRun401 = UnauthorizedError;
 export const JourneysGetRun401 = UnauthorizedError;
 export type JourneysGetRun403 = ForbiddenError;
@@ -735,6 +759,8 @@ export const JourneysStatsQuery = /* @__PURE__ */ (() =>
   }))();
 export type JourneysStats200 = JourneyStats;
 export const JourneysStats200 = JourneyStats;
+export type JourneysStats400 = MalformedRequestError;
+export const JourneysStats400 = MalformedRequestError;
 export type JourneysStats401 = UnauthorizedError;
 export const JourneysStats401 = UnauthorizedError;
 export type JourneysStats403 = ForbiddenError;
@@ -752,6 +778,8 @@ export const JourneysGetVersionPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: JourneyId, version: Schema.String }))();
 export type JourneysGetVersion200 = JourneyVersion;
 export const JourneysGetVersion200 = JourneyVersion;
+export type JourneysGetVersion400 = MalformedRequestError;
+export const JourneysGetVersion400 = MalformedRequestError;
 export type JourneysGetVersion401 = UnauthorizedError;
 export const JourneysGetVersion401 = UnauthorizedError;
 export type JourneysGetVersion403 = ForbiddenError;
@@ -771,6 +799,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       query: JourneysListQuery,
       success: JourneysList200,
       error: [
+        JourneysList400.pipe(HttpApiSchema.status(400)),
         JourneysList401.pipe(HttpApiSchema.status(401)),
         JourneysList403.pipe(HttpApiSchema.status(403)),
         JourneysList422.pipe(HttpApiSchema.status(422)),
@@ -789,6 +818,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       payload: JourneysCreateRequestJson,
       success: JourneysCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        JourneysCreate400.pipe(HttpApiSchema.status(400)),
         JourneysCreate401.pipe(HttpApiSchema.status(401)),
         JourneysCreate402.pipe(HttpApiSchema.status(402)),
         JourneysCreate403.pipe(HttpApiSchema.status(403)),
@@ -811,6 +841,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysGetPathParams,
       success: JourneysGet200,
       error: [
+        JourneysGet400.pipe(HttpApiSchema.status(400)),
         JourneysGet401.pipe(HttpApiSchema.status(401)),
         JourneysGet403.pipe(HttpApiSchema.status(403)),
         JourneysGet404.pipe(HttpApiSchema.status(404)),
@@ -830,6 +861,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysRemovePathParams,
       success: JourneysRemove200,
       error: [
+        JourneysRemove400.pipe(HttpApiSchema.status(400)),
         JourneysRemove401.pipe(HttpApiSchema.status(401)),
         JourneysRemove403.pipe(HttpApiSchema.status(403)),
         JourneysRemove404.pipe(HttpApiSchema.status(404)),
@@ -851,6 +883,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       payload: JourneysUpdateRequestJson,
       success: JourneysUpdate200,
       error: [
+        JourneysUpdate400.pipe(HttpApiSchema.status(400)),
         JourneysUpdate401.pipe(HttpApiSchema.status(401)),
         JourneysUpdate403.pipe(HttpApiSchema.status(403)),
         JourneysUpdate404.pipe(HttpApiSchema.status(404)),
@@ -867,6 +900,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysArchivePathParams,
       success: JourneysArchive200,
       error: [
+        JourneysArchive400.pipe(HttpApiSchema.status(400)),
         JourneysArchive401.pipe(HttpApiSchema.status(401)),
         JourneysArchive403.pipe(HttpApiSchema.status(403)),
         JourneysArchive404.pipe(HttpApiSchema.status(404)),
@@ -888,6 +922,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       payload: JourneysReplaceDraftRequestJson,
       success: JourneysReplaceDraft200,
       error: [
+        JourneysReplaceDraft400.pipe(HttpApiSchema.status(400)),
         JourneysReplaceDraft401.pipe(HttpApiSchema.status(401)),
         JourneysReplaceDraft402.pipe(HttpApiSchema.status(402)),
         JourneysReplaceDraft403.pipe(HttpApiSchema.status(403)),
@@ -910,6 +945,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysPausePathParams,
       success: JourneysPause200,
       error: [
+        JourneysPause400.pipe(HttpApiSchema.status(400)),
         JourneysPause401.pipe(HttpApiSchema.status(401)),
         JourneysPause403.pipe(HttpApiSchema.status(403)),
         JourneysPause404.pipe(HttpApiSchema.status(404)),
@@ -931,6 +967,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       payload: JourneysPublishRequestJson,
       success: JourneysPublish200,
       error: [
+        JourneysPublish400.pipe(HttpApiSchema.status(400)),
         JourneysPublish401.pipe(HttpApiSchema.status(401)),
         JourneysPublish402.pipe(HttpApiSchema.status(402)),
         JourneysPublish403.pipe(HttpApiSchema.status(403)),
@@ -953,6 +990,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysResumePathParams,
       success: JourneysResume200,
       error: [
+        JourneysResume400.pipe(HttpApiSchema.status(400)),
         JourneysResume401.pipe(HttpApiSchema.status(401)),
         JourneysResume402.pipe(HttpApiSchema.status(402)),
         JourneysResume403.pipe(HttpApiSchema.status(403)),
@@ -976,6 +1014,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       query: JourneysListRunsQuery,
       success: JourneysListRuns200,
       error: [
+        JourneysListRuns400.pipe(HttpApiSchema.status(400)),
         JourneysListRuns401.pipe(HttpApiSchema.status(401)),
         JourneysListRuns403.pipe(HttpApiSchema.status(403)),
         JourneysListRuns404.pipe(HttpApiSchema.status(404)),
@@ -995,6 +1034,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysGetRunPathParams,
       success: JourneysGetRun200,
       error: [
+        JourneysGetRun400.pipe(HttpApiSchema.status(400)),
         JourneysGetRun401.pipe(HttpApiSchema.status(401)),
         JourneysGetRun403.pipe(HttpApiSchema.status(403)),
         JourneysGetRun404.pipe(HttpApiSchema.status(404)),
@@ -1015,6 +1055,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       query: JourneysStatsQuery,
       success: JourneysStats200,
       error: [
+        JourneysStats400.pipe(HttpApiSchema.status(400)),
         JourneysStats401.pipe(HttpApiSchema.status(401)),
         JourneysStats403.pipe(HttpApiSchema.status(403)),
         JourneysStats404.pipe(HttpApiSchema.status(404)),
@@ -1034,6 +1075,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       params: JourneysGetVersionPathParams,
       success: JourneysGetVersion200,
       error: [
+        JourneysGetVersion400.pipe(HttpApiSchema.status(400)),
         JourneysGetVersion401.pipe(HttpApiSchema.status(401)),
         JourneysGetVersion403.pipe(HttpApiSchema.status(403)),
         JourneysGetVersion404.pipe(HttpApiSchema.status(404)),

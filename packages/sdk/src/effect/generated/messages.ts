@@ -14,12 +14,12 @@ import {
   ConflictError,
   ContactId,
   ConversationId,
-  Cursor,
   DeliveryUnavailableError,
   EmailBccRecipients,
   EmailCcRecipients,
   EmailContent,
   EmailRecipients,
+  EmailSendMessagePayload,
   EmailSender,
   EmailTrackingOverrideV1,
   ExternalServiceError,
@@ -29,6 +29,7 @@ import {
   GatewayTimeoutError,
   InternalError,
   JsonValue,
+  MalformedRequestError,
   MediaId,
   MessageId,
   MessageMetadata,
@@ -40,9 +41,16 @@ import {
   ResourceNotFoundError,
   SenderNotReadyError,
   SkippedRecipient,
+  SmsSendMessagePayload,
   UnauthorizedError,
   UserId,
   ValidationError,
+  WhatsAppButtonsMessage,
+  WhatsAppCtaUrlMessage,
+  WhatsAppFlowId,
+  WhatsAppListMessage,
+  WhatsAppSendMessagePayload,
+  WhatsAppTextHeader,
 } from "./shared";
 
 export type MessageSender = { readonly address: string; readonly name: string | null };
@@ -65,10 +73,176 @@ export const SubmissionClient = /* @__PURE__ */ (() =>
     ]),
     version: Schema.String,
   }).annotate({ identifier: "SubmissionClient" }))();
+export type SmsMessageContent = {
+  readonly text: string;
+  readonly unicode?: boolean | null;
+  readonly parts?: number | null;
+};
+export const SmsMessageContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    text: Schema.String,
+    unicode: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    parts: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "SmsMessageContent" }))();
+export type WhatsAppFlowVersionId = string & EffectBrand.Brand<"WhatsAppFlowVersionId">;
+export const WhatsAppFlowVersionId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^wafver_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WhatsAppFlowVersionId",
+    }),
+  ).pipe(Schema.brand("WhatsAppFlowVersionId")))();
+export type WhatsAppStoredLocation = {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly name?: string;
+  readonly address?: string;
+  readonly url?: string;
+};
+export const WhatsAppStoredLocation = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    latitude: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    longitude: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    name: Schema.optionalKey(Schema.String),
+    address: Schema.optionalKey(Schema.String),
+    url: Schema.optionalKey(Schema.String),
+  }).annotate({ identifier: "WhatsAppStoredLocation" }))();
+export type WhatsAppStoredContactCard = {
+  readonly name?: {
+    readonly formattedName?: string;
+    readonly firstName?: string;
+    readonly lastName?: string;
+    readonly middleName?: string;
+    readonly prefix?: string;
+    readonly suffix?: string;
+  };
+  readonly phones?: ReadonlyArray<{
+    readonly phone?: string;
+    readonly type?: string;
+    readonly waId?: string;
+  }>;
+  readonly emails?: ReadonlyArray<{ readonly email?: string; readonly type?: string }>;
+  readonly urls?: ReadonlyArray<{ readonly url?: string; readonly type?: string }>;
+  readonly org?: {
+    readonly company?: string;
+    readonly department?: string;
+    readonly title?: string;
+  };
+  readonly addresses?: ReadonlyArray<{
+    readonly street?: string;
+    readonly city?: string;
+    readonly state?: string;
+    readonly zip?: string;
+    readonly country?: string;
+    readonly countryCode?: string;
+    readonly type?: string;
+  }>;
+  readonly birthday?: string;
+};
+export const WhatsAppStoredContactCard = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.optionalKey(
+      Schema.Struct({
+        formattedName: Schema.optionalKey(Schema.String),
+        firstName: Schema.optionalKey(Schema.String),
+        lastName: Schema.optionalKey(Schema.String),
+        middleName: Schema.optionalKey(Schema.String),
+        prefix: Schema.optionalKey(Schema.String),
+        suffix: Schema.optionalKey(Schema.String),
+      }),
+    ),
+    phones: Schema.optionalKey(
+      Schema.Array(
+        Schema.Struct({
+          phone: Schema.optionalKey(Schema.String),
+          type: Schema.optionalKey(Schema.String),
+          waId: Schema.optionalKey(Schema.String),
+        }),
+      ),
+    ),
+    emails: Schema.optionalKey(
+      Schema.Array(
+        Schema.Struct({
+          email: Schema.optionalKey(Schema.String),
+          type: Schema.optionalKey(Schema.String),
+        }),
+      ),
+    ),
+    urls: Schema.optionalKey(
+      Schema.Array(
+        Schema.Struct({
+          url: Schema.optionalKey(Schema.String),
+          type: Schema.optionalKey(Schema.String),
+        }),
+      ),
+    ),
+    org: Schema.optionalKey(
+      Schema.Struct({
+        company: Schema.optionalKey(Schema.String),
+        department: Schema.optionalKey(Schema.String),
+        title: Schema.optionalKey(Schema.String),
+      }),
+    ),
+    addresses: Schema.optionalKey(
+      Schema.Array(
+        Schema.Struct({
+          street: Schema.optionalKey(Schema.String),
+          city: Schema.optionalKey(Schema.String),
+          state: Schema.optionalKey(Schema.String),
+          zip: Schema.optionalKey(Schema.String),
+          country: Schema.optionalKey(Schema.String),
+          countryCode: Schema.optionalKey(Schema.String),
+          type: Schema.optionalKey(Schema.String),
+        }),
+      ),
+    ),
+    birthday: Schema.optionalKey(Schema.String),
+  }).annotate({ identifier: "WhatsAppStoredContactCard" }))();
+export type WhatsAppReceivedReply = {
+  readonly type: "button" | "list" | "template_button";
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+};
+export const WhatsAppReceivedReply = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Union([
+      Schema.Literal("button"),
+      Schema.Literal("list"),
+      Schema.Literal("template_button"),
+    ]),
+    id: Schema.String,
+    title: Schema.String,
+    description: Schema.optionalKey(Schema.String),
+  }).annotate({ identifier: "WhatsAppReceivedReply" }))();
+export type WhatsAppReceivedFlowResponse = {
+  readonly flowToken: string | null;
+  readonly response: { readonly [x: string]: JsonValue };
+  readonly body?: string;
+};
+export const WhatsAppReceivedFlowResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    flowToken: Schema.Union([Schema.String, Schema.Null]),
+    response: Schema.Record(Schema.String, JsonValue),
+    body: Schema.optionalKey(Schema.String),
+  }).annotate({ identifier: "WhatsAppReceivedFlowResponse" }))();
+export type WhatsAppStructuredContent = {
+  readonly type: string;
+  readonly data: { readonly [x: string]: JsonValue };
+};
+export const WhatsAppStructuredContent = /* @__PURE__ */ (() =>
+  Schema.Struct({ type: Schema.String, data: Schema.Record(Schema.String, JsonValue) }).annotate({
+    identifier: "WhatsAppStructuredContent",
+  }))();
 export type MessageDeliveryId = string & EffectBrand.Brand<"MessageDeliveryId">;
 export const MessageDeliveryId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "MessageDeliveryId",
     }),
@@ -92,7 +266,7 @@ export type EstimatedProviderCost = {
 export const EstimatedProviderCost = /* @__PURE__ */ (() =>
   Schema.Struct({
     amount: Schema.String.check(
-      Schema.isPattern(new RegExp("^\\d+\\.\\d+$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^\\d+\\.\\d+$", "u")).annotate({
         expected: "a string matching the RegExp ^\\d+\\.\\d+$",
       }),
     ),
@@ -135,7 +309,7 @@ export const EmailAddress = /* @__PURE__ */ (() =>
 export type MessageEventId = string & EffectBrand.Brand<"MessageEventId">;
 export const MessageEventId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^mevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^mevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^mevt_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "MessageEventId",
     }),
@@ -189,75 +363,185 @@ export const SubmissionCredential = /* @__PURE__ */ (() =>
     }),
     Schema.Struct({ kind: Schema.Literal("session") }),
   ]).annotate({ identifier: "SubmissionCredential" }))();
-export type MessageContent = {
-  readonly text?: string | null;
-  readonly html?: string | null;
-  readonly markdown?: string | null;
-  readonly email?: {
-    readonly subject?: string | null;
-    readonly html?: string | null;
-    readonly text?: string | null;
-    readonly headers?: { readonly [x: string]: string } | null;
-    readonly tracking?: EmailTrackingOverrideV1;
-    readonly attachments?: ReadonlyArray<{
-      readonly filename: string;
-      readonly contentId?: string | null;
-      readonly isInline?: boolean | null;
-      readonly content?: string | null;
-      readonly mediaId?: MediaId | null;
-      readonly contentType: string;
-      readonly size: number;
-    }> | null;
-  } | null;
-  readonly metadata?: { readonly [x: string]: JsonValue } | null;
+export type WhatsAppStoredReaction = {
+  readonly messageId: MessageId | null;
+  readonly providerMessageId: string;
+  readonly emoji: string | null;
 };
-export const MessageContent = /* @__PURE__ */ (() =>
+export const WhatsAppStoredReaction = /* @__PURE__ */ (() =>
   Schema.Struct({
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    markdown: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    email: Schema.optionalKey(
-      Schema.Union([
-        Schema.Struct({
-          subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          headers: Schema.optionalKey(
-            Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
-          ),
-          tracking: Schema.optionalKey(EmailTrackingOverrideV1),
-          attachments: Schema.optionalKey(
-            Schema.Union([
-              Schema.Array(
-                Schema.Struct({
-                  filename: Schema.String,
-                  contentId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                  isInline: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-                  content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                  mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
-                  contentType: Schema.String,
-                  size: Schema.Finite.check(
-                    Schema.isFinite().annotate({ expected: "a finite number" }),
-                  ),
-                }),
-              ),
-              Schema.Null,
-            ]),
-          ),
-        }),
-        Schema.Null,
+    messageId: Schema.Union([MessageId, Schema.Null]),
+    providerMessageId: Schema.String,
+    emoji: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "WhatsAppStoredReaction" }))();
+export type WhatsAppMessageReference = {
+  readonly messageId: MessageId | null;
+  readonly providerMessageId: string;
+};
+export const WhatsAppMessageReference = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    messageId: Schema.Union([MessageId, Schema.Null]),
+    providerMessageId: Schema.String,
+  }).annotate({ identifier: "WhatsAppMessageReference" }))();
+export type WhatsAppStoredMedia =
+  | {
+      readonly type: "image" | "video" | "audio" | "document" | "sticker";
+      readonly url: string;
+      readonly caption?: string;
+      readonly filename?: string;
+    }
+  | {
+      readonly type: "image" | "video" | "audio" | "document" | "sticker";
+      readonly mediaId: MediaId;
+      readonly caption?: string;
+      readonly filename?: string;
+    }
+  | {
+      readonly type: "image" | "video" | "audio" | "document" | "sticker";
+      readonly providerMediaId: string;
+      readonly mimeType?: string | null;
+      readonly caption?: string | null;
+      readonly filename?: string;
+    };
+export const WhatsAppStoredMedia = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      type: Schema.Union([
+        Schema.Literal("image"),
+        Schema.Literal("video"),
+        Schema.Literal("audio"),
+        Schema.Literal("document"),
+        Schema.Literal("sticker"),
       ]),
-    ),
-    metadata: Schema.optionalKey(
-      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-    ),
-  }).annotate({ identifier: "MessageContent" }))();
+      url: Schema.String,
+      caption: Schema.optionalKey(Schema.String),
+      filename: Schema.optionalKey(Schema.String),
+    }),
+    Schema.Struct({
+      type: Schema.Union([
+        Schema.Literal("image"),
+        Schema.Literal("video"),
+        Schema.Literal("audio"),
+        Schema.Literal("document"),
+        Schema.Literal("sticker"),
+      ]),
+      mediaId: MediaId,
+      caption: Schema.optionalKey(Schema.String),
+      filename: Schema.optionalKey(Schema.String),
+    }),
+    Schema.Struct({
+      type: Schema.Union([
+        Schema.Literal("image"),
+        Schema.Literal("video"),
+        Schema.Literal("audio"),
+        Schema.Literal("document"),
+        Schema.Literal("sticker"),
+      ]),
+      providerMediaId: Schema.String,
+      mimeType: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      caption: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+      filename: Schema.optionalKey(Schema.String),
+    }),
+  ]).annotate({ identifier: "WhatsAppStoredMedia" }))();
 export type MessageAddress = { readonly address: string; readonly contactId: ContactId | null };
 export const MessageAddress = /* @__PURE__ */ (() =>
   Schema.Struct({
     address: Schema.String,
     contactId: Schema.Union([ContactId, Schema.Null]),
   }).annotate({ identifier: "MessageAddress" }))();
+export type WhatsAppStoredFlowMessage = {
+  readonly type: "flow";
+  readonly header?: WhatsAppTextHeader;
+  readonly body: string;
+  readonly footer?: string;
+  readonly flowId: WhatsAppFlowId;
+  readonly cta: string;
+  readonly token?: string;
+  readonly action?: "navigate" | "data_exchange";
+  readonly screen?: string;
+  readonly data?: { readonly [x: string]: JsonValue };
+  readonly flowVersionId: WhatsAppFlowVersionId;
+  readonly providerFlowId: string;
+};
+export const WhatsAppStoredFlowMessage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Literal("flow"),
+    header: Schema.optionalKey(WhatsAppTextHeader),
+    body: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      )
+      .check(
+        Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
+          expected: "a string matching the RegExp \\S",
+        }),
+      ),
+    footer: Schema.optionalKey(
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(60).annotate({ expected: "a string with at most 60 code points" }),
+        )
+        .check(Schema.isMaxLength(60).annotate({ expected: "a value with a length of at most 60" }))
+        .check(
+          Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
+            expected: "a string matching the RegExp \\S",
+          }),
+        ),
+    ),
+    flowId: WhatsAppFlowId,
+    cta: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(30).annotate({ expected: "a string with at most 30 code points" }),
+      )
+      .check(Schema.isMaxLength(30).annotate({ expected: "a value with a length of at most 30" }))
+      .check(
+        Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
+          expected: "a string matching the RegExp \\S",
+        }),
+      ),
+    token: Schema.optionalKey(
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        )
+        .check(
+          Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
+            expected: "a string matching the RegExp \\S",
+          }),
+        ),
+    ),
+    action: Schema.optionalKey(
+      Schema.Union([Schema.Literal("navigate"), Schema.Literal("data_exchange")]),
+    ),
+    screen: Schema.optionalKey(
+      Schema.String.check(
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z_]{1,100}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z_]{1,100}$",
+        }),
+      ),
+    ),
+    data: Schema.optionalKey(Schema.Record(Schema.String, JsonValue)),
+    flowVersionId: WhatsAppFlowVersionId,
+    providerFlowId: Schema.String,
+  }).annotate({ identifier: "WhatsAppStoredFlowMessage" }))();
 export type MessageDelivery = {
   readonly id: MessageDeliveryId;
   readonly recipient: string | null;
@@ -375,7 +659,7 @@ export type MessageSubmission = {
     | "forwarding"
     | "journey"
     | "businessApp";
-  readonly transport: "http" | null;
+  readonly transport: "http" | "smtp" | null;
   readonly credential: SubmissionCredential | null;
   readonly userId: UserId | null;
   readonly client: SubmissionClient | null;
@@ -391,7 +675,10 @@ export const MessageSubmission = /* @__PURE__ */ (() =>
       Schema.Literal("journey"),
       Schema.Literal("businessApp"),
     ]),
-    transport: Schema.Union([Schema.Literal("http"), Schema.Null]),
+    transport: Schema.Union([
+      Schema.Union([Schema.Literal("http"), Schema.Literal("smtp")]),
+      Schema.Null,
+    ]),
     credential: Schema.Union([SubmissionCredential, Schema.Null]),
     userId: Schema.Union([UserId, Schema.Null]),
     client: Schema.Union([SubmissionClient, Schema.Null]),
@@ -469,7 +756,7 @@ export const MessageDeliveryList = /* @__PURE__ */ (() =>
 export type Message = {
   readonly id: MessageId;
   readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly direction: "outbound" | "inbound";
   readonly status:
     | "pending"
@@ -519,7 +806,11 @@ export const Message = /* @__PURE__ */ (() =>
     campaign: Schema.optionalKey(
       Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
     ),
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     direction: Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
     status: Schema.Union([
       Schema.Literal("pending"),
@@ -567,11 +858,227 @@ export const Message = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Message" }))();
+export type WhatsAppStoredInteractive =
+  | WhatsAppButtonsMessage
+  | WhatsAppListMessage
+  | WhatsAppCtaUrlMessage
+  | WhatsAppStoredFlowMessage;
+export const WhatsAppStoredInteractive = /* @__PURE__ */ (() =>
+  Schema.Union([
+    WhatsAppButtonsMessage,
+    WhatsAppListMessage,
+    WhatsAppCtaUrlMessage,
+    WhatsAppStoredFlowMessage,
+  ]).annotate({ identifier: "WhatsAppStoredInteractive" }))();
+export type WhatsAppMessageContent = {
+  readonly text?: string | null;
+  readonly template?: {
+    readonly name: string;
+    readonly language: string;
+    readonly components: ReadonlyArray<{
+      readonly type: "header" | "body" | "footer" | "button";
+      readonly sub_type?: "url" | "quick_reply" | "copy_code" | "flow" | null;
+      readonly index?: string | null;
+      readonly parameters: ReadonlyArray<{
+        readonly type:
+          | "text"
+          | "currency"
+          | "date_time"
+          | "image"
+          | "document"
+          | "video"
+          | "coupon_code"
+          | "action";
+        readonly text?: string | null;
+        readonly currency?: {
+          readonly fallback_value: string;
+          readonly code: string;
+          readonly amount_1000: number;
+        } | null;
+        readonly date_time?: { readonly fallback_value: string } | null;
+        readonly image?: { readonly link: string } | null;
+        readonly document?: { readonly link: string; readonly filename?: string | null } | null;
+        readonly video?: { readonly link: string } | null;
+        readonly coupon_code?: string | null;
+        readonly action?: { readonly flow_token: string } | null;
+      }>;
+    }>;
+  } | null;
+  readonly interactive?: WhatsAppStoredInteractive;
+  readonly media?: WhatsAppStoredMedia | null;
+  readonly reaction?: WhatsAppStoredReaction;
+  readonly location?: WhatsAppStoredLocation;
+  readonly contacts?: ReadonlyArray<WhatsAppStoredContactCard>;
+  readonly reply?: WhatsAppReceivedReply;
+  readonly flowResponse?: WhatsAppReceivedFlowResponse;
+  readonly context?: WhatsAppMessageReference;
+};
+export const WhatsAppMessageContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    template: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          name: Schema.String,
+          language: Schema.String,
+          components: Schema.Array(
+            Schema.Struct({
+              type: Schema.Union([
+                Schema.Literal("header"),
+                Schema.Literal("body"),
+                Schema.Literal("footer"),
+                Schema.Literal("button"),
+              ]),
+              sub_type: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Union([
+                    Schema.Literal("url"),
+                    Schema.Literal("quick_reply"),
+                    Schema.Literal("copy_code"),
+                    Schema.Literal("flow"),
+                  ]),
+                  Schema.Null,
+                ]),
+              ),
+              index: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+              parameters: Schema.Array(
+                Schema.Struct({
+                  type: Schema.Union([
+                    Schema.Literal("text"),
+                    Schema.Literal("currency"),
+                    Schema.Literal("date_time"),
+                    Schema.Literal("image"),
+                    Schema.Literal("document"),
+                    Schema.Literal("video"),
+                    Schema.Literal("coupon_code"),
+                    Schema.Literal("action"),
+                  ]),
+                  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                  currency: Schema.optionalKey(
+                    Schema.Union([
+                      Schema.Struct({
+                        fallback_value: Schema.String,
+                        code: Schema.String,
+                        amount_1000: Schema.Finite.check(
+                          Schema.isFinite().annotate({ expected: "a finite number" }),
+                        ),
+                      }),
+                      Schema.Null,
+                    ]),
+                  ),
+                  date_time: Schema.optionalKey(
+                    Schema.Union([Schema.Struct({ fallback_value: Schema.String }), Schema.Null]),
+                  ),
+                  image: Schema.optionalKey(
+                    Schema.Union([Schema.Struct({ link: Schema.String }), Schema.Null]),
+                  ),
+                  document: Schema.optionalKey(
+                    Schema.Union([
+                      Schema.Struct({
+                        link: Schema.String,
+                        filename: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                      }),
+                      Schema.Null,
+                    ]),
+                  ),
+                  video: Schema.optionalKey(
+                    Schema.Union([Schema.Struct({ link: Schema.String }), Schema.Null]),
+                  ),
+                  coupon_code: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                  action: Schema.optionalKey(
+                    Schema.Union([Schema.Struct({ flow_token: Schema.String }), Schema.Null]),
+                  ),
+                }),
+              ),
+            }),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    interactive: Schema.optionalKey(WhatsAppStoredInteractive),
+    media: Schema.optionalKey(Schema.Union([WhatsAppStoredMedia, Schema.Null])),
+    reaction: Schema.optionalKey(WhatsAppStoredReaction),
+    location: Schema.optionalKey(WhatsAppStoredLocation),
+    contacts: Schema.optionalKey(Schema.Array(WhatsAppStoredContactCard)),
+    reply: Schema.optionalKey(WhatsAppReceivedReply),
+    flowResponse: Schema.optionalKey(WhatsAppReceivedFlowResponse),
+    context: Schema.optionalKey(WhatsAppMessageReference),
+  }).annotate({ identifier: "WhatsAppMessageContent" }))();
+export type MessageContent = {
+  readonly text?: string | null;
+  readonly html?: string | null;
+  readonly markdown?: string | null;
+  readonly sms?: SmsMessageContent | null;
+  readonly whatsapp?: WhatsAppMessageContent | null;
+  readonly email?: {
+    readonly subject?: string | null;
+    readonly html?: string | null;
+    readonly text?: string | null;
+    readonly headers?: { readonly [x: string]: string } | null;
+    readonly tracking?: EmailTrackingOverrideV1;
+    readonly attachments?: ReadonlyArray<{
+      readonly filename: string;
+      readonly contentId?: string | null;
+      readonly isInline?: boolean | null;
+      readonly content?: string | null;
+      readonly mediaId?: MediaId | null;
+      readonly contentType: string;
+      readonly size: number;
+    }> | null;
+  } | null;
+  readonly structured?: WhatsAppStructuredContent | null;
+  readonly metadata?: { readonly [x: string]: JsonValue } | null;
+};
+export const MessageContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    markdown: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    sms: Schema.optionalKey(Schema.Union([SmsMessageContent, Schema.Null])),
+    whatsapp: Schema.optionalKey(Schema.Union([WhatsAppMessageContent, Schema.Null])),
+    email: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+          headers: Schema.optionalKey(
+            Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
+          ),
+          tracking: Schema.optionalKey(EmailTrackingOverrideV1),
+          attachments: Schema.optionalKey(
+            Schema.Union([
+              Schema.Array(
+                Schema.Struct({
+                  filename: Schema.String,
+                  contentId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                  isInline: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+                  content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+                  mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
+                  contentType: Schema.String,
+                  size: Schema.Finite.check(
+                    Schema.isFinite().annotate({ expected: "a finite number" }),
+                  ),
+                }),
+              ),
+              Schema.Null,
+            ]),
+          ),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    structured: Schema.optionalKey(Schema.Union([WhatsAppStructuredContent, Schema.Null])),
+    metadata: Schema.optionalKey(
+      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
+    ),
+  }).annotate({ identifier: "MessageContent" }))();
 export type MessagesListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly channel?: "email" | null;
-  readonly direction?: "outbound" | "inbound" | null;
+  readonly cursor?: string;
+  readonly channel?: "sms" | "whatsapp" | "email";
+  readonly direction?: "outbound" | "inbound";
   readonly status?:
     | "pending"
     | "scheduled"
@@ -582,14 +1089,13 @@ export type MessagesListQuery = {
     | "read"
     | "failed"
     | "bounced"
-    | "complained"
-    | null;
-  readonly conversationId?: ConversationId | null;
-  readonly contactId?: ContactId | null;
-  readonly from?: string | null;
-  readonly namespaceId?: NamespaceId | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+    | "complained";
+  readonly conversationId?: ConversationId;
+  readonly contactId?: ContactId;
+  readonly from?: string;
+  readonly namespaceId?: NamespaceId;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const MessagesListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -606,45 +1112,43 @@ export const MessagesListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    channel: Schema.optionalKey(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
     direction: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
     ),
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("pending"),
-          Schema.Literal("scheduled"),
-          Schema.Literal("queued"),
-          Schema.Literal("processing"),
-          Schema.Literal("sent"),
-          Schema.Literal("delivered"),
-          Schema.Literal("read"),
-          Schema.Literal("failed"),
-          Schema.Literal("bounced"),
-          Schema.Literal("complained"),
-        ]),
-        Schema.Null,
+        Schema.Literal("pending"),
+        Schema.Literal("scheduled"),
+        Schema.Literal("queued"),
+        Schema.Literal("processing"),
+        Schema.Literal("sent"),
+        Schema.Literal("delivered"),
+        Schema.Literal("read"),
+        Schema.Literal("failed"),
+        Schema.Literal("bounced"),
+        Schema.Literal("complained"),
       ]),
     ),
-    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
-    from: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    conversationId: Schema.optionalKey(ConversationId),
+    contactId: Schema.optionalKey(ContactId),
+    from: Schema.optionalKey(Schema.String),
     namespaceId: Schema.optionalKey(
-      Schema.Union([NamespaceId, Schema.Null]).annotate({
+      Schema.Union([NamespaceId]).annotate({
         description:
           "Only this namespace's messages. A key scoped to a namespace always lists its own.",
       }),
     ),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type MessagesList200 = MessagePage;
 export const MessagesList200 = MessagePage;
+export type MessagesList400 = MalformedRequestError;
+export const MessagesList400 = MalformedRequestError;
 export type MessagesList401 = UnauthorizedError;
 export const MessagesList401 = UnauthorizedError;
 export type MessagesList403 = ForbiddenError;
@@ -655,46 +1159,30 @@ export type MessagesList500 = InternalError;
 export const MessagesList500 = InternalError;
 export type MessagesList504 = GatewayTimeoutError;
 export const MessagesList504 = GatewayTimeoutError;
-export type MessagesSendHeaders = { readonly "idempotency-key"?: string | null };
+export type MessagesSendHeaders = { readonly "idempotency-key"?: string };
 export const MessagesSendHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.",
-        }).check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.annotate({
+        description:
+          "Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.",
+      }).check(
+        Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
+          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+        }),
+      ),
     ),
   }))();
-export type MessagesSendRequestJson = {
-  readonly conversationId?: ConversationId | null;
-  readonly metadata?: MessageMetadata;
-  readonly channel: "email";
-  readonly to: EmailRecipients;
-  readonly cc?: EmailCcRecipients;
-  readonly bcc?: EmailBccRecipients;
-  readonly from?: EmailSender;
-  readonly email: EmailContent;
-};
+export type MessagesSendRequestJson =
+  | EmailSendMessagePayload
+  | SmsSendMessagePayload
+  | WhatsAppSendMessagePayload;
 export const MessagesSendRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    metadata: Schema.optionalKey(MessageMetadata),
-    channel: Schema.Literal("email"),
-    to: EmailRecipients,
-    cc: Schema.optionalKey(EmailCcRecipients),
-    bcc: Schema.optionalKey(EmailBccRecipients),
-    from: Schema.optionalKey(EmailSender),
-    email: EmailContent,
-  }))();
+  Schema.Union([EmailSendMessagePayload, SmsSendMessagePayload, WhatsAppSendMessagePayload]))();
 export type MessagesSend201 = MessageReceipt;
 export const MessagesSend201 = MessageReceipt;
+export type MessagesSend400 = MalformedRequestError;
+export const MessagesSend400 = MalformedRequestError;
 export type MessagesSend401 = UnauthorizedError;
 export const MessagesSend401 = UnauthorizedError;
 export type MessagesSend402 = PaymentRequiredError;
@@ -725,6 +1213,8 @@ export type MessagesGetPathParams = { readonly id: MessageId };
 export const MessagesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MessageId }))();
 export type MessagesGet200 = Message;
 export const MessagesGet200 = Message;
+export type MessagesGet400 = MalformedRequestError;
+export const MessagesGet400 = MalformedRequestError;
 export type MessagesGet401 = UnauthorizedError;
 export const MessagesGet401 = UnauthorizedError;
 export type MessagesGet403 = ForbiddenError;
@@ -742,6 +1232,8 @@ export const MessagesRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ i
 export type MessagesRemove200 = { readonly success: boolean; readonly message: string };
 export const MessagesRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean, message: Schema.String }))();
+export type MessagesRemove400 = MalformedRequestError;
+export const MessagesRemove400 = MalformedRequestError;
 export type MessagesRemove401 = UnauthorizedError;
 export const MessagesRemove401 = UnauthorizedError;
 export type MessagesRemove403 = ForbiddenError;
@@ -761,6 +1253,8 @@ export const MessagesGetContentPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MessageId }))();
 export type MessagesGetContent200 = MessageContent;
 export const MessagesGetContent200 = MessageContent;
+export type MessagesGetContent400 = MalformedRequestError;
+export const MessagesGetContent400 = MalformedRequestError;
 export type MessagesGetContent401 = UnauthorizedError;
 export const MessagesGetContent401 = UnauthorizedError;
 export type MessagesGetContent403 = ForbiddenError;
@@ -778,6 +1272,8 @@ export const MessagesListDeliveriesPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MessageId }))();
 export type MessagesListDeliveries200 = MessageDeliveryList;
 export const MessagesListDeliveries200 = MessageDeliveryList;
+export type MessagesListDeliveries400 = MalformedRequestError;
+export const MessagesListDeliveries400 = MalformedRequestError;
 export type MessagesListDeliveries401 = UnauthorizedError;
 export const MessagesListDeliveries401 = UnauthorizedError;
 export type MessagesListDeliveries403 = ForbiddenError;
@@ -836,7 +1332,7 @@ export type MessagesGetEmail200 = {
     readonly id: string;
     readonly messageId: string;
     readonly recipientId: string | null;
-    readonly channel: "email";
+    readonly channel: "sms" | "whatsapp" | "email";
     readonly status:
       | "pending"
       | "scheduled"
@@ -882,7 +1378,7 @@ export type MessagesGetEmail200 = {
     | "failed"
     | "bounced"
     | "complained";
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly direction: "outbound" | "inbound";
   readonly subject: string | null;
   readonly fromEmail: string;
@@ -991,7 +1487,11 @@ export const MessagesGetEmail200 = /* @__PURE__ */ (() =>
         id: Schema.String,
         messageId: Schema.String,
         recipientId: Schema.Union([Schema.String, Schema.Null]),
-        channel: Schema.Literal("email"),
+        channel: Schema.Union([
+          Schema.Literal("sms"),
+          Schema.Literal("whatsapp"),
+          Schema.Literal("email"),
+        ]),
         status: Schema.Union([
           Schema.Literal("pending"),
           Schema.Literal("scheduled"),
@@ -1044,7 +1544,11 @@ export const MessagesGetEmail200 = /* @__PURE__ */ (() =>
       Schema.Literal("bounced"),
       Schema.Literal("complained"),
     ]),
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     direction: Schema.Union([Schema.Literal("outbound"), Schema.Literal("inbound")]),
     subject: Schema.Union([Schema.String, Schema.Null]),
     fromEmail: Schema.String,
@@ -1185,6 +1689,8 @@ export const MessagesGetEmail200 = /* @__PURE__ */ (() =>
     }),
     processedAt: Schema.Union([Schema.String, Schema.Null]),
   }))();
+export type MessagesGetEmail400 = MalformedRequestError;
+export const MessagesGetEmail400 = MalformedRequestError;
 export type MessagesGetEmail401 = UnauthorizedError;
 export const MessagesGetEmail401 = UnauthorizedError;
 export type MessagesGetEmail403 = ForbiddenError;
@@ -1200,10 +1706,7 @@ export const MessagesGetEmail504 = GatewayTimeoutError;
 export type MessagesGetEventsPathParams = { readonly id: MessageId };
 export const MessagesGetEventsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MessageId }))();
-export type MessagesGetEventsQuery = {
-  readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-};
+export type MessagesGetEventsQuery = { readonly limit?: number | null; readonly cursor?: string };
 export const MessagesGetEventsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     limit: Schema.optionalKey(
@@ -1219,10 +1722,12 @@ export const MessagesGetEventsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type MessagesGetEvents200 = MessageEventPage;
 export const MessagesGetEvents200 = MessageEventPage;
+export type MessagesGetEvents400 = MalformedRequestError;
+export const MessagesGetEvents400 = MalformedRequestError;
 export type MessagesGetEvents401 = UnauthorizedError;
 export const MessagesGetEvents401 = UnauthorizedError;
 export type MessagesGetEvents403 = ForbiddenError;
@@ -1270,6 +1775,8 @@ export const MessagesGetStatus200 = /* @__PURE__ */ (() =>
     ]),
     updatedAt: Schema.String,
   }))();
+export type MessagesGetStatus400 = MalformedRequestError;
+export const MessagesGetStatus400 = MalformedRequestError;
 export type MessagesGetStatus401 = UnauthorizedError;
 export const MessagesGetStatus401 = UnauthorizedError;
 export type MessagesGetStatus403 = ForbiddenError;
@@ -1305,6 +1812,8 @@ export const MessagesValidateEmailRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MessagesValidateEmail200 = ValidateEmailResponse;
 export const MessagesValidateEmail200 = ValidateEmailResponse;
+export type MessagesValidateEmail400 = MalformedRequestError;
+export const MessagesValidateEmail400 = MalformedRequestError;
 export type MessagesValidateEmail401 = UnauthorizedError;
 export const MessagesValidateEmail401 = UnauthorizedError;
 export type MessagesValidateEmail403 = ForbiddenError;
@@ -1327,6 +1836,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       query: MessagesListQuery,
       success: MessagesList200,
       error: [
+        MessagesList400.pipe(HttpApiSchema.status(400)),
         MessagesList401.pipe(HttpApiSchema.status(401)),
         MessagesList403.pipe(HttpApiSchema.status(403)),
         MessagesList422.pipe(HttpApiSchema.status(422)),
@@ -1346,6 +1856,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       payload: MessagesSendRequestJson,
       success: MessagesSend201.pipe(HttpApiSchema.status(201)),
       error: [
+        MessagesSend400.pipe(HttpApiSchema.status(400)),
         MessagesSend401.pipe(HttpApiSchema.status(401)),
         MessagesSend402.pipe(HttpApiSchema.status(402)),
         MessagesSend403.pipe(HttpApiSchema.status(403)),
@@ -1370,6 +1881,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       params: MessagesGetPathParams,
       success: MessagesGet200,
       error: [
+        MessagesGet400.pipe(HttpApiSchema.status(400)),
         MessagesGet401.pipe(HttpApiSchema.status(401)),
         MessagesGet403.pipe(HttpApiSchema.status(403)),
         MessagesGet404.pipe(HttpApiSchema.status(404)),
@@ -1389,6 +1901,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       params: MessagesRemovePathParams,
       success: MessagesRemove200,
       error: [
+        MessagesRemove400.pipe(HttpApiSchema.status(400)),
         MessagesRemove401.pipe(HttpApiSchema.status(401)),
         MessagesRemove403.pipe(HttpApiSchema.status(403)),
         MessagesRemove404.pipe(HttpApiSchema.status(404)),
@@ -1406,6 +1919,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       params: MessagesGetContentPathParams,
       success: MessagesGetContent200,
       error: [
+        MessagesGetContent400.pipe(HttpApiSchema.status(400)),
         MessagesGetContent401.pipe(HttpApiSchema.status(401)),
         MessagesGetContent403.pipe(HttpApiSchema.status(403)),
         MessagesGetContent404.pipe(HttpApiSchema.status(404)),
@@ -1422,6 +1936,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       params: MessagesListDeliveriesPathParams,
       success: MessagesListDeliveries200,
       error: [
+        MessagesListDeliveries400.pipe(HttpApiSchema.status(400)),
         MessagesListDeliveries401.pipe(HttpApiSchema.status(401)),
         MessagesListDeliveries403.pipe(HttpApiSchema.status(403)),
         MessagesListDeliveries404.pipe(HttpApiSchema.status(404)),
@@ -1442,6 +1957,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       query: MessagesGetEmailQuery,
       success: MessagesGetEmail200,
       error: [
+        MessagesGetEmail400.pipe(HttpApiSchema.status(400)),
         MessagesGetEmail401.pipe(HttpApiSchema.status(401)),
         MessagesGetEmail403.pipe(HttpApiSchema.status(403)),
         MessagesGetEmail404.pipe(HttpApiSchema.status(404)),
@@ -1462,6 +1978,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       query: MessagesGetEventsQuery,
       success: MessagesGetEvents200,
       error: [
+        MessagesGetEvents400.pipe(HttpApiSchema.status(400)),
         MessagesGetEvents401.pipe(HttpApiSchema.status(401)),
         MessagesGetEvents403.pipe(HttpApiSchema.status(403)),
         MessagesGetEvents404.pipe(HttpApiSchema.status(404)),
@@ -1481,6 +1998,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       params: MessagesGetStatusPathParams,
       success: MessagesGetStatus200,
       error: [
+        MessagesGetStatus400.pipe(HttpApiSchema.status(400)),
         MessagesGetStatus401.pipe(HttpApiSchema.status(401)),
         MessagesGetStatus403.pipe(HttpApiSchema.status(403)),
         MessagesGetStatus404.pipe(HttpApiSchema.status(404)),
@@ -1497,6 +2015,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       payload: MessagesValidateEmailRequestJson,
       success: MessagesValidateEmail200,
       error: [
+        MessagesValidateEmail400.pipe(HttpApiSchema.status(400)),
         MessagesValidateEmail401.pipe(HttpApiSchema.status(401)),
         MessagesValidateEmail403.pipe(HttpApiSchema.status(403)),
         MessagesValidateEmail404.pipe(HttpApiSchema.status(404)),

@@ -16,6 +16,7 @@ import {
   FromAddressRequiredError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   OnboardingReviewRequiredError,
   PaymentRequiredError,
   RateLimitedError,
@@ -48,7 +49,7 @@ export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxCodePoints(320).annotate({ expected: "a string with at most 320 code points" }),
       )
       .check(
-        Schema.isPattern(new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
           expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
         }),
       )
@@ -80,7 +81,9 @@ export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
           description:
             "A published email template slug receiving confirmUrl. Omit it to send the default confirmation email.",
         }).check(
-          Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
@@ -123,6 +126,8 @@ export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type SubscriptionsSubscribe200 = SubscribeResult;
 export const SubscriptionsSubscribe200 = SubscribeResult;
+export type SubscriptionsSubscribe400 = MalformedRequestError;
+export const SubscriptionsSubscribe400 = MalformedRequestError;
 export type SubscriptionsSubscribe401 = UnauthorizedError;
 export const SubscriptionsSubscribe401 = UnauthorizedError;
 export type SubscriptionsSubscribe402 = PaymentRequiredError;
@@ -168,6 +173,7 @@ export class SubscriptionsGroup extends HttpApiGroup.make("Subscriptions")
       payload: SubscriptionsSubscribeRequestJson,
       success: SubscriptionsSubscribe200,
       error: [
+        SubscriptionsSubscribe400.pipe(HttpApiSchema.status(400)),
         SubscriptionsSubscribe401.pipe(HttpApiSchema.status(401)),
         SubscriptionsSubscribe402.pipe(HttpApiSchema.status(402)),
         SubscriptionsSubscribe403.pipe(HttpApiSchema.status(403)),

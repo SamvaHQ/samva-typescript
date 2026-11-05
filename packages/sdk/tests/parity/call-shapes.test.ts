@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/http";
 
+import * as Analytics from "../../src/effect/analytics";
 import * as Campaigns from "../../src/effect/campaigns";
 import * as Client from "../../src/effect/client";
 import * as Contacts from "../../src/effect/contacts";
@@ -27,6 +28,11 @@ type CallShapeCell = {
 };
 
 const cells = [
+  {
+    name: "absolute instant query encodes Date input",
+    promise: (client) => client.analytics.getStats({ after: "2026-10-01T00:00:00.000Z" }),
+    effect: () => Analytics.getStats({ after: new Date("2026-10-01T00:00:00.000Z") }),
+  },
   {
     name: "topic issue history numeric limit",
     promise: (client) =>
@@ -459,6 +465,10 @@ describe("Promise and Effect direct call-shape parity", () => {
       expect(effectRequest).toEqual(promiseRequest);
       if (cell.name === "required body without optional fields") {
         expect(promiseRequest.body).toEqual({});
+      }
+      if (cell.name === "absolute instant query encodes Date input") {
+        const query = new URL(effectRequest.path, "https://samva.dev").searchParams;
+        expect(query.get("after")).toBe("2026-10-01T00:00:00.000Z");
       }
       if (cell.name === "boolean query filter") {
         const query = new URL(promiseRequest.path, "https://samva.dev").searchParams;

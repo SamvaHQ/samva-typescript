@@ -8,12 +8,12 @@ import {
   ApiKeySecurityMiddleware,
   BillingProviderError,
   ConflictError,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
   JsonValue,
   MailboxId,
+  MalformedRequestError,
   NamespaceId,
   PaymentRequiredError,
   RateLimitedError,
@@ -93,7 +93,7 @@ export const WebhookDeliveryCounts = /* @__PURE__ */ (() =>
 export type WebhookDeliveryId = string & EffectBrand.Brand<"WebhookDeliveryId">;
 export const WebhookDeliveryId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^whdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^whdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^whdel_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "WebhookDeliveryId",
     }),
@@ -101,7 +101,7 @@ export const WebhookDeliveryId = /* @__PURE__ */ (() =>
 export type WebhookAttemptId = string & EffectBrand.Brand<"WebhookAttemptId">;
 export const WebhookAttemptId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^whatt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^whatt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^whatt_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "WebhookAttemptId",
     }),
@@ -109,7 +109,7 @@ export const WebhookAttemptId = /* @__PURE__ */ (() =>
 export type WebhookEventId = string & EffectBrand.Brand<"WebhookEventId">;
 export const WebhookEventId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^whevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^whevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^whevt_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "WebhookEventId",
     }),
@@ -225,7 +225,7 @@ export type WebhookEndpoint = {
     | "mailbox.message.failed"
     | "journey.webhook"
   >;
-  readonly channels: ReadonlyArray<"email"> | null;
+  readonly channels: ReadonlyArray<"sms" | "whatsapp" | "email"> | null;
   readonly mailboxIds: ReadonlyArray<MailboxId> | null;
   readonly namespaceId: NamespaceId | null;
   readonly status: "active" | "disabled";
@@ -283,7 +283,12 @@ export const WebhookEndpoint = /* @__PURE__ */ (() =>
         Schema.Literal("journey.webhook"),
       ]),
     ),
-    channels: Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+    channels: Schema.Union([
+      Schema.Array(
+        Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+      ),
+      Schema.Null,
+    ]),
     mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
@@ -338,7 +343,7 @@ export type WebhookEndpointListItem = {
     | "mailbox.message.failed"
     | "journey.webhook"
   >;
-  readonly channels: ReadonlyArray<"email"> | null;
+  readonly channels: ReadonlyArray<"sms" | "whatsapp" | "email"> | null;
   readonly mailboxIds: ReadonlyArray<MailboxId> | null;
   readonly namespaceId: NamespaceId | null;
   readonly status: "active" | "disabled";
@@ -397,7 +402,12 @@ export const WebhookEndpointListItem = /* @__PURE__ */ (() =>
         Schema.Literal("journey.webhook"),
       ]),
     ),
-    channels: Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+    channels: Schema.Union([
+      Schema.Array(
+        Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+      ),
+      Schema.Null,
+    ]),
     mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
@@ -545,6 +555,10 @@ export type WebhookStatsResponse = {
   readonly exhausted: number;
   readonly cancelled: number;
   readonly daily: ReadonlyArray<WebhookDailyDeliveries>;
+  readonly latestAttempt: {
+    readonly errorCode: string | null;
+    readonly completedAt: string;
+  } | null;
 };
 export const WebhookStatsResponse = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -604,6 +618,13 @@ export const WebhookStatsResponse = /* @__PURE__ */ (() =>
         }),
       ),
     daily: Schema.Array(WebhookDailyDeliveries),
+    latestAttempt: Schema.Union([
+      Schema.Struct({
+        errorCode: Schema.Union([Schema.String, Schema.Null]),
+        completedAt: Schema.String,
+      }),
+      Schema.Null,
+    ]),
   }).annotate({ identifier: "WebhookStatsResponse" }))();
 export type WebhookEndpointPage = {
   readonly items: ReadonlyArray<WebhookEndpointListItem>;
@@ -616,9 +637,9 @@ export const WebhookEndpointPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "WebhookEndpointPage" }))();
 export type WebhooksListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly search?: string | null;
-  readonly status?: "active" | "disabled" | null;
+  readonly cursor?: string;
+  readonly search?: string;
+  readonly status?: "active" | "disabled";
 };
 export const WebhooksListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -635,17 +656,16 @@ export const WebhooksListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    search: Schema.optionalKey(Schema.String),
     status: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
     ),
   }))();
 export type WebhooksList200 = WebhookEndpointPage;
 export const WebhooksList200 = WebhookEndpointPage;
+export type WebhooksList400 = MalformedRequestError;
+export const WebhooksList400 = MalformedRequestError;
 export type WebhooksList401 = UnauthorizedError;
 export const WebhooksList401 = UnauthorizedError;
 export type WebhooksList403 = ForbiddenError;
@@ -700,7 +720,7 @@ export type WebhooksCreateRequestJson = {
     | "mailbox.message.failed"
     | "journey.webhook"
   >;
-  readonly channels?: ReadonlyArray<"email"> | null;
+  readonly channels?: ReadonlyArray<"sms" | "whatsapp" | "email"> | null;
   readonly mailboxIds?: readonly [MailboxId, ...Array<MailboxId>] | null;
   readonly namespaceId?: NamespaceId | null;
   readonly headers?: { readonly [x: string]: string } | null;
@@ -763,7 +783,13 @@ export const WebhooksCreateRequestJson = /* @__PURE__ */ (() =>
     ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
     channels: Schema.optionalKey(
       Schema.Union([
-        Schema.Array(Schema.Literal("email")).check(
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("sms"),
+            Schema.Literal("whatsapp"),
+            Schema.Literal("email"),
+          ]),
+        ).check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         ),
         Schema.Null,
@@ -789,6 +815,8 @@ export type WebhooksCreate201 = {
 };
 export const WebhooksCreate201 = /* @__PURE__ */ (() =>
   Schema.Struct({ endpoint: WebhookEndpoint, secret: __SamvaRuntimeSensitiveString }))();
+export type WebhooksCreate400 = MalformedRequestError;
+export const WebhooksCreate400 = MalformedRequestError;
 export type WebhooksCreate401 = UnauthorizedError;
 export const WebhooksCreate401 = UnauthorizedError;
 export type WebhooksCreate402 = PaymentRequiredError;
@@ -812,6 +840,8 @@ export const WebhooksGetPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksGet200 = WebhookEndpoint;
 export const WebhooksGet200 = WebhookEndpoint;
+export type WebhooksGet400 = MalformedRequestError;
+export const WebhooksGet400 = MalformedRequestError;
 export type WebhooksGet401 = UnauthorizedError;
 export const WebhooksGet401 = UnauthorizedError;
 export type WebhooksGet403 = ForbiddenError;
@@ -829,6 +859,8 @@ export const WebhooksRemovePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksRemove200 = SuccessResponse;
 export const WebhooksRemove200 = SuccessResponse;
+export type WebhooksRemove400 = MalformedRequestError;
+export const WebhooksRemove400 = MalformedRequestError;
 export type WebhooksRemove401 = UnauthorizedError;
 export const WebhooksRemove401 = UnauthorizedError;
 export type WebhooksRemove403 = ForbiddenError;
@@ -890,7 +922,7 @@ export type WebhooksUpdateRequestJson = {
     | "mailbox.message.failed"
     | "journey.webhook"
   > | null;
-  readonly channels?: ReadonlyArray<"email"> | null;
+  readonly channels?: ReadonlyArray<"sms" | "whatsapp" | "email"> | null;
   readonly mailboxIds?: readonly [MailboxId, ...Array<MailboxId>] | null;
   readonly namespaceId?: NamespaceId | null;
   readonly headers?: { readonly [x: string]: string } | null;
@@ -967,7 +999,13 @@ export const WebhooksUpdateRequestJson = /* @__PURE__ */ (() =>
     ),
     channels: Schema.optionalKey(
       Schema.Union([
-        Schema.Array(Schema.Literal("email")).check(
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("sms"),
+            Schema.Literal("whatsapp"),
+            Schema.Literal("email"),
+          ]),
+        ).check(
           Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
         ),
         Schema.Null,
@@ -989,6 +1027,8 @@ export const WebhooksUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type WebhooksUpdate200 = WebhookEndpoint;
 export const WebhooksUpdate200 = WebhookEndpoint;
+export type WebhooksUpdate400 = MalformedRequestError;
+export const WebhooksUpdate400 = MalformedRequestError;
 export type WebhooksUpdate401 = UnauthorizedError;
 export const WebhooksUpdate401 = UnauthorizedError;
 export type WebhooksUpdate403 = ForbiddenError;
@@ -1022,6 +1062,8 @@ export const WebhooksRetryDelivery200 = /* @__PURE__ */ (() =>
     attemptId: WebhookAttemptId,
     outcome: Schema.Union([Schema.Literal("succeeded"), Schema.Literal("failed")]),
   }))();
+export type WebhooksRetryDelivery400 = MalformedRequestError;
+export const WebhooksRetryDelivery400 = MalformedRequestError;
 export type WebhooksRetryDelivery401 = UnauthorizedError;
 export const WebhooksRetryDelivery401 = UnauthorizedError;
 export type WebhooksRetryDelivery403 = ForbiddenError;
@@ -1039,10 +1081,7 @@ export const WebhooksRetryDelivery504 = GatewayTimeoutError;
 export type WebhooksGetLogsPathParams = { readonly id: WebhookEndpointId };
 export const WebhooksGetLogsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: WebhookEndpointId }))();
-export type WebhooksGetLogsQuery = {
-  readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-};
+export type WebhooksGetLogsQuery = { readonly limit?: number | null; readonly cursor?: string };
 export const WebhooksGetLogsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     limit: Schema.optionalKey(
@@ -1058,10 +1097,12 @@ export const WebhooksGetLogsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type WebhooksGetLogs200 = WebhookDeliveryPage;
 export const WebhooksGetLogs200 = WebhookDeliveryPage;
+export type WebhooksGetLogs400 = MalformedRequestError;
+export const WebhooksGetLogs400 = MalformedRequestError;
 export type WebhooksGetLogs401 = UnauthorizedError;
 export const WebhooksGetLogs401 = UnauthorizedError;
 export type WebhooksGetLogs403 = ForbiddenError;
@@ -1080,6 +1121,8 @@ export const WebhooksRegenerateSecretPathParams = /* @__PURE__ */ (() =>
 export type WebhooksRegenerateSecret200 = { readonly secret: __SamvaRuntimeSensitiveString };
 export const WebhooksRegenerateSecret200 = /* @__PURE__ */ (() =>
   Schema.Struct({ secret: __SamvaRuntimeSensitiveString }))();
+export type WebhooksRegenerateSecret400 = MalformedRequestError;
+export const WebhooksRegenerateSecret400 = MalformedRequestError;
 export type WebhooksRegenerateSecret401 = UnauthorizedError;
 export const WebhooksRegenerateSecret401 = UnauthorizedError;
 export type WebhooksRegenerateSecret403 = ForbiddenError;
@@ -1097,6 +1140,8 @@ export const WebhooksGetSecretPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: WebhookEndpointId }))();
 export type WebhooksGetSecret200 = WebhookSigningSecret;
 export const WebhooksGetSecret200 = WebhookSigningSecret;
+export type WebhooksGetSecret400 = MalformedRequestError;
+export const WebhooksGetSecret400 = MalformedRequestError;
 export type WebhooksGetSecret401 = UnauthorizedError;
 export const WebhooksGetSecret401 = UnauthorizedError;
 export type WebhooksGetSecret403 = ForbiddenError;
@@ -1112,17 +1157,16 @@ export const WebhooksGetSecret504 = GatewayTimeoutError;
 export type WebhooksGetStatsPathParams = { readonly id: WebhookEndpointId };
 export const WebhooksGetStatsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: WebhookEndpointId }))();
-export type WebhooksGetStatsQuery = {
-  readonly after?: string | null;
-  readonly before?: string | null;
-};
+export type WebhooksGetStatsQuery = { readonly after?: string; readonly before?: string };
 export const WebhooksGetStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type WebhooksGetStats200 = WebhookStatsResponse;
 export const WebhooksGetStats200 = WebhookStatsResponse;
+export type WebhooksGetStats400 = MalformedRequestError;
+export const WebhooksGetStats400 = MalformedRequestError;
 export type WebhooksGetStats401 = UnauthorizedError;
 export const WebhooksGetStats401 = UnauthorizedError;
 export type WebhooksGetStats403 = ForbiddenError;
@@ -1156,6 +1200,8 @@ export const WebhooksTest202 = /* @__PURE__ */ (() =>
     eventId: WebhookEventId,
     deliveryId: WebhookDeliveryId,
   }))();
+export type WebhooksTest400 = MalformedRequestError;
+export const WebhooksTest400 = MalformedRequestError;
 export type WebhooksTest401 = UnauthorizedError;
 export const WebhooksTest401 = UnauthorizedError;
 export type WebhooksTest403 = ForbiddenError;
@@ -1175,6 +1221,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       query: WebhooksListQuery,
       success: WebhooksList200,
       error: [
+        WebhooksList400.pipe(HttpApiSchema.status(400)),
         WebhooksList401.pipe(HttpApiSchema.status(401)),
         WebhooksList403.pipe(HttpApiSchema.status(403)),
         WebhooksList422.pipe(HttpApiSchema.status(422)),
@@ -1193,6 +1240,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       payload: WebhooksCreateRequestJson,
       success: WebhooksCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        WebhooksCreate400.pipe(HttpApiSchema.status(400)),
         WebhooksCreate401.pipe(HttpApiSchema.status(401)),
         WebhooksCreate402.pipe(HttpApiSchema.status(402)),
         WebhooksCreate403.pipe(HttpApiSchema.status(403)),
@@ -1215,6 +1263,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       params: WebhooksGetPathParams,
       success: WebhooksGet200,
       error: [
+        WebhooksGet400.pipe(HttpApiSchema.status(400)),
         WebhooksGet401.pipe(HttpApiSchema.status(401)),
         WebhooksGet403.pipe(HttpApiSchema.status(403)),
         WebhooksGet404.pipe(HttpApiSchema.status(404)),
@@ -1234,6 +1283,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       params: WebhooksRemovePathParams,
       success: WebhooksRemove200,
       error: [
+        WebhooksRemove400.pipe(HttpApiSchema.status(400)),
         WebhooksRemove401.pipe(HttpApiSchema.status(401)),
         WebhooksRemove403.pipe(HttpApiSchema.status(403)),
         WebhooksRemove404.pipe(HttpApiSchema.status(404)),
@@ -1255,6 +1305,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       payload: WebhooksUpdateRequestJson,
       success: WebhooksUpdate200,
       error: [
+        WebhooksUpdate400.pipe(HttpApiSchema.status(400)),
         WebhooksUpdate401.pipe(HttpApiSchema.status(401)),
         WebhooksUpdate403.pipe(HttpApiSchema.status(403)),
         WebhooksUpdate404.pipe(HttpApiSchema.status(404)),
@@ -1278,6 +1329,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
         params: WebhooksRetryDeliveryPathParams,
         success: WebhooksRetryDelivery200,
         error: [
+          WebhooksRetryDelivery400.pipe(HttpApiSchema.status(400)),
           WebhooksRetryDelivery401.pipe(HttpApiSchema.status(401)),
           WebhooksRetryDelivery403.pipe(HttpApiSchema.status(403)),
           WebhooksRetryDelivery404.pipe(HttpApiSchema.status(404)),
@@ -1300,6 +1352,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       query: WebhooksGetLogsQuery,
       success: WebhooksGetLogs200,
       error: [
+        WebhooksGetLogs400.pipe(HttpApiSchema.status(400)),
         WebhooksGetLogs401.pipe(HttpApiSchema.status(401)),
         WebhooksGetLogs403.pipe(HttpApiSchema.status(403)),
         WebhooksGetLogs404.pipe(HttpApiSchema.status(404)),
@@ -1319,6 +1372,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       params: WebhooksRegenerateSecretPathParams,
       success: WebhooksRegenerateSecret200,
       error: [
+        WebhooksRegenerateSecret400.pipe(HttpApiSchema.status(400)),
         WebhooksRegenerateSecret401.pipe(HttpApiSchema.status(401)),
         WebhooksRegenerateSecret403.pipe(HttpApiSchema.status(403)),
         WebhooksRegenerateSecret404.pipe(HttpApiSchema.status(404)),
@@ -1338,6 +1392,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       params: WebhooksGetSecretPathParams,
       success: WebhooksGetSecret200,
       error: [
+        WebhooksGetSecret400.pipe(HttpApiSchema.status(400)),
         WebhooksGetSecret401.pipe(HttpApiSchema.status(401)),
         WebhooksGetSecret403.pipe(HttpApiSchema.status(403)),
         WebhooksGetSecret404.pipe(HttpApiSchema.status(404)),
@@ -1358,6 +1413,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       query: WebhooksGetStatsQuery,
       success: WebhooksGetStats200,
       error: [
+        WebhooksGetStats400.pipe(HttpApiSchema.status(400)),
         WebhooksGetStats401.pipe(HttpApiSchema.status(401)),
         WebhooksGetStats403.pipe(HttpApiSchema.status(403)),
         WebhooksGetStats404.pipe(HttpApiSchema.status(404)),
@@ -1378,6 +1434,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       payload: WebhooksTestRequestJson,
       success: WebhooksTest202.pipe(HttpApiSchema.status(202)),
       error: [
+        WebhooksTest400.pipe(HttpApiSchema.status(400)),
         WebhooksTest401.pipe(HttpApiSchema.status(401)),
         WebhooksTest403.pipe(HttpApiSchema.status(403)),
         WebhooksTest404.pipe(HttpApiSchema.status(404)),

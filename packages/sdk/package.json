@@ -1,7 +1,7 @@
 {
   "name": "samva",
-  "version": "0.34.0",
-  "description": "TypeScript SDK for the Samva email API",
+  "version": "0.35.0",
+  "description": "TypeScript SDK for the Samva email and WhatsApp API",
   "keywords": [
     "api-client",
     "effect",
@@ -11,7 +11,8 @@
     "sdk",
     "transactional-email",
     "typescript",
-    "webhooks"
+    "webhooks",
+    "whatsapp"
   ],
   "homepage": "https://samva.dev",
   "bugs": {
@@ -232,7 +233,7 @@
     "typecheck": "effect-tsgo tsrs --noEmit && effect-tsgo tsrs --noEmit -p codegen/tsconfig.json && effect-tsgo tsrs --noEmit -p tests/tsconfig.json && effect-tsgo tsrs --noEmit --project tests/parity/tsconfig.json"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.34.0"
+    "@samva/webhooks": "workspace:0.35.0"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",

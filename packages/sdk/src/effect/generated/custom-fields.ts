@@ -10,6 +10,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   OrganizationId,
   ResourceNotFoundError,
   UnauthorizedError,
@@ -19,7 +20,7 @@ import {
 export type CustomFieldDefinitionId = string & EffectBrand.Brand<"CustomFieldDefinitionId">;
 export const CustomFieldDefinitionId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^cfield_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^cfield_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^cfield_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "CustomFieldDefinitionId",
     }),
@@ -75,6 +76,8 @@ export const CustomFieldList = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "CustomFieldList" }))();
 export type CustomFieldsList200 = CustomFieldList;
 export const CustomFieldsList200 = CustomFieldList;
+export type CustomFieldsList400 = MalformedRequestError;
+export const CustomFieldsList400 = MalformedRequestError;
 export type CustomFieldsList401 = UnauthorizedError;
 export const CustomFieldsList401 = UnauthorizedError;
 export type CustomFieldsList403 = ForbiddenError;
@@ -168,6 +171,8 @@ export const CustomFieldsCreate201 = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }))();
+export type CustomFieldsCreate400 = MalformedRequestError;
+export const CustomFieldsCreate400 = MalformedRequestError;
 export type CustomFieldsCreate401 = UnauthorizedError;
 export const CustomFieldsCreate401 = UnauthorizedError;
 export type CustomFieldsCreate403 = ForbiddenError;
@@ -186,6 +191,8 @@ export const CustomFieldsRemovePathParams = /* @__PURE__ */ (() =>
 export type CustomFieldsRemove200 = { readonly success: boolean };
 export const CustomFieldsRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean }))();
+export type CustomFieldsRemove400 = MalformedRequestError;
+export const CustomFieldsRemove400 = MalformedRequestError;
 export type CustomFieldsRemove401 = UnauthorizedError;
 export const CustomFieldsRemove401 = UnauthorizedError;
 export type CustomFieldsRemove403 = ForbiddenError;
@@ -274,6 +281,8 @@ export const CustomFieldsUpdate200 = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }))();
+export type CustomFieldsUpdate400 = MalformedRequestError;
+export const CustomFieldsUpdate400 = MalformedRequestError;
 export type CustomFieldsUpdate401 = UnauthorizedError;
 export const CustomFieldsUpdate401 = UnauthorizedError;
 export type CustomFieldsUpdate403 = ForbiddenError;
@@ -292,6 +301,7 @@ export class CustomFieldsGroup extends HttpApiGroup.make("Custom Fields")
     HttpApiEndpoint.get("customFieldsList", "/v1/custom-fields", {
       success: CustomFieldsList200,
       error: [
+        CustomFieldsList400.pipe(HttpApiSchema.status(400)),
         CustomFieldsList401.pipe(HttpApiSchema.status(401)),
         CustomFieldsList403.pipe(HttpApiSchema.status(403)),
         CustomFieldsList422.pipe(HttpApiSchema.status(422)),
@@ -310,6 +320,7 @@ export class CustomFieldsGroup extends HttpApiGroup.make("Custom Fields")
       payload: CustomFieldsCreateRequestJson,
       success: CustomFieldsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        CustomFieldsCreate400.pipe(HttpApiSchema.status(400)),
         CustomFieldsCreate401.pipe(HttpApiSchema.status(401)),
         CustomFieldsCreate403.pipe(HttpApiSchema.status(403)),
         CustomFieldsCreate409.pipe(HttpApiSchema.status(409)),
@@ -329,6 +340,7 @@ export class CustomFieldsGroup extends HttpApiGroup.make("Custom Fields")
       params: CustomFieldsRemovePathParams,
       success: CustomFieldsRemove200,
       error: [
+        CustomFieldsRemove400.pipe(HttpApiSchema.status(400)),
         CustomFieldsRemove401.pipe(HttpApiSchema.status(401)),
         CustomFieldsRemove403.pipe(HttpApiSchema.status(403)),
         CustomFieldsRemove404.pipe(HttpApiSchema.status(404)),
@@ -346,6 +358,7 @@ export class CustomFieldsGroup extends HttpApiGroup.make("Custom Fields")
       payload: CustomFieldsUpdateRequestJson,
       success: CustomFieldsUpdate200,
       error: [
+        CustomFieldsUpdate400.pipe(HttpApiSchema.status(400)),
         CustomFieldsUpdate401.pipe(HttpApiSchema.status(401)),
         CustomFieldsUpdate403.pipe(HttpApiSchema.status(403)),
         CustomFieldsUpdate404.pipe(HttpApiSchema.status(404)),

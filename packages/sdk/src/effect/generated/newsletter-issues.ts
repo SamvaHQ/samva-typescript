@@ -13,6 +13,7 @@ import {
   GatewayTimeoutError,
   InternalError,
   JsonValue,
+  MalformedRequestError,
   NewsletterId,
   OrganizationId,
   ResourceNotFoundError,
@@ -49,7 +50,7 @@ export const NewsletterIssueDocument = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -83,7 +84,7 @@ export const NewsletterIssueListItem = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -127,6 +128,8 @@ export const NewsletterIssuesListPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
 export type NewsletterIssuesList200 = NewsletterIssueList;
 export const NewsletterIssuesList200 = NewsletterIssueList;
+export type NewsletterIssuesList400 = MalformedRequestError;
+export const NewsletterIssuesList400 = MalformedRequestError;
 export type NewsletterIssuesList401 = UnauthorizedError;
 export const NewsletterIssuesList401 = UnauthorizedError;
 export type NewsletterIssuesList403 = ForbiddenError | FlagDisabledError;
@@ -148,24 +151,21 @@ export const NewsletterIssuesList504 = GatewayTimeoutError;
 export type NewsletterIssuesCreatePathParams = { readonly id: NewsletterId };
 export const NewsletterIssuesCreatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterIssuesCreateHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterIssuesCreateHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterIssuesCreateHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterIssuesCreateRequestJson = {
@@ -180,7 +180,7 @@ export const NewsletterIssuesCreateRequestJson = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -301,9 +301,9 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
           }),
         ),
       repositoryName: Schema.String.check(
-        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-        }),
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate(
+          { expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+        ),
       ),
       defaultBranch: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
@@ -317,18 +317,18 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
           Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
         ),
       baseCommit: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       remoteHead: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       pendingRemoteHead: Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{40}$",
           }),
         ),
@@ -350,7 +350,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
         Schema.Struct({
           path: Schema.String.check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
               ),
             ).annotate({
@@ -387,7 +387,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -402,7 +402,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -444,7 +444,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -470,7 +470,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -485,7 +485,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -514,7 +514,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
             kind: Schema.Literal("resource"),
             access: Schema.Literal("read-only"),
             resourceId: Schema.String.check(
-              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
               }),
             ),
@@ -540,7 +540,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -555,7 +555,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -597,7 +597,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -618,7 +618,7 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
         ]),
       ),
       libraryManifestDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
         }),
       ),
@@ -635,6 +635,8 @@ export const NewsletterIssuesCreate200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
+export type NewsletterIssuesCreate400 = MalformedRequestError;
+export const NewsletterIssuesCreate400 = MalformedRequestError;
 export type NewsletterIssuesCreate401 = UnauthorizedError;
 export const NewsletterIssuesCreate401 = UnauthorizedError;
 export type NewsletterIssuesCreate403 = ForbiddenError | FlagDisabledError;
@@ -656,24 +658,21 @@ export const NewsletterIssuesCreate504 = GatewayTimeoutError;
 export type NewsletterIssuesUpdatePathParams = { readonly id: NewsletterId };
 export const NewsletterIssuesUpdatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterIssuesUpdateHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterIssuesUpdateHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterIssuesUpdateHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterIssuesUpdateRequestJson = {
@@ -688,7 +687,7 @@ export const NewsletterIssuesUpdateRequestJson = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -802,9 +801,9 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
           }),
         ),
       repositoryName: Schema.String.check(
-        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-        }),
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate(
+          { expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+        ),
       ),
       defaultBranch: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
@@ -818,18 +817,18 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
           Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
         ),
       baseCommit: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       remoteHead: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       pendingRemoteHead: Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{40}$",
           }),
         ),
@@ -851,7 +850,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
         Schema.Struct({
           path: Schema.String.check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
               ),
             ).annotate({
@@ -888,7 +887,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -903,7 +902,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -945,7 +944,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -971,7 +970,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -986,7 +985,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -1015,7 +1014,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
             kind: Schema.Literal("resource"),
             access: Schema.Literal("read-only"),
             resourceId: Schema.String.check(
-              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
               }),
             ),
@@ -1041,7 +1040,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -1056,7 +1055,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -1098,7 +1097,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -1119,7 +1118,7 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
         ]),
       ),
       libraryManifestDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
         }),
       ),
@@ -1136,6 +1135,8 @@ export const NewsletterIssuesUpdate200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
+export type NewsletterIssuesUpdate400 = MalformedRequestError;
+export const NewsletterIssuesUpdate400 = MalformedRequestError;
 export type NewsletterIssuesUpdate401 = UnauthorizedError;
 export const NewsletterIssuesUpdate401 = UnauthorizedError;
 export type NewsletterIssuesUpdate403 = ForbiddenError | FlagDisabledError;
@@ -1157,24 +1158,21 @@ export const NewsletterIssuesUpdate504 = GatewayTimeoutError;
 export type NewsletterIssuesCheckPathParams = { readonly id: NewsletterId };
 export const NewsletterIssuesCheckPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterIssuesCheckHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterIssuesCheckHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterIssuesCheckHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterIssuesCheckRequestJson = {
@@ -1188,7 +1186,7 @@ export const NewsletterIssuesCheckRequestJson = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -1305,7 +1303,7 @@ export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
       )
         .check(
           Schema.isPattern(
-            new RegExp(
+            new globalThis.RegExp(
               "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
               "u",
             ),
@@ -1324,7 +1322,7 @@ export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
       )
         .check(
           Schema.isPattern(
-            new RegExp(
+            new globalThis.RegExp(
               "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
               "u",
             ),
@@ -1340,7 +1338,7 @@ export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
     declaration: Schema.Union([
       Schema.Struct({
         codeDigest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
@@ -1358,12 +1356,12 @@ export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
         input: Schema.Struct({
           schema: Schema.Record(Schema.String, JsonValue),
           schemaDigest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{64}$",
             }),
           ),
           contractDigest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{64}$",
             }),
           ),
@@ -1395,7 +1393,7 @@ export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
         )
           .check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
                 "u",
               ),
@@ -1629,6 +1627,8 @@ export const NewsletterIssuesCheck200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
+export type NewsletterIssuesCheck400 = MalformedRequestError;
+export const NewsletterIssuesCheck400 = MalformedRequestError;
 export type NewsletterIssuesCheck401 = UnauthorizedError;
 export const NewsletterIssuesCheck401 = UnauthorizedError;
 export type NewsletterIssuesCheck403 = ForbiddenError | FlagDisabledError;
@@ -1658,7 +1658,7 @@ export const NewsletterIssuesGetQuery = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -1684,6 +1684,8 @@ export const NewsletterIssuesGetQuery = /* @__PURE__ */ (() =>
   }))();
 export type NewsletterIssuesGet200 = NewsletterIssueDocument;
 export const NewsletterIssuesGet200 = NewsletterIssueDocument;
+export type NewsletterIssuesGet400 = MalformedRequestError;
+export const NewsletterIssuesGet400 = MalformedRequestError;
 export type NewsletterIssuesGet401 = UnauthorizedError;
 export const NewsletterIssuesGet401 = UnauthorizedError;
 export type NewsletterIssuesGet403 = ForbiddenError | FlagDisabledError;
@@ -1715,11 +1717,13 @@ export const NewsletterIssuesHead200 = /* @__PURE__ */ (() =>
     projectId: TemplateProjectId,
     revision: Schema.String,
     remoteHead: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
   }))();
+export type NewsletterIssuesHead400 = MalformedRequestError;
+export const NewsletterIssuesHead400 = MalformedRequestError;
 export type NewsletterIssuesHead401 = UnauthorizedError;
 export const NewsletterIssuesHead401 = UnauthorizedError;
 export type NewsletterIssuesHead403 = ForbiddenError | FlagDisabledError;
@@ -1776,25 +1780,25 @@ export const NewsletterIssuesHistory200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     projectId: TemplateProjectId,
     head: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
     commits: Schema.Array(
       Schema.Struct({
         commit: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{40}$",
           }),
         ),
         tree: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{40}$",
           }),
         ),
         parentCommit: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{40}$",
             }),
           ),
@@ -1805,6 +1809,8 @@ export const NewsletterIssuesHistory200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
+export type NewsletterIssuesHistory400 = MalformedRequestError;
+export const NewsletterIssuesHistory400 = MalformedRequestError;
 export type NewsletterIssuesHistory401 = UnauthorizedError;
 export const NewsletterIssuesHistory401 = UnauthorizedError;
 export type NewsletterIssuesHistory403 = ForbiddenError | FlagDisabledError;
@@ -1826,24 +1832,21 @@ export const NewsletterIssuesHistory504 = GatewayTimeoutError;
 export type NewsletterIssuesRemovePathParams = { readonly id: NewsletterId };
 export const NewsletterIssuesRemovePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterIssuesRemoveHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterIssuesRemoveHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterIssuesRemoveHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterIssuesRemoveRequestJson = {
@@ -1857,7 +1860,7 @@ export const NewsletterIssuesRemoveRequestJson = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -1970,9 +1973,9 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
           }),
         ),
       repositoryName: Schema.String.check(
-        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-        }),
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate(
+          { expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+        ),
       ),
       defaultBranch: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
@@ -1986,18 +1989,18 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
           Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
         ),
       baseCommit: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       remoteHead: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       pendingRemoteHead: Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{40}$",
           }),
         ),
@@ -2019,7 +2022,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
         Schema.Struct({
           path: Schema.String.check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
               ),
             ).annotate({
@@ -2056,7 +2059,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -2071,7 +2074,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -2113,7 +2116,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -2139,7 +2142,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -2154,7 +2157,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -2183,7 +2186,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
             kind: Schema.Literal("resource"),
             access: Schema.Literal("read-only"),
             resourceId: Schema.String.check(
-              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
               }),
             ),
@@ -2209,7 +2212,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -2224,7 +2227,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -2266,7 +2269,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -2287,7 +2290,7 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
         ]),
       ),
       libraryManifestDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
         }),
       ),
@@ -2304,6 +2307,8 @@ export const NewsletterIssuesRemove200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
+export type NewsletterIssuesRemove400 = MalformedRequestError;
+export const NewsletterIssuesRemove400 = MalformedRequestError;
 export type NewsletterIssuesRemove401 = UnauthorizedError;
 export const NewsletterIssuesRemove401 = UnauthorizedError;
 export type NewsletterIssuesRemove403 = ForbiddenError | FlagDisabledError;
@@ -2325,24 +2330,21 @@ export const NewsletterIssuesRemove504 = GatewayTimeoutError;
 export type NewsletterIssuesRenderPathParams = { readonly id: NewsletterId };
 export const NewsletterIssuesRenderPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterIssuesRenderHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterIssuesRenderHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterIssuesRenderHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterIssuesRenderRequestJson = {
@@ -2358,7 +2360,7 @@ export const NewsletterIssuesRenderRequestJson = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
             "u",
           ),
@@ -2496,6 +2498,29 @@ export type NewsletterIssuesRender200 = {
     readonly sentBytes: number;
     readonly previewBytes: number;
   } | null;
+  readonly whatsapp: {
+    readonly language: string;
+    readonly category: string;
+    readonly header?: {
+      readonly type: "text" | "image" | "video" | "document";
+      readonly text: string;
+    };
+    readonly body: string;
+    readonly footer?: string;
+    readonly buttons: ReadonlyArray<
+      | { readonly type: "quick-reply"; readonly text: string }
+      | { readonly type: "url"; readonly text: string; readonly url: string }
+      | { readonly type: "phone"; readonly text: string; readonly phone: string }
+      | { readonly type: "copy-code"; readonly code: string }
+      | {
+          readonly type: "flow";
+          readonly text: string;
+          readonly flow: string;
+          readonly action: "navigate" | "data_exchange";
+          readonly screen?: string;
+        }
+    >;
+  } | null;
   readonly page?: {
     readonly kind: "page";
     readonly html: string;
@@ -2528,7 +2553,7 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
       )
         .check(
           Schema.isPattern(
-            new RegExp(
+            new globalThis.RegExp(
               "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
               "u",
             ),
@@ -2547,7 +2572,7 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
       )
         .check(
           Schema.isPattern(
-            new RegExp(
+            new globalThis.RegExp(
               "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
               "u",
             ),
@@ -2563,7 +2588,7 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
     declaration: Schema.Union([
       Schema.Struct({
         codeDigest: Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{64}$",
           }),
         ),
@@ -2581,12 +2606,12 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
         input: Schema.Struct({
           schema: Schema.Record(Schema.String, JsonValue),
           schemaDigest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{64}$",
             }),
           ),
           contractDigest: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{64}$",
             }),
           ),
@@ -2618,7 +2643,7 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
         )
           .check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
                 "u",
               ),
@@ -2992,6 +3017,45 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
       }),
       Schema.Null,
     ]),
+    whatsapp: Schema.Union([
+      Schema.Struct({
+        language: Schema.String,
+        category: Schema.String,
+        header: Schema.optionalKey(
+          Schema.Struct({
+            type: Schema.Union([
+              Schema.Literal("text"),
+              Schema.Literal("image"),
+              Schema.Literal("video"),
+              Schema.Literal("document"),
+            ]),
+            text: Schema.String,
+          }),
+        ),
+        body: Schema.String,
+        footer: Schema.optionalKey(Schema.String),
+        buttons: Schema.Array(
+          Schema.Union([
+            Schema.Struct({ type: Schema.Literal("quick-reply"), text: Schema.String }),
+            Schema.Struct({ type: Schema.Literal("url"), text: Schema.String, url: Schema.String }),
+            Schema.Struct({
+              type: Schema.Literal("phone"),
+              text: Schema.String,
+              phone: Schema.String,
+            }),
+            Schema.Struct({ type: Schema.Literal("copy-code"), code: Schema.String }),
+            Schema.Struct({
+              type: Schema.Literal("flow"),
+              text: Schema.String,
+              flow: Schema.String,
+              action: Schema.Union([Schema.Literal("navigate"), Schema.Literal("data_exchange")]),
+              screen: Schema.optionalKey(Schema.String),
+            }),
+          ]),
+        ),
+      }),
+      Schema.Null,
+    ]),
     page: Schema.optionalKey(
       Schema.Union([
         Schema.Struct({
@@ -3089,6 +3153,8 @@ export const NewsletterIssuesRender200 = /* @__PURE__ */ (() =>
       ]),
     ),
   }))();
+export type NewsletterIssuesRender400 = MalformedRequestError;
+export const NewsletterIssuesRender400 = MalformedRequestError;
 export type NewsletterIssuesRender401 = UnauthorizedError;
 export const NewsletterIssuesRender401 = UnauthorizedError;
 export type NewsletterIssuesRender403 = ForbiddenError | FlagDisabledError;
@@ -3110,24 +3176,21 @@ export const NewsletterIssuesRender504 = GatewayTimeoutError;
 export type NewsletterIssuesSavePathParams = { readonly id: NewsletterId };
 export const NewsletterIssuesSavePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterIssuesSaveHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterIssuesSaveHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterIssuesSaveHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterIssuesSaveRequestJson = {
@@ -3149,7 +3212,7 @@ export const NewsletterIssuesSaveRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
       ),
     expectedHead: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
@@ -3225,17 +3288,17 @@ export type NewsletterIssuesSave200 = {
 export const NewsletterIssuesSave200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     commit: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
     parentCommit: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
     tree: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
@@ -3243,7 +3306,7 @@ export const NewsletterIssuesSave200 = /* @__PURE__ */ (() =>
     changedPaths: Schema.Array(
       Schema.String.check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
           ),
         ).annotate({
@@ -3253,12 +3316,12 @@ export const NewsletterIssuesSave200 = /* @__PURE__ */ (() =>
       ),
     ),
     sourceDigest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{64}$",
       }),
     ),
     buildDigest: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
         expected: "a string matching the RegExp ^[a-f0-9]{64}$",
       }),
     ),
@@ -3451,6 +3514,8 @@ export const NewsletterIssuesSave200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
+export type NewsletterIssuesSave400 = MalformedRequestError;
+export const NewsletterIssuesSave400 = MalformedRequestError;
 export type NewsletterIssuesSave401 = UnauthorizedError;
 export const NewsletterIssuesSave401 = UnauthorizedError;
 export type NewsletterIssuesSave403 = ForbiddenError | FlagDisabledError;
@@ -3561,9 +3626,9 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
           }),
         ),
       repositoryName: Schema.String.check(
-        Schema.isPattern(new RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
-        }),
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "u")).annotate(
+          { expected: "a string matching the RegExp ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+        ),
       ),
       defaultBranch: Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
@@ -3577,18 +3642,18 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
           Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
         ),
       baseCommit: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       remoteHead: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{40}$",
         }),
       ),
       pendingRemoteHead: Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
             expected: "a string matching the RegExp ^[a-f0-9]{40}$",
           }),
         ),
@@ -3610,7 +3675,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
         Schema.Struct({
           path: Schema.String.check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
               ),
             ).annotate({
@@ -3647,7 +3712,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -3662,7 +3727,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -3704,7 +3769,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -3730,7 +3795,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -3745,7 +3810,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -3774,7 +3839,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
             kind: Schema.Literal("resource"),
             access: Schema.Literal("read-only"),
             resourceId: Schema.String.check(
-              Schema.isPattern(new RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9._-]{1,128}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[A-Za-z0-9._-]{1,128}$",
               }),
             ),
@@ -3800,7 +3865,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
             )
               .check(
                 Schema.isPattern(
-                  new RegExp(
+                  new globalThis.RegExp(
                     "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
                     "u",
                   ),
@@ -3815,7 +3880,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
                 }),
               ),
             digest: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-f0-9]{64}$",
               }),
             ),
@@ -3857,7 +3922,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
                 }),
               ),
             slug: Schema.String.check(
-              Schema.isPattern(new RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
                 expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             ),
@@ -3878,7 +3943,7 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
         ]),
       ),
       libraryManifestDigest: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
         }),
       ),
@@ -3895,6 +3960,8 @@ export const NewsletterIssuesOpen200 = /* @__PURE__ */ (() =>
     }),
     files: Schema.Record(Schema.String, Schema.String),
   }))();
+export type NewsletterIssuesOpen400 = MalformedRequestError;
+export const NewsletterIssuesOpen400 = MalformedRequestError;
 export type NewsletterIssuesOpen401 = UnauthorizedError;
 export const NewsletterIssuesOpen401 = UnauthorizedError;
 export type NewsletterIssuesOpen403 = ForbiddenError | FlagDisabledError;
@@ -3920,6 +3987,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       params: NewsletterIssuesListPathParams,
       success: NewsletterIssuesList200,
       error: [
+        NewsletterIssuesList400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesList401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesList403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesList404.pipe(HttpApiSchema.status(404)),
@@ -3943,6 +4011,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       payload: NewsletterIssuesCreateRequestJson,
       success: NewsletterIssuesCreate200,
       error: [
+        NewsletterIssuesCreate400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesCreate401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesCreate403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesCreate404.pipe(HttpApiSchema.status(404)),
@@ -3966,6 +4035,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       payload: NewsletterIssuesUpdateRequestJson,
       success: NewsletterIssuesUpdate200,
       error: [
+        NewsletterIssuesUpdate400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesUpdate401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesUpdate403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesUpdate404.pipe(HttpApiSchema.status(404)),
@@ -3989,6 +4059,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       payload: NewsletterIssuesCheckRequestJson,
       success: NewsletterIssuesCheck200,
       error: [
+        NewsletterIssuesCheck400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesCheck401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesCheck403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesCheck404.pipe(HttpApiSchema.status(404)),
@@ -4011,6 +4082,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       query: NewsletterIssuesGetQuery,
       success: NewsletterIssuesGet200,
       error: [
+        NewsletterIssuesGet400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesGet401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesGet403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesGet404.pipe(HttpApiSchema.status(404)),
@@ -4032,6 +4104,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       params: NewsletterIssuesHeadPathParams,
       success: NewsletterIssuesHead200,
       error: [
+        NewsletterIssuesHead400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesHead401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesHead403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesHead404.pipe(HttpApiSchema.status(404)),
@@ -4054,6 +4127,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       query: NewsletterIssuesHistoryQuery,
       success: NewsletterIssuesHistory200,
       error: [
+        NewsletterIssuesHistory400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesHistory401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesHistory403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesHistory404.pipe(HttpApiSchema.status(404)),
@@ -4077,6 +4151,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       payload: NewsletterIssuesRemoveRequestJson,
       success: NewsletterIssuesRemove200,
       error: [
+        NewsletterIssuesRemove400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesRemove401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesRemove403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesRemove404.pipe(HttpApiSchema.status(404)),
@@ -4100,6 +4175,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       payload: NewsletterIssuesRenderRequestJson,
       success: NewsletterIssuesRender200,
       error: [
+        NewsletterIssuesRender400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesRender401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesRender403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesRender404.pipe(HttpApiSchema.status(404)),
@@ -4123,6 +4199,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       payload: NewsletterIssuesSaveRequestJson,
       success: NewsletterIssuesSave200,
       error: [
+        NewsletterIssuesSave400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesSave401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesSave403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesSave404.pipe(HttpApiSchema.status(404)),
@@ -4144,6 +4221,7 @@ export class NewsletterIssuesGroup extends HttpApiGroup.make("Newsletter issues"
       params: NewsletterIssuesOpenPathParams,
       success: NewsletterIssuesOpen200,
       error: [
+        NewsletterIssuesOpen400.pipe(HttpApiSchema.status(400)),
         NewsletterIssuesOpen401.pipe(HttpApiSchema.status(401)),
         NewsletterIssuesOpen403.pipe(HttpApiSchema.status(403)),
         NewsletterIssuesOpen404.pipe(HttpApiSchema.status(404)),

@@ -13,6 +13,7 @@ export {
   InternalError,
   MailboxSendConflictError,
   MailboxSendRefusedError,
+  MalformedRequestError,
   OnboardingReviewRequiredError,
   PaymentRequiredError,
   RateLimitedError,
@@ -21,6 +22,7 @@ export {
   ServiceUnavailableError,
   UnauthorizedError,
   ValidationError,
+  WhatsAppServiceWindowClosedError,
   TemplateSourceError,
   DeliveryUnavailableError,
 } from "./generated/shared";

@@ -23,6 +23,11 @@ function toRecipientArray<Recipient extends object>(
   return Array.isArray(recipient) ? recipient : [recipient as ErgonomicRecipient<Recipient>];
 }
 
+/**
+ * A caller's recipient, in the ergonomic forms the SDK accepts: an address string, an object with
+ * the declared address, a `{ id }` reference to a contact, or a listed contact that carries an
+ * address and its own id and profile fields.
+ */
 function normalizeMessageRecipient<Recipient extends object>(
   recipient: ErgonomicRecipient<Recipient>,
 ): Recipient {
@@ -30,8 +35,24 @@ function normalizeMessageRecipient<Recipient extends object>(
     return { email: recipient } as Recipient;
   }
 
-  if ("contactId" in recipient || "email" in recipient || "phone" in recipient) {
-    return recipient as Recipient;
+  // A listed contact carries `id` beside its address and profile. Rebuild it from the fields the
+  // recipient schema declares, because an undeclared key such as `id`, `type`, or `namespaceId` is
+  // refused by the API rather than dropped.
+  const { contactId, email, phone, name, displayName } = recipient as {
+    readonly contactId?: string;
+    readonly email?: string;
+    readonly phone?: string;
+    readonly name?: string;
+    readonly displayName?: string | null;
+  };
+  if (contactId !== undefined) return recipient as Recipient;
+  if (email !== undefined || phone !== undefined) {
+    return {
+      ...(email === undefined ? {} : { email }),
+      ...(phone === undefined ? {} : { phone }),
+      ...(name === undefined ? {} : { name }),
+      ...(displayName === undefined ? {} : { displayName }),
+    } as Recipient;
   }
 
   return { contactId: (recipient as { readonly id: string }).id } as Recipient;

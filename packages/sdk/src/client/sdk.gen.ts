@@ -15,6 +15,8 @@ import type {
   AgentDefinition,
   AgentId,
   AgentName,
+  AgentsContinueOnStandardErrors,
+  AgentsContinueOnStandardResponses,
   AgentsCreateErrors,
   AgentsCreateResponses,
   AgentsGetErrors,
@@ -22,6 +24,8 @@ import type {
   AgentsGetVersionErrors,
   AgentsGetVersionResponses,
   AgentsListErrors,
+  AgentsListModelsErrors,
+  AgentsListModelsResponses,
   AgentsListResponses,
   AgentsListVersionsErrors,
   AgentsListVersionsResponses,
@@ -228,8 +232,9 @@ import type {
   ConversationsUpdateErrors,
   ConversationsUpdateResponses,
   CreateEventPayload,
+  CreateMailboxChatDraftPayload,
+  CreateMailboxEmailDraftPayload,
   CreateMailboxEndpointPayload,
-  Cursor,
   CustomFieldDefinitionId,
   CustomFieldsCreateErrors,
   CustomFieldsCreateResponses,
@@ -356,6 +361,7 @@ import type {
   EmailRotateDomainDkimResponses,
   EmailSender,
   EmailSenderId,
+  EmailSendMessagePayload,
   EmailSetDefaultDomainErrors,
   EmailSetDefaultDomainResponses,
   EmailSetDefaultSenderErrors,
@@ -625,6 +631,7 @@ import type {
   MessagesSendResponses,
   MessagesValidateEmailErrors,
   MessagesValidateEmailResponses,
+  MonthlySpendCapDollars,
   NamespaceId,
   NamespaceMetadataWritable,
   NamespaceResourceType,
@@ -715,9 +722,10 @@ import type {
   OrganizationsUpdateErrors,
   OrganizationsUpdateResponses,
   PhoneRegion,
-  PublicationDomainCursor,
   RenderLocale,
   RenderTimeZone,
+  ReplyMailboxChatPayload,
+  ReplyMailboxEmailPayload,
   ScheduledMessageId,
   ScheduledMessagesCancelErrors,
   ScheduledMessagesCancelResponses,
@@ -729,6 +737,9 @@ import type {
   ScheduledMessagesListResponses,
   ScheduledMessagesResumeErrors,
   ScheduledMessagesResumeResponses,
+  SendMailboxChatPayload,
+  SendMailboxEmailPayload,
+  SmsSendMessagePayload,
   SubscriptionsSubscribeErrors,
   SubscriptionsSubscribeResponses,
   SuppressionId,
@@ -839,7 +850,6 @@ import type {
   TopicsUpdateResponses,
   TrackingRecipientEmail,
   UserId,
-  VersionCursor,
   WebhookDeliveryId,
   WebhookEndpointId,
   WebhooksCreateErrors,
@@ -864,6 +874,7 @@ import type {
   WebhooksTestResponses,
   WebhooksUpdateErrors,
   WebhooksUpdateResponses,
+  WhatsAppSendMessagePayload,
   WhoamiGetErrors,
   WhoamiGetResponses,
 } from "./types.gen";
@@ -897,9 +908,9 @@ export class Messages {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      channel?: "email" | null | undefined;
-      direction?: "outbound" | "inbound" | null | undefined;
+      cursor?: string | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
+      direction?: "outbound" | "inbound" | undefined;
       status?:
         | "pending"
         | "scheduled"
@@ -911,14 +922,13 @@ export class Messages {
         | "failed"
         | "bounced"
         | "complained"
-        | null
         | undefined;
-      conversationId?: ConversationId | null | undefined;
-      contactId?: ContactId | null | undefined;
-      from?: string | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      conversationId?: ConversationId | undefined;
+      contactId?: ContactId | undefined;
+      from?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesListResponses, MessagesListErrors, ThrowOnError> {
@@ -959,42 +969,16 @@ export class Messages {
    * Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.
    */
   public static send<ThrowOnError extends boolean = false>(
-    parameters: {
-      conversationId?: ConversationId | null | undefined;
-      metadata?: MessageMetadataWritable | undefined;
-      channel: "email";
-      to: EmailRecipients;
-      cc?: EmailCcRecipients | undefined;
-      bcc?: EmailBccRecipients | undefined;
-      from?: EmailSender | undefined;
-      email: EmailContentWritable;
-    },
+    parameters: EmailSendMessagePayload | SmsSendMessagePayload | WhatsAppSendMessagePayload,
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesSendResponses, MessagesSendErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "body", key: "conversationId" },
-            { in: "body", key: "metadata" },
-            { in: "body", key: "channel" },
-            { in: "body", key: "to" },
-            { in: "body", key: "cc" },
-            { in: "body", key: "bcc" },
-            { in: "body", key: "from" },
-            { in: "body", key: "email" },
-          ],
-        },
-      ],
-    );
+    const params = { body: parameters };
     return requestWithPolicy(options?.client ?? client, "messagesSend", options, (headers) =>
       (options?.client ?? client).post<MessagesSendResponses, MessagesSendErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/messages",
         ...options,
         ...params,
-        body: params.body ?? {},
         headers: {
           "Content-Type": "application/json",
           ...options?.headers,
@@ -1249,7 +1233,7 @@ export class Messages {
     parameters: {
       id: MessageId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesGetEventsResponses, MessagesGetEventsErrors, ThrowOnError> {
@@ -1294,9 +1278,9 @@ export class Operations {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      kind?: "email-domain-provisioning" | "organization-deletion" | null | undefined;
-      status?: "pending" | "running" | "succeeded" | "failed" | null | undefined;
+      cursor?: string | undefined;
+      kind?: "email-domain-provisioning" | "organization-deletion" | undefined;
+      status?: "pending" | "running" | "succeeded" | "failed" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<OperationsListResponses, OperationsListErrors, ThrowOnError> {
@@ -1388,7 +1372,7 @@ export class ScheduledMessages {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
       status?:
         | "pending"
         | "dispatching"
@@ -1396,7 +1380,6 @@ export class ScheduledMessages {
         | "dispatched"
         | "cancelled"
         | "failed"
-        | null
         | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -1705,9 +1688,9 @@ export class Campaigns {
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
-      status?: "draft" | "archived" | null | undefined;
+      status?: "draft" | "archived" | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CampaignsListResponses, CampaignsListErrors, ThrowOnError> {
@@ -1742,7 +1725,7 @@ export class Campaigns {
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
       name: string;
-      channel: "email";
+      channel: "sms" | "whatsapp" | "email";
       content: CampaignContentInput;
       audience: CampaignAudience;
       policy?: CampaignPolicy | null | undefined;
@@ -1900,10 +1883,9 @@ export class Campaigns {
         | "completed"
         | "cancelled"
         | "failed"
-        | null
         | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CampaignsListRunsResponses, CampaignsListRunsErrors, ThrowOnError> {
@@ -2186,9 +2168,9 @@ export class Campaigns {
     parameters: {
       id: CampaignId;
       runId: CampaignRunId;
-      status?: "pending" | "dispatching" | "dispatched" | "failed" | "skipped" | null | undefined;
+      status?: "pending" | "dispatching" | "dispatched" | "failed" | "skipped" | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CampaignsListRecipientsResponses, CampaignsListRecipientsErrors, ThrowOnError> {
@@ -2536,9 +2518,9 @@ export class Email {
   public static listDomains<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
       sendable?: true | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailListDomainsResponses, EmailListDomainsErrors, ThrowOnError> {
@@ -3436,11 +3418,11 @@ export class Email {
   public static listSenders<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      verificationStatus?: "pending" | "verified" | "failed" | null | undefined;
+      cursor?: string | undefined;
+      verificationStatus?: "pending" | "verified" | "failed" | undefined;
       isActive?: boolean | null | undefined;
       isDefault?: boolean | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailListSendersResponses, EmailListSendersErrors, ThrowOnError> {
@@ -3645,8 +3627,8 @@ export class Email {
    */
   public static getStats<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailGetStatsResponses, EmailGetStatsErrors, ThrowOnError> {
@@ -3781,7 +3763,7 @@ export class Email {
   /**
    * Update catch-all configuration
    *
-   * Updates a domain's catch-all webhook endpoint or unknown-address mailbox. The mailbox must be active, in the same organization, and have an email address on the domain. Omitted fields stay unchanged; `unknownRecipientMailboxId: null` drops unknown addresses without a bounce. A webhook endpoint takes precedence over the unknown-address setting.
+   * Updates a domain's catch-all webhook endpoint or unknown-address mailbox without disabling catch-all. The mailbox must be active, in the same organization, and have an email address on the domain. Omitted fields stay unchanged. `endpointId: null` removes the webhook endpoint, so unknown addresses reach the configured unknown-address mailbox or are dropped without a bounce when none is set. A webhook endpoint takes precedence over the unknown-address setting.
    */
   public static updateCatchAllConfig<ThrowOnError extends boolean = false>(
     parameters: {
@@ -3840,8 +3822,8 @@ export class Email {
   public static getCatchAllStats<ThrowOnError extends boolean = false>(
     parameters: {
       domainId: EmailDomainId;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailGetCatchAllStatsResponses, EmailGetCatchAllStatsErrors, ThrowOnError> {
@@ -3883,11 +3865,11 @@ export class Email {
    */
   public static listSuppressions<ThrowOnError extends boolean = false>(
     parameters?: {
-      type?: "bounce" | "complaint" | "unsubscribe" | "manual" | null | undefined;
-      status?: "active" | "expired" | null | undefined;
-      search?: string | null | undefined;
+      type?: "bounce" | "complaint" | "unsubscribe" | "manual" | undefined;
+      status?: "active" | "expired" | undefined;
+      search?: string | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailListSuppressionsResponses, EmailListSuppressionsErrors, ThrowOnError> {
@@ -3988,10 +3970,10 @@ export class Email {
    */
   public static listBlocks<ThrowOnError extends boolean = false>(
     parameters?: {
-      blockType?: "email" | "domain" | null | undefined;
+      blockType?: "email" | "domain" | undefined;
       isActive?: boolean | null | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailListBlocksResponses, EmailListBlocksErrors, ThrowOnError> {
@@ -4153,12 +4135,12 @@ export class Email {
    */
   public static getBlockLogs<ThrowOnError extends boolean = false>(
     parameters?: {
-      blockedEmailId?: BlockedEmailId | null | undefined;
-      fromAddress?: string | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      blockedEmailId?: BlockedEmailId | undefined;
+      fromAddress?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailGetBlockLogsResponses, EmailGetBlockLogsErrors, ThrowOnError> {
@@ -4235,7 +4217,7 @@ export class Email {
    */
   public static listForwardingRules<ThrowOnError extends boolean = false>(
     parameters?: {
-      domainId?: EmailDomainId | null | undefined;
+      domainId?: EmailDomainId | undefined;
       isActive?: boolean | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -4468,12 +4450,12 @@ export class Email {
    */
   public static getForwardingLog<ThrowOnError extends boolean = false>(
     parameters?: {
-      forwardingRuleId?: EmailForwardingRuleId | null | undefined;
-      status?: "pending" | "forwarded" | "failed" | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      forwardingRuleId?: EmailForwardingRuleId | undefined;
+      status?: "pending" | "forwarded" | "failed" | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailGetForwardingLogResponses, EmailGetForwardingLogErrors, ThrowOnError> {
@@ -4870,7 +4852,7 @@ export class Media {
       filename: string;
       contentType: string;
       sizeBytes: number;
-      purpose: "attachment" | "avatar" | "review_evidence";
+      purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
       checksumSha256?: string | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -5145,13 +5127,13 @@ export class Conversations {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
-      channel?: "email" | null | undefined;
-      contactId?: ContactId | null | undefined;
-      mailboxId?: MailboxId | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
+      contactId?: ContactId | undefined;
+      mailboxId?: MailboxId | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ConversationsListResponses, ConversationsListErrors, ThrowOnError> {
@@ -5198,8 +5180,8 @@ export class Conversations {
       description?: string | null | undefined;
       externalId?: string | null | undefined;
       parentConversationId?: ConversationId | null | undefined;
-      channels: Array<"email">;
-      primaryChannel: "email";
+      channels: Array<"sms" | "whatsapp" | "email">;
+      primaryChannel: "sms" | "whatsapp" | "email";
       status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
       statusReason?: string | null | undefined;
       priority?: number | null | undefined;
@@ -5306,7 +5288,7 @@ export class Conversations {
       description?: string | null | undefined;
       externalId?: string | null | undefined;
       parentConversationId?: ConversationId | null | undefined;
-      primaryChannel?: "email" | null | undefined;
+      primaryChannel?: "sms" | "whatsapp" | "email" | null | undefined;
       status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
       statusReason?: string | null | undefined;
       priority?: number | null | undefined;
@@ -5375,9 +5357,9 @@ export class Conversations {
     parameters: {
       id: ConversationId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -5626,7 +5608,7 @@ export class Conversations {
   public static removeChannels<ThrowOnError extends boolean = false>(
     parameters: {
       id: ConversationId;
-      channels: ["email", ...Array<"email">];
+      channels: ["sms" | "whatsapp" | "email", ...Array<"sms" | "whatsapp" | "email">];
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -5678,7 +5660,7 @@ export class Conversations {
   public static addChannels<ThrowOnError extends boolean = false>(
     parameters: {
       id: ConversationId;
-      channels: ["email", ...Array<"email">];
+      channels: ["sms" | "whatsapp" | "email", ...Array<"sms" | "whatsapp" | "email">];
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -5840,15 +5822,15 @@ export class Contacts {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
-      search?: string | null | undefined;
-      status?: "active" | "paused" | "blocked" | "archived" | null | undefined;
-      fields?: string | null | undefined;
-      customField?: string | null | undefined;
-      customFieldValue?: string | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
+      search?: string | undefined;
+      status?: "active" | "paused" | "blocked" | "archived" | undefined;
+      fields?: string | undefined;
+      customField?: string | undefined;
+      customFieldValue?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactsListResponses, ContactsListErrors, ThrowOnError> {
@@ -6257,7 +6239,7 @@ export class Contacts {
     parameters: {
       id: ContactId;
       identityId: ContactIdentityId;
-      channel: "email";
+      channel: "sms" | "whatsapp" | "email";
       status: "opted_in" | "opted_out";
       source: string;
       capturedAt: string;
@@ -6812,8 +6794,8 @@ export class Contacts {
     parameters: {
       id: ContactId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      channel?: "email" | null | undefined;
+      cursor?: string | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -6862,7 +6844,7 @@ export class Contacts {
     parameters: {
       id: ContactId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -6995,7 +6977,7 @@ export class ContactEvents {
     parameters: {
       id: ContactId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactEventsListEventsResponses, ContactEventsListEventsErrors, ThrowOnError> {
@@ -7043,9 +7025,9 @@ export class Journeys {
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
-      status?: JourneyStatus | null | undefined;
+      status?: JourneyStatus | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysListResponses, JourneysListErrors, ThrowOnError> {
@@ -7457,10 +7439,10 @@ export class Journeys {
   public static listRuns<ThrowOnError extends boolean = false>(
     parameters: {
       id: JourneyId;
-      status?: JourneyRunStatus | null | undefined;
-      contactId?: ContactId | null | undefined;
+      status?: JourneyRunStatus | undefined;
+      contactId?: ContactId | undefined;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysListRunsResponses, JourneysListRunsErrors, ThrowOnError> {
@@ -7541,7 +7523,7 @@ export class Agents {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsListResponses, AgentsListErrors, ThrowOnError> {
@@ -7610,6 +7592,28 @@ export class Agents {
   }
 
   /**
+   * List agent models
+   *
+   * Returns the models an agent can run on: the standard and max aliases, each with the model it points at today, then every catalog model an agent can pin. Each entry has its price per million tokens, the reasoning levels it accepts with an estimate of a typical reply at each, and whether your plan includes it. Pinning a catalog model needs the Growth or Scale plan.
+   */
+  public static listModels<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AgentsListModelsResponses, AgentsListModelsErrors, ThrowOnError> {
+    return requestWithPolicy(options?.client ?? client, "agentsListModels", options, (headers) =>
+      (options?.client ?? client).get<
+        AgentsListModelsResponses,
+        AgentsListModelsErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/agents/models",
+        ...options,
+        headers,
+      }),
+    );
+  }
+
+  /**
    * Delete an agent
    *
    * Deletes an agent with its draft and published versions. The endpoints it answered on stop being answered by an agent. A reply already running finishes on the version it started on.
@@ -7656,14 +7660,15 @@ export class Agents {
   }
 
   /**
-   * Rename an agent
+   * Update an agent
    *
-   * Renames an agent.
+   * Renames an agent or sets its monthly spend cap. Both take effect at once, without publishing. At the cap the agent pauses and its conversations wait for your team until the month turns (UTC) or the cap is raised or removed.
    */
   public static update<ThrowOnError extends boolean = false>(
     parameters: {
       id: AgentId;
-      name: AgentName;
+      name?: AgentName | null | undefined;
+      monthlySpendCapDollars?: MonthlySpendCapDollars | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsUpdateResponses, AgentsUpdateErrors, ThrowOnError> {
@@ -7674,6 +7679,7 @@ export class Agents {
           args: [
             { in: "path", key: "id" },
             { in: "body", key: "name" },
+            { in: "body", key: "monthlySpendCapDollars" },
           ],
         },
       ],
@@ -7698,7 +7704,7 @@ export class Agents {
   /**
    * Replace an agent draft
    *
-   * Replaces the whole draft and returns the agent with a new revision. The request names the revision it read; a stale revision returns 409. Published versions, and the conversations answered on them, do not change. An endpoint answers for one agent at a time: a draft that names an endpoint another agent answers on returns 409.
+   * Replaces the whole draft and returns the agent with a new revision. The request names the revision it read; a stale revision returns 409. Published versions, and the conversations answered on them, do not change. An endpoint answers for one agent at a time: a draft that names an endpoint another agent answers on returns 409. A draft that pins a catalog model returns 402 unless your plan is Growth or Scale, and 422 when the model is not available or does not support the reasoning level.
    */
   public static replaceDraft<ThrowOnError extends boolean = false>(
     parameters: {
@@ -7782,6 +7788,41 @@ export class Agents {
   }
 
   /**
+   * Continue an agent on Standard
+   *
+   * Publishes the live version again with its model set to standard, as the next immutable version, then removes the monthly spend cap. Use it when the agent pauses at its cap on a pinned model and should keep answering on Standard. The draft is left as it is, so its unpublished changes stay unpublished. The live version's reasoning level is kept when Standard supports it, and is auto otherwise. A live version already on standard publishes nothing and answers published false; the cap is still removed. An agent with no published version returns 422; a version published while the request runs returns 409.
+   */
+  public static continueOnStandard<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: AgentId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    AgentsContinueOnStandardResponses,
+    AgentsContinueOnStandardErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsContinueOnStandard",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          AgentsContinueOnStandardResponses,
+          AgentsContinueOnStandardErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/continue-on-standard",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
    * List published agent versions
    *
    * Returns an agent's published versions, newest first, without their definitions. Pass nextCursor back as cursor for the next page.
@@ -7790,7 +7831,7 @@ export class Agents {
     parameters: {
       id: AgentId;
       limit?: number | null | undefined;
-      cursor?: VersionCursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsListVersionsResponses, AgentsListVersionsErrors, ThrowOnError> {
@@ -7938,14 +7979,8 @@ export class ContactGroups {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      type?:
-        | "static"
-        | "dynamic"
-        | "smart"
-        | Array<"static" | "dynamic" | "smart">
-        | null
-        | undefined;
+      cursor?: string | undefined;
+      type?: "static" | "dynamic" | "smart" | Array<"static" | "dynamic" | "smart"> | undefined;
       isActive?: boolean | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -8221,7 +8256,7 @@ export class ContactGroups {
     parameters: {
       id: ContactGroupId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactGroupsGetMembersResponses, ContactGroupsGetMembersErrors, ThrowOnError> {
@@ -8564,7 +8599,7 @@ export class Topics {
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
-      namespaceId?: NamespaceId | null | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicsListResponses, TopicsListErrors, ThrowOnError> {
@@ -8640,12 +8675,12 @@ export class Topics {
    */
   public static checkSubscription<ThrowOnError extends boolean = false>(
     parameters: {
-      contactId?: ContactId | null | undefined;
-      email?: string | null | undefined;
-      phone?: string | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
-      channel: "email";
-      topicIds?: string | null | undefined;
+      contactId?: ContactId | undefined;
+      email?: string | undefined;
+      phone?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
+      channel: "sms" | "whatsapp" | "email";
+      topicIds?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicsCheckSubscriptionResponses, TopicsCheckSubscriptionErrors, ThrowOnError> {
@@ -8815,9 +8850,9 @@ export class Topics {
     parameters: {
       id: TopicId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      channel?: "email" | null | undefined;
-      status?: "subscribed" | "unsubscribed" | null | undefined;
+      cursor?: string | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
+      status?: "subscribed" | "unsubscribed" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicsListSubscriptionsResponses, TopicsListSubscriptionsErrors, ThrowOnError> {
@@ -8863,7 +8898,7 @@ export class Topics {
     parameters: {
       id: TopicId;
       contacts: Array<TopicContactRef>;
-      channel: "email";
+      channel: "sms" | "whatsapp" | "email";
       status: "subscribed" | "unsubscribed";
       source?: string | null | undefined;
     },
@@ -9621,7 +9656,7 @@ export class Domains {
     parameters: {
       id: NewsletterId;
       limit?: number | null | undefined;
-      cursor?: PublicationDomainCursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NewsletterDomainsListResponses, NewsletterDomainsListErrors, ThrowOnError> {
@@ -9797,7 +9832,7 @@ export class Newsletters {
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
-      namespaceId?: NamespaceId | null | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NewslettersListResponses, NewslettersListErrors, ThrowOnError> {
@@ -9981,10 +10016,10 @@ export class Analytics {
    */
   public static getStats<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
-      groupBy?: "day" | "week" | "month" | null | undefined;
-      channel?: "email" | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
+      groupBy?: "day" | "week" | "month" | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AnalyticsGetStatsResponses, AnalyticsGetStatsErrors, ThrowOnError> {
@@ -10023,8 +10058,8 @@ export class Analytics {
    */
   public static getChannelStats<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -10069,10 +10104,10 @@ export class Analytics {
    */
   public static getTopContacts<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
       limit?: number | null | undefined;
-      sortBy?: "sent" | "received" | "total" | null | undefined;
+      sortBy?: "sent" | "received" | "total" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AnalyticsGetTopContactsResponses, AnalyticsGetTopContactsErrors, ThrowOnError> {
@@ -10115,8 +10150,8 @@ export class Analytics {
    */
   public static getHourlyDistribution<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -10161,9 +10196,9 @@ export class Analytics {
    */
   public static getDeliveryMetrics<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
-      channel?: "email" | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -10212,7 +10247,7 @@ export class Analytics {
       after: string;
       before: string;
       format?: "csv" | "json" | null | undefined;
-      includeChannels?: Array<"email"> | null | undefined;
+      includeChannels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AnalyticsExportDataResponses, AnalyticsExportDataErrors, ThrowOnError> {
@@ -10264,7 +10299,7 @@ export class Templates {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
       category?:
         | "transactional"
         | "marketing"
@@ -10273,21 +10308,12 @@ export class Templates {
         | "verification"
         | "reminder"
         | "alert"
-        | null
         | undefined;
-      channel?: "email" | null | undefined;
-      status?:
-        | "draft"
-        | "pending"
-        | "approved"
-        | "published"
-        | "rejected"
-        | "archived"
-        | null
-        | undefined;
-      search?: string | null | undefined;
-      projectId?: TemplateProjectId | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
+      status?: "draft" | "pending" | "approved" | "published" | "rejected" | "archived" | undefined;
+      search?: string | undefined;
+      projectId?: TemplateProjectId | undefined;
+      namespaceId?: NamespaceId | undefined;
       shared?: boolean | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -10398,7 +10424,7 @@ export class Templates {
   public static listFamilies<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TemplatesListFamiliesResponses, TemplatesListFamiliesErrors, ThrowOnError> {
@@ -11626,7 +11652,7 @@ export class Templates {
     parameters: {
       id: TemplateId;
       limit?: number | null | undefined;
-      cursor?: VersionCursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -12121,9 +12147,9 @@ export class Webhooks {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      search?: string | null | undefined;
-      status?: "active" | "disabled" | null | undefined;
+      cursor?: string | undefined;
+      search?: string | undefined;
+      status?: "active" | "disabled" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WebhooksListResponses, WebhooksListErrors, ThrowOnError> {
@@ -12201,7 +12227,7 @@ export class Webhooks {
         | "mailbox.message.failed"
         | "journey.webhook"
       >;
-      channels?: Array<"email"> | null | undefined;
+      channels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
       mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
       namespaceId?: NamespaceId | null | undefined;
       headers?:
@@ -12354,7 +12380,7 @@ export class Webhooks {
           >
         | null
         | undefined;
-      channels?: Array<"email"> | null | undefined;
+      channels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
       mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
       namespaceId?: NamespaceId | null | undefined;
       headers?:
@@ -12460,7 +12486,7 @@ export class Webhooks {
     parameters: {
       id: WebhookEndpointId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WebhooksGetLogsResponses, WebhooksGetLogsErrors, ThrowOnError> {
@@ -12499,8 +12525,8 @@ export class Webhooks {
   public static getStats<ThrowOnError extends boolean = false>(
     parameters: {
       id: WebhookEndpointId;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WebhooksGetStatsResponses, WebhooksGetStatsErrors, ThrowOnError> {
@@ -12964,8 +12990,8 @@ export class Organizations {
    */
   public static getUsage<ThrowOnError extends boolean = false>(
     parameters?: {
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<OrganizationsGetUsageResponses, OrganizationsGetUsageErrors, ThrowOnError> {
@@ -13049,9 +13075,9 @@ export class ApiKeys {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      status?: "active" | "revoked" | null | undefined;
-      search?: string | null | undefined;
+      cursor?: string | undefined;
+      status?: "active" | "revoked" | undefined;
+      search?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysListResponses, ApiKeysListErrors, ThrowOnError> {
@@ -13244,8 +13270,8 @@ export class ApiKeys {
   public static getStats<ThrowOnError extends boolean = false>(
     parameters: {
       id: ApiKeyId;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysGetStatsResponses, ApiKeysGetStatsErrors, ThrowOnError> {
@@ -13285,7 +13311,7 @@ export class ApiKeys {
     parameters: {
       id: ApiKeyId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysGetActivityResponses, ApiKeysGetActivityErrors, ThrowOnError> {
@@ -13402,9 +13428,9 @@ export class Mailboxes {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListResponses, MailboxesListErrors, ThrowOnError> {
@@ -13784,8 +13810,8 @@ export class Mailboxes {
   public static getAgentActivity<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -13833,7 +13859,7 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListGrantsResponses, MailboxesListGrantsErrors, ThrowOnError> {
@@ -14459,7 +14485,7 @@ export class Mailboxes {
   public static getNeedsYou<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesGetNeedsYouResponses, MailboxesGetNeedsYouErrors, ThrowOnError> {
@@ -14501,10 +14527,10 @@ export class Mailboxes {
   public static listOrganizationDrafts<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
-      kind?: "personal" | "shared" | null | undefined;
-      threadId?: MailboxThreadId | null | undefined;
+      cursor?: string | undefined;
+      mailboxId?: MailboxId | Array<MailboxId> | undefined;
+      kind?: "personal" | "shared" | undefined;
+      threadId?: MailboxThreadId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -14553,19 +14579,19 @@ export class Mailboxes {
   public static listOrganizationThreads<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
-      q?: string | null | undefined;
-      state?: "active" | "done" | null | undefined;
-      folder?: MailboxThreadFolder | null | undefined;
-      label?: MailboxLabelId | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
+      q?: string | undefined;
+      state?: "active" | "done" | undefined;
+      folder?: MailboxThreadFolder | undefined;
+      label?: MailboxLabelId | undefined;
       unread?: boolean | null | undefined;
       starred?: boolean | null | undefined;
       snoozed?: boolean | null | undefined;
-      mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
-      kind?: "personal" | "shared" | null | undefined;
-      conversation?: ConversationId | null | undefined;
+      mailboxId?: MailboxId | Array<MailboxId> | undefined;
+      kind?: "personal" | "shared" | undefined;
+      conversation?: ConversationId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -14624,13 +14650,13 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
-      q?: string | null | undefined;
-      state?: "active" | "done" | null | undefined;
-      folder?: MailboxThreadFolder | null | undefined;
-      label?: MailboxLabelId | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
+      q?: string | undefined;
+      state?: "active" | "done" | undefined;
+      folder?: MailboxThreadFolder | undefined;
+      label?: MailboxLabelId | undefined;
       unread?: boolean | null | undefined;
       starred?: boolean | null | undefined;
       snoozed?: boolean | null | undefined;
@@ -14895,7 +14921,7 @@ export class Mailboxes {
       id: MailboxId;
       threadId: MailboxThreadId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -14945,7 +14971,7 @@ export class Mailboxes {
       id: MailboxId;
       threadId: MailboxThreadId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -14995,7 +15021,7 @@ export class Mailboxes {
       id: MailboxId;
       threadId: MailboxThreadId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -15185,36 +15211,12 @@ export class Mailboxes {
   public static sendMessage<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
-      channel?: "email" | null | undefined;
-      to: [string, ...Array<string>];
-      cc?: Array<string> | null | undefined;
-      bcc?: Array<string> | null | undefined;
-      replyTo?: Array<string> | null | undefined;
-      subject: string;
-      text?: string | null | undefined;
-      html?: string | null | undefined;
-      attachments?: Array<EmailAttachment> | null | undefined;
-    },
+    } & (SendMailboxEmailPayload | SendMailboxChatPayload),
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesSendMessageResponses, MailboxesSendMessageErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "body", key: "channel" },
-            { in: "body", key: "to" },
-            { in: "body", key: "cc" },
-            { in: "body", key: "bcc" },
-            { in: "body", key: "replyTo" },
-            { in: "body", key: "subject" },
-            { in: "body", key: "text" },
-            { in: "body", key: "html" },
-            { in: "body", key: "attachments" },
-          ],
-        },
-      ],
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    params.body = Object.fromEntries(
+      Object.entries(parameters).filter(([key]) => !["id"].includes(key)),
     );
     return requestWithPolicy(
       options?.client ?? client,
@@ -15230,7 +15232,6 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages",
           ...options,
           ...params,
-          body: params.body ?? {},
           headers: {
             "Content-Type": "application/json",
             ...options?.headers,
@@ -15426,13 +15427,7 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       messageId: MessageId;
-      channel?: "email" | null | undefined;
-      cc?: Array<string> | null | undefined;
-      bcc?: Array<string> | null | undefined;
-      text?: string | null | undefined;
-      html?: string | null | undefined;
-      attachments?: Array<EmailAttachment> | null | undefined;
-    },
+    } & (ReplyMailboxEmailPayload | ReplyMailboxChatPayload),
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesReplyResponses, MailboxesReplyErrors, ThrowOnError> {
     const params = buildClientParams(
@@ -15442,15 +15437,12 @@ export class Mailboxes {
           args: [
             { in: "path", key: "id" },
             { in: "path", key: "messageId" },
-            { in: "body", key: "channel" },
-            { in: "body", key: "cc" },
-            { in: "body", key: "bcc" },
-            { in: "body", key: "text" },
-            { in: "body", key: "html" },
-            { in: "body", key: "attachments" },
           ],
         },
       ],
+    );
+    params.body = Object.fromEntries(
+      Object.entries(parameters).filter(([key]) => !["id", "messageId"].includes(key)),
     );
     return requestWithPolicy(options?.client ?? client, "mailboxesReply", options, (headers) =>
       (options?.client ?? client).post<MailboxesReplyResponses, MailboxesReplyErrors, ThrowOnError>(
@@ -15459,7 +15451,6 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/reply",
           ...options,
           ...params,
-          body: params.body ?? {},
           headers: {
             "Content-Type": "application/json",
             ...options?.headers,
@@ -15480,13 +15471,7 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       messageId: MessageId;
-      channel?: "email" | null | undefined;
-      cc?: Array<string> | null | undefined;
-      bcc?: Array<string> | null | undefined;
-      text?: string | null | undefined;
-      html?: string | null | undefined;
-      attachments?: Array<EmailAttachment> | null | undefined;
-    },
+    } & (ReplyMailboxEmailPayload | ReplyMailboxChatPayload),
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesReplyAllResponses, MailboxesReplyAllErrors, ThrowOnError> {
     const params = buildClientParams(
@@ -15496,15 +15481,12 @@ export class Mailboxes {
           args: [
             { in: "path", key: "id" },
             { in: "path", key: "messageId" },
-            { in: "body", key: "channel" },
-            { in: "body", key: "cc" },
-            { in: "body", key: "bcc" },
-            { in: "body", key: "text" },
-            { in: "body", key: "html" },
-            { in: "body", key: "attachments" },
           ],
         },
       ],
+    );
+    params.body = Object.fromEntries(
+      Object.entries(parameters).filter(([key]) => !["id", "messageId"].includes(key)),
     );
     return requestWithPolicy(options?.client ?? client, "mailboxesReplyAll", options, (headers) =>
       (options?.client ?? client).post<
@@ -15516,7 +15498,6 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/messages/{messageId}/reply-all",
         ...options,
         ...params,
-        body: params.body ?? {},
         headers: {
           "Content-Type": "application/json",
           ...options?.headers,
@@ -15592,9 +15573,9 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListQuarantineResponses, MailboxesListQuarantineErrors, ThrowOnError> {
@@ -15724,8 +15705,8 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      threadId?: MailboxThreadId | null | undefined;
+      cursor?: string | undefined;
+      threadId?: MailboxThreadId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListDraftsResponses, MailboxesListDraftsErrors, ThrowOnError> {
@@ -15765,40 +15746,12 @@ export class Mailboxes {
   public static createDraft<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
-      channel?: "email" | null | undefined;
-      endpointId?: MailboxEndpointId | null | undefined;
-      to?: Array<string> | null | undefined;
-      cc?: Array<string> | null | undefined;
-      bcc?: Array<string> | null | undefined;
-      replyTo?: Array<string> | null | undefined;
-      subject?: string | null | undefined;
-      text?: string | null | undefined;
-      html?: string | null | undefined;
-      attachments?: Array<EmailAttachment> | null | undefined;
-      inReplyToMessageId?: MessageId | null | undefined;
-    },
+    } & (CreateMailboxEmailDraftPayload | CreateMailboxChatDraftPayload),
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesCreateDraftResponses, MailboxesCreateDraftErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "body", key: "channel" },
-            { in: "body", key: "endpointId" },
-            { in: "body", key: "to" },
-            { in: "body", key: "cc" },
-            { in: "body", key: "bcc" },
-            { in: "body", key: "replyTo" },
-            { in: "body", key: "subject" },
-            { in: "body", key: "text" },
-            { in: "body", key: "html" },
-            { in: "body", key: "attachments" },
-            { in: "body", key: "inReplyToMessageId" },
-          ],
-        },
-      ],
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    params.body = Object.fromEntries(
+      Object.entries(parameters).filter(([key]) => !["id"].includes(key)),
     );
     return requestWithPolicy(
       options?.client ?? client,
@@ -15814,7 +15767,6 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/drafts",
           ...options,
           ...params,
-          body: params.body ?? {},
           headers: {
             "Content-Type": "application/json",
             ...options?.headers,
@@ -16016,8 +15968,8 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      threadId?: MailboxThreadId | null | undefined;
+      cursor?: string | undefined;
+      threadId?: MailboxThreadId | undefined;
       state?:
         | "proposed"
         | "allowed"
@@ -16033,10 +15985,9 @@ export class Mailboxes {
         | "completed"
         | "notSent"
         | "uncertain"
-        | null
         | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListActionsResponses, MailboxesListActionsErrors, ThrowOnError> {
@@ -16294,9 +16245,9 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListEventsResponses, MailboxesListEventsErrors, ThrowOnError> {
@@ -16343,9 +16294,9 @@ export class Namespaces {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NamespacesListResponses, NamespacesListErrors, ThrowOnError> {
@@ -16628,8 +16579,8 @@ export class Namespaces {
   public static getUsage<ThrowOnError extends boolean = false>(
     parameters: {
       id: NamespaceId;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NamespacesGetUsageResponses, NamespacesGetUsageErrors, ThrowOnError> {
@@ -16674,9 +16625,9 @@ export class Extensions {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ExtensionsListResponses, ExtensionsListErrors, ThrowOnError> {
@@ -16796,7 +16747,7 @@ export class Extensions {
     parameters: {
       id: string;
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ExtensionsListVersionsResponses, ExtensionsListVersionsErrors, ThrowOnError> {
@@ -16887,9 +16838,9 @@ export class ExtensionInstallations {
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
-      cursor?: Cursor | null | undefined;
-      after?: string | null | undefined;
-      before?: string | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -17616,6 +17567,8 @@ Object.assign(Agents.list, { operation: "agentsList" });
 
 Object.assign(Agents.create, { operation: "agentsCreate" });
 
+Object.assign(Agents.listModels, { operation: "agentsListModels" });
+
 Object.assign(Agents.remove, { operation: "agentsRemove" });
 
 Object.assign(Agents.get, { operation: "agentsGet" });
@@ -17625,6 +17578,8 @@ Object.assign(Agents.update, { operation: "agentsUpdate" });
 Object.assign(Agents.replaceDraft, { operation: "agentsReplaceDraft" });
 
 Object.assign(Agents.publish, { operation: "agentsPublish" });
+
+Object.assign(Agents.continueOnStandard, { operation: "agentsContinueOnStandard" });
 
 Object.assign(Agents.listVersions, { operation: "agentsListVersions" });
 

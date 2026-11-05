@@ -121,8 +121,21 @@ const emailRecipients = {
     { contactId: "contact_mvt4znw8rh7q2xk9" },
     { id: "contact_9mvt4znw8rh7q2xk0" },
   ],
+  // A contact as `contacts.list` returns it: `id` beside the address and profile the recipient
+  // schema declares. The API refuses an undeclared key rather than dropping it, so the client sends
+  // only the declared shape.
+  listed: {
+    id: "contact_7q2xk9mvt4znw8rh",
+    name: "Ada",
+    displayName: "Ada Lovelace",
+    email: "ada@example.com",
+    type: "person",
+    identities: [],
+    namespaceId: null,
+    status: "active",
+  },
 } as const;
-const recipientForms = ["string", "contactId", "id", "mixed"] as const;
+const recipientForms = ["string", "contactId", "id", "mixed", "listed"] as const;
 
 const cells: Array<Cell> = [];
 

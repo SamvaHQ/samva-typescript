@@ -181,6 +181,7 @@ const cells = [
       ...checked,
       fixture: "default",
       rendered: null,
+      whatsapp: null,
       page: target === "web" ? { kind: "page", html: "<p>Hello!</p>", selections: [] } : null,
     },
     promise: (client) =>

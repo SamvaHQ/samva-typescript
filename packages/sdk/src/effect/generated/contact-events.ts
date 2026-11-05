@@ -7,10 +7,10 @@ import {
   ApiKeySecurityMiddleware,
   ContactEvent,
   ContactId,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   ResourceNotFoundError,
   UnauthorizedError,
   ValidationError,
@@ -30,7 +30,7 @@ export const ContactEventsListEventsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ContactId }))();
 export type ContactEventsListEventsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const ContactEventsListEventsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -47,10 +47,12 @@ export const ContactEventsListEventsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type ContactEventsListEvents200 = ContactEventPage;
 export const ContactEventsListEvents200 = ContactEventPage;
+export type ContactEventsListEvents400 = MalformedRequestError;
+export const ContactEventsListEvents400 = MalformedRequestError;
 export type ContactEventsListEvents401 = UnauthorizedError;
 export const ContactEventsListEvents401 = UnauthorizedError;
 export type ContactEventsListEvents403 = ForbiddenError;
@@ -71,6 +73,7 @@ export class ContactEventsGroup extends HttpApiGroup.make("Contact events")
       query: ContactEventsListEventsQuery,
       success: ContactEventsListEvents200,
       error: [
+        ContactEventsListEvents400.pipe(HttpApiSchema.status(400)),
         ContactEventsListEvents401.pipe(HttpApiSchema.status(401)),
         ContactEventsListEvents403.pipe(HttpApiSchema.status(403)),
         ContactEventsListEvents404.pipe(HttpApiSchema.status(404)),

@@ -8,6 +8,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   ResourceNotFoundError,
   TopicId,
   UnauthorizedError,
@@ -32,7 +33,7 @@ export const TopicForm = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: Schema.String.annotate({ format: "uuid" }).check(
       Schema.isPattern(
-        new RegExp(
+        new globalThis.RegExp(
           "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
           "u",
         ),
@@ -43,7 +44,7 @@ export const TopicForm = /* @__PURE__ */ (() =>
     ),
     publicKey: Schema.String.annotate({ format: "uuid" }).check(
       Schema.isPattern(
-        new RegExp(
+        new globalThis.RegExp(
           "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
           "u",
         ),
@@ -60,7 +61,7 @@ export const TopicForm = /* @__PURE__ */ (() =>
         }),
       )
         .check(
-          Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^https:\\/\\/", "u")).annotate({
             expected: "a string matching the RegExp ^https:\\/\\/",
           }),
         )
@@ -115,7 +116,7 @@ export const TopicForm = /* @__PURE__ */ (() =>
         }),
       )
         .check(
-          Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^https:\\/\\/", "u")).annotate({
             expected: "a string matching the RegExp ^https:\\/\\/",
           }),
         )
@@ -133,6 +134,8 @@ export const TopicFormsListPathParams = /* @__PURE__ */ (() => Schema.Struct({ i
 export type TopicFormsList200 = { readonly items: ReadonlyArray<TopicForm> };
 export const TopicFormsList200 = /* @__PURE__ */ (() =>
   Schema.Struct({ items: Schema.Array(TopicForm) }))();
+export type TopicFormsList400 = MalformedRequestError;
+export const TopicFormsList400 = MalformedRequestError;
 export type TopicFormsList401 = UnauthorizedError;
 export const TopicFormsList401 = UnauthorizedError;
 export type TopicFormsList403 = ForbiddenError;
@@ -164,7 +167,7 @@ export const TopicFormsCreateRequestJson = /* @__PURE__ */ (() =>
         }),
       )
         .check(
-          Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^https:\\/\\/", "u")).annotate({
             expected: "a string matching the RegExp ^https:\\/\\/",
           }),
         )
@@ -219,7 +222,7 @@ export const TopicFormsCreateRequestJson = /* @__PURE__ */ (() =>
         }),
       )
         .check(
-          Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^https:\\/\\/", "u")).annotate({
             expected: "a string matching the RegExp ^https:\\/\\/",
           }),
         )
@@ -231,6 +234,8 @@ export const TopicFormsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type TopicFormsCreate201 = TopicForm;
 export const TopicFormsCreate201 = TopicForm;
+export type TopicFormsCreate400 = MalformedRequestError;
+export const TopicFormsCreate400 = MalformedRequestError;
 export type TopicFormsCreate401 = UnauthorizedError;
 export const TopicFormsCreate401 = UnauthorizedError;
 export type TopicFormsCreate403 = ForbiddenError;
@@ -249,7 +254,7 @@ export const TopicFormsGetPathParams = /* @__PURE__ */ (() =>
     id: TopicId,
     formId: Schema.String.annotate({ format: "uuid" }).check(
       Schema.isPattern(
-        new RegExp(
+        new globalThis.RegExp(
           "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
           "u",
         ),
@@ -261,6 +266,8 @@ export const TopicFormsGetPathParams = /* @__PURE__ */ (() =>
   }))();
 export type TopicFormsGet200 = TopicForm;
 export const TopicFormsGet200 = TopicForm;
+export type TopicFormsGet400 = MalformedRequestError;
+export const TopicFormsGet400 = MalformedRequestError;
 export type TopicFormsGet401 = UnauthorizedError;
 export const TopicFormsGet401 = UnauthorizedError;
 export type TopicFormsGet403 = ForbiddenError;
@@ -279,7 +286,7 @@ export const TopicFormsRemovePathParams = /* @__PURE__ */ (() =>
     id: TopicId,
     formId: Schema.String.annotate({ format: "uuid" }).check(
       Schema.isPattern(
-        new RegExp(
+        new globalThis.RegExp(
           "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
           "u",
         ),
@@ -292,6 +299,8 @@ export const TopicFormsRemovePathParams = /* @__PURE__ */ (() =>
 export type TopicFormsRemove200 = { readonly success: boolean };
 export const TopicFormsRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean }))();
+export type TopicFormsRemove400 = MalformedRequestError;
+export const TopicFormsRemove400 = MalformedRequestError;
 export type TopicFormsRemove401 = UnauthorizedError;
 export const TopicFormsRemove401 = UnauthorizedError;
 export type TopicFormsRemove403 = ForbiddenError;
@@ -310,7 +319,7 @@ export const TopicFormsUpdatePathParams = /* @__PURE__ */ (() =>
     id: TopicId,
     formId: Schema.String.annotate({ format: "uuid" }).check(
       Schema.isPattern(
-        new RegExp(
+        new globalThis.RegExp(
           "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
           "u",
         ),
@@ -339,7 +348,7 @@ export const TopicFormsUpdateRequestJson = /* @__PURE__ */ (() =>
             }),
           )
             .check(
-              Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+              Schema.isPattern(new globalThis.RegExp("^https:\\/\\/", "u")).annotate({
                 expected: "a string matching the RegExp ^https:\\/\\/",
               }),
             )
@@ -430,7 +439,7 @@ export const TopicFormsUpdateRequestJson = /* @__PURE__ */ (() =>
           }),
         )
           .check(
-            Schema.isPattern(new RegExp("^https:\\/\\/", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^https:\\/\\/", "u")).annotate({
               expected: "a string matching the RegExp ^https:\\/\\/",
             }),
           )
@@ -445,6 +454,8 @@ export const TopicFormsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type TopicFormsUpdate200 = TopicForm;
 export const TopicFormsUpdate200 = TopicForm;
+export type TopicFormsUpdate400 = MalformedRequestError;
+export const TopicFormsUpdate400 = MalformedRequestError;
 export type TopicFormsUpdate401 = UnauthorizedError;
 export const TopicFormsUpdate401 = UnauthorizedError;
 export type TopicFormsUpdate403 = ForbiddenError;
@@ -464,6 +475,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       params: TopicFormsListPathParams,
       success: TopicFormsList200,
       error: [
+        TopicFormsList400.pipe(HttpApiSchema.status(400)),
         TopicFormsList401.pipe(HttpApiSchema.status(401)),
         TopicFormsList403.pipe(HttpApiSchema.status(403)),
         TopicFormsList404.pipe(HttpApiSchema.status(404)),
@@ -484,6 +496,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       payload: TopicFormsCreateRequestJson,
       success: TopicFormsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        TopicFormsCreate400.pipe(HttpApiSchema.status(400)),
         TopicFormsCreate401.pipe(HttpApiSchema.status(401)),
         TopicFormsCreate403.pipe(HttpApiSchema.status(403)),
         TopicFormsCreate404.pipe(HttpApiSchema.status(404)),
@@ -503,6 +516,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       params: TopicFormsGetPathParams,
       success: TopicFormsGet200,
       error: [
+        TopicFormsGet400.pipe(HttpApiSchema.status(400)),
         TopicFormsGet401.pipe(HttpApiSchema.status(401)),
         TopicFormsGet403.pipe(HttpApiSchema.status(403)),
         TopicFormsGet404.pipe(HttpApiSchema.status(404)),
@@ -522,6 +536,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       params: TopicFormsRemovePathParams,
       success: TopicFormsRemove200,
       error: [
+        TopicFormsRemove400.pipe(HttpApiSchema.status(400)),
         TopicFormsRemove401.pipe(HttpApiSchema.status(401)),
         TopicFormsRemove403.pipe(HttpApiSchema.status(403)),
         TopicFormsRemove404.pipe(HttpApiSchema.status(404)),
@@ -542,6 +557,7 @@ export class TopicFormsGroup extends HttpApiGroup.make("Topic forms")
       payload: TopicFormsUpdateRequestJson,
       success: TopicFormsUpdate200,
       error: [
+        TopicFormsUpdate400.pipe(HttpApiSchema.status(400)),
         TopicFormsUpdate401.pipe(HttpApiSchema.status(401)),
         TopicFormsUpdate403.pipe(HttpApiSchema.status(403)),
         TopicFormsUpdate404.pipe(HttpApiSchema.status(404)),

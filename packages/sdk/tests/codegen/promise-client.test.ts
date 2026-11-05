@@ -134,4 +134,38 @@ describe("Promise client read and write types", () => {
     expect(generated.sdk).toContain("const params = { body: parameters };");
     expect(generated.sdk).not.toContain('key: "body", map: "body"');
   });
+
+  it("keeps a union of referenced object bodies flat", () => {
+    const generated = generatePromiseClientSources({
+      ...document,
+      paths: {
+        "/messages": {
+          post: {
+            operationId: "messages.send",
+            tags: ["messages"],
+            requestBody: body({ anyOf: [ref("EmailSend"), ref("PhoneSend")] }),
+            responses: ok(ref("Note")),
+          },
+        },
+      },
+      components: {
+        schemas: {
+          ...document.components.schemas,
+          EmailSend: {
+            type: "object",
+            properties: { channel: { const: "email" }, email: { type: "string" } },
+            required: ["channel", "email"],
+          },
+          PhoneSend: {
+            type: "object",
+            properties: { channel: { enum: ["sms", "whatsapp"] }, phone: { type: "string" } },
+            required: ["channel", "phone"],
+          },
+        },
+      },
+    });
+    expect(generated.sdk).toContain("parameters: EmailSend | PhoneSend");
+    expect(generated.sdk).toContain("const params = { body: parameters };");
+    expect(generated.sdk).not.toContain('key: "body", map: "body"');
+  });
 });

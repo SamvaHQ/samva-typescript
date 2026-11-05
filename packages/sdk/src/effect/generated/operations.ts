@@ -6,10 +6,10 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   Operation,
   OperationAccepted,
   OperationId,
@@ -29,9 +29,9 @@ export const OperationPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "OperationPage" }))();
 export type OperationsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly kind?: "email-domain-provisioning" | "organization-deletion" | null;
-  readonly status?: "pending" | "running" | "succeeded" | "failed" | null;
+  readonly cursor?: string;
+  readonly kind?: "email-domain-provisioning" | "organization-deletion";
+  readonly status?: "pending" | "running" | "succeeded" | "failed";
 };
 export const OperationsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -48,30 +48,26 @@ export const OperationsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
     kind: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("email-domain-provisioning"),
-          Schema.Literal("organization-deletion"),
-        ]),
-        Schema.Null,
+        Schema.Literal("email-domain-provisioning"),
+        Schema.Literal("organization-deletion"),
       ]),
     ),
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("pending"),
-          Schema.Literal("running"),
-          Schema.Literal("succeeded"),
-          Schema.Literal("failed"),
-        ]),
-        Schema.Null,
+        Schema.Literal("pending"),
+        Schema.Literal("running"),
+        Schema.Literal("succeeded"),
+        Schema.Literal("failed"),
       ]),
     ),
   }))();
 export type OperationsList200 = OperationPage;
 export const OperationsList200 = OperationPage;
+export type OperationsList400 = MalformedRequestError;
+export const OperationsList400 = MalformedRequestError;
 export type OperationsList401 = UnauthorizedError;
 export const OperationsList401 = UnauthorizedError;
 export type OperationsList403 = ForbiddenError;
@@ -86,6 +82,8 @@ export type OperationsGetPathParams = { readonly id: OperationId };
 export const OperationsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: OperationId }))();
 export type OperationsGet200 = Operation;
 export const OperationsGet200 = Operation;
+export type OperationsGet400 = MalformedRequestError;
+export const OperationsGet400 = MalformedRequestError;
 export type OperationsGet401 = UnauthorizedError;
 export const OperationsGet401 = UnauthorizedError;
 export type OperationsGet403 = ForbiddenError;
@@ -103,6 +101,8 @@ export const OperationsRetryPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: OperationId }))();
 export type OperationsRetry202 = OperationAccepted;
 export const OperationsRetry202 = OperationAccepted;
+export type OperationsRetry400 = MalformedRequestError;
+export const OperationsRetry400 = MalformedRequestError;
 export type OperationsRetry401 = UnauthorizedError;
 export const OperationsRetry401 = UnauthorizedError;
 export type OperationsRetry403 = ForbiddenError;
@@ -124,6 +124,7 @@ export class OperationsGroup extends HttpApiGroup.make("Operations")
       query: OperationsListQuery,
       success: OperationsList200,
       error: [
+        OperationsList400.pipe(HttpApiSchema.status(400)),
         OperationsList401.pipe(HttpApiSchema.status(401)),
         OperationsList403.pipe(HttpApiSchema.status(403)),
         OperationsList422.pipe(HttpApiSchema.status(422)),
@@ -142,6 +143,7 @@ export class OperationsGroup extends HttpApiGroup.make("Operations")
       params: OperationsGetPathParams,
       success: OperationsGet200,
       error: [
+        OperationsGet400.pipe(HttpApiSchema.status(400)),
         OperationsGet401.pipe(HttpApiSchema.status(401)),
         OperationsGet403.pipe(HttpApiSchema.status(403)),
         OperationsGet404.pipe(HttpApiSchema.status(404)),
@@ -161,6 +163,7 @@ export class OperationsGroup extends HttpApiGroup.make("Operations")
       params: OperationsRetryPathParams,
       success: OperationsRetry202.pipe(HttpApiSchema.status(202)),
       error: [
+        OperationsRetry400.pipe(HttpApiSchema.status(400)),
         OperationsRetry401.pipe(HttpApiSchema.status(401)),
         OperationsRetry403.pipe(HttpApiSchema.status(403)),
         OperationsRetry404.pipe(HttpApiSchema.status(404)),

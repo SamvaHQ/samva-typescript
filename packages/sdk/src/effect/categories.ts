@@ -29,6 +29,7 @@ import type {
   FromAddressRequiredError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   PaymentRequiredError,
   RateLimitedError,
   ResourceNotFoundError,
@@ -96,7 +97,7 @@ const isRetryableError = (error: unknown): boolean => {
 // `catch*` combinators — excluding a per-instance member would be unsound.
 type CategoryError = {
   readonly auth: UnauthorizedError | ForbiddenError;
-  readonly validation: ValidationError | FromAddressRequiredError;
+  readonly validation: ValidationError | MalformedRequestError | FromAddressRequiredError;
   readonly notFound: ResourceNotFoundError;
   readonly conflict: ConflictError;
   readonly throttling: RateLimitedError;

@@ -1,6 +1,7 @@
 import { expectTypeOf } from "@effect/vitest";
 import type { Effect } from "effect";
 
+import * as Analytics from "../../src/effect/analytics";
 import * as Campaigns from "../../src/effect/campaigns";
 import * as Client from "../../src/effect/client";
 import * as Contacts from "../../src/effect/contacts";
@@ -23,14 +24,68 @@ declare const promiseClient: SamvaClient;
 promiseClient.topics.list().then((page) => {
   expectTypeOf(page.items[0]!.subscriptions.email.subscribed).toEqualTypeOf<number>();
   expectTypeOf(page.items[0]!.subscriptions.email.unsubscribed).toEqualTypeOf<number>();
-  // @ts-expect-error phone channel fields stay outside the public SDK until launch.
-  void page.items[0]!.subscriptions.sms;
+  expectTypeOf(page.items[0]!.subscriptions.sms.subscribed).toEqualTypeOf<number>();
+  expectTypeOf(page.items[0]!.subscriptions.whatsapp.unsubscribed).toEqualTypeOf<number>();
 });
 declare const listedTopics: Effect.Success<ReturnType<typeof Topics.list>>;
 expectTypeOf(listedTopics.items[0]!.subscriptions.email.subscribed).toEqualTypeOf<number>();
 expectTypeOf(listedTopics.items[0]!.subscriptions.email.unsubscribed).toEqualTypeOf<number>();
-// @ts-expect-error phone channel fields stay outside the public SDK until launch.
-void listedTopics.items[0]!.subscriptions.whatsapp;
+expectTypeOf(listedTopics.items[0]!.subscriptions.sms.subscribed).toEqualTypeOf<number>();
+expectTypeOf(listedTopics.items[0]!.subscriptions.whatsapp.unsubscribed).toEqualTypeOf<number>();
+
+const phoneRecipient = { phone: "+14155552671" };
+const emailContent = { subject: "Hi", text: "Hello" };
+
+// @ts-expect-error email recipients cannot be phone identities.
+promiseClient.email.send({ ...emailContent, to: phoneRecipient });
+// @ts-expect-error email cc recipients cannot be phone identities.
+promiseClient.email.send({ ...emailContent, to: "ada@example.com", cc: phoneRecipient });
+// @ts-expect-error email bcc recipients cannot be phone identities.
+promiseClient.email.send({ ...emailContent, to: "ada@example.com", bcc: phoneRecipient });
+// @ts-expect-error this messages wrapper sends email and cannot take phone identities.
+promiseClient.messages.send({ channel: "email", email: emailContent, to: phoneRecipient });
+// @ts-expect-error email cc recipients cannot be phone identities.
+promiseClient.messages.send({
+  channel: "email",
+  email: emailContent,
+  to: "ada@example.com",
+  cc: phoneRecipient,
+});
+// @ts-expect-error email bcc recipients cannot be phone identities.
+promiseClient.messages.send({
+  channel: "email",
+  email: emailContent,
+  to: "ada@example.com",
+  bcc: phoneRecipient,
+});
+// @ts-expect-error email recipients cannot be phone identities.
+const phoneEmailTo = Email.send({ ...emailContent, to: phoneRecipient });
+void phoneEmailTo;
+// @ts-expect-error email cc recipients cannot be phone identities.
+const phoneEmailCc = Email.send({ ...emailContent, to: "ada@example.com", cc: phoneRecipient });
+void phoneEmailCc;
+// @ts-expect-error email bcc recipients cannot be phone identities.
+const phoneEmailBcc = Email.send({ ...emailContent, to: "ada@example.com", bcc: phoneRecipient });
+void phoneEmailBcc;
+// @ts-expect-error this messages wrapper sends email and cannot take phone identities.
+const phoneMessageTo = Messages.send({ channel: "email", email: emailContent, to: phoneRecipient });
+void phoneMessageTo;
+const phoneMessageCc = Messages.send({
+  channel: "email",
+  email: emailContent,
+  to: "ada@example.com",
+  // @ts-expect-error email cc recipients cannot be phone identities.
+  cc: phoneRecipient,
+});
+void phoneMessageCc;
+const phoneMessageBcc = Messages.send({
+  channel: "email",
+  email: emailContent,
+  to: "ada@example.com",
+  // @ts-expect-error email bcc recipients cannot be phone identities.
+  bcc: phoneRecipient,
+});
+void phoneMessageBcc;
 
 const payloadPromise = promiseClient.contacts.findOrCreate({
   lookup: { type: "email", value: "ada@example.com" },
@@ -117,6 +172,11 @@ promiseClient.raw.contacts.list({ cursor: "next" }, { throwOnError: true });
 
 // Pagination remains a wire-string contract on the Effect modules.
 const directEffects = [
+  Analytics.getStats({ after: new Date("2026-10-01T00:00:00Z") }),
+  Analytics.getChannelStats({ before: new Date("2026-10-01T00:00:00Z") }),
+  Analytics.getTopContacts({ after: new Date("2026-10-01T00:00:00Z") }),
+  Analytics.getHourlyDistribution({ before: new Date("2026-10-01T00:00:00Z") }),
+  Analytics.getDeliveryMetrics({ after: new Date("2026-10-01T00:00:00Z") }),
   Contacts.list({ cursor: "next", limit: 10 }),
   Contacts.list(),
   Email.listDomains(),

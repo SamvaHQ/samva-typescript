@@ -8,12 +8,12 @@ import {
   BillingProviderError,
   ConflictError,
   ContactId,
-  Cursor,
   EmailSenderId,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
   MailboxId,
+  MalformedRequestError,
   NamespaceId,
   PaymentRequiredError,
   ResourceNotFoundError,
@@ -25,10 +25,60 @@ import {
 } from "./shared";
 
 export type TopicSubscriptionCounts = {
+  readonly sms: { readonly subscribed: number; readonly unsubscribed: number };
+  readonly whatsapp: { readonly subscribed: number; readonly unsubscribed: number };
   readonly email: { readonly subscribed: number; readonly unsubscribed: number };
 };
 export const TopicSubscriptionCounts = /* @__PURE__ */ (() =>
   Schema.Struct({
+    sms: Schema.Struct({
+      subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+    whatsapp: Schema.Struct({
+      subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      unsubscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
     email: Schema.Struct({
       subscribed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
         .check(
@@ -71,7 +121,7 @@ export const TopicSetSubscriptionsResult = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "TopicSetSubscriptionsResult" }))();
 export type TopicSubscription = {
   readonly contactId: ContactId;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly status: "subscribed" | "unsubscribed";
   readonly source: string;
   readonly subscribedAt: string | null;
@@ -82,7 +132,11 @@ export type TopicSubscription = {
 export const TopicSubscription = /* @__PURE__ */ (() =>
   Schema.Struct({
     contactId: ContactId,
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     status: Schema.Union([Schema.Literal("subscribed"), Schema.Literal("unsubscribed")]),
     source: Schema.String,
     subscribedAt: Schema.Union([Schema.String, Schema.Null]),
@@ -92,7 +146,7 @@ export const TopicSubscription = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "TopicSubscription" }))();
 export type TopicSubscriptionCheck = {
   readonly contactId: ContactId | null;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly topics: ReadonlyArray<{
     readonly topicId: TopicId;
     readonly topicName: string;
@@ -102,7 +156,11 @@ export type TopicSubscriptionCheck = {
 export const TopicSubscriptionCheck = /* @__PURE__ */ (() =>
   Schema.Struct({
     contactId: Schema.Union([ContactId, Schema.Null]),
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     topics: Schema.Array(
       Schema.Struct({
         topicId: TopicId,
@@ -156,11 +214,13 @@ export const TopicList = /* @__PURE__ */ (() =>
       Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
     ),
   }).annotate({ identifier: "TopicList" }))();
-export type TopicsListQuery = { readonly namespaceId?: NamespaceId | null };
+export type TopicsListQuery = { readonly namespaceId?: NamespaceId };
 export const TopicsListQuery = /* @__PURE__ */ (() =>
-  Schema.Struct({ namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])) }))();
+  Schema.Struct({ namespaceId: Schema.optionalKey(NamespaceId) }))();
 export type TopicsList200 = TopicList;
 export const TopicsList200 = TopicList;
+export type TopicsList400 = MalformedRequestError;
+export const TopicsList400 = MalformedRequestError;
 export type TopicsList401 = UnauthorizedError;
 export const TopicsList401 = UnauthorizedError;
 export type TopicsList403 = ForbiddenError;
@@ -205,6 +265,8 @@ export const TopicsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type TopicsCreate201 = Topic;
 export const TopicsCreate201 = Topic;
+export type TopicsCreate400 = MalformedRequestError;
+export const TopicsCreate400 = MalformedRequestError;
 export type TopicsCreate401 = UnauthorizedError;
 export const TopicsCreate401 = UnauthorizedError;
 export type TopicsCreate403 = ForbiddenError;
@@ -223,6 +285,8 @@ export type TopicsGetPathParams = { readonly id: TopicId };
 export const TopicsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
 export type TopicsGet200 = Topic;
 export const TopicsGet200 = Topic;
+export type TopicsGet400 = MalformedRequestError;
+export const TopicsGet400 = MalformedRequestError;
 export type TopicsGet401 = UnauthorizedError;
 export const TopicsGet401 = UnauthorizedError;
 export type TopicsGet403 = ForbiddenError;
@@ -239,6 +303,8 @@ export type TopicsRemovePathParams = { readonly id: TopicId };
 export const TopicsRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
 export type TopicsRemove200 = { readonly success: boolean };
 export const TopicsRemove200 = /* @__PURE__ */ (() => Schema.Struct({ success: Schema.Boolean }))();
+export type TopicsRemove400 = MalformedRequestError;
+export const TopicsRemove400 = MalformedRequestError;
 export type TopicsRemove401 = UnauthorizedError;
 export const TopicsRemove401 = UnauthorizedError;
 export type TopicsRemove403 = ForbiddenError;
@@ -294,6 +360,8 @@ export const TopicsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type TopicsUpdate200 = Topic;
 export const TopicsUpdate200 = Topic;
+export type TopicsUpdate400 = MalformedRequestError;
+export const TopicsUpdate400 = MalformedRequestError;
 export type TopicsUpdate401 = UnauthorizedError;
 export const TopicsUpdate401 = UnauthorizedError;
 export type TopicsUpdate403 = ForbiddenError;
@@ -312,6 +380,8 @@ export type TopicsSetDefaultPathParams = { readonly id: TopicId };
 export const TopicsSetDefaultPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: TopicId }))();
 export type TopicsSetDefault200 = Topic;
 export const TopicsSetDefault200 = Topic;
+export type TopicsSetDefault400 = MalformedRequestError;
+export const TopicsSetDefault400 = MalformedRequestError;
 export type TopicsSetDefault401 = UnauthorizedError;
 export const TopicsSetDefault401 = UnauthorizedError;
 export type TopicsSetDefault403 = ForbiddenError;
@@ -329,9 +399,9 @@ export const TopicsListSubscriptionsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TopicId }))();
 export type TopicsListSubscriptionsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly channel?: "email" | null;
-  readonly status?: "subscribed" | "unsubscribed" | null;
+  readonly cursor?: string;
+  readonly channel?: "sms" | "whatsapp" | "email";
+  readonly status?: "subscribed" | "unsubscribed";
 };
 export const TopicsListSubscriptionsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -348,17 +418,18 @@ export const TopicsListSubscriptionsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    channel: Schema.optionalKey(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
     status: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("subscribed"), Schema.Literal("unsubscribed")]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Literal("subscribed"), Schema.Literal("unsubscribed")]),
     ),
   }))();
 export type TopicsListSubscriptions200 = TopicSubscriptionPage;
 export const TopicsListSubscriptions200 = TopicSubscriptionPage;
+export type TopicsListSubscriptions400 = MalformedRequestError;
+export const TopicsListSubscriptions400 = MalformedRequestError;
 export type TopicsListSubscriptions401 = UnauthorizedError;
 export const TopicsListSubscriptions401 = UnauthorizedError;
 export type TopicsListSubscriptions403 = ForbiddenError;
@@ -376,7 +447,7 @@ export const TopicsSetSubscriptionsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TopicId }))();
 export type TopicsSetSubscriptionsRequestJson = {
   readonly contacts: ReadonlyArray<TopicContactRef>;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly status: "subscribed" | "unsubscribed";
   readonly source?: string | null;
 };
@@ -387,7 +458,11 @@ export const TopicsSetSubscriptionsRequestJson = /* @__PURE__ */ (() =>
       .check(
         Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
       ),
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     status: Schema.Union([Schema.Literal("subscribed"), Schema.Literal("unsubscribed")]),
     source: Schema.optionalKey(
       Schema.Union([
@@ -408,6 +483,8 @@ export const TopicsSetSubscriptionsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type TopicsSetSubscriptions200 = TopicSetSubscriptionsResult;
 export const TopicsSetSubscriptions200 = TopicSetSubscriptionsResult;
+export type TopicsSetSubscriptions400 = MalformedRequestError;
+export const TopicsSetSubscriptions400 = MalformedRequestError;
 export type TopicsSetSubscriptions401 = UnauthorizedError;
 export const TopicsSetSubscriptions401 = UnauthorizedError;
 export type TopicsSetSubscriptions402 = PaymentRequiredError;
@@ -425,24 +502,30 @@ export const TopicsSetSubscriptions502 = BillingProviderError;
 export type TopicsSetSubscriptions504 = GatewayTimeoutError;
 export const TopicsSetSubscriptions504 = GatewayTimeoutError;
 export type TopicsCheckSubscriptionQuery = {
-  readonly contactId?: ContactId | null;
-  readonly email?: string | null;
-  readonly phone?: string | null;
-  readonly namespaceId?: NamespaceId | null;
-  readonly channel: "email";
-  readonly topicIds?: string | null;
+  readonly contactId?: ContactId;
+  readonly email?: string;
+  readonly phone?: string;
+  readonly namespaceId?: NamespaceId;
+  readonly channel: "sms" | "whatsapp" | "email";
+  readonly topicIds?: string;
 };
 export const TopicsCheckSubscriptionQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
-    email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    phone: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
-    channel: Schema.Literal("email"),
-    topicIds: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    contactId: Schema.optionalKey(ContactId),
+    email: Schema.optionalKey(Schema.String),
+    phone: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(NamespaceId),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
+    topicIds: Schema.optionalKey(Schema.String),
   }))();
 export type TopicsCheckSubscription200 = TopicSubscriptionCheck;
 export const TopicsCheckSubscription200 = TopicSubscriptionCheck;
+export type TopicsCheckSubscription400 = MalformedRequestError;
+export const TopicsCheckSubscription400 = MalformedRequestError;
 export type TopicsCheckSubscription401 = UnauthorizedError;
 export const TopicsCheckSubscription401 = UnauthorizedError;
 export type TopicsCheckSubscription403 = ForbiddenError;
@@ -462,6 +545,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       query: TopicsListQuery,
       success: TopicsList200,
       error: [
+        TopicsList400.pipe(HttpApiSchema.status(400)),
         TopicsList401.pipe(HttpApiSchema.status(401)),
         TopicsList403.pipe(HttpApiSchema.status(403)),
         TopicsList422.pipe(HttpApiSchema.status(422)),
@@ -480,6 +564,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       payload: TopicsCreateRequestJson,
       success: TopicsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        TopicsCreate400.pipe(HttpApiSchema.status(400)),
         TopicsCreate401.pipe(HttpApiSchema.status(401)),
         TopicsCreate403.pipe(HttpApiSchema.status(403)),
         TopicsCreate404.pipe(HttpApiSchema.status(404)),
@@ -500,6 +585,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       params: TopicsGetPathParams,
       success: TopicsGet200,
       error: [
+        TopicsGet400.pipe(HttpApiSchema.status(400)),
         TopicsGet401.pipe(HttpApiSchema.status(401)),
         TopicsGet403.pipe(HttpApiSchema.status(403)),
         TopicsGet404.pipe(HttpApiSchema.status(404)),
@@ -519,6 +605,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       params: TopicsRemovePathParams,
       success: TopicsRemove200,
       error: [
+        TopicsRemove400.pipe(HttpApiSchema.status(400)),
         TopicsRemove401.pipe(HttpApiSchema.status(401)),
         TopicsRemove403.pipe(HttpApiSchema.status(403)),
         TopicsRemove404.pipe(HttpApiSchema.status(404)),
@@ -540,6 +627,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       payload: TopicsUpdateRequestJson,
       success: TopicsUpdate200,
       error: [
+        TopicsUpdate400.pipe(HttpApiSchema.status(400)),
         TopicsUpdate401.pipe(HttpApiSchema.status(401)),
         TopicsUpdate403.pipe(HttpApiSchema.status(403)),
         TopicsUpdate404.pipe(HttpApiSchema.status(404)),
@@ -560,6 +648,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       params: TopicsSetDefaultPathParams,
       success: TopicsSetDefault200,
       error: [
+        TopicsSetDefault400.pipe(HttpApiSchema.status(400)),
         TopicsSetDefault401.pipe(HttpApiSchema.status(401)),
         TopicsSetDefault403.pipe(HttpApiSchema.status(403)),
         TopicsSetDefault404.pipe(HttpApiSchema.status(404)),
@@ -580,6 +669,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       query: TopicsListSubscriptionsQuery,
       success: TopicsListSubscriptions200,
       error: [
+        TopicsListSubscriptions400.pipe(HttpApiSchema.status(400)),
         TopicsListSubscriptions401.pipe(HttpApiSchema.status(401)),
         TopicsListSubscriptions403.pipe(HttpApiSchema.status(403)),
         TopicsListSubscriptions404.pipe(HttpApiSchema.status(404)),
@@ -600,6 +690,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       payload: TopicsSetSubscriptionsRequestJson,
       success: TopicsSetSubscriptions200,
       error: [
+        TopicsSetSubscriptions400.pipe(HttpApiSchema.status(400)),
         TopicsSetSubscriptions401.pipe(HttpApiSchema.status(401)),
         TopicsSetSubscriptions402.pipe(HttpApiSchema.status(402)),
         TopicsSetSubscriptions403.pipe(HttpApiSchema.status(403)),
@@ -621,6 +712,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       query: TopicsCheckSubscriptionQuery,
       success: TopicsCheckSubscription200,
       error: [
+        TopicsCheckSubscription400.pipe(HttpApiSchema.status(400)),
         TopicsCheckSubscription401.pipe(HttpApiSchema.status(401)),
         TopicsCheckSubscription403.pipe(HttpApiSchema.status(403)),
         TopicsCheckSubscription404.pipe(HttpApiSchema.status(404)),

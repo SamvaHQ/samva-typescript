@@ -9,6 +9,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   OrganizationId,
   UnauthorizedError,
   ValidationError,
@@ -70,6 +71,8 @@ export const Whoami = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "Whoami" }))();
 export type WhoamiGet200 = Whoami;
 export const WhoamiGet200 = Whoami;
+export type WhoamiGet400 = MalformedRequestError;
+export const WhoamiGet400 = MalformedRequestError;
 export type WhoamiGet401 = UnauthorizedError;
 export const WhoamiGet401 = UnauthorizedError;
 export type WhoamiGet403 = ForbiddenError;
@@ -86,6 +89,7 @@ export class WhoamiGroup extends HttpApiGroup.make("Whoami")
     HttpApiEndpoint.get("whoamiGet", "/v1/whoami", {
       success: WhoamiGet200,
       error: [
+        WhoamiGet400.pipe(HttpApiSchema.status(400)),
         WhoamiGet401.pipe(HttpApiSchema.status(401)),
         WhoamiGet403.pipe(HttpApiSchema.status(403)),
         WhoamiGet422.pipe(HttpApiSchema.status(422)),

@@ -8,6 +8,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   MediaId,
   OrganizationId,
   ResourceNotFoundError,
@@ -44,7 +45,7 @@ export type Media = {
   readonly width: number | null;
   readonly height: number | null;
   readonly durationMs: number | null;
-  readonly purpose: "attachment" | "avatar" | "review_evidence";
+  readonly purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
   readonly checksumSha256: string | null;
   readonly expiresAt: string | null;
   readonly createdAt: string;
@@ -92,6 +93,7 @@ export const Media = /* @__PURE__ */ (() =>
     purpose: Schema.Union([
       Schema.Literal("attachment"),
       Schema.Literal("avatar"),
+      Schema.Literal("whatsapp_media"),
       Schema.Literal("review_evidence"),
     ]),
     checksumSha256: Schema.Union([Schema.String, Schema.Null]),
@@ -109,7 +111,7 @@ export type CreatedMedia = {
   readonly width: number | null;
   readonly height: number | null;
   readonly durationMs: number | null;
-  readonly purpose: "attachment" | "avatar" | "review_evidence";
+  readonly purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
   readonly checksumSha256: string | null;
   readonly expiresAt: string | null;
   readonly createdAt: string;
@@ -158,6 +160,7 @@ export const CreatedMedia = /* @__PURE__ */ (() =>
     purpose: Schema.Union([
       Schema.Literal("attachment"),
       Schema.Literal("avatar"),
+      Schema.Literal("whatsapp_media"),
       Schema.Literal("review_evidence"),
     ]),
     checksumSha256: Schema.Union([Schema.String, Schema.Null]),
@@ -175,7 +178,7 @@ export type MediaCreateRequestJson = {
   readonly filename: string;
   readonly contentType: string;
   readonly sizeBytes: number;
-  readonly purpose: "attachment" | "avatar" | "review_evidence";
+  readonly purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
   readonly checksumSha256?: string | null;
 };
 export const MediaCreateRequestJson = /* @__PURE__ */ (() =>
@@ -208,12 +211,15 @@ export const MediaCreateRequestJson = /* @__PURE__ */ (() =>
     purpose: Schema.Union([
       Schema.Literal("attachment"),
       Schema.Literal("avatar"),
+      Schema.Literal("whatsapp_media"),
       Schema.Literal("review_evidence"),
     ]),
     checksumSha256: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
 export type MediaCreate201 = CreatedMedia;
 export const MediaCreate201 = CreatedMedia;
+export type MediaCreate400 = MalformedRequestError;
+export const MediaCreate400 = MalformedRequestError;
 export type MediaCreate401 = UnauthorizedError;
 export const MediaCreate401 = UnauthorizedError;
 export type MediaCreate403 = ForbiddenError;
@@ -228,6 +234,8 @@ export type MediaGetByIdPathParams = { readonly id: MediaId };
 export const MediaGetByIdPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaGetById200 = Media;
 export const MediaGetById200 = Media;
+export type MediaGetById400 = MalformedRequestError;
+export const MediaGetById400 = MalformedRequestError;
 export type MediaGetById401 = UnauthorizedError;
 export const MediaGetById401 = UnauthorizedError;
 export type MediaGetById403 = ForbiddenError;
@@ -244,6 +252,8 @@ export type MediaRemovePathParams = { readonly id: MediaId };
 export const MediaRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaRemove200 = SuccessResponse;
 export const MediaRemove200 = SuccessResponse;
+export type MediaRemove400 = MalformedRequestError;
+export const MediaRemove400 = MalformedRequestError;
 export type MediaRemove401 = UnauthorizedError;
 export const MediaRemove401 = UnauthorizedError;
 export type MediaRemove403 = ForbiddenError;
@@ -260,6 +270,8 @@ export type MediaCompletePathParams = { readonly id: MediaId };
 export const MediaCompletePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaComplete200 = CompletedMedia;
 export const MediaComplete200 = CompletedMedia;
+export type MediaComplete400 = MalformedRequestError;
+export const MediaComplete400 = MalformedRequestError;
 export type MediaComplete401 = UnauthorizedError;
 export const MediaComplete401 = UnauthorizedError;
 export type MediaComplete403 = ForbiddenError;
@@ -276,6 +288,8 @@ export type MediaDownloadUrlPathParams = { readonly id: MediaId };
 export const MediaDownloadUrlPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MediaId }))();
 export type MediaDownloadUrl200 = MediaDownloadUrl;
 export const MediaDownloadUrl200 = MediaDownloadUrl;
+export type MediaDownloadUrl400 = MalformedRequestError;
+export const MediaDownloadUrl400 = MalformedRequestError;
 export type MediaDownloadUrl401 = UnauthorizedError;
 export const MediaDownloadUrl401 = UnauthorizedError;
 export type MediaDownloadUrl403 = ForbiddenError;
@@ -295,6 +309,7 @@ export class MediaGroup extends HttpApiGroup.make("Media")
       payload: MediaCreateRequestJson,
       success: MediaCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        MediaCreate400.pipe(HttpApiSchema.status(400)),
         MediaCreate401.pipe(HttpApiSchema.status(401)),
         MediaCreate403.pipe(HttpApiSchema.status(403)),
         MediaCreate422.pipe(HttpApiSchema.status(422)),
@@ -313,6 +328,7 @@ export class MediaGroup extends HttpApiGroup.make("Media")
       params: MediaGetByIdPathParams,
       success: MediaGetById200,
       error: [
+        MediaGetById400.pipe(HttpApiSchema.status(400)),
         MediaGetById401.pipe(HttpApiSchema.status(401)),
         MediaGetById403.pipe(HttpApiSchema.status(403)),
         MediaGetById404.pipe(HttpApiSchema.status(404)),
@@ -332,6 +348,7 @@ export class MediaGroup extends HttpApiGroup.make("Media")
       params: MediaRemovePathParams,
       success: MediaRemove200,
       error: [
+        MediaRemove400.pipe(HttpApiSchema.status(400)),
         MediaRemove401.pipe(HttpApiSchema.status(401)),
         MediaRemove403.pipe(HttpApiSchema.status(403)),
         MediaRemove404.pipe(HttpApiSchema.status(404)),
@@ -351,6 +368,7 @@ export class MediaGroup extends HttpApiGroup.make("Media")
       params: MediaCompletePathParams,
       success: MediaComplete200,
       error: [
+        MediaComplete400.pipe(HttpApiSchema.status(400)),
         MediaComplete401.pipe(HttpApiSchema.status(401)),
         MediaComplete403.pipe(HttpApiSchema.status(403)),
         MediaComplete404.pipe(HttpApiSchema.status(404)),
@@ -370,6 +388,7 @@ export class MediaGroup extends HttpApiGroup.make("Media")
       params: MediaDownloadUrlPathParams,
       success: MediaDownloadUrl200,
       error: [
+        MediaDownloadUrl400.pipe(HttpApiSchema.status(400)),
         MediaDownloadUrl401.pipe(HttpApiSchema.status(401)),
         MediaDownloadUrl403.pipe(HttpApiSchema.status(403)),
         MediaDownloadUrl404.pipe(HttpApiSchema.status(404)),

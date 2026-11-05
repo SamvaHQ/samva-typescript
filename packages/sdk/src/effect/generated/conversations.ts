@@ -7,13 +7,13 @@ import {
   ApiKeySecurityMiddleware,
   ContactId,
   ConversationId,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
   JsonObject,
   JsonValue,
   MailboxId,
+  MalformedRequestError,
   MessagePage,
   ResourceNotFoundError,
   UnauthorizedError,
@@ -28,8 +28,8 @@ export type ConversationSummary = {
   readonly title: string | null;
   readonly externalId: string | null;
   readonly status: "active" | "waiting" | "resolved" | "escalated" | "archived";
-  readonly primaryChannel: "email";
-  readonly channels: ReadonlyArray<"email">;
+  readonly primaryChannel: "sms" | "whatsapp" | "email";
+  readonly channels: ReadonlyArray<"sms" | "whatsapp" | "email">;
   readonly priority: number;
   readonly urgency: "low" | "medium" | "high" | "critical";
   readonly tags: ReadonlyArray<string>;
@@ -50,8 +50,14 @@ export const ConversationSummary = /* @__PURE__ */ (() =>
       Schema.Literal("escalated"),
       Schema.Literal("archived"),
     ]),
-    primaryChannel: Schema.Literal("email"),
-    channels: Schema.Array(Schema.Literal("email")),
+    primaryChannel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
+    channels: Schema.Array(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
     priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(0).annotate({
@@ -156,8 +162,8 @@ export type Conversation = {
   readonly title: string | null;
   readonly externalId: string | null;
   readonly status: "active" | "waiting" | "resolved" | "escalated" | "archived";
-  readonly primaryChannel: "email";
-  readonly channels: ReadonlyArray<"email">;
+  readonly primaryChannel: "sms" | "whatsapp" | "email";
+  readonly channels: ReadonlyArray<"sms" | "whatsapp" | "email">;
   readonly priority: number;
   readonly urgency: "low" | "medium" | "high" | "critical";
   readonly tags: ReadonlyArray<string>;
@@ -201,8 +207,14 @@ export const Conversation = /* @__PURE__ */ (() =>
       Schema.Literal("escalated"),
       Schema.Literal("archived"),
     ]),
-    primaryChannel: Schema.Literal("email"),
-    channels: Schema.Array(Schema.Literal("email")),
+    primaryChannel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
+    channels: Schema.Array(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
     priority: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(0).annotate({
@@ -268,13 +280,13 @@ export const Conversation = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "Conversation" }))();
 export type ConversationsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null;
-  readonly channel?: "email" | null;
-  readonly contactId?: ContactId | null;
-  readonly mailboxId?: MailboxId | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived";
+  readonly channel?: "sms" | "whatsapp" | "email";
+  readonly contactId?: ContactId;
+  readonly mailboxId?: MailboxId;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const ConversationsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -291,27 +303,28 @@ export const ConversationsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("active"),
-          Schema.Literal("waiting"),
-          Schema.Literal("resolved"),
-          Schema.Literal("escalated"),
-          Schema.Literal("archived"),
-        ]),
-        Schema.Null,
+        Schema.Literal("active"),
+        Schema.Literal("waiting"),
+        Schema.Literal("resolved"),
+        Schema.Literal("escalated"),
+        Schema.Literal("archived"),
       ]),
     ),
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-    contactId: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
-    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    channel: Schema.optionalKey(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
+    contactId: Schema.optionalKey(ContactId),
+    mailboxId: Schema.optionalKey(MailboxId),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type ConversationsList200 = ConversationPage;
 export const ConversationsList200 = ConversationPage;
+export type ConversationsList400 = MalformedRequestError;
+export const ConversationsList400 = MalformedRequestError;
 export type ConversationsList401 = UnauthorizedError;
 export const ConversationsList401 = UnauthorizedError;
 export type ConversationsList403 = ForbiddenError;
@@ -327,8 +340,8 @@ export type ConversationsCreateRequestJson = {
   readonly description?: string | null;
   readonly externalId?: string | null;
   readonly parentConversationId?: ConversationId | null;
-  readonly channels: ReadonlyArray<"email">;
-  readonly primaryChannel: "email";
+  readonly channels: ReadonlyArray<"sms" | "whatsapp" | "email">;
+  readonly primaryChannel: "sms" | "whatsapp" | "email";
   readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null;
   readonly statusReason?: string | null;
   readonly priority?: number | null;
@@ -348,8 +361,14 @@ export const ConversationsCreateRequestJson = /* @__PURE__ */ (() =>
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     parentConversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    channels: Schema.Array(Schema.Literal("email")),
-    primaryChannel: Schema.Literal("email"),
+    channels: Schema.Array(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
+    primaryChannel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     status: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -410,6 +429,8 @@ export const ConversationsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ConversationsCreate201 = Conversation;
 export const ConversationsCreate201 = Conversation;
+export type ConversationsCreate400 = MalformedRequestError;
+export const ConversationsCreate400 = MalformedRequestError;
 export type ConversationsCreate401 = UnauthorizedError;
 export const ConversationsCreate401 = UnauthorizedError;
 export type ConversationsCreate403 = ForbiddenError;
@@ -425,6 +446,8 @@ export const ConversationsGetByIdPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ConversationId }))();
 export type ConversationsGetById200 = Conversation;
 export const ConversationsGetById200 = Conversation;
+export type ConversationsGetById400 = MalformedRequestError;
+export const ConversationsGetById400 = MalformedRequestError;
 export type ConversationsGetById401 = UnauthorizedError;
 export const ConversationsGetById401 = UnauthorizedError;
 export type ConversationsGetById403 = ForbiddenError;
@@ -445,7 +468,7 @@ export type ConversationsUpdateRequestJson = {
   readonly description?: string | null;
   readonly externalId?: string | null;
   readonly parentConversationId?: ConversationId | null;
-  readonly primaryChannel?: "email" | null;
+  readonly primaryChannel?: "sms" | "whatsapp" | "email" | null;
   readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null;
   readonly statusReason?: string | null;
   readonly priority?: number | null;
@@ -463,7 +486,12 @@ export const ConversationsUpdateRequestJson = /* @__PURE__ */ (() =>
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     parentConversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    primaryChannel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    primaryChannel: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+        Schema.Null,
+      ]),
+    ),
     status: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -522,6 +550,8 @@ export const ConversationsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ConversationsUpdate200 = Conversation;
 export const ConversationsUpdate200 = Conversation;
+export type ConversationsUpdate400 = MalformedRequestError;
+export const ConversationsUpdate400 = MalformedRequestError;
 export type ConversationsUpdate401 = UnauthorizedError;
 export const ConversationsUpdate401 = UnauthorizedError;
 export type ConversationsUpdate403 = ForbiddenError;
@@ -546,6 +576,8 @@ export const ConversationsAddCategoriesRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ConversationsAddCategories200 = Conversation;
 export const ConversationsAddCategories200 = Conversation;
+export type ConversationsAddCategories400 = MalformedRequestError;
+export const ConversationsAddCategories400 = MalformedRequestError;
 export type ConversationsAddCategories401 = UnauthorizedError;
 export const ConversationsAddCategories401 = UnauthorizedError;
 export type ConversationsAddCategories403 = ForbiddenError;
@@ -570,6 +602,8 @@ export const ConversationsRemoveCategoriesRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ConversationsRemoveCategories200 = Conversation;
 export const ConversationsRemoveCategories200 = Conversation;
+export type ConversationsRemoveCategories400 = MalformedRequestError;
+export const ConversationsRemoveCategories400 = MalformedRequestError;
 export type ConversationsRemoveCategories401 = UnauthorizedError;
 export const ConversationsRemoveCategories401 = UnauthorizedError;
 export type ConversationsRemoveCategories403 = ForbiddenError;
@@ -586,16 +620,24 @@ export type ConversationsAddChannelsPathParams = { readonly id: ConversationId }
 export const ConversationsAddChannelsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ConversationId }))();
 export type ConversationsAddChannelsRequestJson = {
-  readonly channels: readonly ["email", ...Array<"email">];
+  readonly channels: readonly [
+    "sms" | "whatsapp" | "email",
+    ...Array<"sms" | "whatsapp" | "email">,
+  ];
 };
 export const ConversationsAddChannelsRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    channels: Schema.TupleWithRest(Schema.Tuple([Schema.Literal("email")]), [
-      Schema.Literal("email"),
-    ]),
+    channels: Schema.TupleWithRest(
+      Schema.Tuple([
+        Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+      ]),
+      [Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")])],
+    ),
   }))();
 export type ConversationsAddChannels200 = Conversation;
 export const ConversationsAddChannels200 = Conversation;
+export type ConversationsAddChannels400 = MalformedRequestError;
+export const ConversationsAddChannels400 = MalformedRequestError;
 export type ConversationsAddChannels401 = UnauthorizedError;
 export const ConversationsAddChannels401 = UnauthorizedError;
 export type ConversationsAddChannels403 = ForbiddenError;
@@ -612,16 +654,24 @@ export type ConversationsRemoveChannelsPathParams = { readonly id: ConversationI
 export const ConversationsRemoveChannelsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ConversationId }))();
 export type ConversationsRemoveChannelsRequestJson = {
-  readonly channels: readonly ["email", ...Array<"email">];
+  readonly channels: readonly [
+    "sms" | "whatsapp" | "email",
+    ...Array<"sms" | "whatsapp" | "email">,
+  ];
 };
 export const ConversationsRemoveChannelsRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    channels: Schema.TupleWithRest(Schema.Tuple([Schema.Literal("email")]), [
-      Schema.Literal("email"),
-    ]),
+    channels: Schema.TupleWithRest(
+      Schema.Tuple([
+        Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+      ]),
+      [Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")])],
+    ),
   }))();
 export type ConversationsRemoveChannels200 = Conversation;
 export const ConversationsRemoveChannels200 = Conversation;
+export type ConversationsRemoveChannels400 = MalformedRequestError;
+export const ConversationsRemoveChannels400 = MalformedRequestError;
 export type ConversationsRemoveChannels401 = UnauthorizedError;
 export const ConversationsRemoveChannels401 = UnauthorizedError;
 export type ConversationsRemoveChannels403 = ForbiddenError;
@@ -648,6 +698,8 @@ export const ConversationsAddContactsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ConversationsAddContacts200 = Conversation;
 export const ConversationsAddContacts200 = Conversation;
+export type ConversationsAddContacts400 = MalformedRequestError;
+export const ConversationsAddContacts400 = MalformedRequestError;
 export type ConversationsAddContacts401 = UnauthorizedError;
 export const ConversationsAddContacts401 = UnauthorizedError;
 export type ConversationsAddContacts403 = ForbiddenError;
@@ -674,6 +726,8 @@ export const ConversationsRemoveContactsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ConversationsRemoveContacts200 = Conversation;
 export const ConversationsRemoveContacts200 = Conversation;
+export type ConversationsRemoveContacts400 = MalformedRequestError;
+export const ConversationsRemoveContacts400 = MalformedRequestError;
 export type ConversationsRemoveContacts401 = UnauthorizedError;
 export const ConversationsRemoveContacts401 = UnauthorizedError;
 export type ConversationsRemoveContacts403 = ForbiddenError;
@@ -691,9 +745,9 @@ export const ConversationsListMessagesPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ConversationId }))();
 export type ConversationsListMessagesQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const ConversationsListMessagesQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -710,12 +764,14 @@ export const ConversationsListMessagesQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type ConversationsListMessages200 = MessagePage;
 export const ConversationsListMessages200 = MessagePage;
+export type ConversationsListMessages400 = MalformedRequestError;
+export const ConversationsListMessages400 = MalformedRequestError;
 export type ConversationsListMessages401 = UnauthorizedError;
 export const ConversationsListMessages401 = UnauthorizedError;
 export type ConversationsListMessages403 = ForbiddenError;
@@ -738,6 +794,8 @@ export const ConversationsAddTagsRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ConversationsAddTags200 = Conversation;
 export const ConversationsAddTags200 = Conversation;
+export type ConversationsAddTags400 = MalformedRequestError;
+export const ConversationsAddTags400 = MalformedRequestError;
 export type ConversationsAddTags401 = UnauthorizedError;
 export const ConversationsAddTags401 = UnauthorizedError;
 export type ConversationsAddTags403 = ForbiddenError;
@@ -760,6 +818,8 @@ export const ConversationsRemoveTagsRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ tags: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]) }))();
 export type ConversationsRemoveTags200 = Conversation;
 export const ConversationsRemoveTags200 = Conversation;
+export type ConversationsRemoveTags400 = MalformedRequestError;
+export const ConversationsRemoveTags400 = MalformedRequestError;
 export type ConversationsRemoveTags401 = UnauthorizedError;
 export const ConversationsRemoveTags401 = UnauthorizedError;
 export type ConversationsRemoveTags403 = ForbiddenError;
@@ -779,6 +839,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       query: ConversationsListQuery,
       success: ConversationsList200,
       error: [
+        ConversationsList400.pipe(HttpApiSchema.status(400)),
         ConversationsList401.pipe(HttpApiSchema.status(401)),
         ConversationsList403.pipe(HttpApiSchema.status(403)),
         ConversationsList422.pipe(HttpApiSchema.status(422)),
@@ -797,6 +858,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsCreateRequestJson,
       success: ConversationsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        ConversationsCreate400.pipe(HttpApiSchema.status(400)),
         ConversationsCreate401.pipe(HttpApiSchema.status(401)),
         ConversationsCreate403.pipe(HttpApiSchema.status(403)),
         ConversationsCreate422.pipe(HttpApiSchema.status(422)),
@@ -815,6 +877,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       params: ConversationsGetByIdPathParams,
       success: ConversationsGetById200,
       error: [
+        ConversationsGetById400.pipe(HttpApiSchema.status(400)),
         ConversationsGetById401.pipe(HttpApiSchema.status(401)),
         ConversationsGetById403.pipe(HttpApiSchema.status(403)),
         ConversationsGetById404.pipe(HttpApiSchema.status(404)),
@@ -835,6 +898,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsUpdateRequestJson,
       success: ConversationsUpdate200,
       error: [
+        ConversationsUpdate400.pipe(HttpApiSchema.status(400)),
         ConversationsUpdate401.pipe(HttpApiSchema.status(401)),
         ConversationsUpdate403.pipe(HttpApiSchema.status(403)),
         ConversationsUpdate404.pipe(HttpApiSchema.status(404)),
@@ -855,6 +919,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsAddCategoriesRequestJson,
       success: ConversationsAddCategories200,
       error: [
+        ConversationsAddCategories400.pipe(HttpApiSchema.status(400)),
         ConversationsAddCategories401.pipe(HttpApiSchema.status(401)),
         ConversationsAddCategories403.pipe(HttpApiSchema.status(403)),
         ConversationsAddCategories404.pipe(HttpApiSchema.status(404)),
@@ -875,6 +940,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsRemoveCategoriesRequestJson,
       success: ConversationsRemoveCategories200,
       error: [
+        ConversationsRemoveCategories400.pipe(HttpApiSchema.status(400)),
         ConversationsRemoveCategories401.pipe(HttpApiSchema.status(401)),
         ConversationsRemoveCategories403.pipe(HttpApiSchema.status(403)),
         ConversationsRemoveCategories404.pipe(HttpApiSchema.status(404)),
@@ -895,6 +961,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsAddChannelsRequestJson,
       success: ConversationsAddChannels200,
       error: [
+        ConversationsAddChannels400.pipe(HttpApiSchema.status(400)),
         ConversationsAddChannels401.pipe(HttpApiSchema.status(401)),
         ConversationsAddChannels403.pipe(HttpApiSchema.status(403)),
         ConversationsAddChannels404.pipe(HttpApiSchema.status(404)),
@@ -915,6 +982,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsRemoveChannelsRequestJson,
       success: ConversationsRemoveChannels200,
       error: [
+        ConversationsRemoveChannels400.pipe(HttpApiSchema.status(400)),
         ConversationsRemoveChannels401.pipe(HttpApiSchema.status(401)),
         ConversationsRemoveChannels403.pipe(HttpApiSchema.status(403)),
         ConversationsRemoveChannels404.pipe(HttpApiSchema.status(404)),
@@ -935,6 +1003,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsAddContactsRequestJson,
       success: ConversationsAddContacts200,
       error: [
+        ConversationsAddContacts400.pipe(HttpApiSchema.status(400)),
         ConversationsAddContacts401.pipe(HttpApiSchema.status(401)),
         ConversationsAddContacts403.pipe(HttpApiSchema.status(403)),
         ConversationsAddContacts404.pipe(HttpApiSchema.status(404)),
@@ -955,6 +1024,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsRemoveContactsRequestJson,
       success: ConversationsRemoveContacts200,
       error: [
+        ConversationsRemoveContacts400.pipe(HttpApiSchema.status(400)),
         ConversationsRemoveContacts401.pipe(HttpApiSchema.status(401)),
         ConversationsRemoveContacts403.pipe(HttpApiSchema.status(403)),
         ConversationsRemoveContacts404.pipe(HttpApiSchema.status(404)),
@@ -975,6 +1045,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       query: ConversationsListMessagesQuery,
       success: ConversationsListMessages200,
       error: [
+        ConversationsListMessages400.pipe(HttpApiSchema.status(400)),
         ConversationsListMessages401.pipe(HttpApiSchema.status(401)),
         ConversationsListMessages403.pipe(HttpApiSchema.status(403)),
         ConversationsListMessages404.pipe(HttpApiSchema.status(404)),
@@ -995,6 +1066,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsAddTagsRequestJson,
       success: ConversationsAddTags200,
       error: [
+        ConversationsAddTags400.pipe(HttpApiSchema.status(400)),
         ConversationsAddTags401.pipe(HttpApiSchema.status(401)),
         ConversationsAddTags403.pipe(HttpApiSchema.status(403)),
         ConversationsAddTags404.pipe(HttpApiSchema.status(404)),
@@ -1015,6 +1087,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
       payload: ConversationsRemoveTagsRequestJson,
       success: ConversationsRemoveTags200,
       error: [
+        ConversationsRemoveTags400.pipe(HttpApiSchema.status(400)),
         ConversationsRemoveTags401.pipe(HttpApiSchema.status(401)),
         ConversationsRemoveTags403.pipe(HttpApiSchema.status(403)),
         ConversationsRemoveTags404.pipe(HttpApiSchema.status(404)),

@@ -9,19 +9,20 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   UnauthorizedError,
   ValidationError,
   __SamvaRuntimeAbsoluteInstant,
 } from "./shared";
 
 export type AnalyticsGetChannelStatsQuery = {
-  readonly after?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly before?: __SamvaRuntimeAbsoluteInstant | null;
+  readonly after?: __SamvaRuntimeAbsoluteInstant;
+  readonly before?: __SamvaRuntimeAbsoluteInstant;
 };
 export const AnalyticsGetChannelStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
+    before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
   }))();
 export type AnalyticsGetChannelStats200 = {
   readonly email: {
@@ -34,6 +35,19 @@ export type AnalyticsGetChannelStats200 = {
     readonly clickTrackingEligibleDeliveredMessages: number;
     readonly uniqueMessageClickRate: number;
     readonly bounceRate: number;
+  };
+  readonly whatsapp: {
+    readonly sent: number;
+    readonly deliveryRate: number;
+    readonly readRate: number;
+    readonly failureRate: number;
+    readonly avgResponseTime: number;
+  };
+  readonly sms: {
+    readonly sent: number;
+    readonly deliveryRate: number;
+    readonly failureRate: number;
+    readonly totalSegments: number;
   };
 };
 export const AnalyticsGetChannelStats200 = /* @__PURE__ */ (() =>
@@ -111,9 +125,63 @@ export const AnalyticsGetChannelStats200 = /* @__PURE__ */ (() =>
       ),
       bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
     }),
+    whatsapp: Schema.Struct({
+      sent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      deliveryRate: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
+      ),
+      readRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      failureRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      avgResponseTime: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
+      ).check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      ),
+    }),
+    sms: Schema.Struct({
+      sent: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      deliveryRate: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
+      ),
+      failureRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      totalSegments: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
   }))();
-export type AnalyticsGetChannelStats400 = AnalyticsQueryError;
-export const AnalyticsGetChannelStats400 = AnalyticsQueryError;
+export type AnalyticsGetChannelStats400 = AnalyticsQueryError | MalformedRequestError;
+export const AnalyticsGetChannelStats400 = /* @__PURE__ */ (() =>
+  Schema.Union([AnalyticsQueryError, MalformedRequestError]))();
 export type AnalyticsGetChannelStats401 = UnauthorizedError;
 export const AnalyticsGetChannelStats401 = UnauthorizedError;
 export type AnalyticsGetChannelStats403 = ForbiddenError;
@@ -125,15 +193,17 @@ export const AnalyticsGetChannelStats500 = InternalError;
 export type AnalyticsGetChannelStats504 = GatewayTimeoutError;
 export const AnalyticsGetChannelStats504 = GatewayTimeoutError;
 export type AnalyticsGetDeliveryMetricsQuery = {
-  readonly after?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly before?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly channel?: "email" | null;
+  readonly after?: __SamvaRuntimeAbsoluteInstant;
+  readonly before?: __SamvaRuntimeAbsoluteInstant;
+  readonly channel?: "sms" | "whatsapp" | "email";
 };
 export const AnalyticsGetDeliveryMetricsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
+    before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
+    channel: Schema.optionalKey(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
   }))();
 export type AnalyticsGetDeliveryMetrics200 = {
   readonly deliveredRate: number;
@@ -150,8 +220,9 @@ export const AnalyticsGetDeliveryMetrics200 = /* @__PURE__ */ (() =>
       Schema.isFinite().annotate({ expected: "a finite number" }),
     ),
   }))();
-export type AnalyticsGetDeliveryMetrics400 = AnalyticsQueryError;
-export const AnalyticsGetDeliveryMetrics400 = AnalyticsQueryError;
+export type AnalyticsGetDeliveryMetrics400 = AnalyticsQueryError | MalformedRequestError;
+export const AnalyticsGetDeliveryMetrics400 = /* @__PURE__ */ (() =>
+  Schema.Union([AnalyticsQueryError, MalformedRequestError]))();
 export type AnalyticsGetDeliveryMetrics401 = UnauthorizedError;
 export const AnalyticsGetDeliveryMetrics401 = UnauthorizedError;
 export type AnalyticsGetDeliveryMetrics403 = ForbiddenError;
@@ -166,7 +237,7 @@ export type AnalyticsExportDataRequestJson = {
   readonly after: __SamvaRuntimeAbsoluteInstant;
   readonly before: __SamvaRuntimeAbsoluteInstant;
   readonly format?: "csv" | "json" | null;
-  readonly includeChannels?: ReadonlyArray<"email"> | null;
+  readonly includeChannels?: ReadonlyArray<"sms" | "whatsapp" | "email"> | null;
 };
 export const AnalyticsExportDataRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -176,7 +247,16 @@ export const AnalyticsExportDataRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([Schema.Union([Schema.Literal("csv"), Schema.Literal("json")]), Schema.Null]),
     ),
     includeChannels: Schema.optionalKey(
-      Schema.Union([Schema.Array(Schema.Literal("email")), Schema.Null]),
+      Schema.Union([
+        Schema.Array(
+          Schema.Union([
+            Schema.Literal("sms"),
+            Schema.Literal("whatsapp"),
+            Schema.Literal("email"),
+          ]),
+        ),
+        Schema.Null,
+      ]),
     ),
   }))();
 export type AnalyticsExportData200 = {
@@ -186,8 +266,9 @@ export type AnalyticsExportData200 = {
 };
 export const AnalyticsExportData200 = /* @__PURE__ */ (() =>
   Schema.Struct({ content: Schema.String, mimeType: Schema.String, filename: Schema.String }))();
-export type AnalyticsExportData400 = AnalyticsQueryError;
-export const AnalyticsExportData400 = AnalyticsQueryError;
+export type AnalyticsExportData400 = AnalyticsQueryError | MalformedRequestError;
+export const AnalyticsExportData400 = /* @__PURE__ */ (() =>
+  Schema.Union([AnalyticsQueryError, MalformedRequestError]))();
 export type AnalyticsExportData401 = UnauthorizedError;
 export const AnalyticsExportData401 = UnauthorizedError;
 export type AnalyticsExportData403 = ForbiddenError;
@@ -199,13 +280,13 @@ export const AnalyticsExportData500 = InternalError;
 export type AnalyticsExportData504 = GatewayTimeoutError;
 export const AnalyticsExportData504 = GatewayTimeoutError;
 export type AnalyticsGetHourlyDistributionQuery = {
-  readonly after?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly before?: __SamvaRuntimeAbsoluteInstant | null;
+  readonly after?: __SamvaRuntimeAbsoluteInstant;
+  readonly before?: __SamvaRuntimeAbsoluteInstant;
 };
 export const AnalyticsGetHourlyDistributionQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
+    before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
   }))();
 export type AnalyticsGetHourlyDistribution200 = ReadonlyArray<{
   readonly hour: string;
@@ -228,8 +309,9 @@ export const AnalyticsGetHourlyDistribution200 = /* @__PURE__ */ (() =>
         ),
     }),
   ))();
-export type AnalyticsGetHourlyDistribution400 = AnalyticsQueryError;
-export const AnalyticsGetHourlyDistribution400 = AnalyticsQueryError;
+export type AnalyticsGetHourlyDistribution400 = AnalyticsQueryError | MalformedRequestError;
+export const AnalyticsGetHourlyDistribution400 = /* @__PURE__ */ (() =>
+  Schema.Union([AnalyticsQueryError, MalformedRequestError]))();
 export type AnalyticsGetHourlyDistribution401 = UnauthorizedError;
 export const AnalyticsGetHourlyDistribution401 = UnauthorizedError;
 export type AnalyticsGetHourlyDistribution403 = ForbiddenError;
@@ -241,25 +323,29 @@ export const AnalyticsGetHourlyDistribution500 = InternalError;
 export type AnalyticsGetHourlyDistribution504 = GatewayTimeoutError;
 export const AnalyticsGetHourlyDistribution504 = GatewayTimeoutError;
 export type AnalyticsGetStatsQuery = {
-  readonly after?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly before?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly groupBy?: "day" | "week" | "month" | null;
-  readonly channel?: "email" | null;
+  readonly after?: __SamvaRuntimeAbsoluteInstant;
+  readonly before?: __SamvaRuntimeAbsoluteInstant;
+  readonly groupBy?: "day" | "week" | "month";
+  readonly channel?: "sms" | "whatsapp" | "email";
 };
 export const AnalyticsGetStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
+    before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     groupBy: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("day"), Schema.Literal("week"), Schema.Literal("month")]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Literal("day"), Schema.Literal("week"), Schema.Literal("month")]),
     ),
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
+    channel: Schema.optionalKey(
+      Schema.Union([Schema.Literal("sms"), Schema.Literal("whatsapp"), Schema.Literal("email")]),
+    ),
   }))();
 export type AnalyticsGetStats200 = {
-  readonly volumeHistory: ReadonlyArray<{ readonly date: string; readonly email: number }>;
+  readonly volumeHistory: ReadonlyArray<{
+    readonly date: string;
+    readonly email: number;
+    readonly whatsapp: number;
+    readonly sms: number;
+  }>;
 };
 export const AnalyticsGetStats200 = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -277,11 +363,34 @@ export const AnalyticsGetStats200 = /* @__PURE__ */ (() =>
               expected: "a value less than or equal to 9007199254740991",
             }),
           ),
+        whatsapp: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        sms: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
       }),
     ),
   }))();
-export type AnalyticsGetStats400 = AnalyticsQueryError;
-export const AnalyticsGetStats400 = AnalyticsQueryError;
+export type AnalyticsGetStats400 = AnalyticsQueryError | MalformedRequestError;
+export const AnalyticsGetStats400 = /* @__PURE__ */ (() =>
+  Schema.Union([AnalyticsQueryError, MalformedRequestError]))();
 export type AnalyticsGetStats401 = UnauthorizedError;
 export const AnalyticsGetStats401 = UnauthorizedError;
 export type AnalyticsGetStats403 = ForbiddenError;
@@ -293,15 +402,15 @@ export const AnalyticsGetStats500 = InternalError;
 export type AnalyticsGetStats504 = GatewayTimeoutError;
 export const AnalyticsGetStats504 = GatewayTimeoutError;
 export type AnalyticsGetTopContactsQuery = {
-  readonly after?: __SamvaRuntimeAbsoluteInstant | null;
-  readonly before?: __SamvaRuntimeAbsoluteInstant | null;
+  readonly after?: __SamvaRuntimeAbsoluteInstant;
+  readonly before?: __SamvaRuntimeAbsoluteInstant;
   readonly limit?: number | null;
-  readonly sortBy?: "sent" | "received" | "total" | null;
+  readonly sortBy?: "sent" | "received" | "total";
 };
 export const AnalyticsGetTopContactsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([__SamvaRuntimeAbsoluteInstant, Schema.Null])),
+    after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
+    before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
@@ -315,10 +424,7 @@ export const AnalyticsGetTopContactsQuery = /* @__PURE__ */ (() =>
       ]),
     ),
     sortBy: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("sent"), Schema.Literal("received"), Schema.Literal("total")]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Literal("sent"), Schema.Literal("received"), Schema.Literal("total")]),
     ),
   }))();
 export type AnalyticsGetTopContacts200 = ReadonlyArray<{
@@ -348,8 +454,9 @@ export const AnalyticsGetTopContacts200 = /* @__PURE__ */ (() =>
         ),
     }),
   ))();
-export type AnalyticsGetTopContacts400 = AnalyticsQueryError;
-export const AnalyticsGetTopContacts400 = AnalyticsQueryError;
+export type AnalyticsGetTopContacts400 = AnalyticsQueryError | MalformedRequestError;
+export const AnalyticsGetTopContacts400 = /* @__PURE__ */ (() =>
+  Schema.Union([AnalyticsQueryError, MalformedRequestError]))();
 export type AnalyticsGetTopContacts401 = UnauthorizedError;
 export const AnalyticsGetTopContacts401 = UnauthorizedError;
 export type AnalyticsGetTopContacts403 = ForbiddenError;

@@ -12,6 +12,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   ResourceNotFoundError,
   SuccessResponse,
   UnauthorizedError,
@@ -21,7 +22,7 @@ import {
 export type BrandId = string & EffectBrand.Brand<"BrandId">;
 export const BrandId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^brand_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^brand_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^brand_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "BrandId",
     }),
@@ -44,7 +45,9 @@ export const Brand = /* @__PURE__ */ (() =>
     slug: Schema.String.annotate({
       description: "The brand's handle, unique in the organization; `samva:brand/<slug>` names it.",
     }).check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+      Schema.isPattern(
+        new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+      ).annotate({
         expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       }),
     ),
@@ -70,6 +73,8 @@ export const BrandList = /* @__PURE__ */ (() =>
   Schema.Struct({ items: Schema.Array(Brand) }).annotate({ identifier: "BrandList" }))();
 export type BrandsList200 = BrandList;
 export const BrandsList200 = BrandList;
+export type BrandsList400 = MalformedRequestError;
+export const BrandsList400 = MalformedRequestError;
 export type BrandsList401 = UnauthorizedError;
 export const BrandsList401 = UnauthorizedError;
 export type BrandsList403 = ForbiddenError;
@@ -91,7 +96,9 @@ export type BrandsCreateRequestJson = {
 export const BrandsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+      Schema.isPattern(
+        new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+      ).annotate({
         expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       }),
     ),
@@ -124,6 +131,8 @@ export const BrandsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type BrandsCreate201 = Brand;
 export const BrandsCreate201 = Brand;
+export type BrandsCreate400 = MalformedRequestError;
+export const BrandsCreate400 = MalformedRequestError;
 export type BrandsCreate401 = UnauthorizedError;
 export const BrandsCreate401 = UnauthorizedError;
 export type BrandsCreate403 = ForbiddenError;
@@ -140,13 +149,17 @@ export type BrandsGetPathParams = { readonly slug: string };
 export const BrandsGetPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+      Schema.isPattern(
+        new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+      ).annotate({
         expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       }),
     ),
   }))();
 export type BrandsGet200 = Brand;
 export const BrandsGet200 = Brand;
+export type BrandsGet400 = MalformedRequestError;
+export const BrandsGet400 = MalformedRequestError;
 export type BrandsGet401 = UnauthorizedError;
 export const BrandsGet401 = UnauthorizedError;
 export type BrandsGet403 = ForbiddenError;
@@ -163,13 +176,17 @@ export type BrandsRemovePathParams = { readonly slug: string };
 export const BrandsRemovePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+      Schema.isPattern(
+        new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+      ).annotate({
         expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       }),
     ),
   }))();
 export type BrandsRemove200 = SuccessResponse;
 export const BrandsRemove200 = SuccessResponse;
+export type BrandsRemove400 = MalformedRequestError;
+export const BrandsRemove400 = MalformedRequestError;
 export type BrandsRemove401 = UnauthorizedError;
 export const BrandsRemove401 = UnauthorizedError;
 export type BrandsRemove403 = ForbiddenError;
@@ -188,7 +205,9 @@ export type BrandsUpdatePathParams = { readonly slug: string };
 export const BrandsUpdatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+      Schema.isPattern(
+        new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+      ).annotate({
         expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       }),
     ),
@@ -208,7 +227,9 @@ export const BrandsUpdateRequestJson = /* @__PURE__ */ (() =>
           description:
             "Renames the brand. Projects importing `samva:brand/<old slug>` stop building until they import the new slug.",
         }).check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
           }),
         ),
@@ -250,6 +271,8 @@ export const BrandsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type BrandsUpdate200 = Brand;
 export const BrandsUpdate200 = Brand;
+export type BrandsUpdate400 = MalformedRequestError;
+export const BrandsUpdate400 = MalformedRequestError;
 export type BrandsUpdate401 = UnauthorizedError;
 export const BrandsUpdate401 = UnauthorizedError;
 export type BrandsUpdate403 = ForbiddenError;
@@ -268,13 +291,17 @@ export type BrandsSetDefaultPathParams = { readonly slug: string };
 export const BrandsSetDefaultPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({
     slug: Schema.String.check(
-      Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+      Schema.isPattern(
+        new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+      ).annotate({
         expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       }),
     ),
   }))();
 export type BrandsSetDefault200 = Brand;
 export const BrandsSetDefault200 = Brand;
+export type BrandsSetDefault400 = MalformedRequestError;
+export const BrandsSetDefault400 = MalformedRequestError;
 export type BrandsSetDefault401 = UnauthorizedError;
 export const BrandsSetDefault401 = UnauthorizedError;
 export type BrandsSetDefault403 = ForbiddenError;
@@ -293,6 +320,7 @@ export class BrandsGroup extends HttpApiGroup.make("Brands")
     HttpApiEndpoint.get("brandsList", "/v1/brands", {
       success: BrandsList200,
       error: [
+        BrandsList400.pipe(HttpApiSchema.status(400)),
         BrandsList401.pipe(HttpApiSchema.status(401)),
         BrandsList403.pipe(HttpApiSchema.status(403)),
         BrandsList422.pipe(HttpApiSchema.status(422)),
@@ -308,6 +336,7 @@ export class BrandsGroup extends HttpApiGroup.make("Brands")
       payload: BrandsCreateRequestJson,
       success: BrandsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        BrandsCreate400.pipe(HttpApiSchema.status(400)),
         BrandsCreate401.pipe(HttpApiSchema.status(401)),
         BrandsCreate403.pipe(HttpApiSchema.status(403)),
         BrandsCreate409.pipe(HttpApiSchema.status(409)),
@@ -327,6 +356,7 @@ export class BrandsGroup extends HttpApiGroup.make("Brands")
       params: BrandsGetPathParams,
       success: BrandsGet200,
       error: [
+        BrandsGet400.pipe(HttpApiSchema.status(400)),
         BrandsGet401.pipe(HttpApiSchema.status(401)),
         BrandsGet403.pipe(HttpApiSchema.status(403)),
         BrandsGet404.pipe(HttpApiSchema.status(404)),
@@ -343,6 +373,7 @@ export class BrandsGroup extends HttpApiGroup.make("Brands")
       params: BrandsRemovePathParams,
       success: BrandsRemove200,
       error: [
+        BrandsRemove400.pipe(HttpApiSchema.status(400)),
         BrandsRemove401.pipe(HttpApiSchema.status(401)),
         BrandsRemove403.pipe(HttpApiSchema.status(403)),
         BrandsRemove404.pipe(HttpApiSchema.status(404)),
@@ -364,6 +395,7 @@ export class BrandsGroup extends HttpApiGroup.make("Brands")
       payload: BrandsUpdateRequestJson,
       success: BrandsUpdate200,
       error: [
+        BrandsUpdate400.pipe(HttpApiSchema.status(400)),
         BrandsUpdate401.pipe(HttpApiSchema.status(401)),
         BrandsUpdate403.pipe(HttpApiSchema.status(403)),
         BrandsUpdate404.pipe(HttpApiSchema.status(404)),
@@ -384,6 +416,7 @@ export class BrandsGroup extends HttpApiGroup.make("Brands")
       params: BrandsSetDefaultPathParams,
       success: BrandsSetDefault200,
       error: [
+        BrandsSetDefault400.pipe(HttpApiSchema.status(400)),
         BrandsSetDefault401.pipe(HttpApiSchema.status(401)),
         BrandsSetDefault403.pipe(HttpApiSchema.status(403)),
         BrandsSetDefault404.pipe(HttpApiSchema.status(404)),

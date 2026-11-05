@@ -7,7 +7,6 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
-  Cursor,
   ExtensionId,
   ExtensionVersionId,
   ExtensionVersionRef,
@@ -15,6 +14,7 @@ import {
   GatewayTimeoutError,
   InternalError,
   MailboxId,
+  MalformedRequestError,
   NamespaceId,
   OrganizationId,
   ResourceNotFoundError,
@@ -29,7 +29,7 @@ import {
 export type ExtensionInstallationId = string & EffectBrand.Brand<"ExtensionInstallationId">;
 export const ExtensionInstallationId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^exti_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^exti_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^exti_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "ExtensionInstallationId",
     }),
@@ -385,9 +385,9 @@ export const UpgradeExtensionResponse = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "UpgradeExtensionResponse" }))();
 export type ExtensionInstallationsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const ExtensionInstallationsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -404,12 +404,14 @@ export const ExtensionInstallationsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type ExtensionInstallationsList200 = ExtensionInstallationPage;
 export const ExtensionInstallationsList200 = ExtensionInstallationPage;
+export type ExtensionInstallationsList400 = MalformedRequestError;
+export const ExtensionInstallationsList400 = MalformedRequestError;
 export type ExtensionInstallationsList401 = UnauthorizedError;
 export const ExtensionInstallationsList401 = UnauthorizedError;
 export type ExtensionInstallationsList403 = ForbiddenError;
@@ -438,7 +440,7 @@ export const ExtensionInstallationsInstallRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isPattern(
-            new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+            new globalThis.RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
           ).annotate({
             expected:
               "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
@@ -479,6 +481,8 @@ export const ExtensionInstallationsInstallRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionInstallationsInstall201 = InstallExtensionResponse;
 export const ExtensionInstallationsInstall201 = InstallExtensionResponse;
+export type ExtensionInstallationsInstall400 = MalformedRequestError;
+export const ExtensionInstallationsInstall400 = MalformedRequestError;
 export type ExtensionInstallationsInstall401 = UnauthorizedError;
 export const ExtensionInstallationsInstall401 = UnauthorizedError;
 export type ExtensionInstallationsInstall403 = ForbiddenError;
@@ -498,6 +502,8 @@ export const ExtensionInstallationsGetPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsGet200 = ExtensionInstallation;
 export const ExtensionInstallationsGet200 = ExtensionInstallation;
+export type ExtensionInstallationsGet400 = MalformedRequestError;
+export const ExtensionInstallationsGet400 = MalformedRequestError;
 export type ExtensionInstallationsGet401 = UnauthorizedError;
 export const ExtensionInstallationsGet401 = UnauthorizedError;
 export type ExtensionInstallationsGet403 = ForbiddenError;
@@ -515,6 +521,8 @@ export const ExtensionInstallationsUninstallPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsUninstall200 = SuccessResponse;
 export const ExtensionInstallationsUninstall200 = SuccessResponse;
+export type ExtensionInstallationsUninstall400 = MalformedRequestError;
+export const ExtensionInstallationsUninstall400 = MalformedRequestError;
 export type ExtensionInstallationsUninstall401 = UnauthorizedError;
 export const ExtensionInstallationsUninstall401 = UnauthorizedError;
 export type ExtensionInstallationsUninstall403 = ForbiddenError;
@@ -534,6 +542,8 @@ export const ExtensionInstallationsDisablePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsDisable200 = ExtensionInstallation;
 export const ExtensionInstallationsDisable200 = ExtensionInstallation;
+export type ExtensionInstallationsDisable400 = MalformedRequestError;
+export const ExtensionInstallationsDisable400 = MalformedRequestError;
 export type ExtensionInstallationsDisable401 = UnauthorizedError;
 export const ExtensionInstallationsDisable401 = UnauthorizedError;
 export type ExtensionInstallationsDisable403 = ForbiddenError;
@@ -553,6 +563,8 @@ export const ExtensionInstallationsEnablePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsEnable200 = ExtensionInstallation;
 export const ExtensionInstallationsEnable200 = ExtensionInstallation;
+export type ExtensionInstallationsEnable400 = MalformedRequestError;
+export const ExtensionInstallationsEnable400 = MalformedRequestError;
 export type ExtensionInstallationsEnable401 = UnauthorizedError;
 export const ExtensionInstallationsEnable401 = UnauthorizedError;
 export type ExtensionInstallationsEnable403 = ForbiddenError;
@@ -572,6 +584,8 @@ export const ExtensionInstallationsListRunsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ExtensionInstallationId }))();
 export type ExtensionInstallationsListRuns200 = ExtensionRunList;
 export const ExtensionInstallationsListRuns200 = ExtensionRunList;
+export type ExtensionInstallationsListRuns400 = MalformedRequestError;
+export const ExtensionInstallationsListRuns400 = MalformedRequestError;
 export type ExtensionInstallationsListRuns401 = UnauthorizedError;
 export const ExtensionInstallationsListRuns401 = UnauthorizedError;
 export type ExtensionInstallationsListRuns403 = ForbiddenError;
@@ -601,6 +615,8 @@ export const ExtensionInstallationsGetRunPathParams = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionInstallationsGetRun200 = ExtensionRun;
 export const ExtensionInstallationsGetRun200 = ExtensionRun;
+export type ExtensionInstallationsGetRun400 = MalformedRequestError;
+export const ExtensionInstallationsGetRun400 = MalformedRequestError;
 export type ExtensionInstallationsGetRun401 = UnauthorizedError;
 export const ExtensionInstallationsGetRun401 = UnauthorizedError;
 export type ExtensionInstallationsGetRun403 = ForbiddenError;
@@ -639,7 +655,7 @@ export const ExtensionInstallationsUpgradeRequestJson = /* @__PURE__ */ (() =>
       Schema.Union([
         Schema.String.check(
           Schema.isPattern(
-            new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+            new globalThis.RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
           ).annotate({
             expected:
               "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
@@ -673,6 +689,8 @@ export const ExtensionInstallationsUpgradeRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionInstallationsUpgrade200 = UpgradeExtensionResponse;
 export const ExtensionInstallationsUpgrade200 = UpgradeExtensionResponse;
+export type ExtensionInstallationsUpgrade400 = MalformedRequestError;
+export const ExtensionInstallationsUpgrade400 = MalformedRequestError;
 export type ExtensionInstallationsUpgrade401 = UnauthorizedError;
 export const ExtensionInstallationsUpgrade401 = UnauthorizedError;
 export type ExtensionInstallationsUpgrade403 = ForbiddenError;
@@ -694,6 +712,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       query: ExtensionInstallationsListQuery,
       success: ExtensionInstallationsList200,
       error: [
+        ExtensionInstallationsList400.pipe(HttpApiSchema.status(400)),
         ExtensionInstallationsList401.pipe(HttpApiSchema.status(401)),
         ExtensionInstallationsList403.pipe(HttpApiSchema.status(403)),
         ExtensionInstallationsList404.pipe(HttpApiSchema.status(404)),
@@ -713,6 +732,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       payload: ExtensionInstallationsInstallRequestJson,
       success: ExtensionInstallationsInstall201.pipe(HttpApiSchema.status(201)),
       error: [
+        ExtensionInstallationsInstall400.pipe(HttpApiSchema.status(400)),
         ExtensionInstallationsInstall401.pipe(HttpApiSchema.status(401)),
         ExtensionInstallationsInstall403.pipe(HttpApiSchema.status(403)),
         ExtensionInstallationsInstall404.pipe(HttpApiSchema.status(404)),
@@ -733,6 +753,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       params: ExtensionInstallationsGetPathParams,
       success: ExtensionInstallationsGet200,
       error: [
+        ExtensionInstallationsGet400.pipe(HttpApiSchema.status(400)),
         ExtensionInstallationsGet401.pipe(HttpApiSchema.status(401)),
         ExtensionInstallationsGet403.pipe(HttpApiSchema.status(403)),
         ExtensionInstallationsGet404.pipe(HttpApiSchema.status(404)),
@@ -752,6 +773,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       params: ExtensionInstallationsUninstallPathParams,
       success: ExtensionInstallationsUninstall200,
       error: [
+        ExtensionInstallationsUninstall400.pipe(HttpApiSchema.status(400)),
         ExtensionInstallationsUninstall401.pipe(HttpApiSchema.status(401)),
         ExtensionInstallationsUninstall403.pipe(HttpApiSchema.status(403)),
         ExtensionInstallationsUninstall404.pipe(HttpApiSchema.status(404)),
@@ -775,6 +797,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
         params: ExtensionInstallationsDisablePathParams,
         success: ExtensionInstallationsDisable200,
         error: [
+          ExtensionInstallationsDisable400.pipe(HttpApiSchema.status(400)),
           ExtensionInstallationsDisable401.pipe(HttpApiSchema.status(401)),
           ExtensionInstallationsDisable403.pipe(HttpApiSchema.status(403)),
           ExtensionInstallationsDisable404.pipe(HttpApiSchema.status(404)),
@@ -796,6 +819,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       params: ExtensionInstallationsEnablePathParams,
       success: ExtensionInstallationsEnable200,
       error: [
+        ExtensionInstallationsEnable400.pipe(HttpApiSchema.status(400)),
         ExtensionInstallationsEnable401.pipe(HttpApiSchema.status(401)),
         ExtensionInstallationsEnable403.pipe(HttpApiSchema.status(403)),
         ExtensionInstallationsEnable404.pipe(HttpApiSchema.status(404)),
@@ -816,6 +840,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       params: ExtensionInstallationsListRunsPathParams,
       success: ExtensionInstallationsListRuns200,
       error: [
+        ExtensionInstallationsListRuns400.pipe(HttpApiSchema.status(400)),
         ExtensionInstallationsListRuns401.pipe(HttpApiSchema.status(401)),
         ExtensionInstallationsListRuns403.pipe(HttpApiSchema.status(403)),
         ExtensionInstallationsListRuns404.pipe(HttpApiSchema.status(404)),
@@ -838,6 +863,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
         params: ExtensionInstallationsGetRunPathParams,
         success: ExtensionInstallationsGetRun200,
         error: [
+          ExtensionInstallationsGetRun400.pipe(HttpApiSchema.status(400)),
           ExtensionInstallationsGetRun401.pipe(HttpApiSchema.status(401)),
           ExtensionInstallationsGetRun403.pipe(HttpApiSchema.status(403)),
           ExtensionInstallationsGetRun404.pipe(HttpApiSchema.status(404)),
@@ -862,6 +888,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
         payload: ExtensionInstallationsUpgradeRequestJson,
         success: ExtensionInstallationsUpgrade200,
         error: [
+          ExtensionInstallationsUpgrade400.pipe(HttpApiSchema.status(400)),
           ExtensionInstallationsUpgrade401.pipe(HttpApiSchema.status(401)),
           ExtensionInstallationsUpgrade403.pipe(HttpApiSchema.status(403)),
           ExtensionInstallationsUpgrade404.pipe(HttpApiSchema.status(404)),

@@ -16,7 +16,7 @@ import { type Interface, Service } from "./client";
 import { callEndpoint, type OperationResult, stripUndefined } from "./operation";
 
 type MessagePayload = typeof SendMessagePayload.Encoded;
-export type MessageRecipient = MessagePayload["to"][number];
+export type MessageRecipient = EmailPayload["to"][number];
 type ContactObjectRecipient = { readonly id: string };
 type ErgonomicMessageRecipient = MessageRecipient | ContactObjectRecipient | string;
 type EmailPayload = Extract<MessagePayload, { readonly channel: "email" }>;

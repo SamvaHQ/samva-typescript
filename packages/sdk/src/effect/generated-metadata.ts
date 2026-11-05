@@ -59,6 +59,10 @@ export const SamvaErrorMetadata = {
     categories: [],
     retryable: false,
   },
+  MalformedRequestError: {
+    categories: ["validation"],
+    retryable: false,
+  },
   OnboardingReviewRequiredError: {
     categories: ["validation"],
     retryable: false,
@@ -93,6 +97,10 @@ export const SamvaErrorMetadata = {
   },
   ValidationError: {
     categories: ["validation"],
+    retryable: false,
+  },
+  WhatsAppServiceWindowClosedError: {
+    categories: [],
     retryable: false,
   },
 } as const;
@@ -1021,10 +1029,12 @@ export const SamvaOperations = {
   agentsGet: operationMetadata2,
   agentsRemove: operationMetadata3,
   agentsUpdate: operationMetadata4,
+  agentsContinueOnStandard: operationMetadata1,
   agentsReplaceDraft: operationMetadata5,
   agentsPublish: operationMetadata1,
   agentsListVersions: operationMetadata0,
   agentsGetVersion: operationMetadata2,
+  agentsListModels: operationMetadata2,
   analyticsGetChannelStats: operationMetadata6,
   analyticsGetDeliveryMetrics: operationMetadata6,
   analyticsExportData: operationMetadata7,

@@ -3,8 +3,8 @@ import { readdirSync, readFileSync } from "node:fs";
 const dist = process.argv[2] ?? `${import.meta.dir}/../dist`;
 
 const MAX_HELPER_BYTES = 4_000;
-// Email.send uses Messages and Media; email administration is a separate capability.
-const MAX_EMAIL_BYTES = 65_000;
+// Email.send retains Messages and Media, including their complete channel schemas.
+const MAX_EMAIL_BYTES = 105_000;
 // The smallest domain is nearly all shared core, so this ceiling is the shared core's budget.
 const MAX_FEEDBACK_BYTES = 60_000;
 const MAX_NAMED_ERROR_BYTES = 25_000;

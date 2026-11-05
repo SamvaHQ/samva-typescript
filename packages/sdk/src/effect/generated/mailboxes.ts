@@ -12,13 +12,15 @@ import {
   CampaignRunId,
   ConflictError,
   ConversationId,
+  CreateMailboxChatDraftPayload,
+  CreateMailboxEmailDraftPayload,
   CreateMailboxEndpointPayload,
-  Cursor,
   EmailAttachment,
   FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  JsonObject,
   JsonValue,
   MailboxActionDecision,
   MailboxActionId,
@@ -40,19 +42,27 @@ import {
   MailboxThreadFolder,
   MailboxThreadId,
   MailboxThreadPriority,
+  MalformedRequestError,
   MediaId,
   MessageId,
   NamespaceId,
   OnboardingReviewRequiredError,
   PaymentRequiredError,
   RateLimitedError,
+  ReplyMailboxChatPayload,
+  ReplyMailboxEmailPayload,
   ResourceNotFoundError,
+  SendMailboxChatPayload,
+  SendMailboxEmailPayload,
   SenderNotReadyError,
   SkippedRecipient,
   SuccessResponse,
+  TemplateId,
   UnauthorizedError,
   UserId,
   ValidationError,
+  WhatsAppBusinessAccountId,
+  WhatsAppServiceWindowClosedError,
 } from "./shared";
 
 export type MailboxKind = "personal" | "shared";
@@ -66,6 +76,14 @@ export const MailboxStatus = /* @__PURE__ */ (() =>
   Schema.Union([Schema.Literal("active"), Schema.Literal("paused")]).annotate({
     identifier: "MailboxStatus",
   }))();
+export type SmsPhoneNumberId = string & EffectBrand.Brand<"SmsPhoneNumberId">;
+export const SmsPhoneNumberId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^phone_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^phone_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "SmsPhoneNumberId",
+    }),
+  ).pipe(Schema.brand("SmsPhoneNumberId")))();
 export type MailboxActionResolution = {
   readonly outcome: "approved" | "denied" | "cancelled";
   readonly actor: {
@@ -118,6 +136,14 @@ export const MailboxActionResolution = /* @__PURE__ */ (() =>
     description: "How the action's approval ended.",
     identifier: "MailboxActionResolution",
   }))();
+export type TemplateChannelVariantId = string & EffectBrand.Brand<"TemplateChannelVariantId">;
+export const TemplateChannelVariantId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^tvar_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^tvar_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "TemplateChannelVariantId",
+    }),
+  ).pipe(Schema.brand("TemplateChannelVariantId")))();
 export type MailboxToolCall = {
   readonly name: string;
   readonly argumentsHash: string;
@@ -135,7 +161,7 @@ export const MailboxToolCall = /* @__PURE__ */ (() =>
         Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
       ),
     argumentsHash: Schema.String.check(
-      Schema.isPattern(new RegExp("^[0-9a-f]{64}$", "u")).annotate({
+      Schema.isPattern(new globalThis.RegExp("^[0-9a-f]{64}$", "u")).annotate({
         expected: "a string matching the RegExp ^[0-9a-f]{64}$",
       }),
     ),
@@ -313,7 +339,7 @@ export const MailboxDraftState = /* @__PURE__ */ (() =>
 export type MailboxEventId = string & EffectBrand.Brand<"MailboxEventId">;
 export const MailboxEventId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^mbxevt_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "MailboxEventId",
     }),
@@ -321,7 +347,7 @@ export const MailboxEventId = /* @__PURE__ */ (() =>
 export type MailboxGrantId = string & EffectBrand.Brand<"MailboxGrantId">;
 export const MailboxGrantId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^mbxacl_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "MailboxGrantId",
     }),
@@ -401,6 +427,24 @@ export const MailboxMessageAuthentication = /* @__PURE__ */ (() =>
     dkim: Schema.Union([Schema.String, Schema.Null]),
     dmarc: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxMessageAuthentication" }))();
+export type MailboxChatMedia = {
+  readonly type: string;
+  readonly contentType: string | null;
+  readonly filename: string | null;
+  readonly caption: string | null;
+};
+export const MailboxChatMedia = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.String,
+    contentType: Schema.Union([Schema.String, Schema.Null]),
+    filename: Schema.Union([Schema.String, Schema.Null]),
+    caption: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatMedia" }))();
+export type MailboxChatMessageTemplate = { readonly name: string; readonly language: string };
+export const MailboxChatMessageTemplate = /* @__PURE__ */ (() =>
+  Schema.Struct({ name: Schema.String, language: Schema.String }).annotate({
+    identifier: "MailboxChatMessageTemplate",
+  }))();
 export type MailboxDownloadUrl = { readonly url: string; readonly expiresAt: string };
 export const MailboxDownloadUrl = /* @__PURE__ */ (() =>
   Schema.Struct({ url: Schema.String, expiresAt: Schema.String }).annotate({
@@ -446,15 +490,24 @@ export const MailboxThreadParticipant = /* @__PURE__ */ (() =>
     ]),
     address: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }).annotate({ identifier: "MailboxThreadParticipant" }))();
+export type MailboxWhatsAppServiceWindow = {
+  readonly open: boolean;
+  readonly expiresAt: string | null;
+};
+export const MailboxWhatsAppServiceWindow = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    open: Schema.Boolean,
+    expiresAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxWhatsAppServiceWindow" }))();
 export type MailboxNoteId = string & EffectBrand.Brand<"MailboxNoteId">;
 export const MailboxNoteId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^note_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^note_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^note_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "MailboxNoteId",
     }),
   ).pipe(Schema.brand("MailboxNoteId")))();
-export type MailboxEndpoint = {
+export type MailboxEmailEndpoint = {
   readonly id: MailboxEndpointId;
   readonly address: string;
   readonly displayName: string | null;
@@ -463,7 +516,7 @@ export type MailboxEndpoint = {
   readonly source: "samvaHosted" | "verifiedDomain";
   readonly domainId: string | null;
 };
-export const MailboxEndpoint = /* @__PURE__ */ (() =>
+export const MailboxEmailEndpoint = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MailboxEndpointId,
     address: Schema.String,
@@ -472,7 +525,7 @@ export const MailboxEndpoint = /* @__PURE__ */ (() =>
     channel: Schema.Literal("email"),
     source: Schema.Union([Schema.Literal("samvaHosted"), Schema.Literal("verifiedDomain")]),
     domainId: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "MailboxEndpoint" }))();
+  }).annotate({ identifier: "MailboxEmailEndpoint" }))();
 export type MailboxThreadMailbox = {
   readonly id: MailboxId;
   readonly address: string | null;
@@ -505,6 +558,32 @@ export const MailboxCopiedAttachment = /* @__PURE__ */ (() =>
       )
       .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
   }).annotate({ identifier: "MailboxCopiedAttachment" }))();
+export type MailboxWhatsAppEndpoint = {
+  readonly id: MailboxEndpointId;
+  readonly address: string;
+  readonly displayName: string | null;
+  readonly default: boolean;
+  readonly channel: "whatsapp";
+  readonly businessAccountId: WhatsAppBusinessAccountId;
+};
+export const MailboxWhatsAppEndpoint = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxEndpointId,
+    address: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    default: Schema.Boolean,
+    channel: Schema.Literal("whatsapp"),
+    businessAccountId: WhatsAppBusinessAccountId,
+  }).annotate({ identifier: "MailboxWhatsAppEndpoint" }))();
+export type MailboxWhatsAppEndpointBinding = {
+  readonly channel: "whatsapp";
+  readonly businessAccountId: WhatsAppBusinessAccountId;
+};
+export const MailboxWhatsAppEndpointBinding = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("whatsapp"),
+    businessAccountId: WhatsAppBusinessAccountId,
+  }).annotate({ identifier: "MailboxWhatsAppEndpointBinding" }))();
 export type MailboxSummary = {
   readonly id: MailboxId;
   readonly kind: MailboxKind;
@@ -528,6 +607,31 @@ export const MailboxSummary = /* @__PURE__ */ (() =>
     primaryAddress: Schema.Union([Schema.String, Schema.Null]),
     createdAt: Schema.String,
   }).annotate({ identifier: "MailboxSummary" }))();
+export type MailboxSmsEndpoint = {
+  readonly id: MailboxEndpointId;
+  readonly address: string;
+  readonly displayName: string | null;
+  readonly default: boolean;
+  readonly channel: "sms";
+  readonly phoneNumberId: SmsPhoneNumberId;
+};
+export const MailboxSmsEndpoint = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxEndpointId,
+    address: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    default: Schema.Boolean,
+    channel: Schema.Literal("sms"),
+    phoneNumberId: SmsPhoneNumberId,
+  }).annotate({ identifier: "MailboxSmsEndpoint" }))();
+export type MailboxSmsEndpointBinding = {
+  readonly channel: "sms";
+  readonly phoneNumberId: SmsPhoneNumberId;
+};
+export const MailboxSmsEndpointBinding = /* @__PURE__ */ (() =>
+  Schema.Struct({ channel: Schema.Literal("sms"), phoneNumberId: SmsPhoneNumberId }).annotate({
+    identifier: "MailboxSmsEndpointBinding",
+  }))();
 export type MailboxQuarantinedMessage = {
   readonly id: MessageId;
   readonly disposition: "quarantined" | "isolated";
@@ -573,6 +677,17 @@ export const MailboxQuarantinedMessage = /* @__PURE__ */ (() =>
     threadId: Schema.Union([MailboxThreadId, Schema.Null]),
     discardedAt: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxQuarantinedMessage" }))();
+export type MailboxChatTemplate = {
+  readonly templateId: TemplateId;
+  readonly templateChannelVariantId: TemplateChannelVariantId;
+  readonly templateData: JsonObject | null;
+};
+export const MailboxChatTemplate = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    templateId: TemplateId,
+    templateChannelVariantId: TemplateChannelVariantId,
+    templateData: Schema.Union([JsonObject, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatTemplate" }))();
 export type MailboxDraftSummary = {
   readonly id: MailboxDraftId;
   readonly channel: MailboxChannel;
@@ -598,6 +713,33 @@ export const MailboxDraftSummary = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "MailboxDraftSummary" }))();
+export type MailboxChatDraft = {
+  readonly id: MailboxDraftId;
+  readonly channel: "whatsapp" | "sms";
+  readonly threadId: MailboxThreadId | null;
+  readonly inReplyToMessageId: MessageId | null;
+  readonly state: MailboxDraftState;
+  readonly lockedByActionId: MailboxActionId | null;
+  readonly to: ReadonlyArray<string>;
+  readonly subject: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly text: string | null;
+};
+export const MailboxChatDraft = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxDraftId,
+    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+    state: MailboxDraftState,
+    lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
+    to: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    text: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatDraft" }))();
 export type MailboxEvent = {
   readonly id: MailboxEventId;
   readonly type:
@@ -804,7 +946,7 @@ export const MailboxMessageSummary = /* @__PURE__ */ (() =>
     hasAttachments: Schema.Boolean,
     occurredAt: Schema.String,
   }).annotate({ identifier: "MailboxMessageSummary" }))();
-export type MailboxMessage = {
+export type MailboxEmailMessage = {
   readonly id: MessageId;
   readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
   readonly threadId: MailboxThreadId;
@@ -838,7 +980,7 @@ export type MailboxMessage = {
     readonly isInline: boolean;
   }>;
 };
-export const MailboxMessage = /* @__PURE__ */ (() =>
+export const MailboxEmailMessage = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MessageId,
     campaign: Schema.optionalKey(
@@ -898,7 +1040,64 @@ export const MailboxMessage = /* @__PURE__ */ (() =>
         isInline: Schema.Boolean,
       }),
     ),
-  }).annotate({ identifier: "MailboxMessage" }))();
+  }).annotate({ identifier: "MailboxEmailMessage" }))();
+export type MailboxChatMessage = {
+  readonly id: MessageId;
+  readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
+  readonly threadId: MailboxThreadId;
+  readonly conversationId: ConversationId;
+  readonly direction: "inbound" | "outbound";
+  readonly from: MailboxMessageSender;
+  readonly sentBy?: {
+    readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+    readonly id: string;
+    readonly displayName?: string | null;
+  } | null;
+  readonly occurredAt: string;
+  readonly channel: "whatsapp" | "sms";
+  readonly to: ReadonlyArray<string>;
+  readonly text: string | null;
+  readonly media: ReadonlyArray<MailboxChatMedia>;
+  readonly template: MailboxChatMessageTemplate | null;
+  readonly summary: string | null;
+  readonly contextMessageId: MessageId | null;
+};
+export const MailboxChatMessage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MessageId,
+    campaign: Schema.optionalKey(
+      Schema.Union([Schema.Struct({ campaignId: CampaignId, runId: CampaignRunId }), Schema.Null]),
+    ),
+    threadId: MailboxThreadId,
+    conversationId: ConversationId,
+    direction: Schema.Union([Schema.Literal("inbound"), Schema.Literal("outbound")]),
+    from: MailboxMessageSender,
+    sentBy: Schema.optionalKey(
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Union([
+            Schema.Literal("user"),
+            Schema.Literal("apiKey"),
+            Schema.Literal("extension"),
+            Schema.Literal("externalAgent"),
+            Schema.Literal("samvaAgent"),
+            Schema.Literal("system"),
+          ]),
+          id: Schema.String,
+          displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        }),
+        Schema.Null,
+      ]),
+    ),
+    occurredAt: Schema.String,
+    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
+    to: Schema.Array(Schema.String),
+    text: Schema.Union([Schema.String, Schema.Null]),
+    media: Schema.Array(MailboxChatMedia),
+    template: Schema.Union([MailboxChatMessageTemplate, Schema.Null]),
+    summary: Schema.Union([Schema.String, Schema.Null]),
+    contextMessageId: Schema.Union([MessageId, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatMessage" }))();
 export type MailboxPolicy = {
   readonly id: MailboxPolicyId;
   readonly name: string;
@@ -1058,6 +1257,7 @@ export type MailboxThread = {
   readonly lastActivityAt: string;
   readonly conversationId: ConversationId;
   readonly participants: ReadonlyArray<MailboxThreadParticipant>;
+  readonly whatsappServiceWindow: MailboxWhatsAppServiceWindow | null;
   readonly createdAt: string;
 };
 export const MailboxThread = /* @__PURE__ */ (() =>
@@ -1107,6 +1307,7 @@ export const MailboxThread = /* @__PURE__ */ (() =>
     lastActivityAt: Schema.String,
     conversationId: ConversationId,
     participants: Schema.Array(MailboxThreadParticipant),
+    whatsappServiceWindow: Schema.Union([MailboxWhatsAppServiceWindow, Schema.Null]),
     createdAt: Schema.String,
   }).annotate({ identifier: "MailboxThread" }))();
 export type MailboxNote = {
@@ -1143,37 +1344,6 @@ export const MailboxNote = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "MailboxNote" }))();
-export type Mailbox = {
-  readonly id: MailboxId;
-  readonly kind: MailboxKind;
-  readonly owner: UserId | null;
-  readonly namespaceId: NamespaceId | null;
-  readonly slug: string;
-  readonly name: string;
-  readonly status: MailboxStatus;
-  readonly primaryAddress: string | null;
-  readonly createdAt: string;
-  readonly description: string | null;
-  readonly metadata: MailboxMetadata;
-  readonly endpoints: ReadonlyArray<MailboxEndpoint>;
-  readonly updatedAt: string;
-};
-export const Mailbox = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: MailboxId,
-    kind: MailboxKind,
-    owner: Schema.Union([UserId, Schema.Null]),
-    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-    slug: Schema.String,
-    name: Schema.String,
-    status: MailboxStatus,
-    primaryAddress: Schema.Union([Schema.String, Schema.Null]),
-    createdAt: Schema.String,
-    description: Schema.Union([Schema.String, Schema.Null]),
-    metadata: MailboxMetadata,
-    endpoints: Schema.Array(MailboxEndpoint),
-    updatedAt: Schema.String,
-  }).annotate({ identifier: "Mailbox" }))();
 export type OrganizationMailboxDraftSummary = {
   readonly id: MailboxDraftId;
   readonly channel: MailboxChannel;
@@ -1359,7 +1529,7 @@ export const OrganizationMailboxThreadSummary = /* @__PURE__ */ (() =>
     lastActivityAt: Schema.String,
     mailbox: MailboxThreadMailbox,
   }).annotate({ identifier: "OrganizationMailboxThreadSummary" }))();
-export type MailboxSendSnapshot = {
+export type MailboxEmailSendSnapshot = {
   readonly channel: "email";
   readonly draftRevision: number;
   readonly from: string;
@@ -1376,7 +1546,7 @@ export type MailboxSendSnapshot = {
   readonly conversationId: ConversationId | null;
   readonly inReplyToMessageId: MessageId | null;
 };
-export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
+export const MailboxEmailSendSnapshot = /* @__PURE__ */ (() =>
   Schema.Struct({
     channel: Schema.Literal("email"),
     draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
@@ -1401,8 +1571,8 @@ export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
     threadId: Schema.Union([MailboxThreadId, Schema.Null]),
     conversationId: Schema.Union([ConversationId, Schema.Null]),
     inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-  }).annotate({ identifier: "MailboxSendSnapshot" }))();
-export type MailboxDraft = {
+  }).annotate({ identifier: "MailboxEmailSendSnapshot" }))();
+export type MailboxEmailDraft = {
   readonly id: MailboxDraftId;
   readonly channel: "email";
   readonly threadId: MailboxThreadId | null;
@@ -1421,7 +1591,7 @@ export type MailboxDraft = {
   readonly text: string | null;
   readonly attachments: ReadonlyArray<EmailAttachment>;
 };
-export const MailboxDraft = /* @__PURE__ */ (() =>
+export const MailboxEmailDraft = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MailboxDraftId,
     channel: Schema.Literal("email"),
@@ -1442,7 +1612,7 @@ export const MailboxDraft = /* @__PURE__ */ (() =>
     attachments: Schema.Array(EmailAttachment).check(
       Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
     ),
-  }).annotate({ identifier: "MailboxDraft" }))();
+  }).annotate({ identifier: "MailboxEmailDraft" }))();
 export type MailboxPage = {
   readonly items: ReadonlyArray<MailboxSummary>;
   readonly nextCursor: string | null;
@@ -1452,6 +1622,11 @@ export const MailboxPage = /* @__PURE__ */ (() =>
     items: Schema.Array(MailboxSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxPage" }))();
+export type MailboxEndpoint = MailboxEmailEndpoint | MailboxWhatsAppEndpoint | MailboxSmsEndpoint;
+export const MailboxEndpoint = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxEmailEndpoint, MailboxWhatsAppEndpoint, MailboxSmsEndpoint]).annotate({
+    identifier: "MailboxEndpoint",
+  }))();
 export type MailboxQuarantinePage = {
   readonly items: ReadonlyArray<MailboxQuarantinedMessage>;
   readonly nextCursor: string | null;
@@ -1637,6 +1812,39 @@ export const MailboxPendingSendReceipt = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "MailboxPendingSendReceipt" }))();
+export type MailboxChatSendIntent = {
+  readonly channel: "whatsapp" | "sms";
+  readonly draftRevision: number;
+  readonly endpointId: MailboxEndpointId;
+  readonly sender: MailboxWhatsAppEndpointBinding | MailboxSmsEndpointBinding;
+  readonly from: string;
+  readonly to: string;
+  readonly text: string | null;
+  readonly template: MailboxChatTemplate | null;
+  readonly threadId: MailboxThreadId | null;
+  readonly conversationId: ConversationId | null;
+  readonly inReplyToMessageId: MessageId | null;
+};
+export const MailboxChatSendIntent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    endpointId: MailboxEndpointId,
+    sender: Schema.Union([MailboxWhatsAppEndpointBinding, MailboxSmsEndpointBinding]),
+    from: Schema.String,
+    to: Schema.String,
+    text: Schema.Union([Schema.String, Schema.Null]),
+    template: Schema.Union([MailboxChatTemplate, Schema.Null]),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    conversationId: Schema.Union([ConversationId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatSendIntent" }))();
 export type MailboxDraftPage = {
   readonly items: ReadonlyArray<MailboxDraftSummary>;
   readonly nextCursor: string | null;
@@ -1683,15 +1891,11 @@ export const MailboxMessagePage = /* @__PURE__ */ (() =>
     items: Schema.Array(MailboxMessageSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxMessagePage" }))();
-export type MailboxThreadContentPage = {
-  readonly items: ReadonlyArray<MailboxMessage>;
-  readonly nextCursor: string | null;
-};
-export const MailboxThreadContentPage = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    items: Schema.Array(MailboxMessage),
-    nextCursor: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "MailboxThreadContentPage" }))();
+export type MailboxMessage = MailboxEmailMessage | MailboxChatMessage;
+export const MailboxMessage = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxEmailMessage, MailboxChatMessage]).annotate({
+    identifier: "MailboxMessage",
+  }))();
 export type MailboxPolicyList = { readonly items: ReadonlyArray<MailboxPolicy> };
 export const MailboxPolicyList = /* @__PURE__ */ (() =>
   Schema.Struct({ items: Schema.Array(MailboxPolicy) }).annotate({
@@ -1784,6 +1988,54 @@ export const OrganizationMailboxThreadPage = /* @__PURE__ */ (() =>
     items: Schema.Array(OrganizationMailboxThreadSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "OrganizationMailboxThreadPage" }))();
+export type MailboxDraft = MailboxEmailDraft | MailboxChatDraft;
+export const MailboxDraft = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxEmailDraft, MailboxChatDraft]).annotate({ identifier: "MailboxDraft" }))();
+export type Mailbox = {
+  readonly id: MailboxId;
+  readonly kind: MailboxKind;
+  readonly owner: UserId | null;
+  readonly namespaceId: NamespaceId | null;
+  readonly slug: string;
+  readonly name: string;
+  readonly status: MailboxStatus;
+  readonly primaryAddress: string | null;
+  readonly createdAt: string;
+  readonly description: string | null;
+  readonly metadata: MailboxMetadata;
+  readonly endpoints: ReadonlyArray<MailboxEndpoint>;
+  readonly updatedAt: string;
+};
+export const Mailbox = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    kind: MailboxKind,
+    owner: Schema.Union([UserId, Schema.Null]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    slug: Schema.String,
+    name: Schema.String,
+    status: MailboxStatus,
+    primaryAddress: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    description: Schema.Union([Schema.String, Schema.Null]),
+    metadata: MailboxMetadata,
+    endpoints: Schema.Array(MailboxEndpoint),
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "Mailbox" }))();
+export type MailboxSendSnapshot = MailboxEmailSendSnapshot | MailboxChatSendIntent;
+export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxEmailSendSnapshot, MailboxChatSendIntent]).annotate({
+    identifier: "MailboxSendSnapshot",
+  }))();
+export type MailboxThreadContentPage = {
+  readonly items: ReadonlyArray<MailboxMessage>;
+  readonly nextCursor: string | null;
+};
+export const MailboxThreadContentPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailboxMessage),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxThreadContentPage" }))();
 export type MailboxSendAction = {
   readonly id: MailboxActionId;
   readonly source:
@@ -1882,9 +2134,9 @@ export const MailboxActionPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "MailboxActionPage" }))();
 export type MailboxesListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const MailboxesListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -1901,12 +2153,14 @@ export const MailboxesListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesList200 = MailboxPage;
 export const MailboxesList200 = MailboxPage;
+export type MailboxesList400 = MalformedRequestError;
+export const MailboxesList400 = MalformedRequestError;
 export type MailboxesList401 = UnauthorizedError;
 export const MailboxesList401 = UnauthorizedError;
 export type MailboxesList403 = ForbiddenError;
@@ -1936,6 +2190,8 @@ export const MailboxesCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreate201 = Mailbox;
 export const MailboxesCreate201 = Mailbox;
+export type MailboxesCreate400 = MalformedRequestError;
+export const MailboxesCreate400 = MalformedRequestError;
 export type MailboxesCreate401 = UnauthorizedError;
 export const MailboxesCreate401 = UnauthorizedError;
 export type MailboxesCreate402 = PaymentRequiredError;
@@ -1959,6 +2215,8 @@ export type MailboxesGetPathParams = { readonly id: MailboxId };
 export const MailboxesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesGet200 = Mailbox;
 export const MailboxesGet200 = Mailbox;
+export type MailboxesGet400 = MalformedRequestError;
+export const MailboxesGet400 = MalformedRequestError;
 export type MailboxesGet401 = UnauthorizedError;
 export const MailboxesGet401 = UnauthorizedError;
 export type MailboxesGet403 = ForbiddenError;
@@ -1975,6 +2233,8 @@ export type MailboxesRemovePathParams = { readonly id: MailboxId };
 export const MailboxesRemovePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesRemove200 = SuccessResponse;
 export const MailboxesRemove200 = SuccessResponse;
+export type MailboxesRemove400 = MalformedRequestError;
+export const MailboxesRemove400 = MalformedRequestError;
 export type MailboxesRemove401 = UnauthorizedError;
 export const MailboxesRemove401 = UnauthorizedError;
 export type MailboxesRemove403 = ForbiddenError;
@@ -2017,6 +2277,8 @@ export const MailboxesUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdate200 = Mailbox;
 export const MailboxesUpdate200 = Mailbox;
+export type MailboxesUpdate400 = MalformedRequestError;
+export const MailboxesUpdate400 = MalformedRequestError;
 export type MailboxesUpdate401 = UnauthorizedError;
 export const MailboxesUpdate401 = UnauthorizedError;
 export type MailboxesUpdate403 = ForbiddenError;
@@ -2034,8 +2296,8 @@ export const MailboxesListActionsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListActionsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly threadId?: MailboxThreadId | null;
+  readonly cursor?: string;
+  readonly threadId?: MailboxThreadId;
   readonly state?:
     | "proposed"
     | "allowed"
@@ -2050,10 +2312,9 @@ export type MailboxesListActionsQuery = {
     | "accepted"
     | "completed"
     | "notSent"
-    | "uncertain"
-    | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+    | "uncertain";
+  readonly after?: string;
+  readonly before?: string;
 };
 export const MailboxesListActionsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2070,34 +2331,33 @@ export const MailboxesListActionsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    threadId: Schema.optionalKey(MailboxThreadId),
     state: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("proposed"),
-          Schema.Literal("allowed"),
-          Schema.Literal("approvalRequired"),
-          Schema.Literal("policyDenied"),
-          Schema.Literal("approved"),
-          Schema.Literal("approvalDenied"),
-          Schema.Literal("executing"),
-          Schema.Literal("executed"),
-          Schema.Literal("failed"),
-          Schema.Literal("queued"),
-          Schema.Literal("accepted"),
-          Schema.Literal("completed"),
-          Schema.Literal("notSent"),
-          Schema.Literal("uncertain"),
-        ]),
-        Schema.Null,
+        Schema.Literal("proposed"),
+        Schema.Literal("allowed"),
+        Schema.Literal("approvalRequired"),
+        Schema.Literal("policyDenied"),
+        Schema.Literal("approved"),
+        Schema.Literal("approvalDenied"),
+        Schema.Literal("executing"),
+        Schema.Literal("executed"),
+        Schema.Literal("failed"),
+        Schema.Literal("queued"),
+        Schema.Literal("accepted"),
+        Schema.Literal("completed"),
+        Schema.Literal("notSent"),
+        Schema.Literal("uncertain"),
       ]),
     ),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesListActions200 = MailboxActionPage;
 export const MailboxesListActions200 = MailboxActionPage;
+export type MailboxesListActions400 = MalformedRequestError;
+export const MailboxesListActions400 = MalformedRequestError;
 export type MailboxesListActions401 = UnauthorizedError;
 export const MailboxesListActions401 = UnauthorizedError;
 export type MailboxesListActions403 = ForbiddenError;
@@ -2118,6 +2378,8 @@ export const MailboxesGetActionPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, actionId: MailboxActionId }))();
 export type MailboxesGetAction200 = MailboxAction;
 export const MailboxesGetAction200 = MailboxAction;
+export type MailboxesGetAction400 = MalformedRequestError;
+export const MailboxesGetAction400 = MalformedRequestError;
 export type MailboxesGetAction401 = UnauthorizedError;
 export const MailboxesGetAction401 = UnauthorizedError;
 export type MailboxesGetAction403 = ForbiddenError;
@@ -2140,6 +2402,8 @@ export type MailboxesApproveAction200 = MailboxAction;
 export const MailboxesApproveAction200 = MailboxAction;
 export type MailboxesApproveAction202 = MailboxPendingAction;
 export const MailboxesApproveAction202 = MailboxPendingAction;
+export type MailboxesApproveAction400 = MalformedRequestError;
+export const MailboxesApproveAction400 = MalformedRequestError;
 export type MailboxesApproveAction401 = UnauthorizedError;
 export const MailboxesApproveAction401 = UnauthorizedError;
 export type MailboxesApproveAction402 = PaymentRequiredError;
@@ -2161,8 +2425,9 @@ export const MailboxesApproveAction404 = ResourceNotFoundError;
 export type MailboxesApproveAction409 = MailboxSendConflictError | ConflictError;
 export const MailboxesApproveAction409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesApproveAction422 = ValidationError;
-export const MailboxesApproveAction422 = ValidationError;
+export type MailboxesApproveAction422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesApproveAction422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesApproveAction429 = RateLimitedError;
 export const MailboxesApproveAction429 = RateLimitedError;
 export type MailboxesApproveAction500 = InternalError;
@@ -2183,6 +2448,8 @@ export type MailboxesCancelAction200 = MailboxSendReceipt;
 export const MailboxesCancelAction200 = MailboxSendReceipt;
 export type MailboxesCancelAction202 = MailboxPendingSendReceipt;
 export const MailboxesCancelAction202 = MailboxPendingSendReceipt;
+export type MailboxesCancelAction400 = MalformedRequestError;
+export const MailboxesCancelAction400 = MalformedRequestError;
 export type MailboxesCancelAction401 = UnauthorizedError;
 export const MailboxesCancelAction401 = UnauthorizedError;
 export type MailboxesCancelAction402 = PaymentRequiredError;
@@ -2204,8 +2471,9 @@ export const MailboxesCancelAction404 = ResourceNotFoundError;
 export type MailboxesCancelAction409 = MailboxSendConflictError | ConflictError;
 export const MailboxesCancelAction409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesCancelAction422 = ValidationError;
-export const MailboxesCancelAction422 = ValidationError;
+export type MailboxesCancelAction422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesCancelAction422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesCancelAction429 = RateLimitedError;
 export const MailboxesCancelAction429 = RateLimitedError;
 export type MailboxesCancelAction500 = InternalError;
@@ -2227,6 +2495,8 @@ export const MailboxesDenyActionRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ reason: Schema.String }))();
 export type MailboxesDenyAction200 = MailboxAction;
 export const MailboxesDenyAction200 = MailboxAction;
+export type MailboxesDenyAction400 = MalformedRequestError;
+export const MailboxesDenyAction400 = MalformedRequestError;
 export type MailboxesDenyAction401 = UnauthorizedError;
 export const MailboxesDenyAction401 = UnauthorizedError;
 export type MailboxesDenyAction403 = ForbiddenError;
@@ -2252,6 +2522,8 @@ export type MailboxesRetryAction200 = MailboxSendReceipt;
 export const MailboxesRetryAction200 = MailboxSendReceipt;
 export type MailboxesRetryAction202 = MailboxPendingSendReceipt;
 export const MailboxesRetryAction202 = MailboxPendingSendReceipt;
+export type MailboxesRetryAction400 = MalformedRequestError;
+export const MailboxesRetryAction400 = MalformedRequestError;
 export type MailboxesRetryAction401 = UnauthorizedError;
 export const MailboxesRetryAction401 = UnauthorizedError;
 export type MailboxesRetryAction402 = PaymentRequiredError;
@@ -2273,8 +2545,9 @@ export const MailboxesRetryAction404 = ResourceNotFoundError;
 export type MailboxesRetryAction409 = MailboxSendConflictError | ConflictError;
 export const MailboxesRetryAction409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesRetryAction422 = ValidationError;
-export const MailboxesRetryAction422 = ValidationError;
+export type MailboxesRetryAction422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesRetryAction422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesRetryAction429 = RateLimitedError;
 export const MailboxesRetryAction429 = RateLimitedError;
 export type MailboxesRetryAction500 = InternalError;
@@ -2288,17 +2561,16 @@ export const MailboxesRetryAction504 = GatewayTimeoutError;
 export type MailboxesGetAgentActivityPathParams = { readonly id: MailboxId };
 export const MailboxesGetAgentActivityPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
-export type MailboxesGetAgentActivityQuery = {
-  readonly after?: string | null;
-  readonly before?: string | null;
-};
+export type MailboxesGetAgentActivityQuery = { readonly after?: string; readonly before?: string };
 export const MailboxesGetAgentActivityQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesGetAgentActivity200 = MailboxAgentActivity;
 export const MailboxesGetAgentActivity200 = MailboxAgentActivity;
+export type MailboxesGetAgentActivity400 = MalformedRequestError;
+export const MailboxesGetAgentActivity400 = MalformedRequestError;
 export type MailboxesGetAgentActivity401 = UnauthorizedError;
 export const MailboxesGetAgentActivity401 = UnauthorizedError;
 export type MailboxesGetAgentActivity403 = ForbiddenError;
@@ -2316,8 +2588,8 @@ export const MailboxesListDraftsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListDraftsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly threadId?: MailboxThreadId | null;
+  readonly cursor?: string;
+  readonly threadId?: MailboxThreadId;
 };
 export const MailboxesListDraftsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2334,11 +2606,13 @@ export const MailboxesListDraftsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    threadId: Schema.optionalKey(MailboxThreadId),
   }))();
 export type MailboxesListDrafts200 = MailboxDraftPage;
 export const MailboxesListDrafts200 = MailboxDraftPage;
+export type MailboxesListDrafts400 = MalformedRequestError;
+export const MailboxesListDrafts400 = MalformedRequestError;
 export type MailboxesListDrafts401 = UnauthorizedError;
 export const MailboxesListDrafts401 = UnauthorizedError;
 export type MailboxesListDrafts403 = ForbiddenError;
@@ -2354,42 +2628,15 @@ export const MailboxesListDrafts504 = GatewayTimeoutError;
 export type MailboxesCreateDraftPathParams = { readonly id: MailboxId };
 export const MailboxesCreateDraftPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
-export type MailboxesCreateDraftRequestJson = {
-  readonly channel?: "email" | null;
-  readonly endpointId?: MailboxEndpointId | null;
-  readonly to?: ReadonlyArray<string> | null;
-  readonly cc?: ReadonlyArray<string> | null;
-  readonly bcc?: ReadonlyArray<string> | null;
-  readonly replyTo?: ReadonlyArray<string> | null;
-  readonly subject?: string | null;
-  readonly text?: string | null;
-  readonly html?: string | null;
-  readonly attachments?: ReadonlyArray<EmailAttachment> | null;
-  readonly inReplyToMessageId?: MessageId | null;
-};
+export type MailboxesCreateDraftRequestJson =
+  | CreateMailboxEmailDraftPayload
+  | CreateMailboxChatDraftPayload;
 export const MailboxesCreateDraftRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-    endpointId: Schema.optionalKey(Schema.Union([MailboxEndpointId, Schema.Null])),
-    to: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    attachments: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(EmailAttachment).check(
-          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
-  }))();
+  Schema.Union([CreateMailboxEmailDraftPayload, CreateMailboxChatDraftPayload]))();
 export type MailboxesCreateDraft201 = MailboxDraft;
 export const MailboxesCreateDraft201 = MailboxDraft;
+export type MailboxesCreateDraft400 = MalformedRequestError;
+export const MailboxesCreateDraft400 = MalformedRequestError;
 export type MailboxesCreateDraft401 = UnauthorizedError;
 export const MailboxesCreateDraft401 = UnauthorizedError;
 export type MailboxesCreateDraft403 = ForbiddenError;
@@ -2410,6 +2657,8 @@ export const MailboxesGetDraftPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesGetDraft200 = MailboxDraft;
 export const MailboxesGetDraft200 = MailboxDraft;
+export type MailboxesGetDraft400 = MalformedRequestError;
+export const MailboxesGetDraft400 = MalformedRequestError;
 export type MailboxesGetDraft401 = UnauthorizedError;
 export const MailboxesGetDraft401 = UnauthorizedError;
 export type MailboxesGetDraft403 = ForbiddenError;
@@ -2430,6 +2679,8 @@ export const MailboxesDeleteDraftPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
 export type MailboxesDeleteDraft200 = SuccessResponse;
 export const MailboxesDeleteDraft200 = SuccessResponse;
+export type MailboxesDeleteDraft400 = MalformedRequestError;
+export const MailboxesDeleteDraft400 = MalformedRequestError;
 export type MailboxesDeleteDraft401 = UnauthorizedError;
 export const MailboxesDeleteDraft401 = UnauthorizedError;
 export type MailboxesDeleteDraft403 = ForbiddenError;
@@ -2478,6 +2729,8 @@ export const MailboxesUpdateDraftRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdateDraft200 = MailboxDraft;
 export const MailboxesUpdateDraft200 = MailboxDraft;
+export type MailboxesUpdateDraft400 = MalformedRequestError;
+export const MailboxesUpdateDraft400 = MalformedRequestError;
 export type MailboxesUpdateDraft401 = UnauthorizedError;
 export const MailboxesUpdateDraft401 = UnauthorizedError;
 export type MailboxesUpdateDraft403 = ForbiddenError;
@@ -2498,27 +2751,26 @@ export type MailboxesSendDraftPathParams = {
 };
 export const MailboxesSendDraftPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
-export type MailboxesSendDraftHeaders = { readonly "idempotency-key"?: string | null };
+export type MailboxesSendDraftHeaders = { readonly "idempotency-key"?: string };
 export const MailboxesSendDraftHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-        }).check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.annotate({
+        description:
+          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+      }).check(
+        Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
+          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+        }),
+      ),
     ),
   }))();
 export type MailboxesSendDraft200 = MailboxSendReceipt;
 export const MailboxesSendDraft200 = MailboxSendReceipt;
 export type MailboxesSendDraft202 = MailboxPendingSendReceipt;
 export const MailboxesSendDraft202 = MailboxPendingSendReceipt;
+export type MailboxesSendDraft400 = MalformedRequestError;
+export const MailboxesSendDraft400 = MalformedRequestError;
 export type MailboxesSendDraft401 = UnauthorizedError;
 export const MailboxesSendDraft401 = UnauthorizedError;
 export type MailboxesSendDraft402 = PaymentRequiredError;
@@ -2540,8 +2792,9 @@ export const MailboxesSendDraft404 = ResourceNotFoundError;
 export type MailboxesSendDraft409 = MailboxSendConflictError | ConflictError;
 export const MailboxesSendDraft409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesSendDraft422 = ValidationError;
-export const MailboxesSendDraft422 = ValidationError;
+export type MailboxesSendDraft422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesSendDraft422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesSendDraft429 = RateLimitedError;
 export const MailboxesSendDraft429 = RateLimitedError;
 export type MailboxesSendDraft500 = InternalError;
@@ -2579,6 +2832,8 @@ export const MailboxesCreateEndpointRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreateEndpoint201 = Mailbox;
 export const MailboxesCreateEndpoint201 = Mailbox;
+export type MailboxesCreateEndpoint400 = MalformedRequestError;
+export const MailboxesCreateEndpoint400 = MalformedRequestError;
 export type MailboxesCreateEndpoint401 = UnauthorizedError;
 export const MailboxesCreateEndpoint401 = UnauthorizedError;
 export type MailboxesCreateEndpoint403 = FlagDisabledError | ForbiddenError;
@@ -2602,6 +2857,8 @@ export const MailboxesRemoveEndpointPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, endpointId: MailboxEndpointId }))();
 export type MailboxesRemoveEndpoint200 = Mailbox;
 export const MailboxesRemoveEndpoint200 = Mailbox;
+export type MailboxesRemoveEndpoint400 = MalformedRequestError;
+export const MailboxesRemoveEndpoint400 = MalformedRequestError;
 export type MailboxesRemoveEndpoint401 = UnauthorizedError;
 export const MailboxesRemoveEndpoint401 = UnauthorizedError;
 export type MailboxesRemoveEndpoint403 = ForbiddenError;
@@ -2642,6 +2899,8 @@ export const MailboxesUpdateEndpointRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdateEndpoint200 = Mailbox;
 export const MailboxesUpdateEndpoint200 = Mailbox;
+export type MailboxesUpdateEndpoint400 = MalformedRequestError;
+export const MailboxesUpdateEndpoint400 = MalformedRequestError;
 export type MailboxesUpdateEndpoint401 = UnauthorizedError;
 export const MailboxesUpdateEndpoint401 = UnauthorizedError;
 export type MailboxesUpdateEndpoint403 = ForbiddenError;
@@ -2659,9 +2918,9 @@ export const MailboxesListEventsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListEventsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const MailboxesListEventsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2678,12 +2937,14 @@ export const MailboxesListEventsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesListEvents200 = MailboxEventPage;
 export const MailboxesListEvents200 = MailboxEventPage;
+export type MailboxesListEvents400 = MalformedRequestError;
+export const MailboxesListEvents400 = MalformedRequestError;
 export type MailboxesListEvents401 = UnauthorizedError;
 export const MailboxesListEvents401 = UnauthorizedError;
 export type MailboxesListEvents403 = ForbiddenError;
@@ -2701,6 +2962,8 @@ export const MailboxesListFoldersPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListFolders200 = MailboxFolderCountList;
 export const MailboxesListFolders200 = MailboxFolderCountList;
+export type MailboxesListFolders400 = MalformedRequestError;
+export const MailboxesListFolders400 = MalformedRequestError;
 export type MailboxesListFolders401 = UnauthorizedError;
 export const MailboxesListFolders401 = UnauthorizedError;
 export type MailboxesListFolders403 = ForbiddenError;
@@ -2716,10 +2979,7 @@ export const MailboxesListFolders504 = GatewayTimeoutError;
 export type MailboxesListGrantsPathParams = { readonly id: MailboxId };
 export const MailboxesListGrantsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
-export type MailboxesListGrantsQuery = {
-  readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-};
+export type MailboxesListGrantsQuery = { readonly limit?: number | null; readonly cursor?: string };
 export const MailboxesListGrantsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     limit: Schema.optionalKey(
@@ -2735,10 +2995,12 @@ export const MailboxesListGrantsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesListGrants200 = MailboxGrantPage;
 export const MailboxesListGrants200 = MailboxGrantPage;
+export type MailboxesListGrants400 = MalformedRequestError;
+export const MailboxesListGrants400 = MalformedRequestError;
 export type MailboxesListGrants401 = UnauthorizedError;
 export const MailboxesListGrants401 = UnauthorizedError;
 export type MailboxesListGrants403 = ForbiddenError;
@@ -2767,6 +3029,8 @@ export const MailboxesCreateGrantRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreateGrant201 = MailboxGrant;
 export const MailboxesCreateGrant201 = MailboxGrant;
+export type MailboxesCreateGrant400 = MalformedRequestError;
+export const MailboxesCreateGrant400 = MalformedRequestError;
 export type MailboxesCreateGrant401 = UnauthorizedError;
 export const MailboxesCreateGrant401 = UnauthorizedError;
 export type MailboxesCreateGrant403 = ForbiddenError;
@@ -2789,6 +3053,8 @@ export const MailboxesRevokeGrantPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, grantId: MailboxGrantId }))();
 export type MailboxesRevokeGrant200 = SuccessResponse;
 export const MailboxesRevokeGrant200 = SuccessResponse;
+export type MailboxesRevokeGrant400 = MalformedRequestError;
+export const MailboxesRevokeGrant400 = MalformedRequestError;
 export type MailboxesRevokeGrant401 = UnauthorizedError;
 export const MailboxesRevokeGrant401 = UnauthorizedError;
 export type MailboxesRevokeGrant403 = ForbiddenError;
@@ -2820,6 +3086,8 @@ export const MailboxesUpdateGrantRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdateGrant200 = MailboxGrant;
 export const MailboxesUpdateGrant200 = MailboxGrant;
+export type MailboxesUpdateGrant400 = MalformedRequestError;
+export const MailboxesUpdateGrant400 = MalformedRequestError;
 export type MailboxesUpdateGrant401 = UnauthorizedError;
 export const MailboxesUpdateGrant401 = UnauthorizedError;
 export type MailboxesUpdateGrant403 = ForbiddenError;
@@ -2839,6 +3107,8 @@ export const MailboxesListLabelsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListLabels200 = MailboxLabelList;
 export const MailboxesListLabels200 = MailboxLabelList;
+export type MailboxesListLabels400 = MalformedRequestError;
+export const MailboxesListLabels400 = MalformedRequestError;
 export type MailboxesListLabels401 = UnauthorizedError;
 export const MailboxesListLabels401 = UnauthorizedError;
 export type MailboxesListLabels403 = ForbiddenError;
@@ -2881,6 +3151,8 @@ export const MailboxesCreateLabelRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreateLabel201 = MailboxLabel;
 export const MailboxesCreateLabel201 = MailboxLabel;
+export type MailboxesCreateLabel400 = MalformedRequestError;
+export const MailboxesCreateLabel400 = MalformedRequestError;
 export type MailboxesCreateLabel401 = UnauthorizedError;
 export const MailboxesCreateLabel401 = UnauthorizedError;
 export type MailboxesCreateLabel403 = ForbiddenError;
@@ -2903,6 +3175,8 @@ export const MailboxesDeleteLabelPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, labelId: MailboxLabelId }))();
 export type MailboxesDeleteLabel200 = SuccessResponse;
 export const MailboxesDeleteLabel200 = SuccessResponse;
+export type MailboxesDeleteLabel400 = MalformedRequestError;
+export const MailboxesDeleteLabel400 = MalformedRequestError;
 export type MailboxesDeleteLabel401 = UnauthorizedError;
 export const MailboxesDeleteLabel401 = UnauthorizedError;
 export type MailboxesDeleteLabel403 = ForbiddenError;
@@ -2953,6 +3227,8 @@ export const MailboxesUpdateLabelRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdateLabel200 = MailboxLabel;
 export const MailboxesUpdateLabel200 = MailboxLabel;
+export type MailboxesUpdateLabel400 = MalformedRequestError;
+export const MailboxesUpdateLabel400 = MalformedRequestError;
 export type MailboxesUpdateLabel401 = UnauthorizedError;
 export const MailboxesUpdateLabel401 = UnauthorizedError;
 export type MailboxesUpdateLabel403 = ForbiddenError;
@@ -2968,59 +3244,29 @@ export const MailboxesUpdateLabel504 = GatewayTimeoutError;
 export type MailboxesSendMessagePathParams = { readonly id: MailboxId };
 export const MailboxesSendMessagePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
-export type MailboxesSendMessageHeaders = { readonly "idempotency-key"?: string | null };
+export type MailboxesSendMessageHeaders = { readonly "idempotency-key"?: string };
 export const MailboxesSendMessageHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-        }).check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.annotate({
+        description:
+          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+      }).check(
+        Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
+          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+        }),
+      ),
     ),
   }))();
-export type MailboxesSendMessageRequestJson = {
-  readonly channel?: "email" | null;
-  readonly to: readonly [string, ...Array<string>];
-  readonly cc?: ReadonlyArray<string> | null;
-  readonly bcc?: ReadonlyArray<string> | null;
-  readonly replyTo?: ReadonlyArray<string> | null;
-  readonly subject: string;
-  readonly text?: string | null;
-  readonly html?: string | null;
-  readonly attachments?: ReadonlyArray<EmailAttachment> | null;
-};
+export type MailboxesSendMessageRequestJson = SendMailboxEmailPayload | SendMailboxChatPayload;
 export const MailboxesSendMessageRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-    to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    subject: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    attachments: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(EmailAttachment).check(
-          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-  }))();
+  Schema.Union([SendMailboxEmailPayload, SendMailboxChatPayload]))();
 export type MailboxesSendMessage200 = MailboxSendReceipt;
 export const MailboxesSendMessage200 = MailboxSendReceipt;
 export type MailboxesSendMessage202 = MailboxPendingSendReceipt;
 export const MailboxesSendMessage202 = MailboxPendingSendReceipt;
+export type MailboxesSendMessage400 = MalformedRequestError;
+export const MailboxesSendMessage400 = MalformedRequestError;
 export type MailboxesSendMessage401 = UnauthorizedError;
 export const MailboxesSendMessage401 = UnauthorizedError;
 export type MailboxesSendMessage402 = PaymentRequiredError;
@@ -3042,8 +3288,9 @@ export const MailboxesSendMessage404 = ResourceNotFoundError;
 export type MailboxesSendMessage409 = MailboxSendConflictError | ConflictError;
 export const MailboxesSendMessage409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesSendMessage422 = ValidationError;
-export const MailboxesSendMessage422 = ValidationError;
+export type MailboxesSendMessage422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesSendMessage422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesSendMessage429 = RateLimitedError;
 export const MailboxesSendMessage429 = RateLimitedError;
 export type MailboxesSendMessage500 = InternalError;
@@ -3062,6 +3309,8 @@ export const MailboxesGetMessagePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesGetMessage200 = MailboxMessage;
 export const MailboxesGetMessage200 = MailboxMessage;
+export type MailboxesGetMessage400 = MalformedRequestError;
+export const MailboxesGetMessage400 = MalformedRequestError;
 export type MailboxesGetMessage401 = UnauthorizedError;
 export const MailboxesGetMessage401 = UnauthorizedError;
 export type MailboxesGetMessage403 = ForbiddenError;
@@ -3083,6 +3332,8 @@ export const MailboxesGetMessageAttachmentPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId, attachmentId: AttachmentId }))();
 export type MailboxesGetMessageAttachment200 = MailboxDownloadUrl;
 export const MailboxesGetMessageAttachment200 = MailboxDownloadUrl;
+export type MailboxesGetMessageAttachment400 = MalformedRequestError;
+export const MailboxesGetMessageAttachment400 = MalformedRequestError;
 export type MailboxesGetMessageAttachment401 = UnauthorizedError;
 export const MailboxesGetMessageAttachment401 = UnauthorizedError;
 export type MailboxesGetMessageAttachment403 = ForbiddenError;
@@ -3104,6 +3355,8 @@ export const MailboxesCopyMessageAttachmentPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId, attachmentId: AttachmentId }))();
 export type MailboxesCopyMessageAttachment201 = MailboxCopiedAttachment;
 export const MailboxesCopyMessageAttachment201 = MailboxCopiedAttachment;
+export type MailboxesCopyMessageAttachment400 = MalformedRequestError;
+export const MailboxesCopyMessageAttachment400 = MalformedRequestError;
 export type MailboxesCopyMessageAttachment401 = UnauthorizedError;
 export const MailboxesCopyMessageAttachment401 = UnauthorizedError;
 export type MailboxesCopyMessageAttachment403 = ForbiddenError;
@@ -3126,6 +3379,8 @@ export const MailboxesDiscardMessagePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesDiscardMessage200 = MailboxQuarantinedMessage;
 export const MailboxesDiscardMessage200 = MailboxQuarantinedMessage;
+export type MailboxesDiscardMessage400 = MalformedRequestError;
+export const MailboxesDiscardMessage400 = MalformedRequestError;
 export type MailboxesDiscardMessage401 = UnauthorizedError;
 export const MailboxesDiscardMessage401 = UnauthorizedError;
 export type MailboxesDiscardMessage403 = ForbiddenError;
@@ -3145,21 +3400,18 @@ export const MailboxesDiscardMessage504 = GatewayTimeoutError;
 export type MailboxesForwardPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
 export const MailboxesForwardPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
-export type MailboxesForwardHeaders = { readonly "idempotency-key"?: string | null };
+export type MailboxesForwardHeaders = { readonly "idempotency-key"?: string };
 export const MailboxesForwardHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-        }).check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.annotate({
+        description:
+          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+      }).check(
+        Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
+          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+        }),
+      ),
     ),
   }))();
 export type MailboxesForwardRequestJson = {
@@ -3190,6 +3442,8 @@ export type MailboxesForward200 = MailboxSendReceipt;
 export const MailboxesForward200 = MailboxSendReceipt;
 export type MailboxesForward202 = MailboxPendingSendReceipt;
 export const MailboxesForward202 = MailboxPendingSendReceipt;
+export type MailboxesForward400 = MalformedRequestError;
+export const MailboxesForward400 = MalformedRequestError;
 export type MailboxesForward401 = UnauthorizedError;
 export const MailboxesForward401 = UnauthorizedError;
 export type MailboxesForward402 = PaymentRequiredError;
@@ -3211,8 +3465,9 @@ export const MailboxesForward404 = ResourceNotFoundError;
 export type MailboxesForward409 = MailboxSendConflictError | ConflictError;
 export const MailboxesForward409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesForward422 = ValidationError;
-export const MailboxesForward422 = ValidationError;
+export type MailboxesForward422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesForward422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesForward429 = RateLimitedError;
 export const MailboxesForward429 = RateLimitedError;
 export type MailboxesForward500 = InternalError;
@@ -3231,6 +3486,8 @@ export const MailboxesGetMessageRawPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesGetMessageRaw200 = MailboxDownloadUrl;
 export const MailboxesGetMessageRaw200 = MailboxDownloadUrl;
+export type MailboxesGetMessageRaw400 = MalformedRequestError;
+export const MailboxesGetMessageRaw400 = MalformedRequestError;
 export type MailboxesGetMessageRaw401 = UnauthorizedError;
 export const MailboxesGetMessageRaw401 = UnauthorizedError;
 export type MailboxesGetMessageRaw403 = ForbiddenError;
@@ -3251,6 +3508,8 @@ export const MailboxesReleaseMessagePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
 export type MailboxesReleaseMessage200 = MailboxQuarantinedMessage;
 export const MailboxesReleaseMessage200 = MailboxQuarantinedMessage;
+export type MailboxesReleaseMessage400 = MalformedRequestError;
+export const MailboxesReleaseMessage400 = MalformedRequestError;
 export type MailboxesReleaseMessage401 = UnauthorizedError;
 export const MailboxesReleaseMessage401 = UnauthorizedError;
 export type MailboxesReleaseMessage403 = ForbiddenError;
@@ -3268,51 +3527,29 @@ export const MailboxesReleaseMessage504 = GatewayTimeoutError;
 export type MailboxesReplyPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
 export const MailboxesReplyPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
-export type MailboxesReplyHeaders = { readonly "idempotency-key"?: string | null };
+export type MailboxesReplyHeaders = { readonly "idempotency-key"?: string };
 export const MailboxesReplyHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-        }).check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.annotate({
+        description:
+          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+      }).check(
+        Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
+          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+        }),
+      ),
     ),
   }))();
-export type MailboxesReplyRequestJson = {
-  readonly channel?: "email" | null;
-  readonly cc?: ReadonlyArray<string> | null;
-  readonly bcc?: ReadonlyArray<string> | null;
-  readonly text?: string | null;
-  readonly html?: string | null;
-  readonly attachments?: ReadonlyArray<EmailAttachment> | null;
-};
+export type MailboxesReplyRequestJson = ReplyMailboxEmailPayload | ReplyMailboxChatPayload;
 export const MailboxesReplyRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    attachments: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(EmailAttachment).check(
-          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-  }))();
+  Schema.Union([ReplyMailboxEmailPayload, ReplyMailboxChatPayload]))();
 export type MailboxesReply200 = MailboxSendReceipt;
 export const MailboxesReply200 = MailboxSendReceipt;
 export type MailboxesReply202 = MailboxPendingSendReceipt;
 export const MailboxesReply202 = MailboxPendingSendReceipt;
+export type MailboxesReply400 = MalformedRequestError;
+export const MailboxesReply400 = MalformedRequestError;
 export type MailboxesReply401 = UnauthorizedError;
 export const MailboxesReply401 = UnauthorizedError;
 export type MailboxesReply402 = PaymentRequiredError;
@@ -3334,8 +3571,9 @@ export const MailboxesReply404 = ResourceNotFoundError;
 export type MailboxesReply409 = MailboxSendConflictError | ConflictError;
 export const MailboxesReply409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesReply422 = ValidationError;
-export const MailboxesReply422 = ValidationError;
+export type MailboxesReply422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesReply422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesReply429 = RateLimitedError;
 export const MailboxesReply429 = RateLimitedError;
 export type MailboxesReply500 = InternalError;
@@ -3349,51 +3587,29 @@ export const MailboxesReply504 = GatewayTimeoutError;
 export type MailboxesReplyAllPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
 export const MailboxesReplyAllPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
-export type MailboxesReplyAllHeaders = { readonly "idempotency-key"?: string | null };
+export type MailboxesReplyAllHeaders = { readonly "idempotency-key"?: string };
 export const MailboxesReplyAllHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
-        }).check(
-          Schema.isPattern(new RegExp("^[\\s\\S]{1,255}$")).annotate({
-            expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
-          }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.annotate({
+        description:
+          "Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.",
+      }).check(
+        Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
+          expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
+        }),
+      ),
     ),
   }))();
-export type MailboxesReplyAllRequestJson = {
-  readonly channel?: "email" | null;
-  readonly cc?: ReadonlyArray<string> | null;
-  readonly bcc?: ReadonlyArray<string> | null;
-  readonly text?: string | null;
-  readonly html?: string | null;
-  readonly attachments?: ReadonlyArray<EmailAttachment> | null;
-};
+export type MailboxesReplyAllRequestJson = ReplyMailboxEmailPayload | ReplyMailboxChatPayload;
 export const MailboxesReplyAllRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.optionalKey(Schema.Union([Schema.Literal("email"), Schema.Null])),
-    cc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    bcc: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    attachments: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(EmailAttachment).check(
-          Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-  }))();
+  Schema.Union([ReplyMailboxEmailPayload, ReplyMailboxChatPayload]))();
 export type MailboxesReplyAll200 = MailboxSendReceipt;
 export const MailboxesReplyAll200 = MailboxSendReceipt;
 export type MailboxesReplyAll202 = MailboxPendingSendReceipt;
 export const MailboxesReplyAll202 = MailboxPendingSendReceipt;
+export type MailboxesReplyAll400 = MalformedRequestError;
+export const MailboxesReplyAll400 = MalformedRequestError;
 export type MailboxesReplyAll401 = UnauthorizedError;
 export const MailboxesReplyAll401 = UnauthorizedError;
 export type MailboxesReplyAll402 = PaymentRequiredError;
@@ -3415,8 +3631,9 @@ export const MailboxesReplyAll404 = ResourceNotFoundError;
 export type MailboxesReplyAll409 = MailboxSendConflictError | ConflictError;
 export const MailboxesReplyAll409 = /* @__PURE__ */ (() =>
   Schema.Union([MailboxSendConflictError, ConflictError]))();
-export type MailboxesReplyAll422 = ValidationError;
-export const MailboxesReplyAll422 = ValidationError;
+export type MailboxesReplyAll422 = WhatsAppServiceWindowClosedError | ValidationError;
+export const MailboxesReplyAll422 = /* @__PURE__ */ (() =>
+  Schema.Union([WhatsAppServiceWindowClosedError, ValidationError]))();
 export type MailboxesReplyAll429 = RateLimitedError;
 export const MailboxesReplyAll429 = RateLimitedError;
 export type MailboxesReplyAll500 = InternalError;
@@ -3431,6 +3648,8 @@ export type MailboxesPausePathParams = { readonly id: MailboxId };
 export const MailboxesPausePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesPause200 = Mailbox;
 export const MailboxesPause200 = Mailbox;
+export type MailboxesPause400 = MalformedRequestError;
+export const MailboxesPause400 = MalformedRequestError;
 export type MailboxesPause401 = UnauthorizedError;
 export const MailboxesPause401 = UnauthorizedError;
 export type MailboxesPause403 = ForbiddenError;
@@ -3448,6 +3667,8 @@ export const MailboxesListPoliciesPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListPolicies200 = MailboxPolicyList;
 export const MailboxesListPolicies200 = MailboxPolicyList;
+export type MailboxesListPolicies400 = MalformedRequestError;
+export const MailboxesListPolicies400 = MalformedRequestError;
 export type MailboxesListPolicies401 = UnauthorizedError;
 export const MailboxesListPolicies401 = UnauthorizedError;
 export type MailboxesListPolicies403 = ForbiddenError;
@@ -3478,7 +3699,7 @@ export const MailboxesCreatePolicyRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
       )
       .check(
-        Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
           expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
         }),
       )
@@ -3502,6 +3723,8 @@ export const MailboxesCreatePolicyRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreatePolicy201 = MailboxPolicy;
 export const MailboxesCreatePolicy201 = MailboxPolicy;
+export type MailboxesCreatePolicy400 = MalformedRequestError;
+export const MailboxesCreatePolicy400 = MalformedRequestError;
 export type MailboxesCreatePolicy401 = UnauthorizedError;
 export const MailboxesCreatePolicy401 = UnauthorizedError;
 export type MailboxesCreatePolicy403 = ForbiddenError;
@@ -3524,6 +3747,8 @@ export const MailboxesGetPolicyPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, policyId: MailboxPolicyId }))();
 export type MailboxesGetPolicy200 = MailboxPolicy;
 export const MailboxesGetPolicy200 = MailboxPolicy;
+export type MailboxesGetPolicy400 = MalformedRequestError;
+export const MailboxesGetPolicy400 = MalformedRequestError;
 export type MailboxesGetPolicy401 = UnauthorizedError;
 export const MailboxesGetPolicy401 = UnauthorizedError;
 export type MailboxesGetPolicy403 = ForbiddenError;
@@ -3544,6 +3769,8 @@ export const MailboxesDeletePolicyPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, policyId: MailboxPolicyId }))();
 export type MailboxesDeletePolicy200 = SuccessResponse;
 export const MailboxesDeletePolicy200 = SuccessResponse;
+export type MailboxesDeletePolicy400 = MalformedRequestError;
+export const MailboxesDeletePolicy400 = MalformedRequestError;
 export type MailboxesDeletePolicy401 = UnauthorizedError;
 export const MailboxesDeletePolicy401 = UnauthorizedError;
 export type MailboxesDeletePolicy403 = ForbiddenError;
@@ -3581,7 +3808,7 @@ export const MailboxesUpdatePolicyRequestJson = /* @__PURE__ */ (() =>
             }),
           )
           .check(
-            Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
               expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
             }),
           )
@@ -3608,6 +3835,8 @@ export const MailboxesUpdatePolicyRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdatePolicy200 = MailboxPolicy;
 export const MailboxesUpdatePolicy200 = MailboxPolicy;
+export type MailboxesUpdatePolicy400 = MalformedRequestError;
+export const MailboxesUpdatePolicy400 = MalformedRequestError;
 export type MailboxesUpdatePolicy401 = UnauthorizedError;
 export const MailboxesUpdatePolicy401 = UnauthorizedError;
 export type MailboxesUpdatePolicy403 = ForbiddenError;
@@ -3625,9 +3854,9 @@ export const MailboxesListQuarantinePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListQuarantineQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const MailboxesListQuarantineQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3644,12 +3873,14 @@ export const MailboxesListQuarantineQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesListQuarantine200 = MailboxQuarantinePage;
 export const MailboxesListQuarantine200 = MailboxQuarantinePage;
+export type MailboxesListQuarantine400 = MalformedRequestError;
+export const MailboxesListQuarantine400 = MalformedRequestError;
 export type MailboxesListQuarantine401 = UnauthorizedError;
 export const MailboxesListQuarantine401 = UnauthorizedError;
 export type MailboxesListQuarantine403 = ForbiddenError;
@@ -3666,6 +3897,8 @@ export type MailboxesResumePathParams = { readonly id: MailboxId };
 export const MailboxesResumePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesResume200 = Mailbox;
 export const MailboxesResume200 = Mailbox;
+export type MailboxesResume400 = MalformedRequestError;
+export const MailboxesResume400 = MalformedRequestError;
 export type MailboxesResume401 = UnauthorizedError;
 export const MailboxesResume401 = UnauthorizedError;
 export type MailboxesResume403 = ForbiddenError;
@@ -3683,13 +3916,13 @@ export const MailboxesListThreadsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
 export type MailboxesListThreadsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
-  readonly q?: string | null;
-  readonly state?: "active" | "done" | null;
-  readonly folder?: MailboxThreadFolder | null;
-  readonly label?: MailboxLabelId | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
+  readonly q?: string;
+  readonly state?: "active" | "done";
+  readonly folder?: MailboxThreadFolder;
+  readonly label?: MailboxLabelId;
   readonly unread?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozed?: boolean | null;
@@ -3709,21 +3942,21 @@ export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    q: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    state: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Literal("active"), Schema.Literal("done")]), Schema.Null]),
-    ),
-    folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
-    label: Schema.optionalKey(Schema.Union([MailboxLabelId, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
+    q: Schema.optionalKey(Schema.String),
+    state: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("done")])),
+    folder: Schema.optionalKey(MailboxThreadFolder),
+    label: Schema.optionalKey(MailboxLabelId),
     unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type MailboxesListThreads200 = MailboxThreadPage;
 export const MailboxesListThreads200 = MailboxThreadPage;
+export type MailboxesListThreads400 = MalformedRequestError;
+export const MailboxesListThreads400 = MalformedRequestError;
 export type MailboxesListThreads401 = UnauthorizedError;
 export const MailboxesListThreads401 = UnauthorizedError;
 export type MailboxesListThreads403 = ForbiddenError;
@@ -3744,6 +3977,8 @@ export const MailboxesGetThreadPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesGetThread200 = MailboxThread;
 export const MailboxesGetThread200 = MailboxThread;
+export type MailboxesGetThread400 = MalformedRequestError;
+export const MailboxesGetThread400 = MalformedRequestError;
 export type MailboxesGetThread401 = UnauthorizedError;
 export const MailboxesGetThread401 = UnauthorizedError;
 export type MailboxesGetThread403 = ForbiddenError;
@@ -3783,6 +4018,8 @@ export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdateThread200 = MailboxThreadState;
 export const MailboxesUpdateThread200 = MailboxThreadState;
+export type MailboxesUpdateThread400 = MalformedRequestError;
+export const MailboxesUpdateThread400 = MalformedRequestError;
 export type MailboxesUpdateThread401 = UnauthorizedError;
 export const MailboxesUpdateThread401 = UnauthorizedError;
 export type MailboxesUpdateThread403 = ForbiddenError;
@@ -3803,7 +4040,7 @@ export const MailboxesGetThreadContentPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesGetThreadContentQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const MailboxesGetThreadContentQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3820,10 +4057,12 @@ export const MailboxesGetThreadContentQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesGetThreadContent200 = MailboxThreadContentPage;
 export const MailboxesGetThreadContent200 = MailboxThreadContentPage;
+export type MailboxesGetThreadContent400 = MalformedRequestError;
+export const MailboxesGetThreadContent400 = MalformedRequestError;
 export type MailboxesGetThreadContent401 = UnauthorizedError;
 export const MailboxesGetThreadContent401 = UnauthorizedError;
 export type MailboxesGetThreadContent403 = ForbiddenError;
@@ -3851,6 +4090,8 @@ export const MailboxesAddThreadLabelsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesAddThreadLabels200 = MailboxThreadState;
 export const MailboxesAddThreadLabels200 = MailboxThreadState;
+export type MailboxesAddThreadLabels400 = MalformedRequestError;
+export const MailboxesAddThreadLabels400 = MalformedRequestError;
 export type MailboxesAddThreadLabels401 = UnauthorizedError;
 export const MailboxesAddThreadLabels401 = UnauthorizedError;
 export type MailboxesAddThreadLabels403 = ForbiddenError;
@@ -3878,6 +4119,8 @@ export const MailboxesRemoveThreadLabelsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesRemoveThreadLabels200 = MailboxThreadState;
 export const MailboxesRemoveThreadLabels200 = MailboxThreadState;
+export type MailboxesRemoveThreadLabels400 = MalformedRequestError;
+export const MailboxesRemoveThreadLabels400 = MalformedRequestError;
 export type MailboxesRemoveThreadLabels401 = UnauthorizedError;
 export const MailboxesRemoveThreadLabels401 = UnauthorizedError;
 export type MailboxesRemoveThreadLabels403 = ForbiddenError;
@@ -3898,7 +4141,7 @@ export const MailboxesListThreadMessagesPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesListThreadMessagesQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const MailboxesListThreadMessagesQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3915,10 +4158,12 @@ export const MailboxesListThreadMessagesQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesListThreadMessages200 = MailboxMessagePage;
 export const MailboxesListThreadMessages200 = MailboxMessagePage;
+export type MailboxesListThreadMessages400 = MalformedRequestError;
+export const MailboxesListThreadMessages400 = MalformedRequestError;
 export type MailboxesListThreadMessages401 = UnauthorizedError;
 export const MailboxesListThreadMessages401 = UnauthorizedError;
 export type MailboxesListThreadMessages403 = ForbiddenError;
@@ -3939,7 +4184,7 @@ export const MailboxesListThreadNotesPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
 export type MailboxesListThreadNotesQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const MailboxesListThreadNotesQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3956,10 +4201,12 @@ export const MailboxesListThreadNotesQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesListThreadNotes200 = MailboxNotePage;
 export const MailboxesListThreadNotes200 = MailboxNotePage;
+export type MailboxesListThreadNotes400 = MalformedRequestError;
+export const MailboxesListThreadNotes400 = MalformedRequestError;
 export type MailboxesListThreadNotes401 = UnauthorizedError;
 export const MailboxesListThreadNotes401 = UnauthorizedError;
 export type MailboxesListThreadNotes403 = ForbiddenError;
@@ -3991,6 +4238,8 @@ export const MailboxesCreateNoteRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreateNote201 = MailboxNote;
 export const MailboxesCreateNote201 = MailboxNote;
+export type MailboxesCreateNote400 = MalformedRequestError;
+export const MailboxesCreateNote400 = MalformedRequestError;
 export type MailboxesCreateNote401 = UnauthorizedError;
 export const MailboxesCreateNote401 = UnauthorizedError;
 export type MailboxesCreateNote403 = ForbiddenError;
@@ -4012,6 +4261,8 @@ export const MailboxesDeleteNotePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, threadId: MailboxThreadId, noteId: MailboxNoteId }))();
 export type MailboxesDeleteNote200 = SuccessResponse;
 export const MailboxesDeleteNote200 = SuccessResponse;
+export type MailboxesDeleteNote400 = MalformedRequestError;
+export const MailboxesDeleteNote400 = MalformedRequestError;
 export type MailboxesDeleteNote401 = UnauthorizedError;
 export const MailboxesDeleteNote401 = UnauthorizedError;
 export type MailboxesDeleteNote403 = ForbiddenError;
@@ -4044,6 +4295,8 @@ export const MailboxesUpdateNoteRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesUpdateNote200 = MailboxNote;
 export const MailboxesUpdateNote200 = MailboxNote;
+export type MailboxesUpdateNote400 = MalformedRequestError;
+export const MailboxesUpdateNote400 = MalformedRequestError;
 export type MailboxesUpdateNote401 = UnauthorizedError;
 export const MailboxesUpdateNote401 = UnauthorizedError;
 export type MailboxesUpdateNote403 = ForbiddenError;
@@ -4058,10 +4311,10 @@ export type MailboxesUpdateNote504 = GatewayTimeoutError;
 export const MailboxesUpdateNote504 = GatewayTimeoutError;
 export type MailboxesListOrganizationDraftsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId> | null;
-  readonly kind?: "personal" | "shared" | null;
-  readonly threadId?: MailboxThreadId | null;
+  readonly cursor?: string;
+  readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId>;
+  readonly kind?: "personal" | "shared";
+  readonly threadId?: MailboxThreadId;
 };
 export const MailboxesListOrganizationDraftsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -4078,18 +4331,15 @@ export const MailboxesListOrganizationDraftsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId), Schema.Null])),
-    kind: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]),
-        Schema.Null,
-      ]),
-    ),
-    threadId: Schema.optionalKey(Schema.Union([MailboxThreadId, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId)])),
+    kind: Schema.optionalKey(Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")])),
+    threadId: Schema.optionalKey(MailboxThreadId),
   }))();
 export type MailboxesListOrganizationDrafts200 = OrganizationMailboxDraftPage;
 export const MailboxesListOrganizationDrafts200 = OrganizationMailboxDraftPage;
+export type MailboxesListOrganizationDrafts400 = MalformedRequestError;
+export const MailboxesListOrganizationDrafts400 = MalformedRequestError;
 export type MailboxesListOrganizationDrafts401 = UnauthorizedError;
 export const MailboxesListOrganizationDrafts401 = UnauthorizedError;
 export type MailboxesListOrganizationDrafts403 = ForbiddenError;
@@ -4104,7 +4354,7 @@ export type MailboxesListOrganizationDrafts504 = GatewayTimeoutError;
 export const MailboxesListOrganizationDrafts504 = GatewayTimeoutError;
 export type MailboxesGetNeedsYouQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const MailboxesGetNeedsYouQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -4121,10 +4371,12 @@ export const MailboxesGetNeedsYouQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type MailboxesGetNeedsYou200 = MailboxNeedsYou;
 export const MailboxesGetNeedsYou200 = MailboxNeedsYou;
+export type MailboxesGetNeedsYou400 = MalformedRequestError;
+export const MailboxesGetNeedsYou400 = MalformedRequestError;
 export type MailboxesGetNeedsYou401 = UnauthorizedError;
 export const MailboxesGetNeedsYou401 = UnauthorizedError;
 export type MailboxesGetNeedsYou403 = ForbiddenError;
@@ -4137,19 +4389,19 @@ export type MailboxesGetNeedsYou504 = GatewayTimeoutError;
 export const MailboxesGetNeedsYou504 = GatewayTimeoutError;
 export type MailboxesListOrganizationThreadsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
-  readonly q?: string | null;
-  readonly state?: "active" | "done" | null;
-  readonly folder?: MailboxThreadFolder | null;
-  readonly label?: MailboxLabelId | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
+  readonly q?: string;
+  readonly state?: "active" | "done";
+  readonly folder?: MailboxThreadFolder;
+  readonly label?: MailboxLabelId;
   readonly unread?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozed?: boolean | null;
-  readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId> | null;
-  readonly kind?: "personal" | "shared" | null;
-  readonly conversation?: ConversationId | null;
+  readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId>;
+  readonly kind?: "personal" | "shared";
+  readonly conversation?: ConversationId;
 };
 export const MailboxesListOrganizationThreadsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -4166,29 +4418,24 @@ export const MailboxesListOrganizationThreadsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    q: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    state: Schema.optionalKey(
-      Schema.Union([Schema.Union([Schema.Literal("active"), Schema.Literal("done")]), Schema.Null]),
-    ),
-    folder: Schema.optionalKey(Schema.Union([MailboxThreadFolder, Schema.Null])),
-    label: Schema.optionalKey(Schema.Union([MailboxLabelId, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
+    q: Schema.optionalKey(Schema.String),
+    state: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("done")])),
+    folder: Schema.optionalKey(MailboxThreadFolder),
+    label: Schema.optionalKey(MailboxLabelId),
     unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId), Schema.Null])),
-    kind: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]),
-        Schema.Null,
-      ]),
-    ),
-    conversation: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId)])),
+    kind: Schema.optionalKey(Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")])),
+    conversation: Schema.optionalKey(ConversationId),
   }))();
 export type MailboxesListOrganizationThreads200 = OrganizationMailboxThreadPage;
 export const MailboxesListOrganizationThreads200 = OrganizationMailboxThreadPage;
+export type MailboxesListOrganizationThreads400 = MalformedRequestError;
+export const MailboxesListOrganizationThreads400 = MalformedRequestError;
 export type MailboxesListOrganizationThreads401 = UnauthorizedError;
 export const MailboxesListOrganizationThreads401 = UnauthorizedError;
 export type MailboxesListOrganizationThreads403 = ForbiddenError;
@@ -4208,6 +4455,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListQuery,
       success: MailboxesList200,
       error: [
+        MailboxesList400.pipe(HttpApiSchema.status(400)),
         MailboxesList401.pipe(HttpApiSchema.status(401)),
         MailboxesList403.pipe(HttpApiSchema.status(403)),
         MailboxesList422.pipe(HttpApiSchema.status(422)),
@@ -4226,6 +4474,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreateRequestJson,
       success: MailboxesCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreate400.pipe(HttpApiSchema.status(400)),
         MailboxesCreate401.pipe(HttpApiSchema.status(401)),
         MailboxesCreate402.pipe(HttpApiSchema.status(402)),
         MailboxesCreate403.pipe(HttpApiSchema.status(403)),
@@ -4248,6 +4497,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetPathParams,
       success: MailboxesGet200,
       error: [
+        MailboxesGet400.pipe(HttpApiSchema.status(400)),
         MailboxesGet401.pipe(HttpApiSchema.status(401)),
         MailboxesGet403.pipe(HttpApiSchema.status(403)),
         MailboxesGet404.pipe(HttpApiSchema.status(404)),
@@ -4267,6 +4517,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesRemovePathParams,
       success: MailboxesRemove200,
       error: [
+        MailboxesRemove400.pipe(HttpApiSchema.status(400)),
         MailboxesRemove401.pipe(HttpApiSchema.status(401)),
         MailboxesRemove403.pipe(HttpApiSchema.status(403)),
         MailboxesRemove404.pipe(HttpApiSchema.status(404)),
@@ -4288,6 +4539,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdateRequestJson,
       success: MailboxesUpdate200,
       error: [
+        MailboxesUpdate400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdate401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdate403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdate404.pipe(HttpApiSchema.status(404)),
@@ -4308,6 +4560,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListActionsQuery,
       success: MailboxesListActions200,
       error: [
+        MailboxesListActions400.pipe(HttpApiSchema.status(400)),
         MailboxesListActions401.pipe(HttpApiSchema.status(401)),
         MailboxesListActions403.pipe(HttpApiSchema.status(403)),
         MailboxesListActions404.pipe(HttpApiSchema.status(404)),
@@ -4327,6 +4580,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetActionPathParams,
       success: MailboxesGetAction200,
       error: [
+        MailboxesGetAction400.pipe(HttpApiSchema.status(400)),
         MailboxesGetAction401.pipe(HttpApiSchema.status(401)),
         MailboxesGetAction403.pipe(HttpApiSchema.status(403)),
         MailboxesGetAction404.pipe(HttpApiSchema.status(404)),
@@ -4349,6 +4603,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         MailboxesApproveAction202.pipe(HttpApiSchema.status(202)),
       ],
       error: [
+        MailboxesApproveAction400.pipe(HttpApiSchema.status(400)),
         MailboxesApproveAction401.pipe(HttpApiSchema.status(401)),
         MailboxesApproveAction402.pipe(HttpApiSchema.status(402)),
         MailboxesApproveAction403.pipe(HttpApiSchema.status(403)),
@@ -4373,6 +4628,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesCancelActionPathParams,
       success: [MailboxesCancelAction200, MailboxesCancelAction202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesCancelAction400.pipe(HttpApiSchema.status(400)),
         MailboxesCancelAction401.pipe(HttpApiSchema.status(401)),
         MailboxesCancelAction402.pipe(HttpApiSchema.status(402)),
         MailboxesCancelAction403.pipe(HttpApiSchema.status(403)),
@@ -4398,6 +4654,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesDenyActionRequestJson,
       success: MailboxesDenyAction200,
       error: [
+        MailboxesDenyAction400.pipe(HttpApiSchema.status(400)),
         MailboxesDenyAction401.pipe(HttpApiSchema.status(401)),
         MailboxesDenyAction403.pipe(HttpApiSchema.status(403)),
         MailboxesDenyAction404.pipe(HttpApiSchema.status(404)),
@@ -4418,6 +4675,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesRetryActionPathParams,
       success: [MailboxesRetryAction200, MailboxesRetryAction202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesRetryAction400.pipe(HttpApiSchema.status(400)),
         MailboxesRetryAction401.pipe(HttpApiSchema.status(401)),
         MailboxesRetryAction402.pipe(HttpApiSchema.status(402)),
         MailboxesRetryAction403.pipe(HttpApiSchema.status(403)),
@@ -4443,6 +4701,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesGetAgentActivityQuery,
       success: MailboxesGetAgentActivity200,
       error: [
+        MailboxesGetAgentActivity400.pipe(HttpApiSchema.status(400)),
         MailboxesGetAgentActivity401.pipe(HttpApiSchema.status(401)),
         MailboxesGetAgentActivity403.pipe(HttpApiSchema.status(403)),
         MailboxesGetAgentActivity404.pipe(HttpApiSchema.status(404)),
@@ -4463,6 +4722,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListDraftsQuery,
       success: MailboxesListDrafts200,
       error: [
+        MailboxesListDrafts400.pipe(HttpApiSchema.status(400)),
         MailboxesListDrafts401.pipe(HttpApiSchema.status(401)),
         MailboxesListDrafts403.pipe(HttpApiSchema.status(403)),
         MailboxesListDrafts404.pipe(HttpApiSchema.status(404)),
@@ -4483,6 +4743,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreateDraftRequestJson,
       success: MailboxesCreateDraft201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreateDraft400.pipe(HttpApiSchema.status(400)),
         MailboxesCreateDraft401.pipe(HttpApiSchema.status(401)),
         MailboxesCreateDraft403.pipe(HttpApiSchema.status(403)),
         MailboxesCreateDraft404.pipe(HttpApiSchema.status(404)),
@@ -4502,6 +4763,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetDraftPathParams,
       success: MailboxesGetDraft200,
       error: [
+        MailboxesGetDraft400.pipe(HttpApiSchema.status(400)),
         MailboxesGetDraft401.pipe(HttpApiSchema.status(401)),
         MailboxesGetDraft403.pipe(HttpApiSchema.status(403)),
         MailboxesGetDraft404.pipe(HttpApiSchema.status(404)),
@@ -4521,6 +4783,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesDeleteDraftPathParams,
       success: MailboxesDeleteDraft200,
       error: [
+        MailboxesDeleteDraft400.pipe(HttpApiSchema.status(400)),
         MailboxesDeleteDraft401.pipe(HttpApiSchema.status(401)),
         MailboxesDeleteDraft403.pipe(HttpApiSchema.status(403)),
         MailboxesDeleteDraft404.pipe(HttpApiSchema.status(404)),
@@ -4538,6 +4801,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdateDraftRequestJson,
       success: MailboxesUpdateDraft200,
       error: [
+        MailboxesUpdateDraft400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdateDraft401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdateDraft403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdateDraft404.pipe(HttpApiSchema.status(404)),
@@ -4559,6 +4823,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       headers: MailboxesSendDraftHeaders,
       success: [MailboxesSendDraft200, MailboxesSendDraft202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesSendDraft400.pipe(HttpApiSchema.status(400)),
         MailboxesSendDraft401.pipe(HttpApiSchema.status(401)),
         MailboxesSendDraft402.pipe(HttpApiSchema.status(402)),
         MailboxesSendDraft403.pipe(HttpApiSchema.status(403)),
@@ -4584,6 +4849,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreateEndpointRequestJson,
       success: MailboxesCreateEndpoint201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreateEndpoint400.pipe(HttpApiSchema.status(400)),
         MailboxesCreateEndpoint401.pipe(HttpApiSchema.status(401)),
         MailboxesCreateEndpoint403.pipe(HttpApiSchema.status(403)),
         MailboxesCreateEndpoint404.pipe(HttpApiSchema.status(404)),
@@ -4604,6 +4870,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesRemoveEndpointPathParams,
       success: MailboxesRemoveEndpoint200,
       error: [
+        MailboxesRemoveEndpoint400.pipe(HttpApiSchema.status(400)),
         MailboxesRemoveEndpoint401.pipe(HttpApiSchema.status(401)),
         MailboxesRemoveEndpoint403.pipe(HttpApiSchema.status(403)),
         MailboxesRemoveEndpoint404.pipe(HttpApiSchema.status(404)),
@@ -4624,6 +4891,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdateEndpointRequestJson,
       success: MailboxesUpdateEndpoint200,
       error: [
+        MailboxesUpdateEndpoint400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdateEndpoint401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdateEndpoint403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdateEndpoint404.pipe(HttpApiSchema.status(404)),
@@ -4644,6 +4912,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListEventsQuery,
       success: MailboxesListEvents200,
       error: [
+        MailboxesListEvents400.pipe(HttpApiSchema.status(400)),
         MailboxesListEvents401.pipe(HttpApiSchema.status(401)),
         MailboxesListEvents403.pipe(HttpApiSchema.status(403)),
         MailboxesListEvents404.pipe(HttpApiSchema.status(404)),
@@ -4663,6 +4932,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesListFoldersPathParams,
       success: MailboxesListFolders200,
       error: [
+        MailboxesListFolders400.pipe(HttpApiSchema.status(400)),
         MailboxesListFolders401.pipe(HttpApiSchema.status(401)),
         MailboxesListFolders403.pipe(HttpApiSchema.status(403)),
         MailboxesListFolders404.pipe(HttpApiSchema.status(404)),
@@ -4683,6 +4953,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListGrantsQuery,
       success: MailboxesListGrants200,
       error: [
+        MailboxesListGrants400.pipe(HttpApiSchema.status(400)),
         MailboxesListGrants401.pipe(HttpApiSchema.status(401)),
         MailboxesListGrants403.pipe(HttpApiSchema.status(403)),
         MailboxesListGrants404.pipe(HttpApiSchema.status(404)),
@@ -4703,6 +4974,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreateGrantRequestJson,
       success: MailboxesCreateGrant201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreateGrant400.pipe(HttpApiSchema.status(400)),
         MailboxesCreateGrant401.pipe(HttpApiSchema.status(401)),
         MailboxesCreateGrant403.pipe(HttpApiSchema.status(403)),
         MailboxesCreateGrant404.pipe(HttpApiSchema.status(404)),
@@ -4723,6 +4995,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesRevokeGrantPathParams,
       success: MailboxesRevokeGrant200,
       error: [
+        MailboxesRevokeGrant400.pipe(HttpApiSchema.status(400)),
         MailboxesRevokeGrant401.pipe(HttpApiSchema.status(401)),
         MailboxesRevokeGrant403.pipe(HttpApiSchema.status(403)),
         MailboxesRevokeGrant404.pipe(HttpApiSchema.status(404)),
@@ -4744,6 +5017,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdateGrantRequestJson,
       success: MailboxesUpdateGrant200,
       error: [
+        MailboxesUpdateGrant400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdateGrant401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdateGrant403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdateGrant404.pipe(HttpApiSchema.status(404)),
@@ -4764,6 +5038,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesListLabelsPathParams,
       success: MailboxesListLabels200,
       error: [
+        MailboxesListLabels400.pipe(HttpApiSchema.status(400)),
         MailboxesListLabels401.pipe(HttpApiSchema.status(401)),
         MailboxesListLabels403.pipe(HttpApiSchema.status(403)),
         MailboxesListLabels404.pipe(HttpApiSchema.status(404)),
@@ -4784,6 +5059,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreateLabelRequestJson,
       success: MailboxesCreateLabel201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreateLabel400.pipe(HttpApiSchema.status(400)),
         MailboxesCreateLabel401.pipe(HttpApiSchema.status(401)),
         MailboxesCreateLabel403.pipe(HttpApiSchema.status(403)),
         MailboxesCreateLabel404.pipe(HttpApiSchema.status(404)),
@@ -4804,6 +5080,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesDeleteLabelPathParams,
       success: MailboxesDeleteLabel200,
       error: [
+        MailboxesDeleteLabel400.pipe(HttpApiSchema.status(400)),
         MailboxesDeleteLabel401.pipe(HttpApiSchema.status(401)),
         MailboxesDeleteLabel403.pipe(HttpApiSchema.status(403)),
         MailboxesDeleteLabel404.pipe(HttpApiSchema.status(404)),
@@ -4824,6 +5101,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdateLabelRequestJson,
       success: MailboxesUpdateLabel200,
       error: [
+        MailboxesUpdateLabel400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdateLabel401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdateLabel403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdateLabel404.pipe(HttpApiSchema.status(404)),
@@ -4842,6 +5120,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesSendMessageRequestJson,
       success: [MailboxesSendMessage200, MailboxesSendMessage202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesSendMessage400.pipe(HttpApiSchema.status(400)),
         MailboxesSendMessage401.pipe(HttpApiSchema.status(401)),
         MailboxesSendMessage402.pipe(HttpApiSchema.status(402)),
         MailboxesSendMessage403.pipe(HttpApiSchema.status(403)),
@@ -4866,6 +5145,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetMessagePathParams,
       success: MailboxesGetMessage200,
       error: [
+        MailboxesGetMessage400.pipe(HttpApiSchema.status(400)),
         MailboxesGetMessage401.pipe(HttpApiSchema.status(401)),
         MailboxesGetMessage403.pipe(HttpApiSchema.status(403)),
         MailboxesGetMessage404.pipe(HttpApiSchema.status(404)),
@@ -4888,6 +5168,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         params: MailboxesGetMessageAttachmentPathParams,
         success: MailboxesGetMessageAttachment200,
         error: [
+          MailboxesGetMessageAttachment400.pipe(HttpApiSchema.status(400)),
           MailboxesGetMessageAttachment401.pipe(HttpApiSchema.status(401)),
           MailboxesGetMessageAttachment403.pipe(HttpApiSchema.status(403)),
           MailboxesGetMessageAttachment404.pipe(HttpApiSchema.status(404)),
@@ -4911,6 +5192,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         params: MailboxesCopyMessageAttachmentPathParams,
         success: MailboxesCopyMessageAttachment201.pipe(HttpApiSchema.status(201)),
         error: [
+          MailboxesCopyMessageAttachment400.pipe(HttpApiSchema.status(400)),
           MailboxesCopyMessageAttachment401.pipe(HttpApiSchema.status(401)),
           MailboxesCopyMessageAttachment403.pipe(HttpApiSchema.status(403)),
           MailboxesCopyMessageAttachment404.pipe(HttpApiSchema.status(404)),
@@ -4935,6 +5217,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         params: MailboxesDiscardMessagePathParams,
         success: MailboxesDiscardMessage200,
         error: [
+          MailboxesDiscardMessage400.pipe(HttpApiSchema.status(400)),
           MailboxesDiscardMessage401.pipe(HttpApiSchema.status(401)),
           MailboxesDiscardMessage403.pipe(HttpApiSchema.status(403)),
           MailboxesDiscardMessage404.pipe(HttpApiSchema.status(404)),
@@ -4959,6 +5242,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesForwardRequestJson,
       success: [MailboxesForward200, MailboxesForward202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesForward400.pipe(HttpApiSchema.status(400)),
         MailboxesForward401.pipe(HttpApiSchema.status(401)),
         MailboxesForward402.pipe(HttpApiSchema.status(402)),
         MailboxesForward403.pipe(HttpApiSchema.status(403)),
@@ -4983,6 +5267,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetMessageRawPathParams,
       success: MailboxesGetMessageRaw200,
       error: [
+        MailboxesGetMessageRaw400.pipe(HttpApiSchema.status(400)),
         MailboxesGetMessageRaw401.pipe(HttpApiSchema.status(401)),
         MailboxesGetMessageRaw403.pipe(HttpApiSchema.status(403)),
         MailboxesGetMessageRaw404.pipe(HttpApiSchema.status(404)),
@@ -5005,6 +5290,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         params: MailboxesReleaseMessagePathParams,
         success: MailboxesReleaseMessage200,
         error: [
+          MailboxesReleaseMessage400.pipe(HttpApiSchema.status(400)),
           MailboxesReleaseMessage401.pipe(HttpApiSchema.status(401)),
           MailboxesReleaseMessage403.pipe(HttpApiSchema.status(403)),
           MailboxesReleaseMessage404.pipe(HttpApiSchema.status(404)),
@@ -5028,6 +5314,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesReplyRequestJson,
       success: [MailboxesReply200, MailboxesReply202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesReply400.pipe(HttpApiSchema.status(400)),
         MailboxesReply401.pipe(HttpApiSchema.status(401)),
         MailboxesReply402.pipe(HttpApiSchema.status(402)),
         MailboxesReply403.pipe(HttpApiSchema.status(403)),
@@ -5054,6 +5341,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesReplyAllRequestJson,
       success: [MailboxesReplyAll200, MailboxesReplyAll202.pipe(HttpApiSchema.status(202))],
       error: [
+        MailboxesReplyAll400.pipe(HttpApiSchema.status(400)),
         MailboxesReplyAll401.pipe(HttpApiSchema.status(401)),
         MailboxesReplyAll402.pipe(HttpApiSchema.status(402)),
         MailboxesReplyAll403.pipe(HttpApiSchema.status(403)),
@@ -5078,6 +5366,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesPausePathParams,
       success: MailboxesPause200,
       error: [
+        MailboxesPause400.pipe(HttpApiSchema.status(400)),
         MailboxesPause401.pipe(HttpApiSchema.status(401)),
         MailboxesPause403.pipe(HttpApiSchema.status(403)),
         MailboxesPause404.pipe(HttpApiSchema.status(404)),
@@ -5097,6 +5386,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesListPoliciesPathParams,
       success: MailboxesListPolicies200,
       error: [
+        MailboxesListPolicies400.pipe(HttpApiSchema.status(400)),
         MailboxesListPolicies401.pipe(HttpApiSchema.status(401)),
         MailboxesListPolicies403.pipe(HttpApiSchema.status(403)),
         MailboxesListPolicies404.pipe(HttpApiSchema.status(404)),
@@ -5117,6 +5407,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreatePolicyRequestJson,
       success: MailboxesCreatePolicy201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreatePolicy400.pipe(HttpApiSchema.status(400)),
         MailboxesCreatePolicy401.pipe(HttpApiSchema.status(401)),
         MailboxesCreatePolicy403.pipe(HttpApiSchema.status(403)),
         MailboxesCreatePolicy404.pipe(HttpApiSchema.status(404)),
@@ -5137,6 +5428,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetPolicyPathParams,
       success: MailboxesGetPolicy200,
       error: [
+        MailboxesGetPolicy400.pipe(HttpApiSchema.status(400)),
         MailboxesGetPolicy401.pipe(HttpApiSchema.status(401)),
         MailboxesGetPolicy403.pipe(HttpApiSchema.status(403)),
         MailboxesGetPolicy404.pipe(HttpApiSchema.status(404)),
@@ -5153,6 +5445,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesDeletePolicyPathParams,
       success: MailboxesDeletePolicy200,
       error: [
+        MailboxesDeletePolicy400.pipe(HttpApiSchema.status(400)),
         MailboxesDeletePolicy401.pipe(HttpApiSchema.status(401)),
         MailboxesDeletePolicy403.pipe(HttpApiSchema.status(403)),
         MailboxesDeletePolicy404.pipe(HttpApiSchema.status(404)),
@@ -5173,6 +5466,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdatePolicyRequestJson,
       success: MailboxesUpdatePolicy200,
       error: [
+        MailboxesUpdatePolicy400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdatePolicy401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdatePolicy403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdatePolicy404.pipe(HttpApiSchema.status(404)),
@@ -5193,6 +5487,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListQuarantineQuery,
       success: MailboxesListQuarantine200,
       error: [
+        MailboxesListQuarantine400.pipe(HttpApiSchema.status(400)),
         MailboxesListQuarantine401.pipe(HttpApiSchema.status(401)),
         MailboxesListQuarantine403.pipe(HttpApiSchema.status(403)),
         MailboxesListQuarantine404.pipe(HttpApiSchema.status(404)),
@@ -5212,6 +5507,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesResumePathParams,
       success: MailboxesResume200,
       error: [
+        MailboxesResume400.pipe(HttpApiSchema.status(400)),
         MailboxesResume401.pipe(HttpApiSchema.status(401)),
         MailboxesResume403.pipe(HttpApiSchema.status(403)),
         MailboxesResume404.pipe(HttpApiSchema.status(404)),
@@ -5229,6 +5525,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListThreadsQuery,
       success: MailboxesListThreads200,
       error: [
+        MailboxesListThreads400.pipe(HttpApiSchema.status(400)),
         MailboxesListThreads401.pipe(HttpApiSchema.status(401)),
         MailboxesListThreads403.pipe(HttpApiSchema.status(403)),
         MailboxesListThreads404.pipe(HttpApiSchema.status(404)),
@@ -5248,6 +5545,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       params: MailboxesGetThreadPathParams,
       success: MailboxesGetThread200,
       error: [
+        MailboxesGetThread400.pipe(HttpApiSchema.status(400)),
         MailboxesGetThread401.pipe(HttpApiSchema.status(401)),
         MailboxesGetThread403.pipe(HttpApiSchema.status(403)),
         MailboxesGetThread404.pipe(HttpApiSchema.status(404)),
@@ -5268,6 +5566,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesUpdateThreadRequestJson,
       success: MailboxesUpdateThread200,
       error: [
+        MailboxesUpdateThread400.pipe(HttpApiSchema.status(400)),
         MailboxesUpdateThread401.pipe(HttpApiSchema.status(401)),
         MailboxesUpdateThread403.pipe(HttpApiSchema.status(403)),
         MailboxesUpdateThread404.pipe(HttpApiSchema.status(404)),
@@ -5291,6 +5590,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         query: MailboxesGetThreadContentQuery,
         success: MailboxesGetThreadContent200,
         error: [
+          MailboxesGetThreadContent400.pipe(HttpApiSchema.status(400)),
           MailboxesGetThreadContent401.pipe(HttpApiSchema.status(401)),
           MailboxesGetThreadContent403.pipe(HttpApiSchema.status(403)),
           MailboxesGetThreadContent404.pipe(HttpApiSchema.status(404)),
@@ -5312,6 +5612,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesAddThreadLabelsRequestJson,
       success: MailboxesAddThreadLabels200,
       error: [
+        MailboxesAddThreadLabels400.pipe(HttpApiSchema.status(400)),
         MailboxesAddThreadLabels401.pipe(HttpApiSchema.status(401)),
         MailboxesAddThreadLabels403.pipe(HttpApiSchema.status(403)),
         MailboxesAddThreadLabels404.pipe(HttpApiSchema.status(404)),
@@ -5335,6 +5636,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         payload: MailboxesRemoveThreadLabelsRequestJson,
         success: MailboxesRemoveThreadLabels200,
         error: [
+          MailboxesRemoveThreadLabels400.pipe(HttpApiSchema.status(400)),
           MailboxesRemoveThreadLabels401.pipe(HttpApiSchema.status(401)),
           MailboxesRemoveThreadLabels403.pipe(HttpApiSchema.status(403)),
           MailboxesRemoveThreadLabels404.pipe(HttpApiSchema.status(404)),
@@ -5359,6 +5661,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         query: MailboxesListThreadMessagesQuery,
         success: MailboxesListThreadMessages200,
         error: [
+          MailboxesListThreadMessages400.pipe(HttpApiSchema.status(400)),
           MailboxesListThreadMessages401.pipe(HttpApiSchema.status(401)),
           MailboxesListThreadMessages403.pipe(HttpApiSchema.status(403)),
           MailboxesListThreadMessages404.pipe(HttpApiSchema.status(404)),
@@ -5380,6 +5683,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListThreadNotesQuery,
       success: MailboxesListThreadNotes200,
       error: [
+        MailboxesListThreadNotes400.pipe(HttpApiSchema.status(400)),
         MailboxesListThreadNotes401.pipe(HttpApiSchema.status(401)),
         MailboxesListThreadNotes403.pipe(HttpApiSchema.status(403)),
         MailboxesListThreadNotes404.pipe(HttpApiSchema.status(404)),
@@ -5400,6 +5704,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       payload: MailboxesCreateNoteRequestJson,
       success: MailboxesCreateNote201.pipe(HttpApiSchema.status(201)),
       error: [
+        MailboxesCreateNote400.pipe(HttpApiSchema.status(400)),
         MailboxesCreateNote401.pipe(HttpApiSchema.status(401)),
         MailboxesCreateNote403.pipe(HttpApiSchema.status(403)),
         MailboxesCreateNote404.pipe(HttpApiSchema.status(404)),
@@ -5422,6 +5727,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         params: MailboxesDeleteNotePathParams,
         success: MailboxesDeleteNote200,
         error: [
+          MailboxesDeleteNote400.pipe(HttpApiSchema.status(400)),
           MailboxesDeleteNote401.pipe(HttpApiSchema.status(401)),
           MailboxesDeleteNote403.pipe(HttpApiSchema.status(403)),
           MailboxesDeleteNote404.pipe(HttpApiSchema.status(404)),
@@ -5443,6 +5749,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         payload: MailboxesUpdateNoteRequestJson,
         success: MailboxesUpdateNote200,
         error: [
+          MailboxesUpdateNote400.pipe(HttpApiSchema.status(400)),
           MailboxesUpdateNote401.pipe(HttpApiSchema.status(401)),
           MailboxesUpdateNote403.pipe(HttpApiSchema.status(403)),
           MailboxesUpdateNote404.pipe(HttpApiSchema.status(404)),
@@ -5463,6 +5770,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListOrganizationDraftsQuery,
       success: MailboxesListOrganizationDrafts200,
       error: [
+        MailboxesListOrganizationDrafts400.pipe(HttpApiSchema.status(400)),
         MailboxesListOrganizationDrafts401.pipe(HttpApiSchema.status(401)),
         MailboxesListOrganizationDrafts403.pipe(HttpApiSchema.status(403)),
         MailboxesListOrganizationDrafts404.pipe(HttpApiSchema.status(404)),
@@ -5482,6 +5790,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesGetNeedsYouQuery,
       success: MailboxesGetNeedsYou200,
       error: [
+        MailboxesGetNeedsYou400.pipe(HttpApiSchema.status(400)),
         MailboxesGetNeedsYou401.pipe(HttpApiSchema.status(401)),
         MailboxesGetNeedsYou403.pipe(HttpApiSchema.status(403)),
         MailboxesGetNeedsYou422.pipe(HttpApiSchema.status(422)),
@@ -5500,6 +5809,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       query: MailboxesListOrganizationThreadsQuery,
       success: MailboxesListOrganizationThreads200,
       error: [
+        MailboxesListOrganizationThreads400.pipe(HttpApiSchema.status(400)),
         MailboxesListOrganizationThreads401.pipe(HttpApiSchema.status(401)),
         MailboxesListOrganizationThreads403.pipe(HttpApiSchema.status(403)),
         MailboxesListOrganizationThreads404.pipe(HttpApiSchema.status(404)),

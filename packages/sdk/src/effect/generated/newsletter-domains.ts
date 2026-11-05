@@ -10,6 +10,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   NewsletterId,
   OrganizationId,
   ResourceNotFoundError,
@@ -18,9 +19,6 @@ import {
   ValidationError,
 } from "./shared";
 
-export type PublicationDomainCursor = string;
-export const PublicationDomainCursor = /* @__PURE__ */ (() =>
-  Schema.String.annotate({ identifier: "PublicationDomainCursor" }))();
 export type PublicationDomainPage = {
   readonly items: ReadonlyArray<{
     readonly organizationId: OrganizationId;
@@ -58,7 +56,7 @@ export const PublicationDomainPage = /* @__PURE__ */ (() =>
         )
           .check(
             Schema.isPattern(
-              new RegExp(
+              new globalThis.RegExp(
                 "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
                 "u",
               ),
@@ -103,7 +101,7 @@ export const NewsletterDomainsListPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
 export type NewsletterDomainsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: PublicationDomainCursor | null;
+  readonly cursor?: string;
 };
 export const NewsletterDomainsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -120,10 +118,12 @@ export const NewsletterDomainsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([PublicationDomainCursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type NewsletterDomainsList200 = PublicationDomainPage;
 export const NewsletterDomainsList200 = PublicationDomainPage;
+export type NewsletterDomainsList400 = MalformedRequestError;
+export const NewsletterDomainsList400 = MalformedRequestError;
 export type NewsletterDomainsList401 = UnauthorizedError;
 export const NewsletterDomainsList401 = UnauthorizedError;
 export type NewsletterDomainsList403 = ForbiddenError | FlagDisabledError;
@@ -142,24 +142,21 @@ export const NewsletterDomainsList504 = GatewayTimeoutError;
 export type NewsletterDomainsAddPathParams = { readonly id: NewsletterId };
 export const NewsletterDomainsAddPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewsletterDomainsAddHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterDomainsAddHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterDomainsAddHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterDomainsAddRequestJson = { readonly hostname: string };
@@ -170,7 +167,7 @@ export const NewsletterDomainsAddRequestJson = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
             "u",
           ),
@@ -209,7 +206,7 @@ export const NewsletterDomainsAdd200 = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
             "u",
           ),
@@ -246,6 +243,8 @@ export const NewsletterDomainsAdd200 = /* @__PURE__ */ (() =>
     ),
     verificationErrors: Schema.Array(Schema.String),
   }))();
+export type NewsletterDomainsAdd400 = MalformedRequestError;
+export const NewsletterDomainsAdd400 = MalformedRequestError;
 export type NewsletterDomainsAdd401 = UnauthorizedError;
 export const NewsletterDomainsAdd401 = UnauthorizedError;
 export type NewsletterDomainsAdd403 = ForbiddenError | FlagDisabledError;
@@ -273,7 +272,7 @@ export const NewsletterDomainsGetPathParams = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
             "u",
           ),
@@ -312,7 +311,7 @@ export const NewsletterDomainsGet200 = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
             "u",
           ),
@@ -349,6 +348,8 @@ export const NewsletterDomainsGet200 = /* @__PURE__ */ (() =>
     ),
     verificationErrors: Schema.Array(Schema.String),
   }))();
+export type NewsletterDomainsGet400 = MalformedRequestError;
+export const NewsletterDomainsGet400 = MalformedRequestError;
 export type NewsletterDomainsGet401 = UnauthorizedError;
 export const NewsletterDomainsGet401 = UnauthorizedError;
 export type NewsletterDomainsGet403 = ForbiddenError | FlagDisabledError;
@@ -376,7 +377,7 @@ export const NewsletterDomainsRemovePathParams = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
             "u",
           ),
@@ -389,24 +390,21 @@ export const NewsletterDomainsRemovePathParams = /* @__PURE__ */ (() =>
         Schema.isMaxLength(253).annotate({ expected: "a value with a length of at most 253" }),
       ),
   }))();
-export type NewsletterDomainsRemoveHeaders = { readonly "idempotency-key"?: string | null };
+export type NewsletterDomainsRemoveHeaders = { readonly "idempotency-key"?: string };
 export const NewsletterDomainsRemoveHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewsletterDomainsRemove200 = {
@@ -435,7 +433,7 @@ export const NewsletterDomainsRemove200 = /* @__PURE__ */ (() =>
     )
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$",
             "u",
           ),
@@ -472,6 +470,8 @@ export const NewsletterDomainsRemove200 = /* @__PURE__ */ (() =>
     ),
     verificationErrors: Schema.Array(Schema.String),
   }))();
+export type NewsletterDomainsRemove400 = MalformedRequestError;
+export const NewsletterDomainsRemove400 = MalformedRequestError;
 export type NewsletterDomainsRemove401 = UnauthorizedError;
 export const NewsletterDomainsRemove401 = UnauthorizedError;
 export type NewsletterDomainsRemove403 = ForbiddenError | FlagDisabledError;
@@ -495,6 +495,7 @@ export class NewsletterDomainsGroup extends HttpApiGroup.make("Newsletter domain
       query: NewsletterDomainsListQuery,
       success: NewsletterDomainsList200,
       error: [
+        NewsletterDomainsList400.pipe(HttpApiSchema.status(400)),
         NewsletterDomainsList401.pipe(HttpApiSchema.status(401)),
         NewsletterDomainsList403.pipe(HttpApiSchema.status(403)),
         NewsletterDomainsList404.pipe(HttpApiSchema.status(404)),
@@ -517,6 +518,7 @@ export class NewsletterDomainsGroup extends HttpApiGroup.make("Newsletter domain
       payload: NewsletterDomainsAddRequestJson,
       success: NewsletterDomainsAdd200,
       error: [
+        NewsletterDomainsAdd400.pipe(HttpApiSchema.status(400)),
         NewsletterDomainsAdd401.pipe(HttpApiSchema.status(401)),
         NewsletterDomainsAdd403.pipe(HttpApiSchema.status(403)),
         NewsletterDomainsAdd404.pipe(HttpApiSchema.status(404)),
@@ -537,6 +539,7 @@ export class NewsletterDomainsGroup extends HttpApiGroup.make("Newsletter domain
       params: NewsletterDomainsGetPathParams,
       success: NewsletterDomainsGet200,
       error: [
+        NewsletterDomainsGet400.pipe(HttpApiSchema.status(400)),
         NewsletterDomainsGet401.pipe(HttpApiSchema.status(401)),
         NewsletterDomainsGet403.pipe(HttpApiSchema.status(403)),
         NewsletterDomainsGet404.pipe(HttpApiSchema.status(404)),
@@ -558,6 +561,7 @@ export class NewsletterDomainsGroup extends HttpApiGroup.make("Newsletter domain
       headers: NewsletterDomainsRemoveHeaders,
       success: NewsletterDomainsRemove200,
       error: [
+        NewsletterDomainsRemove400.pipe(HttpApiSchema.status(400)),
         NewsletterDomainsRemove401.pipe(HttpApiSchema.status(401)),
         NewsletterDomainsRemove403.pipe(HttpApiSchema.status(403)),
         NewsletterDomainsRemove404.pipe(HttpApiSchema.status(404)),

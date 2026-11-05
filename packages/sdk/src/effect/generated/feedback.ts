@@ -10,6 +10,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   UnauthorizedError,
   ValidationError,
 } from "./shared";
@@ -17,7 +18,7 @@ import {
 export type FeedbackId = string & EffectBrand.Brand<"FeedbackId">;
 export const FeedbackId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^fdbk_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "FeedbackId",
     }),
@@ -44,7 +45,7 @@ export const FeedbackSendRequestJson = /* @__PURE__ */ (() =>
         }),
       )
       .check(
-        Schema.isPattern(new RegExp("\\S", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("\\S", "u")).annotate({
           expected: "a string matching the RegExp \\S",
         }),
       )
@@ -69,6 +70,8 @@ export const FeedbackSendRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type FeedbackSend201 = FeedbackReceipt;
 export const FeedbackSend201 = FeedbackReceipt;
+export type FeedbackSend400 = MalformedRequestError;
+export const FeedbackSend400 = MalformedRequestError;
 export type FeedbackSend401 = UnauthorizedError;
 export const FeedbackSend401 = UnauthorizedError;
 export type FeedbackSend403 = ForbiddenError;
@@ -86,6 +89,7 @@ export class FeedbackGroup extends HttpApiGroup.make("Feedback")
       payload: FeedbackSendRequestJson,
       success: FeedbackSend201.pipe(HttpApiSchema.status(201)),
       error: [
+        FeedbackSend400.pipe(HttpApiSchema.status(400)),
         FeedbackSend401.pipe(HttpApiSchema.status(401)),
         FeedbackSend403.pipe(HttpApiSchema.status(403)),
         FeedbackSend422.pipe(HttpApiSchema.status(422)),

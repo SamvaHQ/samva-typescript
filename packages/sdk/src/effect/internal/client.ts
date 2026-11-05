@@ -141,11 +141,19 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
     const groupClient = (group: HttpApiGroup.Constraint): Effect.Effect<GroupClient> => {
       const built = groups.get(group.identifier);
       if (built !== undefined) return Effect.succeed(built);
-      return HttpApiClient.group(HttpApi.make("SamvaApi").add(group), {
-        group: group.identifier,
-        httpClient,
-        baseUrl,
-      }).pipe(
+      return HttpApiClient.group(
+        HttpApi.make("SamvaApi")
+          .add(group)
+          // The deployed API refuses a body field its endpoint does not declare. Encoding with the
+          // same option fails here, naming the field, instead of dropping it and reading the
+          // server's success as an update that applied.
+          .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" }),
+        {
+          group: group.identifier,
+          httpClient,
+          baseUrl,
+        },
+      ).pipe(
         Effect.provide(AuthorizationClient),
         Effect.map((client) => {
           const calls: GroupClient = client;

@@ -1,3 +1,89 @@
+## samva@0.35.0
+
+### Hosted agents report when they pause for AI credits
+
+`Agent` and `AgentListItem` include `creditsPausedAt`: when the agent last stopped answering because the organization is out of AI credits, or null while it answers. Existing clients can ignore the field.
+
+### Type optional query and header parameters as absent, not null
+
+Optional query and header parameters accept a value or no value. List filters such as `cursor`,
+`channel`, and `direction`, and headers such as `idempotency-key`, no longer list `null` as a
+type, because a query string or header cannot carry it. Omit the field instead of passing `null`.
+
+### Clear a catch-all webhook without interrupting receiving
+
+Pass `endpointId: null` to `email.updateCatchAllConfig` to remove a catch-all's webhook endpoint
+while keeping catch-all enabled. Set `unknownRecipientMailboxId` in the same update to send
+unknown-address mail to that mailbox; without a mailbox, unknown addresses are dropped without a
+bounce. Omitted settings stay unchanged.
+
+`samva email receiving update <domainId>` sets or clears the webhook endpoint and unknown-recipient
+mailbox in one request.
+
+### Choose an agent's model, reasoning, and monthly spend cap
+
+Breaking: `agents.create` and `agents.replaceDraft` now take `definition.reasoning` (`auto`,
+`low`, `medium`, or `high`) as part of the whole definition. Send `"auto"` to keep Samva's default.
+
+- `definition.model` takes `standard`, `max`, or a catalog model id. Pinning a catalog model needs
+  the Growth or Scale plan; other plans get a `PaymentRequiredError`.
+- `agents.listModels` returns the aliases and every model an agent can pin, with prices per million
+  tokens, the reasoning levels each accepts with an estimate of a typical reply, and whether your
+  plan includes it.
+- `agents.update` sets `monthlySpendCapDollars` (or `null` to remove it) as well as `name`. An agent
+  reports `monthlySpendCapDollars` and this month's `spend`, including `capReachedAt` when the cap
+  paused it.
+- A published version reports `modelFallback` while its pinned model cannot run and an alias answers
+  instead.
+- `agents.continueOnStandard` publishes the live version again on `standard` and removes the
+  monthly spend cap, leaving the draft unchanged: the way out for an agent paused at its cap on a
+  pinned model.
+
+### Hosted agents report when an owner pauses them
+
+`Agent` and `AgentListItem` include `pausedAt`: when an owner paused the agent, or null while it answers. Existing clients can ignore the field.
+
+### Attach knowledge sources to an agent
+
+`AgentDefinition` has an optional `knowledgeSourceIds` list: the websites and files from the
+organization's knowledge library that the agent searches while it answers. An agent without the
+field attaches none. Publishing refuses an id that is not in the organization's library.
+
+### Latest Webhook Attempt in Endpoint Stats
+
+`getStats` for a webhook endpoint returns `latestAttempt`: the newest non-skipped delivery attempt,
+with its `errorCode` and `completedAt`, across every delivery for that endpoint. A
+`cloudflare_challenge` error code means the customer's Cloudflare zone challenged the request
+before it reached the endpoint.
+
+### Preserve Every Channel in API Types
+
+Request and response types retain SMS and WhatsApp channel values and content. Template lists,
+mailboxes, messages, subscriptions, and other shared resources decode the values the API returns
+for enabled organizations. Unions widen, so exhaustive channel switches must handle every member.
+
+Effect analytics queries accept `Date` values for absolute time filters and encode them as ISO-8601
+query strings.
+
+### Reject undeclared request-body fields
+
+**Breaking:** remove properties that an operation does not declare from request bodies, including
+nested objects. For webhook updates, replace `events` with `eventTypes`. Pass mutation input fields
+instead of spreading an entire response object into a request.
+
+The Effect SDK rejects undeclared body fields before sending. API responses use
+`MalformedRequestError` (400) for undeclared top-level fields alone and `ValidationError` (422) for
+nested fields or other validation faults. Read `fields` for the rejected paths and declared
+alternatives. Both clients continue to accept listed contacts as email recipients.
+
+For generated query inputs, omit absent optional string and enum filters instead of passing `null`.
+Replace imports of the cursor aliases `Cursor`, `VersionCursor`, and `PublicationDomainCursor`
+with `string`.
+
+### Describe Samva as the email and WhatsApp API
+
+The package README and npm description now call Samva the email and WhatsApp API.
+
 ## samva@0.34.0
 
 ### Inspect skipped webhook replays

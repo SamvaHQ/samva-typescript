@@ -14,6 +14,7 @@ import {
   GatewayTimeoutError,
   InternalError,
   JsonObject,
+  MalformedRequestError,
   PaymentRequiredError,
   ResourceNotFoundError,
   UnauthorizedError,
@@ -85,24 +86,21 @@ export const BatchEventsResult = /* @__PURE__ */ (() =>
       }),
     ),
   }).annotate({ identifier: "BatchEventsResult" }))();
-export type EventsCreateHeaders = { readonly "idempotency-key"?: string | null };
+export type EventsCreateHeaders = { readonly "idempotency-key"?: string };
 export const EventsCreateHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type EventsCreateRequestJson = {
@@ -123,7 +121,7 @@ export const EventsCreateRequestJson = /* @__PURE__ */ (() =>
       .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
       .check(
         Schema.isPattern(
-          new RegExp(
+          new globalThis.RegExp(
             "^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
           ),
         ).annotate({
@@ -136,6 +134,8 @@ export const EventsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EventsCreate200 = ContactEvent;
 export const EventsCreate200 = ContactEvent;
+export type EventsCreate400 = MalformedRequestError;
+export const EventsCreate400 = MalformedRequestError;
 export type EventsCreate401 = UnauthorizedError;
 export const EventsCreate401 = UnauthorizedError;
 export type EventsCreate402 = PaymentRequiredError;
@@ -154,24 +154,21 @@ export type EventsCreate502 = BillingProviderError;
 export const EventsCreate502 = BillingProviderError;
 export type EventsCreate504 = GatewayTimeoutError;
 export const EventsCreate504 = GatewayTimeoutError;
-export type EventsBatchHeaders = { readonly "idempotency-key"?: string | null };
+export type EventsBatchHeaders = { readonly "idempotency-key"?: string };
 export const EventsBatchHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type EventsBatchRequestJson = {
@@ -185,6 +182,8 @@ export const EventsBatchRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EventsBatch200 = BatchEventsResult;
 export const EventsBatch200 = BatchEventsResult;
+export type EventsBatch400 = MalformedRequestError;
+export const EventsBatch400 = MalformedRequestError;
 export type EventsBatch401 = UnauthorizedError;
 export const EventsBatch401 = UnauthorizedError;
 export type EventsBatch403 = ForbiddenError;
@@ -205,6 +204,7 @@ export class EventsGroup extends HttpApiGroup.make("Events")
       payload: EventsCreateRequestJson,
       success: EventsCreate200,
       error: [
+        EventsCreate400.pipe(HttpApiSchema.status(400)),
         EventsCreate401.pipe(HttpApiSchema.status(401)),
         EventsCreate402.pipe(HttpApiSchema.status(402)),
         EventsCreate403.pipe(HttpApiSchema.status(403)),
@@ -228,6 +228,7 @@ export class EventsGroup extends HttpApiGroup.make("Events")
       payload: EventsBatchRequestJson,
       success: EventsBatch200,
       error: [
+        EventsBatch400.pipe(HttpApiSchema.status(400)),
         EventsBatch401.pipe(HttpApiSchema.status(401)),
         EventsBatch403.pipe(HttpApiSchema.status(403)),
         EventsBatch404.pipe(HttpApiSchema.status(404)),

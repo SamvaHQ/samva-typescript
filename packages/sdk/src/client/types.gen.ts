@@ -4,6 +4,14 @@ export type ClientOptions = {
   baseUrl: "https://api.samva.dev" | (string & {});
 };
 
+export type MalformedRequestError = {
+  _tag: "MalformedRequestError";
+  message: string;
+  fields: {
+    [key: string]: Array<string>;
+  };
+};
+
 export type GatewayTimeoutError = {
   _tag: "GatewayTimeoutError";
   message: string;
@@ -253,8 +261,6 @@ export type ExtensionInstallationSummary = {
   createdAt: string;
 };
 
-export type Cursor = string;
-
 export type ExtensionVersion = {
   id: ExtensionVersionId;
   version: string;
@@ -345,6 +351,8 @@ export type NamespaceUsage = {
   periodStart: string;
   periodEnd: string;
   emailCount: number;
+  smsCount: number;
+  whatsappCount: number;
   totalMessages: number;
 };
 
@@ -354,7 +362,13 @@ export type NamespaceResource = {
   namespaceId: NamespaceId | null;
 };
 
-export type NamespaceResourceType = "domain" | "sender" | "contact" | "template";
+export type NamespaceResourceType =
+  | "domain"
+  | "sender"
+  | "whatsappNumber"
+  | "smsNumber"
+  | "contact"
+  | "template";
 
 export type AssignNamespaceResourcePayload = {
   type: NamespaceResourceType;
@@ -701,7 +715,59 @@ export type MailboxSendAction = {
   intent: MailboxSendSnapshot | null;
 };
 
-export type MailboxSendSnapshot = {
+export type MailboxSendSnapshot = MailboxEmailSendSnapshot | MailboxChatSendIntent;
+
+export type MailboxChatSendIntent = {
+  channel: "whatsapp" | "sms";
+  draftRevision: number;
+  endpointId: MailboxEndpointId;
+  sender: MailboxWhatsAppEndpointBinding | MailboxSmsEndpointBinding;
+  from: string;
+  to: string;
+  text: string | null;
+  template: MailboxChatTemplate | null;
+  threadId: MailboxThreadId | null;
+  conversationId: ConversationId | null;
+  inReplyToMessageId: MessageId | null;
+};
+
+export type ConversationId = string;
+
+export type MailboxChatTemplate = {
+  templateId: TemplateId;
+  templateChannelVariantId: TemplateChannelVariantId;
+  templateData: JsonObject | null;
+};
+
+export type JsonObject = {
+  [key: string]: JsonValue;
+};
+
+export type JsonObjectWritable = {
+  [key: string]: JsonValueWritable | undefined;
+};
+
+export type TemplateChannelVariantId = string;
+
+export type TemplateId = string;
+
+export type MailboxSmsEndpointBinding = {
+  channel: "sms";
+  phoneNumberId: SmsPhoneNumberId;
+};
+
+export type SmsPhoneNumberId = string;
+
+export type MailboxWhatsAppEndpointBinding = {
+  channel: "whatsapp";
+  businessAccountId: WhatsAppBusinessAccountId;
+};
+
+export type WhatsAppBusinessAccountId = string;
+
+export type MailboxEndpointId = string;
+
+export type MailboxEmailSendSnapshot = {
   channel: "email";
   draftRevision: number;
   from: string;
@@ -718,20 +784,6 @@ export type MailboxSendSnapshot = {
   conversationId: ConversationId | null;
   inReplyToMessageId: MessageId | null;
 };
-
-export type ConversationId = string;
-
-export type JsonObject = {
-  [key: string]: JsonValue;
-};
-
-export type JsonObjectWritable = {
-  [key: string]: JsonValueWritable | undefined;
-};
-
-export type TemplateId = string;
-
-export type MailboxEndpointId = string;
 
 export type EmailAttachment = {
   filename: string;
@@ -771,6 +823,12 @@ export type SenderNotReadyError = {
   message: string;
   sender: string;
   retryAfterSeconds?: number | null | undefined;
+};
+
+export type WhatsAppServiceWindowClosedError = {
+  _tag: "WhatsAppServiceWindowClosedError";
+  message: string;
+  closedAt: string | null;
 };
 
 export type OnboardingReviewRequiredError = {
@@ -845,7 +903,25 @@ export type MailboxActionPage = {
   nextCursor: string | null;
 };
 
-export type MailboxDraft = {
+export type MailboxDraft = MailboxEmailDraft | MailboxChatDraft;
+
+export type MailboxChatDraft = {
+  id: MailboxDraftId;
+  channel: "whatsapp" | "sms";
+  threadId: MailboxThreadId | null;
+  inReplyToMessageId: MessageId | null;
+  state: MailboxDraftState;
+  lockedByActionId: MailboxActionId | null;
+  to: Array<string>;
+  subject: string | null;
+  createdAt: string;
+  updatedAt: string;
+  text: string | null;
+};
+
+export type MailboxDraftState = "saved" | "locked" | "sent";
+
+export type MailboxEmailDraft = {
   id: MailboxDraftId;
   channel: "email";
   threadId: MailboxThreadId | null;
@@ -865,8 +941,6 @@ export type MailboxDraft = {
   attachments: Array<EmailAttachment>;
 };
 
-export type MailboxDraftState = "saved" | "locked" | "sent";
-
 export type UpdateMailboxDraftPayload = {
   to?: Array<string> | null | undefined;
   cc?: Array<string> | null | undefined;
@@ -878,7 +952,18 @@ export type UpdateMailboxDraftPayload = {
   attachments?: Array<EmailAttachment> | null | undefined;
 };
 
-export type CreateMailboxDraftPayload = {
+export type CreateMailboxDraftPayload =
+  | CreateMailboxEmailDraftPayload
+  | CreateMailboxChatDraftPayload;
+
+export type CreateMailboxChatDraftPayload = {
+  channel: "whatsapp" | "sms";
+  to?: string | null | undefined;
+  text?: string | null | undefined;
+  inReplyToMessageId?: MessageId | null | undefined;
+};
+
+export type CreateMailboxEmailDraftPayload = {
   channel?: "email" | null | undefined;
   endpointId?: MailboxEndpointId | null | undefined;
   to?: Array<string> | null | undefined;
@@ -913,7 +998,7 @@ export type MailboxDraftSummary = {
 /**
  * The channel an endpoint, thread, or message belongs to.
  */
-export type MailboxChannel = "email";
+export type MailboxChannel = "sms" | "whatsapp" | "email";
 
 export type MailboxQuarantinedMessage = {
   id: MessageId;
@@ -953,7 +1038,16 @@ export type ForwardMailboxMessagePayload = {
   attachments?: Array<EmailAttachment> | null | undefined;
 };
 
-export type ReplyMailboxMessagePayload = {
+export type ReplyMailboxMessagePayload = ReplyMailboxEmailPayload | ReplyMailboxChatPayload;
+
+export type ReplyMailboxChatPayload = {
+  channel: "whatsapp" | "sms";
+  text?: string | null | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateData?: JsonObjectWritable | null | undefined;
+};
+
+export type ReplyMailboxEmailPayload = {
   channel?: "email" | null | undefined;
   cc?: Array<string> | null | undefined;
   bcc?: Array<string> | null | undefined;
@@ -977,7 +1071,69 @@ export type MailboxDownloadUrl = {
   expiresAt: string;
 };
 
-export type MailboxMessage = {
+export type MailboxMessage = MailboxEmailMessage | MailboxChatMessage;
+
+export type MailboxChatMessage = {
+  id: MessageId;
+  campaign?:
+    | {
+        campaignId: CampaignId;
+        runId: CampaignRunId;
+      }
+    | null
+    | undefined;
+  threadId: MailboxThreadId;
+  conversationId: ConversationId;
+  direction: "inbound" | "outbound";
+  from: MailboxMessageSender;
+  sentBy?:
+    | {
+        kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+        id: string;
+        displayName?: string | null | undefined;
+      }
+    | null
+    | undefined;
+  occurredAt: string;
+  channel: "whatsapp" | "sms";
+  to: Array<string>;
+  text: string | null;
+  media: Array<MailboxChatMedia>;
+  template: MailboxChatMessageTemplate | null;
+  summary: string | null;
+  contextMessageId: MessageId | null;
+};
+
+export type MailboxChatMessageTemplate = {
+  name: string;
+  language: string;
+};
+
+export type MailboxChatMedia = {
+  type: string;
+  contentType: string | null;
+  filename: string | null;
+  caption: string | null;
+};
+
+export type MailboxMessageSender = {
+  actor?:
+    | {
+        kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
+        id: string;
+        displayName?: string | null | undefined;
+      }
+    | null
+    | undefined;
+  displayName?: string | null | undefined;
+  address: string;
+};
+
+export type CampaignRunId = string;
+
+export type CampaignId = string;
+
+export type MailboxEmailMessage = {
   id: MessageId;
   campaign?:
     | {
@@ -1021,23 +1177,6 @@ export type MailboxMessage = {
   }>;
 };
 
-export type MailboxMessageSender = {
-  actor?:
-    | {
-        kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
-        id: string;
-        displayName?: string | null | undefined;
-      }
-    | null
-    | undefined;
-  displayName?: string | null | undefined;
-  address: string;
-};
-
-export type CampaignRunId = string;
-
-export type CampaignId = string;
-
 export type MailboxMessageAuthentication = {
   spf: string | null;
   dkim: string | null;
@@ -1058,7 +1197,17 @@ export type MailboxMessageRecipient = {
   address: string;
 };
 
-export type SendMailboxMessagePayload = {
+export type SendMailboxMessagePayload = SendMailboxEmailPayload | SendMailboxChatPayload;
+
+export type SendMailboxChatPayload = {
+  channel: "whatsapp" | "sms";
+  to: string;
+  text?: string | null | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateData?: JsonObjectWritable | null | undefined;
+};
+
+export type SendMailboxEmailPayload = {
   channel?: "email" | null | undefined;
   to: [string, ...Array<string>];
   cc?: Array<string> | null | undefined;
@@ -1195,7 +1344,13 @@ export type MailboxThread = {
   lastActivityAt: string;
   conversationId: ConversationId;
   participants: Array<MailboxThreadParticipant>;
+  whatsappServiceWindow: MailboxWhatsAppServiceWindow | null;
   createdAt: string;
+};
+
+export type MailboxWhatsAppServiceWindow = {
+  open: boolean;
+  expiresAt: string | null;
 };
 
 export type MailboxThreadParticipant = {
@@ -1539,7 +1694,27 @@ export type Mailbox = {
   updatedAt: string;
 };
 
-export type MailboxEndpoint = {
+export type MailboxEndpoint = MailboxEmailEndpoint | MailboxWhatsAppEndpoint | MailboxSmsEndpoint;
+
+export type MailboxSmsEndpoint = {
+  id: MailboxEndpointId;
+  address: string;
+  displayName: string | null;
+  default: boolean;
+  channel: "sms";
+  phoneNumberId: SmsPhoneNumberId;
+};
+
+export type MailboxWhatsAppEndpoint = {
+  id: MailboxEndpointId;
+  address: string;
+  displayName: string | null;
+  default: boolean;
+  channel: "whatsapp";
+  businessAccountId: WhatsAppBusinessAccountId;
+};
+
+export type MailboxEmailEndpoint = {
   id: MailboxEndpointId;
   address: string;
   displayName: string | null;
@@ -1669,8 +1844,11 @@ export type ApiKeyMailboxAccess = {
 export type ApiKeyResourceAccess = {
   messages?: "read" | "write" | null | undefined;
   email?: "read" | "write" | null | undefined;
+  sms?: "read" | "write" | null | undefined;
+  whatsapp?: "read" | "write" | null | undefined;
   domains?: "read" | "write" | null | undefined;
   phoneNumbers?: "read" | "write" | null | undefined;
+  whatsappAccounts?: "read" | "write" | null | undefined;
   contacts?: "read" | "write" | null | undefined;
   conversations?: "read" | "write" | null | undefined;
   templates?: "read" | "write" | null | undefined;
@@ -1838,6 +2016,10 @@ export type Organization = {
   emailFooterEnabledDefault: boolean | null;
   messagesUsed: number;
   messagesUsedThisMonth: number;
+  smsUsed: number;
+  smsUsedThisMonth: number;
+  whatsappUsed: number;
+  whatsappUsedThisMonth: number;
   emailUsed: number;
   emailUsedThisMonth: number;
   contactsUsed: number;
@@ -1870,6 +2052,10 @@ export type WebhookStatsResponse = {
   exhausted: number;
   cancelled: number;
   daily: Array<WebhookDailyDeliveries>;
+  latestAttempt: {
+    errorCode: string | null;
+    completedAt: string;
+  } | null;
 };
 
 export type WebhookDailyDeliveries = {
@@ -1976,7 +2162,7 @@ export type WebhookEndpoint = {
     | "mailbox.message.failed"
     | "journey.webhook"
   >;
-  channels: Array<"email"> | null;
+  channels: Array<"sms" | "whatsapp" | "email"> | null;
   mailboxIds: Array<MailboxId> | null;
   namespaceId: NamespaceId | null;
   status: "active" | "disabled";
@@ -2034,7 +2220,7 @@ export type UpdateWebhookPayload = {
       >
     | null
     | undefined;
-  channels?: Array<"email"> | null | undefined;
+  channels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
   mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
   namespaceId?: NamespaceId | null | undefined;
   headers?:
@@ -2096,7 +2282,7 @@ export type WebhookEndpointListItem = {
     | "mailbox.message.failed"
     | "journey.webhook"
   >;
-  channels: Array<"email"> | null;
+  channels: Array<"sms" | "whatsapp" | "email"> | null;
   mailboxIds: Array<MailboxId> | null;
   namespaceId: NamespaceId | null;
   status: "active" | "disabled";
@@ -2160,7 +2346,7 @@ export type CreateWebhookPayload = {
     | "mailbox.message.failed"
     | "journey.webhook"
   >;
-  channels?: Array<"email"> | null | undefined;
+  channels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
   mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
   namespaceId?: NamespaceId | null | undefined;
   headers?:
@@ -2309,8 +2495,6 @@ export type TemplateInputContractPage = {
   nextCursor: string | null;
 };
 
-export type VersionCursor = string;
-
 export type TemplatePublicationRender = {
   subject: string;
   preheader?: string | undefined;
@@ -2345,7 +2529,7 @@ export type Template = {
   id: TemplateId;
   slug: string;
   name: string;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   projectId: TemplateProjectId;
   /**
    * The namespace the template's project belongs to; every entry in a project shares it. Null at organization level. A namespace-scoped key reaches only its own namespace's templates and shared ones.
@@ -2385,12 +2569,81 @@ export type Template = {
       [key: string]: string;
     } | null;
   } | null;
+  sms: {
+    body: string;
+    encoding: string | null;
+    estimatedSegments: number | null;
+    category: "transactional" | "promotional" | "service_implicit" | null;
+  } | null;
+  whatsapp: {
+    name: string;
+    language: string;
+    category: "marketing" | "utility" | "authentication";
+    components: Array<WhatsAppTemplateComponent>;
+  } | null;
   publicationId: TemplatePublicationId | null;
   inputContractId: TemplateInputContractId | null;
   inputSchema: {
     [key: string]: JsonValue;
   } | null;
 };
+
+export type WhatsAppTemplateComponent =
+  | {
+      type: "HEADER";
+      format: "TEXT";
+      text: string;
+      example?:
+        | {
+            header_text: Array<string>;
+          }
+        | undefined;
+    }
+  | {
+      type: "BODY";
+      text: string;
+      example?:
+        | {
+            body_text: Array<Array<string>>;
+          }
+        | undefined;
+    }
+  | {
+      type: "FOOTER";
+      text: string;
+    }
+  | {
+      type: "BUTTONS";
+      buttons: Array<WhatsAppTemplateButton>;
+    };
+
+export type WhatsAppTemplateButton =
+  | {
+      type: "QUICK_REPLY";
+      text: string;
+    }
+  | {
+      type: "URL";
+      text: string;
+      url: string;
+      example?: Array<string> | undefined;
+    }
+  | {
+      type: "PHONE_NUMBER";
+      text: string;
+      phone_number: string;
+    }
+  | {
+      type: "COPY_CODE";
+      example: string;
+    }
+  | {
+      type: "FLOW";
+      text: string;
+      flow: string;
+      flow_action: "navigate" | "data_exchange";
+      navigate_screen?: string | undefined;
+    };
 
 export type TemplateTrackingDefault = {
   opens?: boolean | null | undefined;
@@ -2533,7 +2786,7 @@ export type TemplateFamilyMember = {
   id: TemplateId;
   name: string;
   slug: string;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
   isActive: boolean;
   createdAt: string;
@@ -2558,7 +2811,7 @@ export type TemplateSummary = {
   id: TemplateId;
   slug: string;
   name: string;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   projectId: TemplateProjectId;
   /**
    * The namespace the template's project belongs to; every entry in a project shares it. Null at organization level. A namespace-scoped key reaches only its own namespace's templates and shared ones.
@@ -2611,8 +2864,6 @@ export type PublicationDomainPage = {
   }>;
   nextCursor: string | null;
 };
-
-export type PublicationDomainCursor = string;
 
 export type NewsletterIssueRenderPayload = {
   path: string;
@@ -2759,7 +3010,7 @@ export type TopicSetSubscriptionsResult = {
 
 export type TopicSetSubscriptionsPayload = {
   contacts: Array<TopicContactRef>;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   status: "subscribed" | "unsubscribed";
   source?: string | null | undefined;
 };
@@ -2787,7 +3038,7 @@ export type TopicSubscriptionPage = {
 
 export type TopicSubscription = {
   contactId: ContactId;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   status: "subscribed" | "unsubscribed";
   source: string;
   subscribedAt: string | null;
@@ -2812,6 +3063,14 @@ export type Topic = {
 };
 
 export type TopicSubscriptionCounts = {
+  sms: {
+    subscribed: number;
+    unsubscribed: number;
+  };
+  whatsapp: {
+    subscribed: number;
+    unsubscribed: number;
+  };
   email: {
     subscribed: number;
     unsubscribed: number;
@@ -2841,7 +3100,7 @@ export type TopicCreatePayload = {
 
 export type TopicSubscriptionCheck = {
   contactId: ContactId | null;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   topics: Array<{
     topicId: TopicId;
     topicName: string;
@@ -2903,7 +3162,7 @@ export type ContactIdentity = {
 };
 
 export type ContactIdentityChannel = {
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   reachability: "unknown" | "reachable" | "unreachable";
   consent: ContactConsent | null;
 };
@@ -2998,7 +3257,21 @@ export type AgentVersion = {
   version: number;
   definition: AgentDefinition;
   publishedAt: string;
+  modelFallback: AgentModelFallback | null;
 };
+
+export type AgentModelFallback = {
+  from: CatalogModelId;
+  to: AgentModel;
+  reason: ModelFallbackReason;
+  since: string;
+};
+
+export type ModelFallbackReason = "candidate" | "failed" | "retired" | "blocked" | "missing";
+
+export type AgentModel = "standard" | "max";
+
+export type CatalogModelId = string;
 
 export type ClockTime = string;
 
@@ -3013,11 +3286,15 @@ export type Weekday =
 
 export type TimeZone = string;
 
-export type AgentModel = "standard" | "max";
+export type AgentReasoning = "auto" | "low" | "medium" | "high";
+
+export type AgentModelChoice = AgentModel | CatalogModelId;
 
 export type AgentMode = "live" | "supervised";
 
 export type IntegrationId = string;
+
+export type KnowledgeSourceId = string;
 
 export type AgentId = string;
 
@@ -3046,8 +3323,18 @@ export type Agent = {
   draft: AgentDefinition;
   publishedVersion: number | null;
   publishedAt: string | null;
+  pausedAt: string | null;
+  creditsPausedAt?: string | null | undefined;
+  monthlySpendCapDollars: number | null;
+  spend: AgentSpend;
   createdAt: string;
   updatedAt: string;
+};
+
+export type AgentSpend = {
+  month: string;
+  spentDollars: number;
+  capReachedAt: string | null;
 };
 
 export type PublishAgentPayload = {
@@ -3062,10 +3349,12 @@ export type ReplaceAgentDraftPayload = {
 export type AgentDefinition = {
   instructions: string;
   knowledge: string;
+  knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
   endpointIds: Array<MailboxEndpointId>;
   integrations: Array<AgentIntegrationGrant>;
   mode: AgentMode;
-  model: AgentModel;
+  model: AgentModelChoice;
+  reasoning: AgentReasoning;
   workingHours: WorkingHours | null;
   takeoverTimeoutMinutes: number;
 };
@@ -3105,8 +3394,14 @@ export type DeleteAgentResponse = {
 };
 
 export type UpdateAgentPayload = {
-  name: AgentName;
+  name?: AgentName | null | undefined;
+  /**
+   * The most the agent may spend in a calendar month (UTC), in dollars and whole cents. Null removes the cap. Takes effect at once, without publishing.
+   */
+  monthlySpendCapDollars?: MonthlySpendCapDollars | null | undefined;
 };
+
+export type MonthlySpendCapDollars = number;
 
 export type AgentName = string;
 
@@ -3117,9 +3412,43 @@ export type CreateAgentPayload = {
    */
   namespaceId?: NamespaceId | null | undefined;
   /**
-   * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model.
+   * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model at auto reasoning.
    */
   definition?: AgentDefinition | null | undefined;
+};
+
+export type AgentModelCatalog = {
+  replyFeeDollars: number;
+  items: Array<AgentModelOption>;
+};
+
+export type AgentModelOption = {
+  id: AgentModelChoice;
+  name: string;
+  alias: boolean;
+  model: {
+    id: CatalogModelId;
+    name: string;
+  };
+  contextWindow: number;
+  inputModalities: Array<string>;
+  price: AgentModelPrice;
+  reasoning: Array<AgentModelReasoning>;
+  access: AgentModelAccess;
+};
+
+export type AgentModelAccess = "included" | "upgrade";
+
+export type AgentModelReasoning = {
+  level: AgentReasoning;
+  typicalReplyDollars: number;
+};
+
+export type AgentModelPrice = {
+  inputPerMillionDollars: number;
+  outputPerMillionDollars: number;
+  cacheReadPerMillionDollars: number | null;
+  cacheWritePerMillionDollars: number | null;
 };
 
 export type AgentPage = {
@@ -3133,6 +3462,9 @@ export type AgentListItem = {
   namespaceId: NamespaceId | null;
   publishedVersion: number | null;
   publishedAt: string | null;
+  pausedAt: string | null;
+  creditsPausedAt?: string | null | undefined;
+  monthlySpendCapDollars: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -3271,6 +3603,7 @@ export type JourneyCustomEventName = string;
 
 export type JourneyNode =
   | JourneySendEmailNode
+  | WhatsAppJourneySendNode
   | JourneyWaitNode
   | JourneyWaitForEventNode
   | JourneyBranchNode
@@ -3280,6 +3613,7 @@ export type JourneyNode =
 
 export type JourneyNodeWritable =
   | JourneySendEmailNodeWritable
+  | WhatsAppJourneySendNodeWritable
   | JourneyWaitNode
   | JourneyWaitForEventNode
   | JourneyBranchNode
@@ -3442,6 +3776,26 @@ export type JourneyWaitNode = {
 
 export type JourneyWaitConfig = {
   durationSeconds: number;
+};
+
+export type WhatsAppJourneySendNode = {
+  type: "send_whatsapp";
+  config: WhatsAppTemplateDispatch;
+  next: [JourneyNextEdge];
+};
+
+export type WhatsAppJourneySendNodeWritable = {
+  type: "send_whatsapp";
+  config: WhatsAppTemplateDispatchWritable;
+  next: [JourneyNextEdge];
+};
+
+export type WhatsAppTemplateDispatchData = {
+  [key: string]: JsonValue;
+};
+
+export type WhatsAppTemplateDispatchDataWritable = {
+  [key: string]: JsonValueWritable | undefined;
 };
 
 export type JourneySendEmailNode = {
@@ -3722,12 +4076,14 @@ export type Contact = {
 };
 
 export type ContactPreferences = {
-  preferredChannels?: Array<"email"> | null | undefined;
+  preferredChannels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
   language?: string | null | undefined;
   timezone?: string | null | undefined;
   notifications?:
     | {
         email?: boolean | null | undefined;
+        sms?: boolean | null | undefined;
+        whatsapp?: boolean | null | undefined;
         quiet_hours?:
           | {
               start: string;
@@ -3830,7 +4186,7 @@ export type ContactSummary = {
   displayName: string | null;
   status: "active" | "paused" | "blocked" | "archived";
   email: string | null;
-  channels: Array<"email">;
+  channels: Array<"sms" | "whatsapp" | "email">;
   tags: Array<string>;
   lists: Array<ContactListMembership>;
   customFields?: ContactCustomFields | null | undefined;
@@ -3849,8 +4205,8 @@ export type Conversation = {
   title: string | null;
   externalId: string | null;
   status: "active" | "waiting" | "resolved" | "escalated" | "archived";
-  primaryChannel: "email";
-  channels: Array<"email">;
+  primaryChannel: "sms" | "whatsapp" | "email";
+  channels: Array<"sms" | "whatsapp" | "email">;
   priority: number;
   urgency: "low" | "medium" | "high" | "critical";
   tags: Array<string>;
@@ -3931,7 +4287,7 @@ export type ConversationContacts = {
 };
 
 export type ConversationChannels = {
-  channels: ["email", ...Array<"email">];
+  channels: ["sms" | "whatsapp" | "email", ...Array<"sms" | "whatsapp" | "email">];
 };
 
 export type ConversationCategories = {
@@ -3956,7 +4312,7 @@ export type MessageSummary = {
       }
     | null
     | undefined;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   direction: "outbound" | "inbound";
   status:
     | "pending"
@@ -3998,8 +4354,8 @@ export type ConversationSummary = {
   title: string | null;
   externalId: string | null;
   status: "active" | "waiting" | "resolved" | "escalated" | "archived";
-  primaryChannel: "email";
-  channels: Array<"email">;
+  primaryChannel: "sms" | "whatsapp" | "email";
+  channels: Array<"sms" | "whatsapp" | "email">;
   priority: number;
   urgency: "low" | "medium" | "high" | "critical";
   tags: Array<string>;
@@ -4033,7 +4389,7 @@ export type Media = {
   width: number | null;
   height: number | null;
   durationMs: number | null;
-  purpose: "attachment" | "avatar" | "review_evidence";
+  purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
   checksumSha256: string | null;
   expiresAt: string | null;
   createdAt: string;
@@ -4060,7 +4416,7 @@ export type CreatedMedia = {
   width: number | null;
   height: number | null;
   durationMs: number | null;
-  purpose: "attachment" | "avatar" | "review_evidence";
+  purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
   checksumSha256: string | null;
   expiresAt: string | null;
   createdAt: string;
@@ -4081,7 +4437,7 @@ export type CreateMediaPayload = {
   filename: string;
   contentType: string;
   sizeBytes: number;
-  purpose: "attachment" | "avatar" | "review_evidence";
+  purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
   checksumSha256?: string | null | undefined;
 };
 
@@ -4778,6 +5134,7 @@ export type CampaignRecipientPage = {
       | "blocked"
       | "suppressed"
       | "opted_out"
+      | "consent_required"
       | "unreachable"
       | "no_identity"
       | "inactive"
@@ -4842,6 +5199,7 @@ export type CampaignRunSkippedReason = {
     | "blocked"
     | "suppressed"
     | "opted_out"
+    | "consent_required"
     | "unreachable"
     | "no_identity"
     | "inactive"
@@ -4863,7 +5221,101 @@ export type CampaignAudience = {
   groupIds?: Array<ContactGroupId> | null | undefined;
 };
 
-export type CampaignContent = {
+export type CampaignContent = EmailCampaignContent | SmsCampaignContent | WhatsAppCampaignContent;
+
+export type WhatsAppCampaignContent = {
+  channel: "whatsapp";
+  whatsapp: WhatsAppTemplateDispatch;
+  conversationId?: CampaignConversationRef | undefined;
+  metadata?: CampaignContentMetadata | undefined;
+};
+
+export type CampaignContentMetadata = {
+  [key: string]: JsonValue;
+} | null;
+
+export type CampaignContentMetadataWritable = {
+  [key: string]: JsonValueWritable | undefined;
+} | null;
+
+export type CampaignConversationRef = ConversationId | null;
+
+export type WhatsAppTemplateDispatch = {
+  template: TemplateId | string;
+  templateData?: WhatsAppTemplateDispatchData | undefined;
+  bindings?: WhatsAppTemplateBindings | undefined;
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+};
+
+export type WhatsAppTemplateDispatchWritable = {
+  template: TemplateId | string;
+  templateData?: WhatsAppTemplateDispatchDataWritable | undefined;
+  bindings?: WhatsAppTemplateBindingsWritable | undefined;
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+};
+
+/**
+ * Template parameters filled per recipient: parameter name to the contact field it reads.
+ */
+export type WhatsAppTemplateBindings = {
+  [key: string]: WhatsAppTemplateBinding;
+};
+
+/**
+ * Template parameters filled per recipient: parameter name to the contact field it reads.
+ */
+export type WhatsAppTemplateBindingsWritable = {
+  [key: string]: WhatsAppTemplateBinding | undefined;
+};
+
+export type WhatsAppTemplateBinding =
+  | WhatsAppTemplateContactBinding
+  | WhatsAppTemplateCustomFieldBinding;
+
+export type WhatsAppTemplateCustomFieldBinding = {
+  customField: string;
+};
+
+export type WhatsAppTemplateContactBinding = {
+  contact:
+    | "id"
+    | "name"
+    | "displayName"
+    | "externalId"
+    | "phone"
+    | "email"
+    | "firstName"
+    | "lastName"
+    | "company"
+    | "jobTitle";
+};
+
+export type SmsCampaignContent = {
+  channel: "sms";
+  sms: SmsContent;
+  conversationId?: CampaignConversationRef | undefined;
+  metadata?: CampaignContentMetadata | undefined;
+};
+
+export type SmsContent = {
+  text?: string | null | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateSlug?: string | null | undefined;
+  templateData?: SmsTemplateData | undefined;
+};
+
+export type SmsContentWritable = {
+  text?: string | null | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateSlug?: string | null | undefined;
+  templateData?: SmsTemplateDataWritable | undefined;
+};
+
+export type SmsTemplateData = JsonObject | null;
+
+export type SmsTemplateDataWritable = JsonObjectWritable | null;
+
+export type EmailCampaignContent = {
   channel: "email";
   email: CampaignEmailContent;
   /**
@@ -4881,16 +5333,6 @@ export type CampaignContent = {
   conversationId?: CampaignConversationRef | undefined;
   metadata?: CampaignContentMetadata | undefined;
 };
-
-export type CampaignContentMetadata = {
-  [key: string]: JsonValue;
-} | null;
-
-export type CampaignContentMetadataWritable = {
-  [key: string]: JsonValueWritable | undefined;
-} | null;
-
-export type CampaignConversationRef = ConversationId | null;
 
 /**
  * Omit to inherit the topic mailbox; null disables mailbox inheritance. An explicit email.replyTo overrides an inherited mailbox.
@@ -4989,6 +5431,7 @@ export type CampaignRunReportSkippedReason = {
     | "blocked"
     | "suppressed"
     | "opted_out"
+    | "consent_required"
     | "unreachable"
     | "no_identity"
     | "inactive"
@@ -5023,7 +5466,7 @@ export type CampaignRunPage = {
 export type Campaign = {
   id: CampaignId;
   name: string;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   content: CampaignContent;
   audience: CampaignAudience;
   policy: CampaignPolicy;
@@ -5041,7 +5484,33 @@ export type CampaignDefinitionSummary = {
   frozenAt: string | null;
 };
 
-export type CampaignContentInput = {
+export type CampaignContentInput =
+  | EmailCampaignContentInput
+  | SmsCampaignContentInput
+  | WhatsAppCampaignContentInput;
+
+export type WhatsAppCampaignContentInput = {
+  channel: "whatsapp";
+  whatsapp: WhatsAppTemplateDispatchWritable;
+  conversationId?: CampaignConversationRef | undefined;
+  metadata?: CampaignContentMetadataWritable | undefined;
+};
+
+export type SmsCampaignContentInput = {
+  channel: "sms";
+  sms: SmsDispatchContent;
+  conversationId?: CampaignConversationRef | undefined;
+  metadata?: CampaignContentMetadataWritable | undefined;
+};
+
+export type SmsDispatchContent = {
+  text?: string | null | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateSlug?: string | null | undefined;
+  templateData?: SmsTemplateDataWritable | undefined;
+};
+
+export type EmailCampaignContentInput = {
   channel: "email";
   email: CampaignEmailInput;
   /**
@@ -5097,7 +5566,7 @@ export type CampaignPage = {
 export type CampaignListItem = {
   id: CampaignId;
   name: string;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   content: CampaignContent;
   audience: CampaignAudience;
   policy: CampaignPolicy;
@@ -5146,7 +5615,316 @@ export type ScheduledMessage = {
   updatedAt: string;
 };
 
-export type StoredSendMessagePayload = {
+export type StoredSendMessagePayload =
+  | StoredEmailSendMessage
+  | StoredSmsSendMessage
+  | StoredWhatsAppSendMessage;
+
+export type StoredWhatsAppSendMessage = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadata | undefined;
+  channel: "whatsapp";
+  to: [SavedPhoneRecipient];
+  whatsapp: WhatsAppContent;
+};
+
+/**
+ * Exactly one content source: text, an approved template (by id or slug, with its templateData), media, an interactive message (reply buttons, a list, a call-to-action link, or a flow), a reaction, a location, or contacts. Everything except a template needs the recipient's 24-hour customer service window to be open.
+ */
+export type WhatsAppContent =
+  | WhatsAppTextContent
+  | WhatsAppTemplateIdContent
+  | WhatsAppTemplateSlugContent
+  | WhatsAppMediaContent
+  | WhatsAppInteractiveContent
+  | WhatsAppReactionContent
+  | WhatsAppLocationContent
+  | WhatsAppContactsContent;
+
+/**
+ * Exactly one content source: text, an approved template (by id or slug, with its templateData), media, an interactive message (reply buttons, a list, a call-to-action link, or a flow), a reaction, a location, or contacts. Everything except a template needs the recipient's 24-hour customer service window to be open.
+ */
+export type WhatsAppContentWritable =
+  | WhatsAppTextContent
+  | WhatsAppTemplateIdContentWritable
+  | WhatsAppTemplateSlugContentWritable
+  | WhatsAppMediaContent
+  | WhatsAppInteractiveContentWritable
+  | WhatsAppReactionContent
+  | WhatsAppLocationContent
+  | WhatsAppContactsContent;
+
+export type WhatsAppContactsContent = {
+  contacts: Array<WhatsAppContactCard>;
+};
+
+export type WhatsAppContactCard = {
+  name: {
+    formattedName: string;
+    firstName?: string | undefined;
+    lastName?: string | undefined;
+    middleName?: string | undefined;
+    prefix?: string | undefined;
+    suffix?: string | undefined;
+  };
+  phones?:
+    | Array<{
+        phone: string;
+        type?: string | undefined;
+        waId?: string | undefined;
+      }>
+    | undefined;
+  emails?:
+    | Array<{
+        email: string;
+        type?: string | undefined;
+      }>
+    | undefined;
+  urls?:
+    | Array<{
+        url: string;
+        type?: string | undefined;
+      }>
+    | undefined;
+  org?:
+    | {
+        company?: string | undefined;
+        department?: string | undefined;
+        title?: string | undefined;
+      }
+    | undefined;
+  addresses?:
+    | Array<{
+        street?: string | undefined;
+        city?: string | undefined;
+        state?: string | undefined;
+        zip?: string | undefined;
+        country?: string | undefined;
+        countryCode?: string | undefined;
+        type?: string | undefined;
+      }>
+    | undefined;
+  birthday?: string | undefined;
+};
+
+export type WhatsAppLocationContent = {
+  location: WhatsAppLocation;
+};
+
+export type WhatsAppLocation = {
+  latitude: number;
+  longitude: number;
+  name?: string | undefined;
+  address?: string | undefined;
+};
+
+export type WhatsAppReactionContent = {
+  reaction: WhatsAppReaction;
+};
+
+export type WhatsAppReaction = {
+  messageId: MessageId;
+  emoji: string;
+};
+
+export type WhatsAppInteractiveContent = {
+  interactive: WhatsAppInteractive;
+};
+
+export type WhatsAppInteractiveContentWritable = {
+  interactive: WhatsAppInteractiveWritable;
+};
+
+export type WhatsAppInteractive =
+  | WhatsAppButtonsMessage
+  | WhatsAppListMessage
+  | WhatsAppCtaUrlMessage
+  | WhatsAppFlowMessage;
+
+export type WhatsAppInteractiveWritable =
+  | WhatsAppButtonsMessage
+  | WhatsAppListMessage
+  | WhatsAppCtaUrlMessage
+  | WhatsAppFlowMessageWritable;
+
+export type WhatsAppFlowMessage = {
+  type: "flow";
+  header?: WhatsAppTextHeader | undefined;
+  body: string;
+  footer?: string | undefined;
+  flowId: WhatsAppFlowId;
+  cta: string;
+  token?: string | undefined;
+  action?: "navigate" | "data_exchange" | undefined;
+  screen?: string | undefined;
+  data?:
+    | {
+        [key: string]: JsonValue;
+      }
+    | undefined;
+};
+
+export type WhatsAppFlowMessageWritable = {
+  type: "flow";
+  header?: WhatsAppTextHeader | undefined;
+  body: string;
+  footer?: string | undefined;
+  flowId: WhatsAppFlowId;
+  cta: string;
+  token?: string | undefined;
+  action?: "navigate" | "data_exchange" | undefined;
+  screen?: string | undefined;
+  data?:
+    | {
+        [key: string]: JsonValueWritable | undefined;
+      }
+    | undefined;
+};
+
+export type WhatsAppFlowId = string;
+
+export type WhatsAppMediaContent = {
+  media: WhatsAppOutboundMedia;
+};
+
+export type WhatsAppOutboundMedia =
+  | WhatsAppImage
+  | WhatsAppVideo
+  | WhatsAppAudio
+  | WhatsAppDocument
+  | WhatsAppSticker;
+
+export type WhatsAppSticker = WhatsAppStickerLink | WhatsAppStickerUpload;
+
+export type WhatsAppStickerUpload = {
+  type: "sticker";
+  mediaId: MediaId;
+};
+
+export type WhatsAppStickerLink = {
+  type: "sticker";
+  url: string;
+};
+
+export type WhatsAppDocument = WhatsAppDocumentLink | WhatsAppDocumentUpload;
+
+export type WhatsAppDocumentUpload = {
+  type: "document";
+  caption?: string | undefined;
+  filename?: string | undefined;
+  mediaId: MediaId;
+};
+
+export type WhatsAppDocumentLink = {
+  type: "document";
+  caption?: string | undefined;
+  filename?: string | undefined;
+  url: string;
+};
+
+export type WhatsAppAudio = WhatsAppAudioLink | WhatsAppAudioUpload;
+
+export type WhatsAppAudioUpload = {
+  type: "audio";
+  mediaId: MediaId;
+};
+
+export type WhatsAppAudioLink = {
+  type: "audio";
+  url: string;
+};
+
+export type WhatsAppVideo = WhatsAppVideoLink | WhatsAppVideoUpload;
+
+export type WhatsAppVideoUpload = {
+  type: "video";
+  caption?: string | undefined;
+  mediaId: MediaId;
+};
+
+export type WhatsAppVideoLink = {
+  type: "video";
+  caption?: string | undefined;
+  url: string;
+};
+
+export type WhatsAppImage = WhatsAppImageLink | WhatsAppImageUpload;
+
+export type WhatsAppImageUpload = {
+  type: "image";
+  caption?: string | undefined;
+  mediaId: MediaId;
+};
+
+export type WhatsAppImageLink = {
+  type: "image";
+  caption?: string | undefined;
+  url: string;
+};
+
+export type WhatsAppTemplateSlugContent = {
+  templateSlug: string;
+  templateData?: WhatsAppTemplateData | undefined;
+  flowToken?: string | undefined;
+};
+
+export type WhatsAppTemplateSlugContentWritable = {
+  templateSlug: string;
+  templateData?: WhatsAppTemplateDataWritable | undefined;
+  flowToken?: string | undefined;
+};
+
+export type WhatsAppTemplateData = {
+  [key: string]: JsonValue;
+};
+
+export type WhatsAppTemplateDataWritable = {
+  [key: string]: JsonValueWritable | undefined;
+};
+
+export type WhatsAppTemplateIdContent = {
+  templateId: TemplateId;
+  templateData?: WhatsAppTemplateData | undefined;
+  flowToken?: string | undefined;
+};
+
+export type WhatsAppTemplateIdContentWritable = {
+  templateId: TemplateId;
+  templateData?: WhatsAppTemplateDataWritable | undefined;
+  flowToken?: string | undefined;
+};
+
+export type WhatsAppTextContent = {
+  text: string;
+};
+
+export type SavedPhoneRecipient =
+  | {
+      contactId: ContactId;
+    }
+  | {
+      phone: string;
+      name?: string | null | undefined;
+      displayName?: string | null | undefined;
+    };
+
+export type MessageMetadata = {
+  [key: string]: JsonValue;
+} | null;
+
+export type MessageMetadataWritable = {
+  [key: string]: JsonValueWritable | undefined;
+} | null;
+
+export type StoredSmsSendMessage = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadata | undefined;
+  channel: "sms";
+  to: [SavedPhoneRecipient];
+  sms: SmsContent;
+};
+
+export type StoredEmailSendMessage = {
   conversationId?: ConversationId | null | undefined;
   metadata?: MessageMetadata | undefined;
   channel: "email";
@@ -5162,14 +5940,6 @@ export type StoredSendMessagePayload = {
     | undefined;
   email: EmailContent;
 };
-
-export type MessageMetadata = {
-  [key: string]: JsonValue;
-} | null;
-
-export type MessageMetadataWritable = {
-  [key: string]: JsonValueWritable | undefined;
-} | null;
 
 export type EmailContent = {
   subject?: string | null | undefined;
@@ -5234,7 +6004,58 @@ export type ScheduledMessagePage = {
   nextCursor: string | null;
 };
 
-export type DispatchSendMessagePayload = {
+export type DispatchSendMessagePayload =
+  | EmailDispatchSendMessagePayload
+  | SmsDispatchSendMessagePayload
+  | WhatsAppDispatchSendMessagePayload;
+
+/**
+ * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ */
+export type WhatsAppDispatchSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "whatsapp";
+  to: WhatsAppRecipients;
+  whatsapp: WhatsAppContentWritable;
+};
+
+export type WhatsAppRecipients = [WhatsAppRecipient];
+
+export type WhatsAppRecipient =
+  | {
+      contactId: ContactId;
+    }
+  | {
+      phone: string;
+      name?: string | null | undefined;
+      displayName?: string | null | undefined;
+    };
+
+/**
+ * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ */
+export type SmsDispatchSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "sms";
+  to: SmsRecipients;
+  sms: SmsDispatchContent;
+};
+
+export type SmsRecipients = [SmsRecipient];
+
+export type SmsRecipient =
+  | {
+      contactId: ContactId;
+    }
+  | {
+      phone: string;
+      name?: string | null | undefined;
+      displayName?: string | null | undefined;
+    };
+
+export type EmailDispatchSendMessagePayload = {
   conversationId?: ConversationId | null | undefined;
   metadata?: MessageMetadataWritable | undefined;
   channel: "email";
@@ -5330,13 +6151,13 @@ export type ValidateEmailResponse = {
 
 export type EmailSendMessagePayload = {
   conversationId?: ConversationId | null | undefined;
-  metadata?: MessageMetadata | undefined;
+  metadata?: MessageMetadataWritable | undefined;
   channel: "email";
   to: EmailRecipients;
   cc?: EmailCcRecipients | undefined;
   bcc?: EmailBccRecipients | undefined;
   from?: EmailSender | undefined;
-  email: EmailContent;
+  email: EmailContentWritable;
 };
 
 export type MessageReceipt = {
@@ -5370,15 +6191,31 @@ export type MessageReceipt = {
   createdAt: string;
 };
 
-export type SendMessagePayload = {
+export type SendMessagePayload =
+  | EmailSendMessagePayload
+  | SmsSendMessagePayload
+  | WhatsAppSendMessagePayload;
+
+/**
+ * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ */
+export type WhatsAppSendMessagePayload = {
   conversationId?: ConversationId | null | undefined;
-  metadata?: MessageMetadata | undefined;
-  channel: "email";
-  to: EmailRecipients;
-  cc?: EmailCcRecipients | undefined;
-  bcc?: EmailBccRecipients | undefined;
-  from?: EmailSender | undefined;
-  email: EmailContent;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "whatsapp";
+  to: WhatsAppRecipients;
+  whatsapp: WhatsAppContentWritable;
+};
+
+/**
+ * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ */
+export type SmsSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "sms";
+  to: SmsRecipients;
+  sms: SmsContentWritable;
 };
 
 export type EmailAddress = {
@@ -5403,6 +6240,8 @@ export type MessageContent = {
   text?: string | null | undefined;
   html?: string | null | undefined;
   markdown?: string | null | undefined;
+  sms?: SmsMessageContent | null | undefined;
+  whatsapp?: WhatsAppMessageContent | null | undefined;
   email?:
     | {
         subject?: string | null | undefined;
@@ -5430,12 +6269,326 @@ export type MessageContent = {
       }
     | null
     | undefined;
+  structured?: WhatsAppStructuredContent | null | undefined;
   metadata?:
     | {
         [key: string]: JsonValue;
       }
     | null
     | undefined;
+};
+
+export type WhatsAppStructuredContent = {
+  type: string;
+  data: {
+    [key: string]: JsonValue;
+  };
+};
+
+export type WhatsAppMessageContent = {
+  text?: string | null | undefined;
+  template?:
+    | {
+        name: string;
+        language: string;
+        components: Array<{
+          type: "header" | "body" | "footer" | "button";
+          sub_type?: "url" | "quick_reply" | "copy_code" | "flow" | null | undefined;
+          index?: string | null | undefined;
+          parameters: Array<{
+            type:
+              | "text"
+              | "currency"
+              | "date_time"
+              | "image"
+              | "document"
+              | "video"
+              | "coupon_code"
+              | "action";
+            text?: string | null | undefined;
+            currency?:
+              | {
+                  fallback_value: string;
+                  code: string;
+                  amount_1000: number;
+                }
+              | null
+              | undefined;
+            date_time?:
+              | {
+                  fallback_value: string;
+                }
+              | null
+              | undefined;
+            image?:
+              | {
+                  link: string;
+                }
+              | null
+              | undefined;
+            document?:
+              | {
+                  link: string;
+                  filename?: string | null | undefined;
+                }
+              | null
+              | undefined;
+            video?:
+              | {
+                  link: string;
+                }
+              | null
+              | undefined;
+            coupon_code?: string | null | undefined;
+            action?:
+              | {
+                  flow_token: string;
+                }
+              | null
+              | undefined;
+          }>;
+        }>;
+      }
+    | null
+    | undefined;
+  interactive?: WhatsAppStoredInteractive | undefined;
+  media?: WhatsAppStoredMedia | null | undefined;
+  reaction?: WhatsAppStoredReaction | undefined;
+  location?: WhatsAppStoredLocation | undefined;
+  contacts?: Array<WhatsAppStoredContactCard> | undefined;
+  reply?: WhatsAppReceivedReply | undefined;
+  flowResponse?: WhatsAppReceivedFlowResponse | undefined;
+  context?: WhatsAppMessageReference | undefined;
+};
+
+export type WhatsAppMessageReference = {
+  messageId: MessageId | null;
+  providerMessageId: string;
+};
+
+export type WhatsAppReceivedFlowResponse = {
+  flowToken: string | null;
+  response: {
+    [key: string]: JsonValue;
+  };
+  body?: string | undefined;
+};
+
+export type WhatsAppReceivedReply = {
+  type: "button" | "list" | "template_button";
+  id: string;
+  title: string;
+  description?: string | undefined;
+};
+
+export type WhatsAppStoredContactCard = {
+  name?:
+    | {
+        formattedName?: string | undefined;
+        firstName?: string | undefined;
+        lastName?: string | undefined;
+        middleName?: string | undefined;
+        prefix?: string | undefined;
+        suffix?: string | undefined;
+      }
+    | undefined;
+  phones?:
+    | Array<{
+        phone?: string | undefined;
+        type?: string | undefined;
+        waId?: string | undefined;
+      }>
+    | undefined;
+  emails?:
+    | Array<{
+        email?: string | undefined;
+        type?: string | undefined;
+      }>
+    | undefined;
+  urls?:
+    | Array<{
+        url?: string | undefined;
+        type?: string | undefined;
+      }>
+    | undefined;
+  org?:
+    | {
+        company?: string | undefined;
+        department?: string | undefined;
+        title?: string | undefined;
+      }
+    | undefined;
+  addresses?:
+    | Array<{
+        street?: string | undefined;
+        city?: string | undefined;
+        state?: string | undefined;
+        zip?: string | undefined;
+        country?: string | undefined;
+        countryCode?: string | undefined;
+        type?: string | undefined;
+      }>
+    | undefined;
+  birthday?: string | undefined;
+};
+
+export type WhatsAppStoredLocation = {
+  latitude: number;
+  longitude: number;
+  name?: string | undefined;
+  address?: string | undefined;
+  url?: string | undefined;
+};
+
+export type WhatsAppStoredReaction = {
+  messageId: MessageId | null;
+  providerMessageId: string;
+  emoji: string | null;
+};
+
+export type WhatsAppStoredMedia =
+  | {
+      type: "image" | "video" | "audio" | "document" | "sticker";
+      url: string;
+      caption?: string | undefined;
+      filename?: string | undefined;
+    }
+  | {
+      type: "image" | "video" | "audio" | "document" | "sticker";
+      mediaId: MediaId;
+      caption?: string | undefined;
+      filename?: string | undefined;
+    }
+  | {
+      type: "image" | "video" | "audio" | "document" | "sticker";
+      providerMediaId: string;
+      mimeType?: string | null | undefined;
+      caption?: string | null | undefined;
+      filename?: string | undefined;
+    };
+
+export type WhatsAppStoredInteractive =
+  | WhatsAppButtonsMessage
+  | WhatsAppListMessage
+  | WhatsAppCtaUrlMessage
+  | WhatsAppStoredFlowMessage;
+
+export type WhatsAppStoredFlowMessage = {
+  type: "flow";
+  header?: WhatsAppTextHeader | undefined;
+  body: string;
+  footer?: string | undefined;
+  flowId: WhatsAppFlowId;
+  cta: string;
+  token?: string | undefined;
+  action?: "navigate" | "data_exchange" | undefined;
+  screen?: string | undefined;
+  data?:
+    | {
+        [key: string]: JsonValue;
+      }
+    | undefined;
+  flowVersionId: WhatsAppFlowVersionId;
+  providerFlowId: string;
+};
+
+export type WhatsAppFlowVersionId = string;
+
+export type WhatsAppCtaUrlMessage = {
+  type: "cta_url";
+  header?: WhatsAppInteractiveHeader | undefined;
+  body: string;
+  footer?: string | undefined;
+  displayText: string;
+  url: string;
+};
+
+export type WhatsAppInteractiveHeader =
+  | WhatsAppTextHeader
+  | WhatsAppImageHeader
+  | WhatsAppVideoHeader
+  | WhatsAppDocumentHeader;
+
+export type WhatsAppDocumentHeader = WhatsAppDocumentHeaderLink | WhatsAppDocumentHeaderUpload;
+
+export type WhatsAppDocumentHeaderUpload = {
+  type: "document";
+  filename?: string | undefined;
+  mediaId: MediaId;
+};
+
+export type WhatsAppDocumentHeaderLink = {
+  type: "document";
+  filename?: string | undefined;
+  url: string;
+};
+
+export type WhatsAppVideoHeader = WhatsAppVideoHeaderLink | WhatsAppVideoHeaderUpload;
+
+export type WhatsAppVideoHeaderUpload = {
+  type: "video";
+  mediaId: MediaId;
+};
+
+export type WhatsAppVideoHeaderLink = {
+  type: "video";
+  url: string;
+};
+
+export type WhatsAppImageHeader = WhatsAppImageHeaderLink | WhatsAppImageHeaderUpload;
+
+export type WhatsAppImageHeaderUpload = {
+  type: "image";
+  mediaId: MediaId;
+};
+
+export type WhatsAppImageHeaderLink = {
+  type: "image";
+  url: string;
+};
+
+export type WhatsAppTextHeader = {
+  type: "text";
+  text: string;
+};
+
+export type WhatsAppListMessage = {
+  type: "list";
+  header?: WhatsAppTextHeader | undefined;
+  body: string;
+  footer?: string | undefined;
+  button: string;
+  sections: Array<WhatsAppListSection>;
+};
+
+export type WhatsAppListSection = {
+  title?: string | undefined;
+  rows: Array<WhatsAppListRow>;
+};
+
+export type WhatsAppListRow = {
+  id: string;
+  title: string;
+  description?: string | undefined;
+};
+
+export type WhatsAppButtonsMessage = {
+  type: "buttons";
+  header?: WhatsAppInteractiveHeader | undefined;
+  body: string;
+  footer?: string | undefined;
+  buttons: Array<WhatsAppReplyButton>;
+};
+
+export type WhatsAppReplyButton = {
+  id: string;
+  title: string;
+};
+
+export type SmsMessageContent = {
+  text: string;
+  unicode?: boolean | null | undefined;
+  parts?: number | null | undefined;
 };
 
 export type MessageDeliveryList = {
@@ -5504,7 +6657,7 @@ export type Message = {
       }
     | null
     | undefined;
-  channel: "email";
+  channel: "sms" | "whatsapp" | "email";
   direction: "outbound" | "inbound";
   status:
     | "pending"
@@ -5560,7 +6713,7 @@ export type MessageSubmission = {
     | "forwarding"
     | "journey"
     | "businessApp";
-  transport: "http" | null;
+  transport: "http" | "smtp" | null;
   credential: SubmissionCredential | null;
   userId: UserId | null;
   client: SubmissionClient | null;
@@ -5619,9 +6772,9 @@ export type MessagesListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    channel?: "email" | null | undefined;
-    direction?: "outbound" | "inbound" | null | undefined;
+    cursor?: string | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
+    direction?: "outbound" | "inbound" | undefined;
     status?:
       | "pending"
       | "scheduled"
@@ -5633,22 +6786,25 @@ export type MessagesListData = {
       | "failed"
       | "bounced"
       | "complained"
-      | null
       | undefined;
-    conversationId?: ConversationId | null | undefined;
-    contactId?: ContactId | null | undefined;
-    from?: string | null | undefined;
+    conversationId?: ConversationId | undefined;
+    contactId?: ContactId | undefined;
+    from?: string | undefined;
     /**
      * Only this namespace's messages. A key scoped to a namespace always lists its own.
      */
-    namespaceId?: NamespaceId | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    namespaceId?: NamespaceId | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/messages";
 };
 
 export type MessagesListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -5683,18 +6839,12 @@ export type MessagesListResponses = {
 export type MessagesListResponse = MessagesListResponses[keyof MessagesListResponses];
 
 export type MessagesSendData = {
-  body: {
-    conversationId?: ConversationId | null | undefined;
-    metadata?: MessageMetadataWritable | undefined;
-    channel: "email";
-    to: EmailRecipients;
-    cc?: EmailCcRecipients | undefined;
-    bcc?: EmailBccRecipients | undefined;
-    from?: EmailSender | undefined;
-    email: EmailContentWritable;
-  };
+  body: EmailSendMessagePayload | SmsSendMessagePayload | WhatsAppSendMessagePayload;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    /**
+     * Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -5702,6 +6852,10 @@ export type MessagesSendData = {
 };
 
 export type MessagesSendErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -5770,6 +6924,10 @@ export type MessagesRemoveData = {
 
 export type MessagesRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -5824,6 +6982,10 @@ export type MessagesGetData = {
 
 export type MessagesGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -5870,6 +7032,10 @@ export type MessagesListDeliveriesData = {
 };
 
 export type MessagesListDeliveriesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -5919,6 +7085,10 @@ export type MessagesGetContentData = {
 };
 
 export type MessagesGetContentErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -5970,6 +7140,10 @@ export type MessagesGetEmailData = {
 };
 
 export type MessagesGetEmailErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6025,7 +7199,7 @@ export type MessagesGetEmailResponses = {
       id: string;
       messageId: string;
       recipientId: string | null;
-      channel: "email";
+      channel: "sms" | "whatsapp" | "email";
       status:
         | "pending"
         | "scheduled"
@@ -6071,7 +7245,7 @@ export type MessagesGetEmailResponses = {
       | "failed"
       | "bounced"
       | "complained";
-    channel: "email";
+    channel: "sms" | "whatsapp" | "email";
     direction: "outbound" | "inbound";
     subject: string | null;
     fromEmail: string;
@@ -6169,6 +7343,10 @@ export type MessagesValidateEmailData = {
 
 export type MessagesValidateEmailErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -6221,6 +7399,10 @@ export type MessagesGetStatusData = {
 };
 
 export type MessagesGetStatusErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6280,12 +7462,16 @@ export type MessagesGetEventsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/messages/{id}/events";
 };
 
 export type MessagesGetEventsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6329,14 +7515,18 @@ export type OperationsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    kind?: "email-domain-provisioning" | "organization-deletion" | null | undefined;
-    status?: "pending" | "running" | "succeeded" | "failed" | null | undefined;
+    cursor?: string | undefined;
+    kind?: "email-domain-provisioning" | "organization-deletion" | undefined;
+    status?: "pending" | "running" | "succeeded" | "failed" | undefined;
   };
   url: "/v1/operations";
 };
 
 export type OperationsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6380,6 +7570,10 @@ export type OperationsGetData = {
 };
 
 export type OperationsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6428,6 +7622,10 @@ export type OperationsRetryData = {
 
 export type OperationsRetryErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -6473,7 +7671,7 @@ export type ScheduledMessagesListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
     status?:
       | "pending"
       | "dispatching"
@@ -6481,13 +7679,16 @@ export type ScheduledMessagesListData = {
       | "dispatched"
       | "cancelled"
       | "failed"
-      | null
       | undefined;
   };
   url: "/v1/messages/scheduled";
 };
 
 export type ScheduledMessagesListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6531,7 +7732,7 @@ export type ScheduledMessagesCreateData = {
     referenceId?: string | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -6539,6 +7740,10 @@ export type ScheduledMessagesCreateData = {
 };
 
 export type ScheduledMessagesCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6593,6 +7798,10 @@ export type ScheduledMessagesGetData = {
 
 export type ScheduledMessagesGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -6641,6 +7850,10 @@ export type ScheduledMessagesCancelData = {
 };
 
 export type ScheduledMessagesCancelErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6705,6 +7918,10 @@ export type ScheduledMessagesResumeData = {
 
 export type ScheduledMessagesResumeErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -6768,6 +7985,10 @@ export type CampaignsPreviewData = {
 
 export type CampaignsPreviewErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -6824,6 +8045,10 @@ export type CampaignsSendTestData = {
 };
 
 export type CampaignsSendTestErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6891,14 +8116,18 @@ export type CampaignsListData = {
   body?: never;
   path?: never;
   query?: {
-    status?: "draft" | "archived" | null | undefined;
+    status?: "draft" | "archived" | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/campaigns";
 };
 
 export type CampaignsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6935,7 +8164,7 @@ export type CampaignsListResponse = CampaignsListResponses[keyof CampaignsListRe
 export type CampaignsCreateData = {
   body: {
     name: string;
-    channel: "email";
+    channel: "sms" | "whatsapp" | "email";
     content: CampaignContentInput;
     audience: CampaignAudience;
     policy?: CampaignPolicy | null | undefined;
@@ -6946,6 +8175,10 @@ export type CampaignsCreateData = {
 };
 
 export type CampaignsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -6997,6 +8230,10 @@ export type CampaignsGetData = {
 };
 
 export type CampaignsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7050,6 +8287,10 @@ export type CampaignsUpdateData = {
 
 export type CampaignsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7100,6 +8341,10 @@ export type CampaignsArchiveData = {
 };
 
 export type CampaignsArchiveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7155,15 +8400,18 @@ export type CampaignsListRunsData = {
       | "completed"
       | "cancelled"
       | "failed"
-      | null
       | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/campaigns/{id}/runs";
 };
 
 export type CampaignsListRunsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7207,7 +8455,7 @@ export type CampaignsScheduleRunData = {
     scheduledFor?: string | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: CampaignId;
@@ -7217,6 +8465,10 @@ export type CampaignsScheduleRunData = {
 };
 
 export type CampaignsScheduleRunErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7289,6 +8541,10 @@ export type CampaignsGetRunData = {
 
 export type CampaignsGetRunErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7336,6 +8592,10 @@ export type CampaignsGetRunReportData = {
 };
 
 export type CampaignsGetRunReportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7386,6 +8646,10 @@ export type CampaignsPauseRunData = {
 };
 
 export type CampaignsPauseRunErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7443,6 +8707,10 @@ export type CampaignsResumeRunData = {
 };
 
 export type CampaignsResumeRunErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7505,6 +8773,10 @@ export type CampaignsCancelRunData = {
 
 export type CampaignsCancelRunErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7557,14 +8829,18 @@ export type CampaignsListRecipientsData = {
     runId: CampaignRunId;
   };
   query?: {
-    status?: "pending" | "dispatching" | "dispatched" | "failed" | "skipped" | null | undefined;
+    status?: "pending" | "dispatching" | "dispatched" | "failed" | "skipped" | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/campaigns/{id}/runs/{runId}/recipients";
 };
 
 export type CampaignsListRecipientsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7613,6 +8889,10 @@ export type EmailGetOnboardingReviewData = {
 
 export type EmailGetOnboardingReviewErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7657,6 +8937,10 @@ export type EmailReapplyOnboardingReviewData = {
 };
 
 export type EmailReapplyOnboardingReviewErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7709,6 +8993,10 @@ export type EmailRespondToOnboardingInformationRequestData = {
 
 export type EmailRespondToOnboardingInformationRequestErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7755,6 +9043,10 @@ export type EmailGetTrackingDefaultsData = {
 };
 
 export type EmailGetTrackingDefaultsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7806,6 +9098,10 @@ export type EmailUpdateTrackingDefaultsData = {
 
 export type EmailUpdateTrackingDefaultsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7855,6 +9151,10 @@ export type EmailGetRecipientTrackingPreferenceData = {
 
 export type EmailGetRecipientTrackingPreferenceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7901,6 +9201,10 @@ export type EmailUpdateRecipientTrackingPreferenceData = {
 
 export type EmailUpdateRecipientTrackingPreferenceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -7940,14 +9244,18 @@ export type EmailListDomainsData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
     sendable?: true | null | undefined;
-    namespaceId?: NamespaceId | null | undefined;
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/email/domains";
 };
 
 export type EmailListDomainsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -7999,6 +9307,10 @@ export type EmailAddDomainData = {
 };
 
 export type EmailAddDomainErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8063,6 +9375,10 @@ export type EmailGetDomainVerificationData = {
 
 export type EmailGetDomainVerificationErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8114,6 +9430,10 @@ export type EmailRotateDomainDkimData = {
 };
 
 export type EmailRotateDomainDkimErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8171,6 +9491,10 @@ export type EmailAdvanceDomainVerificationData = {
 };
 
 export type EmailAdvanceDomainVerificationErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8233,6 +9557,10 @@ export type EmailRemoveDomainData = {
 
 export type EmailRemoveDomainErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8285,6 +9613,10 @@ export type EmailGetDomainByIdData = {
 
 export type EmailGetDomainByIdErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8334,6 +9666,10 @@ export type EmailDetectRegistrarData = {
 };
 
 export type EmailDetectRegistrarErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8391,6 +9727,10 @@ export type EmailGetDomainConnectData = {
 
 export type EmailGetDomainConnectErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8441,6 +9781,10 @@ export type EmailBuildDomainConnectApplyUrlData = {
 };
 
 export type EmailBuildDomainConnectApplyUrlErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8503,6 +9847,10 @@ export type EmailCompleteDomainConnectData = {
 
 export type EmailCompleteDomainConnectErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8561,6 +9909,10 @@ export type EmailEnableReceivingData = {
 
 export type EmailEnableReceivingErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8613,6 +9965,10 @@ export type EmailGetReceivingStatusData = {
 
 export type EmailGetReceivingStatusErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8661,6 +10017,10 @@ export type EmailSetDefaultDomainData = {
 };
 
 export type EmailSetDefaultDomainErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8717,6 +10077,10 @@ export type EmailUpdateDomainConfigData = {
 };
 
 export type EmailUpdateDomainConfigErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8775,6 +10139,10 @@ export type EmailDisableCustomTrackingData = {
 
 export type EmailDisableCustomTrackingErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8832,6 +10200,10 @@ export type EmailGetCustomTrackingData = {
 
 export type EmailGetCustomTrackingErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8883,6 +10255,10 @@ export type EmailEnableCustomTrackingData = {
 };
 
 export type EmailEnableCustomTrackingErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -8941,6 +10317,10 @@ export type EmailRecheckCustomTrackingData = {
 
 export type EmailRecheckCustomTrackingErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -8998,6 +10378,10 @@ export type EmailGetCustomTrackingDomainConnectData = {
 
 export type EmailGetCustomTrackingDomainConnectErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9046,6 +10430,10 @@ export type EmailBuildCustomTrackingDomainConnectApplyUrlData = {
 };
 
 export type EmailBuildCustomTrackingDomainConnectApplyUrlErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9108,6 +10496,10 @@ export type EmailCompleteCustomTrackingDomainConnectData = {
 
 export type EmailCompleteCustomTrackingDomainConnectErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9151,16 +10543,20 @@ export type EmailListSendersData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    verificationStatus?: "pending" | "verified" | "failed" | null | undefined;
+    cursor?: string | undefined;
+    verificationStatus?: "pending" | "verified" | "failed" | undefined;
     isActive?: boolean | null | undefined;
     isDefault?: boolean | null | undefined;
-    namespaceId?: NamespaceId | null | undefined;
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/email/senders";
 };
 
 export type EmailListSendersErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9211,6 +10607,10 @@ export type EmailAddSenderData = {
 };
 
 export type EmailAddSenderErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9274,6 +10674,10 @@ export type EmailCheckSenderVerificationData = {
 
 export type EmailCheckSenderVerificationErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9332,6 +10736,10 @@ export type EmailRemoveSenderData = {
 
 export type EmailRemoveSenderErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9379,6 +10787,10 @@ export type EmailGetSenderData = {
 };
 
 export type EmailGetSenderErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9449,6 +10861,10 @@ export type EmailSetDefaultSenderData = {
 
 export type EmailSetDefaultSenderErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9491,13 +10907,17 @@ export type EmailGetStatsData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/email/stats";
 };
 
 export type EmailGetStatsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9552,6 +10972,10 @@ export type EmailEnableCatchAllData = {
 
 export type EmailEnableCatchAllErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9605,6 +11029,10 @@ export type EmailDisableCatchAllData = {
 };
 
 export type EmailDisableCatchAllErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9661,6 +11089,10 @@ export type EmailGetCatchAllConfigData = {
 
 export type EmailGetCatchAllConfigErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -9711,6 +11143,9 @@ export type EmailGetCatchAllConfigResponse =
 export type EmailUpdateCatchAllConfigData = {
   body: {
     domainId: EmailDomainId;
+    /**
+     * The catch-all webhook endpoint. Null removes it without disabling catch-all: unknown addresses reach the unknown-recipient mailbox when configured, otherwise they are dropped without a bounce. Omission leaves the endpoint unchanged.
+     */
     endpointId?: WebhookEndpointId | null | undefined;
     /**
      * An active mailbox in this organization with an email address on this domain. Receives unknown addresses only when catch-all has no webhook endpoint. Null drops unknown addresses without a bounce; omission leaves the setting unchanged.
@@ -9723,6 +11158,10 @@ export type EmailUpdateCatchAllConfigData = {
 };
 
 export type EmailUpdateCatchAllConfigErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9769,13 +11208,17 @@ export type EmailGetCatchAllStatsData = {
   path?: never;
   query: {
     domainId: EmailDomainId;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/email/catch-all/stats";
 };
 
 export type EmailGetCatchAllStatsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9833,16 +11276,20 @@ export type EmailListSuppressionsData = {
   body?: never;
   path?: never;
   query?: {
-    type?: "bounce" | "complaint" | "unsubscribe" | "manual" | null | undefined;
-    status?: "active" | "expired" | null | undefined;
-    search?: string | null | undefined;
+    type?: "bounce" | "complaint" | "unsubscribe" | "manual" | undefined;
+    status?: "active" | "expired" | undefined;
+    search?: string | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/email/suppressions";
 };
 
 export type EmailListSuppressionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9886,6 +11333,10 @@ export type EmailCountSuppressionsData = {
 };
 
 export type EmailCountSuppressionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9931,6 +11382,10 @@ export type EmailRemoveSuppressionData = {
 };
 
 export type EmailRemoveSuppressionErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -9978,15 +11433,19 @@ export type EmailListBlocksData = {
   body?: never;
   path?: never;
   query?: {
-    blockType?: "email" | "domain" | null | undefined;
+    blockType?: "email" | "domain" | undefined;
     isActive?: boolean | null | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/email/blocks";
 };
 
 export type EmailListBlocksErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10034,6 +11493,10 @@ export type EmailAddBlockData = {
 };
 
 export type EmailAddBlockErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10091,6 +11554,10 @@ export type EmailRemoveBlockData = {
 
 export type EmailRemoveBlockErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10143,6 +11610,10 @@ export type EmailUpdateBlockData = {
 
 export type EmailUpdateBlockErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10192,17 +11663,21 @@ export type EmailGetBlockLogsData = {
   body?: never;
   path?: never;
   query?: {
-    blockedEmailId?: BlockedEmailId | null | undefined;
-    fromAddress?: string | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    blockedEmailId?: BlockedEmailId | undefined;
+    fromAddress?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/email/blocks/logs";
 };
 
 export type EmailGetBlockLogsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10247,6 +11722,10 @@ export type EmailCheckBlockedData = {
 };
 
 export type EmailCheckBlockedErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10295,13 +11774,17 @@ export type EmailListForwardingRulesData = {
   body?: never;
   path?: never;
   query?: {
-    domainId?: EmailDomainId | null | undefined;
+    domainId?: EmailDomainId | undefined;
     isActive?: boolean | null | undefined;
   };
   url: "/v1/email/forwarding";
 };
 
 export type EmailListForwardingRulesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10363,6 +11846,10 @@ export type EmailCreateForwardingRuleData = {
 
 export type EmailCreateForwardingRuleErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10422,6 +11909,10 @@ export type EmailDeleteForwardingRuleData = {
 };
 
 export type EmailDeleteForwardingRuleErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10489,6 +11980,10 @@ export type EmailUpdateForwardingRuleData = {
 
 export type EmailUpdateForwardingRuleErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10538,17 +12033,21 @@ export type EmailGetForwardingLogData = {
   body?: never;
   path?: never;
   query?: {
-    forwardingRuleId?: EmailForwardingRuleId | null | undefined;
-    status?: "pending" | "forwarded" | "failed" | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    forwardingRuleId?: EmailForwardingRuleId | undefined;
+    status?: "pending" | "forwarded" | "failed" | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/email/forwarding/logs";
 };
 
 export type EmailGetForwardingLogErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10594,6 +12093,10 @@ export type EmailGetDomainWarmingData = {
 };
 
 export type EmailGetDomainWarmingErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10648,6 +12151,10 @@ export type EmailCreateDomainWarmingPlanData = {
 };
 
 export type EmailCreateDomainWarmingPlanErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10706,6 +12213,10 @@ export type EmailUpdateDomainWarmingPolicyData = {
 
 export type EmailUpdateDomainWarmingPolicyErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10759,6 +12270,10 @@ export type EmailCancelDomainWarmingBatchData = {
 };
 
 export type EmailCancelDomainWarmingBatchErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10815,6 +12330,10 @@ export type EmailPauseDomainWarmingData = {
 
 export type EmailPauseDomainWarmingErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10869,6 +12388,10 @@ export type EmailResumeDomainWarmingData = {
 };
 
 export type EmailResumeDomainWarmingErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -10925,6 +12448,10 @@ export type EmailCompleteDomainWarmingData = {
 
 export type EmailCompleteDomainWarmingErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -10972,7 +12499,7 @@ export type MediaCreateData = {
     filename: string;
     contentType: string;
     sizeBytes: number;
-    purpose: "attachment" | "avatar" | "review_evidence";
+    purpose: "attachment" | "avatar" | "whatsapp_media" | "review_evidence";
     checksumSha256?: string | null | undefined;
   };
   path?: never;
@@ -10981,6 +12508,10 @@ export type MediaCreateData = {
 };
 
 export type MediaCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11024,6 +12555,10 @@ export type MediaCompleteData = {
 };
 
 export type MediaCompleteErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11072,6 +12607,10 @@ export type MediaRemoveData = {
 
 export type MediaRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11118,6 +12657,10 @@ export type MediaGetByIdData = {
 };
 
 export type MediaGetByIdErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11166,6 +12709,10 @@ export type MediaDownloadUrlData = {
 
 export type MediaDownloadUrlErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11212,6 +12759,10 @@ export type AttachmentsRemoveData = {
 };
 
 export type AttachmentsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11263,6 +12814,10 @@ export type AttachmentsGetByIdData = {
 };
 
 export type AttachmentsGetByIdErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11322,6 +12877,10 @@ export type AttachmentsListData = {
 
 export type AttachmentsListErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11370,6 +12929,10 @@ export type AttachmentsDownloadUrlData = {
 };
 
 export type AttachmentsDownloadUrlErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11428,18 +12991,22 @@ export type ConversationsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
-    channel?: "email" | null | undefined;
-    contactId?: ContactId | null | undefined;
-    mailboxId?: MailboxId | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
+    contactId?: ContactId | undefined;
+    mailboxId?: MailboxId | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/conversations";
 };
 
 export type ConversationsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11480,8 +13047,8 @@ export type ConversationsCreateData = {
     description?: string | null | undefined;
     externalId?: string | null | undefined;
     parentConversationId?: ConversationId | null | undefined;
-    channels: Array<"email">;
-    primaryChannel: "email";
+    channels: Array<"sms" | "whatsapp" | "email">;
+    primaryChannel: "sms" | "whatsapp" | "email";
     status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
     statusReason?: string | null | undefined;
     priority?: number | null | undefined;
@@ -11501,6 +13068,10 @@ export type ConversationsCreateData = {
 };
 
 export type ConversationsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11546,6 +13117,10 @@ export type ConversationsGetByIdData = {
 
 export type ConversationsGetByIdErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11590,7 +13165,7 @@ export type ConversationsUpdateData = {
     description?: string | null | undefined;
     externalId?: string | null | undefined;
     parentConversationId?: ConversationId | null | undefined;
-    primaryChannel?: "email" | null | undefined;
+    primaryChannel?: "sms" | "whatsapp" | "email" | null | undefined;
     status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | null | undefined;
     statusReason?: string | null | undefined;
     priority?: number | null | undefined;
@@ -11610,6 +13185,10 @@ export type ConversationsUpdateData = {
 };
 
 export type ConversationsUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11655,14 +13234,18 @@ export type ConversationsListMessagesData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/conversations/{id}/messages";
 };
 
 export type ConversationsListMessagesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11715,6 +13298,10 @@ export type ConversationsRemoveTagsData = {
 
 export type ConversationsRemoveTagsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11765,6 +13352,10 @@ export type ConversationsAddTagsData = {
 };
 
 export type ConversationsAddTagsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11817,6 +13408,10 @@ export type ConversationsRemoveCategoriesData = {
 
 export type ConversationsRemoveCategoriesErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11868,6 +13463,10 @@ export type ConversationsAddCategoriesData = {
 
 export type ConversationsAddCategoriesErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -11908,7 +13507,7 @@ export type ConversationsAddCategoriesResponse =
 
 export type ConversationsRemoveChannelsData = {
   body: {
-    channels: ["email", ...Array<"email">];
+    channels: ["sms" | "whatsapp" | "email", ...Array<"sms" | "whatsapp" | "email">];
   };
   path: {
     id: ConversationId;
@@ -11918,6 +13517,10 @@ export type ConversationsRemoveChannelsData = {
 };
 
 export type ConversationsRemoveChannelsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -11959,7 +13562,7 @@ export type ConversationsRemoveChannelsResponse =
 
 export type ConversationsAddChannelsData = {
   body: {
-    channels: ["email", ...Array<"email">];
+    channels: ["sms" | "whatsapp" | "email", ...Array<"sms" | "whatsapp" | "email">];
   };
   path: {
     id: ConversationId;
@@ -11969,6 +13572,10 @@ export type ConversationsAddChannelsData = {
 };
 
 export type ConversationsAddChannelsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12021,6 +13628,10 @@ export type ConversationsRemoveContactsData = {
 
 export type ConversationsRemoveContactsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12072,6 +13683,10 @@ export type ConversationsAddContactsData = {
 
 export type ConversationsAddContactsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12115,20 +13730,24 @@ export type ContactsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    namespaceId?: NamespaceId | null | undefined;
-    search?: string | null | undefined;
-    status?: "active" | "paused" | "blocked" | "archived" | null | undefined;
-    fields?: string | null | undefined;
-    customField?: string | null | undefined;
-    customFieldValue?: string | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
+    search?: string | undefined;
+    status?: "active" | "paused" | "blocked" | "archived" | undefined;
+    fields?: string | undefined;
+    customField?: string | undefined;
+    customFieldValue?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/contacts";
 };
 
 export type ContactsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12183,6 +13802,10 @@ export type ContactsCreateData = {
 };
 
 export type ContactsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12246,6 +13869,10 @@ export type ContactsFindData = {
 
 export type ContactsFindErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12308,6 +13935,10 @@ export type ContactsFindOrCreateData = {
 };
 
 export type ContactsFindOrCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12373,6 +14004,10 @@ export type ContactsRemoveData = {
 
 export type ContactsRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12425,6 +14060,10 @@ export type ContactsGetData = {
 };
 
 export type ContactsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12482,6 +14121,10 @@ export type ContactsUpdateData = {
 };
 
 export type ContactsUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12542,6 +14185,10 @@ export type ContactsAddIdentityData = {
 
 export type ContactsAddIdentityErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12595,6 +14242,10 @@ export type ContactsRemoveIdentityData = {
 
 export type ContactsRemoveIdentityErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12646,13 +14297,17 @@ export type ContactsSetConsentData = {
   path: {
     id: ContactId;
     identityId: ContactIdentityId;
-    channel: "email";
+    channel: "sms" | "whatsapp" | "email";
   };
   query?: never;
   url: "/v1/contacts/{id}/identities/{identityId}/consent/{channel}";
 };
 
 export type ContactsSetConsentErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12704,6 +14359,10 @@ export type ContactsRemoveTagsData = {
 
 export type ContactsRemoveTagsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12754,6 +14413,10 @@ export type ContactsAddTagsData = {
 
 export type ContactsAddTagsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -12800,6 +14463,10 @@ export type ContactsGetEngagementData = {
 };
 
 export type ContactsGetEngagementErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -12894,6 +14561,10 @@ export type ContactsPlanImportData = {
 };
 
 export type ContactsPlanImportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13008,7 +14679,7 @@ export type ContactsStartImportData = {
         expectedGeneration: number;
       };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -13016,6 +14687,10 @@ export type ContactsStartImportData = {
 };
 
 export type ContactsStartImportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13107,6 +14782,10 @@ export type ContactsGetImportJobData = {
 
 export type ContactsGetImportJobErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -13186,6 +14865,10 @@ export type ContactsBulkDeleteData = {
 
 export type ContactsBulkDeleteErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -13239,6 +14922,10 @@ export type ContactsBulkUpdateTagsData = {
 
 export type ContactsBulkUpdateTagsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -13284,6 +14971,10 @@ export type ContactsBulkUpdateStatusData = {
 };
 
 export type ContactsBulkUpdateStatusErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13347,6 +15038,10 @@ export type ContactsExportData = {
 
 export type ContactsExportErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -13390,13 +15085,17 @@ export type ContactsGetActivityTimelineData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    channel?: "email" | null | undefined;
+    cursor?: string | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
   };
   url: "/v1/contacts/{id}/activity";
 };
 
 export type ContactsGetActivityTimelineErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13443,12 +15142,16 @@ export type ContactsGetGroupMembershipsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/contacts/{id}/groups";
 };
 
 export type ContactsGetGroupMembershipsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13496,7 +15199,7 @@ export type EventsCreateData = {
     occurredAt?: string | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -13504,6 +15207,10 @@ export type EventsCreateData = {
 };
 
 export type EventsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13558,7 +15265,7 @@ export type EventsBatchData = {
     events: [CreateEventPayload, ...Array<CreateEventPayload>];
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -13566,6 +15273,10 @@ export type EventsBatchData = {
 };
 
 export type EventsBatchErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13610,12 +15321,16 @@ export type ContactEventsListEventsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/contacts/{id}/events";
 };
 
 export type ContactEventsListEventsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13659,14 +15374,18 @@ export type JourneysListData = {
   body?: never;
   path?: never;
   query?: {
-    status?: JourneyStatus | null | undefined;
+    status?: JourneyStatus | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/journeys";
 };
 
 export type JourneysListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13711,6 +15430,10 @@ export type JourneysCreateData = {
 };
 
 export type JourneysCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13771,6 +15494,10 @@ export type JourneysRemoveData = {
 
 export type JourneysRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -13822,6 +15549,10 @@ export type JourneysGetData = {
 
 export type JourneysGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -13870,6 +15601,10 @@ export type JourneysUpdateData = {
 };
 
 export type JourneysUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13920,6 +15655,10 @@ export type JourneysReplaceDraftData = {
 };
 
 export type JourneysReplaceDraftErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -13984,6 +15723,10 @@ export type JourneysPublishData = {
 
 export type JourneysPublishErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14043,6 +15786,10 @@ export type JourneysPauseData = {
 
 export type JourneysPauseErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14093,6 +15840,10 @@ export type JourneysResumeData = {
 };
 
 export type JourneysResumeErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14153,6 +15904,10 @@ export type JourneysArchiveData = {
 
 export type JourneysArchiveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14205,6 +15960,10 @@ export type JourneysGetVersionData = {
 
 export type JourneysGetVersionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14255,6 +16014,10 @@ export type JourneysStatsData = {
 
 export type JourneysStatsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14297,15 +16060,19 @@ export type JourneysListRunsData = {
     id: JourneyId;
   };
   query?: {
-    status?: JourneyRunStatus | null | undefined;
-    contactId?: ContactId | null | undefined;
+    status?: JourneyRunStatus | undefined;
+    contactId?: ContactId | undefined;
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/journeys/{id}/runs";
 };
 
 export type JourneysListRunsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14355,6 +16122,10 @@ export type JourneysGetRunData = {
 
 export type JourneysGetRunErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14396,12 +16167,16 @@ export type AgentsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/agents";
 };
 
 export type AgentsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14443,7 +16218,7 @@ export type AgentsCreateData = {
      */
     namespaceId?: NamespaceId | null | undefined;
     /**
-     * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model.
+     * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model at auto reasoning.
      */
     definition?: AgentDefinition | null | undefined;
   };
@@ -14454,9 +16229,17 @@ export type AgentsCreateData = {
 
 export type AgentsCreateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
   /**
    * ForbiddenError
    */
@@ -14490,6 +16273,51 @@ export type AgentsCreateResponses = {
 
 export type AgentsCreateResponse = AgentsCreateResponses[keyof AgentsCreateResponses];
 
+export type AgentsListModelsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/agents/models";
+};
+
+export type AgentsListModelsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AgentsListModelsError = AgentsListModelsErrors[keyof AgentsListModelsErrors];
+
+export type AgentsListModelsResponses = {
+  /**
+   * AgentModelCatalog
+   */
+  200: AgentModelCatalog;
+};
+
+export type AgentsListModelsResponse = AgentsListModelsResponses[keyof AgentsListModelsResponses];
+
 export type AgentsRemoveData = {
   body?: never;
   path: {
@@ -14500,6 +16328,10 @@ export type AgentsRemoveData = {
 };
 
 export type AgentsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14548,6 +16380,10 @@ export type AgentsGetData = {
 
 export type AgentsGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14586,7 +16422,11 @@ export type AgentsGetResponse = AgentsGetResponses[keyof AgentsGetResponses];
 
 export type AgentsUpdateData = {
   body: {
-    name: AgentName;
+    name?: AgentName | null | undefined;
+    /**
+     * The most the agent may spend in a calendar month (UTC), in dollars and whole cents. Null removes the cap. Takes effect at once, without publishing.
+     */
+    monthlySpendCapDollars?: MonthlySpendCapDollars | null | undefined;
   };
   path: {
     id: AgentId;
@@ -14596,6 +16436,10 @@ export type AgentsUpdateData = {
 };
 
 export type AgentsUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14647,9 +16491,17 @@ export type AgentsReplaceDraftData = {
 
 export type AgentsReplaceDraftErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
   /**
    * ForbiddenError
    */
@@ -14701,6 +16553,10 @@ export type AgentsPublishData = {
 
 export type AgentsPublishErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -14741,6 +16597,63 @@ export type AgentsPublishResponses = {
 
 export type AgentsPublishResponse = AgentsPublishResponses[keyof AgentsPublishResponses];
 
+export type AgentsContinueOnStandardData = {
+  body?: never;
+  path: {
+    id: AgentId;
+  };
+  query?: never;
+  url: "/v1/agents/{id}/continue-on-standard";
+};
+
+export type AgentsContinueOnStandardErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AgentsContinueOnStandardError =
+  AgentsContinueOnStandardErrors[keyof AgentsContinueOnStandardErrors];
+
+export type AgentsContinueOnStandardResponses = {
+  /**
+   * PublishAgentResponse
+   */
+  200: PublishAgentResponse;
+};
+
+export type AgentsContinueOnStandardResponse =
+  AgentsContinueOnStandardResponses[keyof AgentsContinueOnStandardResponses];
+
 export type AgentsListVersionsData = {
   body?: never;
   path: {
@@ -14748,12 +16661,16 @@ export type AgentsListVersionsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: VersionCursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/agents/{id}/versions";
 };
 
 export type AgentsListVersionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14803,6 +16720,10 @@ export type AgentsGetVersionData = {
 };
 
 export type AgentsGetVersionErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14864,6 +16785,10 @@ export type SubscriptionsSubscribeData = {
 };
 
 export type SubscriptionsSubscribeErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -14932,20 +16857,18 @@ export type ContactGroupsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    type?:
-      | "static"
-      | "dynamic"
-      | "smart"
-      | Array<"static" | "dynamic" | "smart">
-      | null
-      | undefined;
+    cursor?: string | undefined;
+    type?: "static" | "dynamic" | "smart" | Array<"static" | "dynamic" | "smart"> | undefined;
     isActive?: boolean | null | undefined;
   };
   url: "/v1/contact-groups";
 };
 
 export type ContactGroupsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15002,6 +16925,10 @@ export type ContactGroupsCreateData = {
 };
 
 export type ContactGroupsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15067,6 +16994,10 @@ export type ContactGroupsRemoveData = {
 
 export type ContactGroupsRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15116,6 +17047,10 @@ export type ContactGroupsGetByIdData = {
 };
 
 export type ContactGroupsGetByIdErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15200,6 +17135,10 @@ export type ContactGroupsUpdateData = {
 
 export type ContactGroupsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15270,6 +17209,10 @@ export type ContactGroupsRemoveMembersData = {
 
 export type ContactGroupsRemoveMembersErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15317,12 +17260,16 @@ export type ContactGroupsGetMembersData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/contact-groups/{id}/members";
 };
 
 export type ContactGroupsGetMembersErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15376,6 +17323,10 @@ export type ContactGroupsAddMembersData = {
 
 export type ContactGroupsAddMembersErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15427,6 +17378,10 @@ export type ContactGroupsEvaluateDynamicData = {
 };
 
 export type ContactGroupsEvaluateDynamicErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15493,6 +17448,10 @@ export type ContactGroupsPreviewData = {
 
 export type ContactGroupsPreviewErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15543,6 +17502,10 @@ export type CustomFieldsListData = {
 
 export type CustomFieldsListErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15591,6 +17554,10 @@ export type CustomFieldsCreateData = {
 };
 
 export type CustomFieldsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15652,6 +17619,10 @@ export type CustomFieldsRemoveData = {
 
 export type CustomFieldsRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15708,6 +17679,10 @@ export type CustomFieldsUpdateData = {
 
 export type CustomFieldsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15761,12 +17736,16 @@ export type TopicsListData = {
   body?: never;
   path?: never;
   query?: {
-    namespaceId?: NamespaceId | null | undefined;
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/topics";
 };
 
 export type TopicsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15817,6 +17796,10 @@ export type TopicsCreateData = {
 
 export type TopicsCreateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -15861,17 +17844,21 @@ export type TopicsCheckSubscriptionData = {
   body?: never;
   path?: never;
   query: {
-    contactId?: ContactId | null | undefined;
-    email?: string | null | undefined;
-    phone?: string | null | undefined;
-    namespaceId?: NamespaceId | null | undefined;
-    channel: "email";
-    topicIds?: string | null | undefined;
+    contactId?: ContactId | undefined;
+    email?: string | undefined;
+    phone?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
+    channel: "sms" | "whatsapp" | "email";
+    topicIds?: string | undefined;
   };
   url: "/v1/topics/check";
 };
 
 export type TopicsCheckSubscriptionErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15921,6 +17908,10 @@ export type TopicsRemoveData = {
 };
 
 export type TopicsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -15974,6 +17965,10 @@ export type TopicsGetData = {
 };
 
 export type TopicsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16029,6 +18024,10 @@ export type TopicsUpdateData = {
 
 export type TopicsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -16080,6 +18079,10 @@ export type TopicsSetDefaultData = {
 
 export type TopicsSetDefaultErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -16123,14 +18126,18 @@ export type TopicsListSubscriptionsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    channel?: "email" | null | undefined;
-    status?: "subscribed" | "unsubscribed" | null | undefined;
+    cursor?: string | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
+    status?: "subscribed" | "unsubscribed" | undefined;
   };
   url: "/v1/topics/{id}/subscriptions";
 };
 
 export type TopicsListSubscriptionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16173,7 +18180,7 @@ export type TopicsListSubscriptionsResponse =
 export type TopicsSetSubscriptionsData = {
   body: {
     contacts: Array<TopicContactRef>;
-    channel: "email";
+    channel: "sms" | "whatsapp" | "email";
     status: "subscribed" | "unsubscribed";
     source?: string | null | undefined;
   };
@@ -16185,6 +18192,10 @@ export type TopicsSetSubscriptionsData = {
 };
 
 export type TopicsSetSubscriptionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16243,6 +18254,10 @@ export type TopicFormsListData = {
 
 export type TopicFormsListErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -16299,6 +18314,10 @@ export type TopicFormsCreateData = {
 
 export type TopicFormsCreateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -16346,6 +18365,10 @@ export type TopicFormsRemoveData = {
 };
 
 export type TopicFormsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16396,6 +18419,10 @@ export type TopicFormsGetData = {
 };
 
 export type TopicFormsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16452,6 +18479,10 @@ export type TopicFormsUpdateData = {
 
 export type TopicFormsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -16492,12 +18523,16 @@ export type NewslettersListData = {
   body?: never;
   path?: never;
   query?: {
-    namespaceId?: NamespaceId | null | undefined;
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/newsletters";
 };
 
 export type NewslettersListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16551,7 +18586,7 @@ export type NewslettersCreateData = {
     publicationSlug?: string | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -16559,6 +18594,10 @@ export type NewslettersCreateData = {
 };
 
 export type NewslettersCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16604,7 +18643,7 @@ export type NewslettersCreateResponse =
 export type NewslettersRemoveData = {
   body?: never;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -16614,6 +18653,10 @@ export type NewslettersRemoveData = {
 };
 
 export type NewslettersRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16669,6 +18712,10 @@ export type NewslettersGetData = {
 
 export type NewslettersGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -16715,7 +18762,7 @@ export type NewslettersUpdateData = {
     publicationSlug?: string | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -16725,6 +18772,10 @@ export type NewslettersUpdateData = {
 };
 
 export type NewslettersUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16777,6 +18828,10 @@ export type NewsletterIssuesListData = {
 };
 
 export type NewsletterIssuesListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16831,7 +18886,7 @@ export type NewsletterIssuesUpdateData = {
     expectedRevision: string;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -16841,6 +18896,10 @@ export type NewsletterIssuesUpdateData = {
 };
 
 export type NewsletterIssuesUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -16980,7 +19039,7 @@ export type NewsletterIssuesCreateData = {
     expectedRevision?: string | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -16990,6 +19049,10 @@ export type NewsletterIssuesCreateData = {
 };
 
 export type NewsletterIssuesCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -17132,6 +19195,10 @@ export type NewsletterIssuesOpenData = {
 };
 
 export type NewsletterIssuesOpenErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -17278,6 +19345,10 @@ export type NewsletterIssuesGetData = {
 
 export type NewsletterIssuesGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -17329,7 +19400,7 @@ export type NewsletterIssuesRemoveData = {
     expectedRevision: string;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -17339,6 +19410,10 @@ export type NewsletterIssuesRemoveData = {
 };
 
 export type NewsletterIssuesRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -17478,7 +19553,7 @@ export type NewsletterIssuesSaveData = {
     message: string;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -17488,6 +19563,10 @@ export type NewsletterIssuesSaveData = {
 };
 
 export type NewsletterIssuesSaveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -17611,7 +19690,7 @@ export type NewsletterIssuesCheckData = {
     expectedRevision: string;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -17621,6 +19700,10 @@ export type NewsletterIssuesCheckData = {
 };
 
 export type NewsletterIssuesCheckErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -17778,7 +19861,7 @@ export type NewsletterIssuesRenderData = {
     target: "email" | "web";
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -17788,6 +19871,10 @@ export type NewsletterIssuesRenderData = {
 };
 
 export type NewsletterIssuesRenderErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -17955,6 +20042,45 @@ export type NewsletterIssuesRenderResponses = {
       sentBytes: number;
       previewBytes: number;
     } | null;
+    whatsapp: {
+      language: string;
+      category: string;
+      header?:
+        | {
+            type: "text" | "image" | "video" | "document";
+            text: string;
+          }
+        | undefined;
+      body: string;
+      footer?: string | undefined;
+      buttons: Array<
+        | {
+            type: "quick-reply";
+            text: string;
+          }
+        | {
+            type: "url";
+            text: string;
+            url: string;
+          }
+        | {
+            type: "phone";
+            text: string;
+            phone: string;
+          }
+        | {
+            type: "copy-code";
+            code: string;
+          }
+        | {
+            type: "flow";
+            text: string;
+            flow: string;
+            action: "navigate" | "data_exchange";
+            screen?: string | undefined;
+          }
+      >;
+    } | null;
     page?:
       | {
           kind: "page";
@@ -17993,6 +20119,10 @@ export type NewsletterIssuesHeadData = {
 };
 
 export type NewsletterIssuesHeadErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18057,6 +20187,10 @@ export type NewsletterIssuesHistoryData = {
 
 export type NewsletterIssuesHistoryErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -18120,12 +20254,16 @@ export type NewsletterDomainsListData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: PublicationDomainCursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/newsletters/{id}/domains";
 };
 
 export type NewsletterDomainsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18174,7 +20312,7 @@ export type NewsletterDomainsAddData = {
     hostname: string;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -18184,6 +20322,10 @@ export type NewsletterDomainsAddData = {
 };
 
 export type NewsletterDomainsAddErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18250,7 +20392,7 @@ export type NewsletterDomainsAddResponse =
 export type NewsletterDomainsRemoveData = {
   body?: never;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: NewsletterId;
@@ -18261,6 +20403,10 @@ export type NewsletterDomainsRemoveData = {
 };
 
 export type NewsletterDomainsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18336,6 +20482,10 @@ export type NewsletterDomainsGetData = {
 
 export type NewsletterDomainsGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -18402,19 +20552,19 @@ export type AnalyticsGetStatsData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
-    groupBy?: "day" | "week" | "month" | null | undefined;
-    channel?: "email" | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
+    groupBy?: "day" | "week" | "month" | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
   };
   url: "/v1/analytics/stats";
 };
 
 export type AnalyticsGetStatsErrors = {
   /**
-   * AnalyticsQueryError
+   * AnalyticsQueryError | MalformedRequestError
    */
-  400: AnalyticsQueryError;
+  400: AnalyticsQueryError | MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18447,6 +20597,8 @@ export type AnalyticsGetStatsResponses = {
     volumeHistory: Array<{
       date: string;
       email: number;
+      whatsapp: number;
+      sms: number;
     }>;
   };
 };
@@ -18458,17 +20610,17 @@ export type AnalyticsGetChannelStatsData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/analytics/channel-stats";
 };
 
 export type AnalyticsGetChannelStatsErrors = {
   /**
-   * AnalyticsQueryError
+   * AnalyticsQueryError | MalformedRequestError
    */
-  400: AnalyticsQueryError;
+  400: AnalyticsQueryError | MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18510,6 +20662,19 @@ export type AnalyticsGetChannelStatsResponses = {
       uniqueMessageClickRate: number;
       bounceRate: number;
     };
+    whatsapp: {
+      sent: number;
+      deliveryRate: number;
+      readRate: number;
+      failureRate: number;
+      avgResponseTime: number;
+    };
+    sms: {
+      sent: number;
+      deliveryRate: number;
+      failureRate: number;
+      totalSegments: number;
+    };
   };
 };
 
@@ -18520,19 +20685,19 @@ export type AnalyticsGetTopContactsData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
     limit?: number | null | undefined;
-    sortBy?: "sent" | "received" | "total" | null | undefined;
+    sortBy?: "sent" | "received" | "total" | undefined;
   };
   url: "/v1/analytics/top-contacts";
 };
 
 export type AnalyticsGetTopContactsErrors = {
   /**
-   * AnalyticsQueryError
+   * AnalyticsQueryError | MalformedRequestError
    */
-  400: AnalyticsQueryError;
+  400: AnalyticsQueryError | MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18578,17 +20743,17 @@ export type AnalyticsGetHourlyDistributionData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/analytics/hourly-distribution";
 };
 
 export type AnalyticsGetHourlyDistributionErrors = {
   /**
-   * AnalyticsQueryError
+   * AnalyticsQueryError | MalformedRequestError
    */
-  400: AnalyticsQueryError;
+  400: AnalyticsQueryError | MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18631,18 +20796,18 @@ export type AnalyticsGetDeliveryMetricsData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
-    channel?: "email" | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
   };
   url: "/v1/analytics/delivery-metrics";
 };
 
 export type AnalyticsGetDeliveryMetricsErrors = {
   /**
-   * AnalyticsQueryError
+   * AnalyticsQueryError | MalformedRequestError
    */
-  400: AnalyticsQueryError;
+  400: AnalyticsQueryError | MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18688,7 +20853,7 @@ export type AnalyticsExportDataData = {
     after: string;
     before: string;
     format?: "csv" | "json" | null | undefined;
-    includeChannels?: Array<"email"> | null | undefined;
+    includeChannels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
   };
   path?: never;
   query?: never;
@@ -18697,9 +20862,9 @@ export type AnalyticsExportDataData = {
 
 export type AnalyticsExportDataErrors = {
   /**
-   * AnalyticsQueryError
+   * AnalyticsQueryError | MalformedRequestError
    */
-  400: AnalyticsQueryError;
+  400: AnalyticsQueryError | MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18743,7 +20908,7 @@ export type TemplatesListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
     category?:
       | "transactional"
       | "marketing"
@@ -18752,24 +20917,15 @@ export type TemplatesListData = {
       | "verification"
       | "reminder"
       | "alert"
-      | null
       | undefined;
-    channel?: "email" | null | undefined;
-    status?:
-      | "draft"
-      | "pending"
-      | "approved"
-      | "published"
-      | "rejected"
-      | "archived"
-      | null
-      | undefined;
-    search?: string | null | undefined;
-    projectId?: TemplateProjectId | null | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
+    status?: "draft" | "pending" | "approved" | "published" | "rejected" | "archived" | undefined;
+    search?: string | undefined;
+    projectId?: TemplateProjectId | undefined;
     /**
      * Only the templates this namespace uses: its own and those shared with every namespace (add `shared=false` for its own only). A namespace-scoped key lists its own namespace's and shared templates.
      */
-    namespaceId?: NamespaceId | null | undefined;
+    namespaceId?: NamespaceId | undefined;
     /**
      * Only templates whose project is shared with every namespace (true), or only unshared ones (false).
      */
@@ -18779,6 +20935,10 @@ export type TemplatesListData = {
 };
 
 export type TemplatesListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18850,6 +21010,10 @@ export type TemplatesCreateData = {
 
 export type TemplatesCreateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -18899,12 +21063,16 @@ export type TemplatesListFamiliesData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/templates/families";
 };
 
 export type TemplatesListFamiliesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -18951,6 +21119,10 @@ export type TemplatesCreateFamilyData = {
 
 export type TemplatesCreateFamilyErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -18995,6 +21167,10 @@ export type TemplatesDeleteFamilyData = {
 };
 
 export type TemplatesDeleteFamilyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19044,6 +21220,10 @@ export type TemplatesGetFamilyData = {
 };
 
 export type TemplatesGetFamilyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19095,6 +21275,10 @@ export type TemplatesRenameFamilyData = {
 
 export type TemplatesRenameFamilyErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19145,6 +21329,10 @@ export type TemplatesCreateFamilyFromTemplateData = {
 };
 
 export type TemplatesCreateFamilyFromTemplateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19200,6 +21388,10 @@ export type TemplatesDetachFamilyMemberData = {
 
 export type TemplatesDetachFamilyMemberErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19254,6 +21446,10 @@ export type TemplatesAttachFamilyMemberData = {
 
 export type TemplatesAttachFamilyMemberErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19307,6 +21503,10 @@ export type TemplatesRemoveData = {
 
 export type TemplatesRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19353,6 +21553,10 @@ export type TemplatesGetByIdData = {
 };
 
 export type TemplatesGetByIdErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19429,6 +21633,10 @@ export type TemplatesUpdateData = {
 
 export type TemplatesUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19490,6 +21698,10 @@ export type TemplatesCreateFromWebsiteData = {
 };
 
 export type TemplatesCreateFromWebsiteErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19563,6 +21775,10 @@ export type TemplatesAddEntryData = {
 
 export type TemplatesAddEntryErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19623,6 +21839,10 @@ export type TemplatesPatchWorkspaceData = {
 };
 
 export type TemplatesPatchWorkspaceErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19765,6 +21985,10 @@ export type TemplatesOpenWorkspaceData = {
 };
 
 export type TemplatesOpenWorkspaceErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -19910,6 +22134,10 @@ export type TemplatesDiffWorkspaceData = {
 
 export type TemplatesDiffWorkspaceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -19989,6 +22217,10 @@ export type TemplatesPutWorkspaceAssetData = {
 };
 
 export type TemplatesPutWorkspaceAssetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -20144,6 +22376,10 @@ export type TemplatesResolveWorkspaceConflictData = {
 
 export type TemplatesResolveWorkspaceConflictErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -20293,6 +22529,10 @@ export type TemplatesSaveWorkspaceData = {
 
 export type TemplatesSaveWorkspaceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -20425,6 +22665,10 @@ export type TemplatesRestoreWorkspaceData = {
 };
 
 export type TemplatesRestoreWorkspaceErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -20576,6 +22820,10 @@ export type TemplatesWorkspaceHistoryData = {
 
 export type TemplatesWorkspaceHistoryErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -20648,6 +22896,10 @@ export type TemplatesCheckWorkspaceData = {
 };
 
 export type TemplatesCheckWorkspaceErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -20810,6 +23062,10 @@ export type TemplatesRenderWorkspaceFixtureData = {
 };
 
 export type TemplatesRenderWorkspaceFixtureErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -20977,6 +23233,45 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
       sentBytes: number;
       previewBytes: number;
     } | null;
+    whatsapp: {
+      language: string;
+      category: string;
+      header?:
+        | {
+            type: "text" | "image" | "video" | "document";
+            text: string;
+          }
+        | undefined;
+      body: string;
+      footer?: string | undefined;
+      buttons: Array<
+        | {
+            type: "quick-reply";
+            text: string;
+          }
+        | {
+            type: "url";
+            text: string;
+            url: string;
+          }
+        | {
+            type: "phone";
+            text: string;
+            phone: string;
+          }
+        | {
+            type: "copy-code";
+            code: string;
+          }
+        | {
+            type: "flow";
+            text: string;
+            flow: string;
+            action: "navigate" | "data_exchange";
+            screen?: string | undefined;
+          }
+      >;
+    } | null;
     page?:
       | {
           kind: "page";
@@ -21021,6 +23316,10 @@ export type TemplatesPublishData = {
 };
 
 export type TemplatesPublishErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21206,6 +23505,10 @@ export type TemplatesGetPublicationData = {
 };
 
 export type TemplatesGetPublicationErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21395,6 +23698,10 @@ export type TemplatesRenderPublicationData = {
 
 export type TemplatesRenderPublicationErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -21444,12 +23751,16 @@ export type TemplatesListInputContractsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: VersionCursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/templates/{id}/input-contracts";
 };
 
 export type TemplatesListInputContractsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21500,6 +23811,10 @@ export type TemplatesGetInputContractData = {
 };
 
 export type TemplatesGetInputContractErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21559,6 +23874,10 @@ export type TemplatesGetGitRepositoryData = {
 };
 
 export type TemplatesGetGitRepositoryErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21621,6 +23940,10 @@ export type TemplatesIssueGitCredentialData = {
 };
 
 export type TemplatesIssueGitCredentialErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21697,6 +24020,10 @@ export type TemplatesAttachWorkspaceResourceData = {
 };
 
 export type TemplatesAttachWorkspaceResourceErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -21841,6 +24168,10 @@ export type TemplatesRemoveWorkspaceResourceData = {
 
 export type TemplatesRemoveWorkspaceResourceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -21976,6 +24307,10 @@ export type BrandsListData = {
 
 export type BrandsListErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22024,6 +24359,10 @@ export type BrandsCreateData = {
 
 export type BrandsCreateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22070,6 +24409,10 @@ export type BrandsRemoveData = {
 };
 
 export type BrandsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22121,6 +24464,10 @@ export type BrandsGetData = {
 };
 
 export type BrandsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22175,6 +24522,10 @@ export type BrandsUpdateData = {
 
 export type BrandsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22226,6 +24577,10 @@ export type BrandsSetDefaultData = {
 
 export type BrandsSetDefaultErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22267,14 +24622,18 @@ export type WebhooksListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    search?: string | null | undefined;
-    status?: "active" | "disabled" | null | undefined;
+    cursor?: string | undefined;
+    search?: string | undefined;
+    status?: "active" | "disabled" | undefined;
   };
   url: "/v1/webhooks";
 };
 
 export type WebhooksListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22353,7 +24712,7 @@ export type WebhooksCreateData = {
       | "mailbox.message.failed"
       | "journey.webhook"
     >;
-    channels?: Array<"email"> | null | undefined;
+    channels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
     mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
     namespaceId?: NamespaceId | null | undefined;
     headers?:
@@ -22370,6 +24729,10 @@ export type WebhooksCreateData = {
 };
 
 export type WebhooksCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22433,6 +24796,10 @@ export type WebhooksRemoveData = {
 
 export type WebhooksRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22483,6 +24850,10 @@ export type WebhooksGetData = {
 };
 
 export type WebhooksGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22568,7 +24939,7 @@ export type WebhooksUpdateData = {
         >
       | null
       | undefined;
-    channels?: Array<"email"> | null | undefined;
+    channels?: Array<"sms" | "whatsapp" | "email"> | null | undefined;
     mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
     namespaceId?: NamespaceId | null | undefined;
     headers?:
@@ -22587,6 +24958,10 @@ export type WebhooksUpdateData = {
 };
 
 export type WebhooksUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22646,6 +25021,10 @@ export type WebhooksTestData = {
 
 export type WebhooksTestErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22693,12 +25072,16 @@ export type WebhooksGetLogsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/webhooks/{id}/logs";
 };
 
 export type WebhooksGetLogsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22742,13 +25125,17 @@ export type WebhooksGetStatsData = {
     id: WebhookEndpointId;
   };
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/webhooks/{id}/stats";
 };
 
 export type WebhooksGetStatsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22797,6 +25184,10 @@ export type WebhooksRetryDeliveryData = {
 };
 
 export type WebhooksRetryDeliveryErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -22856,6 +25247,10 @@ export type WebhooksRegenerateSecretData = {
 
 export type WebhooksRegenerateSecretErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22907,6 +25302,10 @@ export type WebhooksGetSecretData = {
 
 export type WebhooksGetSecretErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -22954,6 +25353,10 @@ export type OrganizationsCreateData = {
 };
 
 export type OrganizationsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23004,6 +25407,10 @@ export type OrganizationsGetData = {
 };
 
 export type OrganizationsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23065,6 +25472,10 @@ export type OrganizationsUpdateData = {
 
 export type OrganizationsUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23110,6 +25521,10 @@ export type OrganizationsGetProfileData = {
 };
 
 export type OrganizationsGetProfileErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23170,6 +25585,10 @@ export type OrganizationsAssignPersonalMailboxData = {
 };
 
 export type OrganizationsAssignPersonalMailboxErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23232,6 +25651,10 @@ export type OrganizationsListPersonalMailboxAssignmentsData = {
 
 export type OrganizationsListPersonalMailboxAssignmentsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23279,6 +25702,10 @@ export type OrganizationsGetPersonalMailboxAddressOptionsData = {
 
 export type OrganizationsGetPersonalMailboxAddressOptionsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23324,6 +25751,10 @@ export type OrganizationsGetTrustTierData = {
 };
 
 export type OrganizationsGetTrustTierErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23405,6 +25836,10 @@ export type OrganizationsCreateAvatarUploadData = {
 
 export type OrganizationsCreateAvatarUploadErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23456,13 +25891,17 @@ export type OrganizationsGetUsageData = {
   body?: never;
   path?: never;
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/organizations/usage";
 };
 
 export type OrganizationsGetUsageErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23496,7 +25935,9 @@ export type OrganizationsGetUsageResponses = {
     usage: {
       periodStart: string;
       periodEnd: string;
+      smsCount: number;
       emailCount: number;
+      whatsappCount: number;
       totalMessages: number;
     };
     billing: {
@@ -23533,6 +25974,10 @@ export type OrganizationsDeleteData = {
 };
 
 export type OrganizationsDeleteErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23576,14 +26021,18 @@ export type ApiKeysListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    status?: "active" | "revoked" | null | undefined;
-    search?: string | null | undefined;
+    cursor?: string | undefined;
+    status?: "active" | "revoked" | undefined;
+    search?: string | undefined;
   };
   url: "/v1/api-keys";
 };
 
 export type ApiKeysListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23633,6 +26082,10 @@ export type ApiKeysCreateData = {
 };
 
 export type ApiKeysCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23693,6 +26146,10 @@ export type ApiKeysGetData = {
 
 export type ApiKeysGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23747,6 +26204,10 @@ export type ApiKeysUpdateData = {
 
 export type ApiKeysUpdateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23793,6 +26254,10 @@ export type ApiKeysRevokeData = {
 };
 
 export type ApiKeysRevokeErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23845,6 +26310,10 @@ export type ApiKeysRotateData = {
 
 export type ApiKeysRotateErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -23887,13 +26356,17 @@ export type ApiKeysGetStatsData = {
     id: ApiKeyId;
   };
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/api-keys/{id}/stats";
 };
 
 export type ApiKeysGetStatsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -23946,12 +26419,16 @@ export type ApiKeysGetActivityData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/api-keys/{id}/activity";
 };
 
 export type ApiKeysGetActivityErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24006,6 +26483,10 @@ export type FeedbackSendData = {
 
 export type FeedbackSendErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24047,6 +26528,10 @@ export type WhoamiGetData = {
 
 export type WhoamiGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24084,14 +26569,18 @@ export type MailboxesListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/mailboxes";
 };
 
 export type MailboxesListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24139,6 +26628,10 @@ export type MailboxesCreateData = {
 };
 
 export type MailboxesCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24199,6 +26692,10 @@ export type MailboxesRemoveData = {
 
 export type MailboxesRemoveErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24250,6 +26747,10 @@ export type MailboxesGetData = {
 
 export type MailboxesGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24299,6 +26800,10 @@ export type MailboxesUpdateData = {
 };
 
 export type MailboxesUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24350,6 +26855,10 @@ export type MailboxesCreateEndpointData = {
 };
 
 export type MailboxesCreateEndpointErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24405,6 +26914,10 @@ export type MailboxesRemoveEndpointData = {
 
 export type MailboxesRemoveEndpointErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24458,6 +26971,10 @@ export type MailboxesUpdateEndpointData = {
 
 export type MailboxesUpdateEndpointErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24507,6 +27024,10 @@ export type MailboxesPauseData = {
 
 export type MailboxesPauseErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24554,6 +27075,10 @@ export type MailboxesResumeData = {
 
 export type MailboxesResumeErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24596,13 +27121,17 @@ export type MailboxesGetAgentActivityData = {
     id: MailboxId;
   };
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/agent-activity";
 };
 
 export type MailboxesGetAgentActivityErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24649,12 +27178,16 @@ export type MailboxesListGrantsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/grants";
 };
 
 export type MailboxesListGrantsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24707,6 +27240,10 @@ export type MailboxesCreateGrantData = {
 };
 
 export type MailboxesCreateGrantErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24761,6 +27298,10 @@ export type MailboxesRevokeGrantData = {
 };
 
 export type MailboxesRevokeGrantErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24819,6 +27360,10 @@ export type MailboxesUpdateGrantData = {
 
 export type MailboxesUpdateGrantErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24871,6 +27416,10 @@ export type MailboxesListPoliciesData = {
 };
 
 export type MailboxesListPoliciesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -24926,6 +27475,10 @@ export type MailboxesCreatePolicyData = {
 
 export type MailboxesCreatePolicyErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -24980,6 +27533,10 @@ export type MailboxesDeletePolicyData = {
 
 export type MailboxesDeletePolicyErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25029,6 +27586,10 @@ export type MailboxesGetPolicyData = {
 };
 
 export type MailboxesGetPolicyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25084,6 +27645,10 @@ export type MailboxesUpdatePolicyData = {
 
 export type MailboxesUpdatePolicyErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25133,6 +27698,10 @@ export type MailboxesListFoldersData = {
 
 export type MailboxesListFoldersErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25181,6 +27750,10 @@ export type MailboxesListLabelsData = {
 };
 
 export type MailboxesListLabelsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25233,6 +27806,10 @@ export type MailboxesCreateLabelData = {
 };
 
 export type MailboxesCreateLabelErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25288,6 +27865,10 @@ export type MailboxesDeleteLabelData = {
 
 export type MailboxesDeleteLabelErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25341,6 +27922,10 @@ export type MailboxesUpdateLabelData = {
 
 export type MailboxesUpdateLabelErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25384,12 +27969,16 @@ export type MailboxesGetNeedsYouData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/mailboxes/needs-you";
 };
 
 export type MailboxesGetNeedsYouErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25430,15 +28019,19 @@ export type MailboxesListOrganizationDraftsData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
-    kind?: "personal" | "shared" | null | undefined;
-    threadId?: MailboxThreadId | null | undefined;
+    cursor?: string | undefined;
+    mailboxId?: MailboxId | Array<MailboxId> | undefined;
+    kind?: "personal" | "shared" | undefined;
+    threadId?: MailboxThreadId | undefined;
   };
   url: "/v1/mailboxes/drafts";
 };
 
 export type MailboxesListOrganizationDraftsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25483,24 +28076,28 @@ export type MailboxesListOrganizationThreadsData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
-    q?: string | null | undefined;
-    state?: "active" | "done" | null | undefined;
-    folder?: MailboxThreadFolder | null | undefined;
-    label?: MailboxLabelId | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
+    q?: string | undefined;
+    state?: "active" | "done" | undefined;
+    folder?: MailboxThreadFolder | undefined;
+    label?: MailboxLabelId | undefined;
     unread?: boolean | null | undefined;
     starred?: boolean | null | undefined;
     snoozed?: boolean | null | undefined;
-    mailboxId?: MailboxId | Array<MailboxId> | null | undefined;
-    kind?: "personal" | "shared" | null | undefined;
-    conversation?: ConversationId | null | undefined;
+    mailboxId?: MailboxId | Array<MailboxId> | undefined;
+    kind?: "personal" | "shared" | undefined;
+    conversation?: ConversationId | undefined;
   };
   url: "/v1/mailboxes/threads";
 };
 
 export type MailboxesListOrganizationThreadsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25547,13 +28144,13 @@ export type MailboxesListThreadsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
-    q?: string | null | undefined;
-    state?: "active" | "done" | null | undefined;
-    folder?: MailboxThreadFolder | null | undefined;
-    label?: MailboxLabelId | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
+    q?: string | undefined;
+    state?: "active" | "done" | undefined;
+    folder?: MailboxThreadFolder | undefined;
+    label?: MailboxLabelId | undefined;
     unread?: boolean | null | undefined;
     starred?: boolean | null | undefined;
     snoozed?: boolean | null | undefined;
@@ -25562,6 +28159,10 @@ export type MailboxesListThreadsData = {
 };
 
 export type MailboxesListThreadsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25612,6 +28213,10 @@ export type MailboxesGetThreadData = {
 };
 
 export type MailboxesGetThreadErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25670,6 +28275,10 @@ export type MailboxesUpdateThreadData = {
 
 export type MailboxesUpdateThreadErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25721,6 +28330,10 @@ export type MailboxesRemoveThreadLabelsData = {
 };
 
 export type MailboxesRemoveThreadLabelsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25774,6 +28387,10 @@ export type MailboxesAddThreadLabelsData = {
 
 export type MailboxesAddThreadLabelsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -25820,12 +28437,16 @@ export type MailboxesListThreadMessagesData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/threads/{threadId}/messages";
 };
 
 export type MailboxesListThreadMessagesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25873,12 +28494,16 @@ export type MailboxesGetThreadContentData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/threads/{threadId}/content";
 };
 
 export type MailboxesGetThreadContentErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25926,12 +28551,16 @@ export type MailboxesListThreadNotesData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/threads/{threadId}/notes";
 };
 
 export type MailboxesListThreadNotesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -25987,6 +28616,10 @@ export type MailboxesCreateNoteData = {
 
 export type MailboxesCreateNoteErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -26036,6 +28669,10 @@ export type MailboxesDeleteNoteData = {
 };
 
 export type MailboxesDeleteNoteErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26091,6 +28728,10 @@ export type MailboxesUpdateNoteData = {
 
 export type MailboxesUpdateNoteErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -26129,19 +28770,12 @@ export type MailboxesUpdateNoteResponse =
   MailboxesUpdateNoteResponses[keyof MailboxesUpdateNoteResponses];
 
 export type MailboxesSendMessageData = {
-  body: {
-    channel?: "email" | null | undefined;
-    to: [string, ...Array<string>];
-    cc?: Array<string> | null | undefined;
-    bcc?: Array<string> | null | undefined;
-    replyTo?: Array<string> | null | undefined;
-    subject: string;
-    text?: string | null | undefined;
-    html?: string | null | undefined;
-    attachments?: Array<EmailAttachment> | null | undefined;
-  };
+  body: SendMailboxEmailPayload | SendMailboxChatPayload;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    /**
+     * Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: MailboxId;
@@ -26151,6 +28785,10 @@ export type MailboxesSendMessageData = {
 };
 
 export type MailboxesSendMessageErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26174,7 +28812,7 @@ export type MailboxesSendMessageErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -26226,6 +28864,10 @@ export type MailboxesGetMessageData = {
 
 export type MailboxesGetMessageErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -26274,6 +28916,10 @@ export type MailboxesGetMessageRawData = {
 };
 
 export type MailboxesGetMessageRawErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26326,6 +28972,10 @@ export type MailboxesGetMessageAttachmentData = {
 
 export type MailboxesGetMessageAttachmentErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -26377,6 +29027,10 @@ export type MailboxesCopyMessageAttachmentData = {
 
 export type MailboxesCopyMessageAttachmentErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -26420,16 +29074,12 @@ export type MailboxesCopyMessageAttachmentResponse =
   MailboxesCopyMessageAttachmentResponses[keyof MailboxesCopyMessageAttachmentResponses];
 
 export type MailboxesReplyData = {
-  body: {
-    channel?: "email" | null | undefined;
-    cc?: Array<string> | null | undefined;
-    bcc?: Array<string> | null | undefined;
-    text?: string | null | undefined;
-    html?: string | null | undefined;
-    attachments?: Array<EmailAttachment> | null | undefined;
-  };
+  body: ReplyMailboxEmailPayload | ReplyMailboxChatPayload;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    /**
+     * Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: MailboxId;
@@ -26440,6 +29090,10 @@ export type MailboxesReplyData = {
 };
 
 export type MailboxesReplyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26463,7 +29117,7 @@ export type MailboxesReplyErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -26502,16 +29156,12 @@ export type MailboxesReplyResponses = {
 export type MailboxesReplyResponse = MailboxesReplyResponses[keyof MailboxesReplyResponses];
 
 export type MailboxesReplyAllData = {
-  body: {
-    channel?: "email" | null | undefined;
-    cc?: Array<string> | null | undefined;
-    bcc?: Array<string> | null | undefined;
-    text?: string | null | undefined;
-    html?: string | null | undefined;
-    attachments?: Array<EmailAttachment> | null | undefined;
-  };
+  body: ReplyMailboxEmailPayload | ReplyMailboxChatPayload;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    /**
+     * Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: MailboxId;
@@ -26522,6 +29172,10 @@ export type MailboxesReplyAllData = {
 };
 
 export type MailboxesReplyAllErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26545,7 +29199,7 @@ export type MailboxesReplyAllErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -26594,7 +29248,10 @@ export type MailboxesForwardData = {
     attachments?: Array<EmailAttachment> | null | undefined;
   };
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    /**
+     * Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: MailboxId;
@@ -26605,6 +29262,10 @@ export type MailboxesForwardData = {
 };
 
 export type MailboxesForwardErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26628,7 +29289,7 @@ export type MailboxesForwardErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -26673,14 +29334,18 @@ export type MailboxesListQuarantineData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/quarantine";
 };
 
 export type MailboxesListQuarantineErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26731,6 +29396,10 @@ export type MailboxesReleaseMessageData = {
 };
 
 export type MailboxesReleaseMessageErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26786,6 +29455,10 @@ export type MailboxesDiscardMessageData = {
 
 export type MailboxesDiscardMessageErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -26839,13 +29512,17 @@ export type MailboxesListDraftsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    threadId?: MailboxThreadId | null | undefined;
+    cursor?: string | undefined;
+    threadId?: MailboxThreadId | undefined;
   };
   url: "/v1/mailboxes/{id}/drafts";
 };
 
 export type MailboxesListDraftsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26885,19 +29562,7 @@ export type MailboxesListDraftsResponse =
   MailboxesListDraftsResponses[keyof MailboxesListDraftsResponses];
 
 export type MailboxesCreateDraftData = {
-  body: {
-    channel?: "email" | null | undefined;
-    endpointId?: MailboxEndpointId | null | undefined;
-    to?: Array<string> | null | undefined;
-    cc?: Array<string> | null | undefined;
-    bcc?: Array<string> | null | undefined;
-    replyTo?: Array<string> | null | undefined;
-    subject?: string | null | undefined;
-    text?: string | null | undefined;
-    html?: string | null | undefined;
-    attachments?: Array<EmailAttachment> | null | undefined;
-    inReplyToMessageId?: MessageId | null | undefined;
-  };
+  body: CreateMailboxEmailDraftPayload | CreateMailboxChatDraftPayload;
   path: {
     id: MailboxId;
   };
@@ -26906,6 +29571,10 @@ export type MailboxesCreateDraftData = {
 };
 
 export type MailboxesCreateDraftErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -26957,6 +29626,10 @@ export type MailboxesDeleteDraftData = {
 
 export type MailboxesDeleteDraftErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27006,6 +29679,10 @@ export type MailboxesGetDraftData = {
 };
 
 export type MailboxesGetDraftErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27065,6 +29742,10 @@ export type MailboxesUpdateDraftData = {
 
 export type MailboxesUpdateDraftErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27110,7 +29791,10 @@ export type MailboxesUpdateDraftResponse =
 export type MailboxesSendDraftData = {
   body?: never;
   headers?: {
-    "idempotency-key"?: string | null | undefined;
+    /**
+     * Optional key that makes a mailbox send idempotent for the calling key or member. Repeating the request with the same key and body returns the original action in its current state. Keep the key after a lost response. Reusing it with different content returns 409. Active actions retain their key; terminal receipts remain replayable for 24 hours.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path: {
     id: MailboxId;
@@ -27121,6 +29805,10 @@ export type MailboxesSendDraftData = {
 };
 
 export type MailboxesSendDraftErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27144,7 +29832,7 @@ export type MailboxesSendDraftErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -27190,8 +29878,8 @@ export type MailboxesListActionsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    threadId?: MailboxThreadId | null | undefined;
+    cursor?: string | undefined;
+    threadId?: MailboxThreadId | undefined;
     state?:
       | "proposed"
       | "allowed"
@@ -27207,15 +29895,18 @@ export type MailboxesListActionsData = {
       | "completed"
       | "notSent"
       | "uncertain"
-      | null
       | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/actions";
 };
 
 export type MailboxesListActionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27267,6 +29958,10 @@ export type MailboxesGetActionData = {
 
 export type MailboxesGetActionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27316,6 +30011,10 @@ export type MailboxesCancelActionData = {
 
 export type MailboxesCancelActionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27338,7 +30037,7 @@ export type MailboxesCancelActionErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -27390,6 +30089,10 @@ export type MailboxesRetryActionData = {
 
 export type MailboxesRetryActionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27412,7 +30115,7 @@ export type MailboxesRetryActionErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -27464,6 +30167,10 @@ export type MailboxesApproveActionData = {
 
 export type MailboxesApproveActionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27486,7 +30193,7 @@ export type MailboxesApproveActionErrors = {
   /**
    * ValidationError
    */
-  422: ValidationError;
+  422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
    * RateLimitedError
    */
@@ -27540,6 +30247,10 @@ export type MailboxesDenyActionData = {
 
 export type MailboxesDenyActionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27588,14 +30299,18 @@ export type MailboxesListEventsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/mailboxes/{id}/events";
 };
 
 export type MailboxesListEventsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27639,14 +30354,18 @@ export type NamespacesListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/namespaces";
 };
 
 export type NamespacesListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27691,6 +30410,10 @@ export type NamespacesCreateData = {
 };
 
 export type NamespacesCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27738,6 +30461,10 @@ export type NamespacesRemoveData = {
 };
 
 export type NamespacesRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27789,6 +30516,10 @@ export type NamespacesGetData = {
 };
 
 export type NamespacesGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27844,6 +30575,10 @@ export type NamespacesUpdateData = {
 };
 
 export type NamespacesUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -27902,6 +30637,10 @@ export type NamespacesAssignResourceData = {
 
 export type NamespacesAssignResourceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -27957,6 +30696,10 @@ export type NamespacesRemoveResourceData = {
 
 export type NamespacesRemoveResourceErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28005,13 +30748,17 @@ export type NamespacesGetUsageData = {
     id: NamespaceId;
   };
   query?: {
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/namespaces/{id}/usage";
 };
 
 export type NamespacesGetUsageErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -28055,14 +30802,18 @@ export type ExtensionsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/extensions";
 };
 
 export type ExtensionsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -28128,6 +30879,10 @@ export type ExtensionsPublishData = {
 
 export type ExtensionsPublishErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28183,6 +30938,10 @@ export type ExtensionsGetData = {
 
 export type ExtensionsGetErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28229,12 +30988,16 @@ export type ExtensionsListVersionsData = {
   };
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/extensions/{id}/versions";
 };
 
 export type ExtensionsListVersionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -28292,6 +31055,10 @@ export type ExtensionsGetVersionData = {
 
 export type ExtensionsGetVersionErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28335,14 +31102,18 @@ export type ExtensionInstallationsListData = {
   path?: never;
   query?: {
     limit?: number | null | undefined;
-    cursor?: Cursor | null | undefined;
-    after?: string | null | undefined;
-    before?: string | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    before?: string | undefined;
   };
   url: "/v1/extension-installations";
 };
 
 export type ExtensionInstallationsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -28399,6 +31170,10 @@ export type ExtensionInstallationsInstallData = {
 
 export type ExtensionInstallationsInstallErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28452,6 +31227,10 @@ export type ExtensionInstallationsUninstallData = {
 
 export type ExtensionInstallationsUninstallErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28504,6 +31283,10 @@ export type ExtensionInstallationsGetData = {
 };
 
 export type ExtensionInstallationsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -28573,6 +31356,10 @@ export type ExtensionInstallationsUpgradeData = {
 
 export type ExtensionInstallationsUpgradeErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28625,6 +31412,10 @@ export type ExtensionInstallationsDisableData = {
 };
 
 export type ExtensionInstallationsDisableErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */
@@ -28679,6 +31470,10 @@ export type ExtensionInstallationsEnableData = {
 
 export type ExtensionInstallationsEnableErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28732,6 +31527,10 @@ export type ExtensionInstallationsListRunsData = {
 
 export type ExtensionInstallationsListRunsErrors = {
   /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
    * UnauthorizedError
    */
   401: UnauthorizedError;
@@ -28781,6 +31580,10 @@ export type ExtensionInstallationsGetRunData = {
 };
 
 export type ExtensionInstallationsGetRunErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
   /**
    * UnauthorizedError
    */

@@ -6,13 +6,13 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
-  Cursor,
   ExtensionId,
   ExtensionVersionId,
   ExtensionVersionRef,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   ResourceNotFoundError,
   UnauthorizedError,
   ValidationError,
@@ -67,7 +67,7 @@ export const ExtensionVersion = /* @__PURE__ */ (() =>
     publishedAt: Schema.String,
     manifest: Schema.Struct({
       name: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-z][a-z0-9-]{1,62}[a-z0-9]$",
         }),
       ),
@@ -94,7 +94,7 @@ export const ExtensionVersion = /* @__PURE__ */ (() =>
       ),
       version: Schema.String.check(
         Schema.isPattern(
-          new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+          new globalThis.RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
         ).annotate({
           expected:
             "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
@@ -186,9 +186,9 @@ export const PublishExtensionVersionResponse = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const ExtensionsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -205,12 +205,14 @@ export const ExtensionsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type ExtensionsList200 = ExtensionPage;
 export const ExtensionsList200 = ExtensionPage;
+export type ExtensionsList400 = MalformedRequestError;
+export const ExtensionsList400 = MalformedRequestError;
 export type ExtensionsList401 = UnauthorizedError;
 export const ExtensionsList401 = UnauthorizedError;
 export type ExtensionsList403 = ForbiddenError;
@@ -247,7 +249,7 @@ export const ExtensionsPublishRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     manifest: Schema.Struct({
       name: Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-z][a-z0-9-]{1,62}[a-z0-9]$",
         }),
       ),
@@ -274,7 +276,7 @@ export const ExtensionsPublishRequestJson = /* @__PURE__ */ (() =>
       ),
       version: Schema.String.check(
         Schema.isPattern(
-          new RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
+          new globalThis.RegExp("^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$", "u"),
         ).annotate({
           expected:
             "a string matching the RegExp ^\\d{1,6}\\.\\d{1,6}\\.\\d{1,6}(?:-[0-9A-Za-z.-]{1,64})?$",
@@ -305,6 +307,8 @@ export const ExtensionsPublishRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionsPublish201 = PublishExtensionVersionResponse;
 export const ExtensionsPublish201 = PublishExtensionVersionResponse;
+export type ExtensionsPublish400 = MalformedRequestError;
+export const ExtensionsPublish400 = MalformedRequestError;
 export type ExtensionsPublish401 = UnauthorizedError;
 export const ExtensionsPublish401 = UnauthorizedError;
 export type ExtensionsPublish403 = ForbiddenError;
@@ -331,6 +335,8 @@ export const ExtensionsGetPathParams = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionsGet200 = Extension;
 export const ExtensionsGet200 = Extension;
+export type ExtensionsGet400 = MalformedRequestError;
+export const ExtensionsGet400 = MalformedRequestError;
 export type ExtensionsGet401 = UnauthorizedError;
 export const ExtensionsGet401 = UnauthorizedError;
 export type ExtensionsGet403 = ForbiddenError;
@@ -355,7 +361,7 @@ export const ExtensionsListVersionsPathParams = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionsListVersionsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const ExtensionsListVersionsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -372,10 +378,12 @@ export const ExtensionsListVersionsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type ExtensionsListVersions200 = ExtensionVersionPage;
 export const ExtensionsListVersions200 = ExtensionVersionPage;
+export type ExtensionsListVersions400 = MalformedRequestError;
+export const ExtensionsListVersions400 = MalformedRequestError;
 export type ExtensionsListVersions401 = UnauthorizedError;
 export const ExtensionsListVersions401 = UnauthorizedError;
 export type ExtensionsListVersions403 = ForbiddenError;
@@ -408,6 +416,8 @@ export const ExtensionsGetVersionPathParams = /* @__PURE__ */ (() =>
   }))();
 export type ExtensionsGetVersion200 = ExtensionVersion;
 export const ExtensionsGetVersion200 = ExtensionVersion;
+export type ExtensionsGetVersion400 = MalformedRequestError;
+export const ExtensionsGetVersion400 = MalformedRequestError;
 export type ExtensionsGetVersion401 = UnauthorizedError;
 export const ExtensionsGetVersion401 = UnauthorizedError;
 export type ExtensionsGetVersion403 = ForbiddenError;
@@ -427,6 +437,7 @@ export class ExtensionsGroup extends HttpApiGroup.make("Extensions")
       query: ExtensionsListQuery,
       success: ExtensionsList200,
       error: [
+        ExtensionsList400.pipe(HttpApiSchema.status(400)),
         ExtensionsList401.pipe(HttpApiSchema.status(401)),
         ExtensionsList403.pipe(HttpApiSchema.status(403)),
         ExtensionsList404.pipe(HttpApiSchema.status(404)),
@@ -446,6 +457,7 @@ export class ExtensionsGroup extends HttpApiGroup.make("Extensions")
       payload: ExtensionsPublishRequestJson,
       success: ExtensionsPublish201.pipe(HttpApiSchema.status(201)),
       error: [
+        ExtensionsPublish400.pipe(HttpApiSchema.status(400)),
         ExtensionsPublish401.pipe(HttpApiSchema.status(401)),
         ExtensionsPublish403.pipe(HttpApiSchema.status(403)),
         ExtensionsPublish404.pipe(HttpApiSchema.status(404)),
@@ -466,6 +478,7 @@ export class ExtensionsGroup extends HttpApiGroup.make("Extensions")
       params: ExtensionsGetPathParams,
       success: ExtensionsGet200,
       error: [
+        ExtensionsGet400.pipe(HttpApiSchema.status(400)),
         ExtensionsGet401.pipe(HttpApiSchema.status(401)),
         ExtensionsGet403.pipe(HttpApiSchema.status(403)),
         ExtensionsGet404.pipe(HttpApiSchema.status(404)),
@@ -486,6 +499,7 @@ export class ExtensionsGroup extends HttpApiGroup.make("Extensions")
       query: ExtensionsListVersionsQuery,
       success: ExtensionsListVersions200,
       error: [
+        ExtensionsListVersions400.pipe(HttpApiSchema.status(400)),
         ExtensionsListVersions401.pipe(HttpApiSchema.status(401)),
         ExtensionsListVersions403.pipe(HttpApiSchema.status(403)),
         ExtensionsListVersions404.pipe(HttpApiSchema.status(404)),
@@ -505,6 +519,7 @@ export class ExtensionsGroup extends HttpApiGroup.make("Extensions")
       params: ExtensionsGetVersionPathParams,
       success: ExtensionsGetVersion200,
       error: [
+        ExtensionsGetVersion400.pipe(HttpApiSchema.status(400)),
         ExtensionsGetVersion401.pipe(HttpApiSchema.status(401)),
         ExtensionsGetVersion403.pipe(HttpApiSchema.status(403)),
         ExtensionsGetVersion404.pipe(HttpApiSchema.status(404)),

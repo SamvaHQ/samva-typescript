@@ -19,6 +19,7 @@ export type SamvaApiErrorTag =
   | "InternalError"
   | "MailboxSendConflictError"
   | "MailboxSendRefusedError"
+  | "MalformedRequestError"
   | "OnboardingReviewRequiredError"
   | "PaymentRequiredError"
   | "RateLimitedError"
@@ -27,7 +28,8 @@ export type SamvaApiErrorTag =
   | "ServiceUnavailableError"
   | "TemplateSourceError"
   | "UnauthorizedError"
-  | "ValidationError";
+  | "ValidationError"
+  | "WhatsAppServiceWindowClosedError";
 
 export interface SamvaApiErrorContext {
   readonly request?: Request | undefined;
@@ -346,6 +348,25 @@ export class MailboxSendRefusedError extends SamvaApiError<"MailboxSendRefusedEr
   }
 }
 
+type MalformedRequestErrorPayload = {
+  readonly _tag: "MalformedRequestError";
+  readonly fields: Record<string, Array<string>>;
+  readonly message: string;
+};
+
+export class MalformedRequestError extends SamvaApiError<"MalformedRequestError"> {
+  readonly _tag = "MalformedRequestError" as const;
+  declare readonly "fields": Record<string, Array<string>>;
+
+  constructor(
+    payload: Omit<MalformedRequestErrorPayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("MalformedRequestError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 type OnboardingReviewRequiredErrorPayload = {
   readonly _tag: "OnboardingReviewRequiredError";
   readonly code:
@@ -606,6 +627,25 @@ export class ValidationError extends SamvaApiError<"ValidationError"> {
   }
 }
 
+type WhatsAppServiceWindowClosedErrorPayload = {
+  readonly _tag: "WhatsAppServiceWindowClosedError";
+  readonly closedAt: string | null;
+  readonly message: string;
+};
+
+export class WhatsAppServiceWindowClosedError extends SamvaApiError<"WhatsAppServiceWindowClosedError"> {
+  readonly _tag = "WhatsAppServiceWindowClosedError" as const;
+  declare readonly "closedAt": string | null;
+
+  constructor(
+    payload: Omit<WhatsAppServiceWindowClosedErrorPayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("WhatsAppServiceWindowClosedError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 export type AnySamvaApiError =
   | AnalyticsQueryError
   | BillingProviderError
@@ -622,6 +662,7 @@ export type AnySamvaApiError =
   | InternalError
   | MailboxSendConflictError
   | MailboxSendRefusedError
+  | MalformedRequestError
   | OnboardingReviewRequiredError
   | PaymentRequiredError
   | RateLimitedError
@@ -630,7 +671,8 @@ export type AnySamvaApiError =
   | ServiceUnavailableError
   | TemplateSourceError
   | UnauthorizedError
-  | ValidationError;
+  | ValidationError
+  | WhatsAppServiceWindowClosedError;
 
 type ErrorConstructor = new (payload: never, context?: SamvaApiErrorContext) => AnySamvaApiError;
 
@@ -650,6 +692,7 @@ const constructors = {
   InternalError: InternalError,
   MailboxSendConflictError: MailboxSendConflictError,
   MailboxSendRefusedError: MailboxSendRefusedError,
+  MalformedRequestError: MalformedRequestError,
   OnboardingReviewRequiredError: OnboardingReviewRequiredError,
   PaymentRequiredError: PaymentRequiredError,
   RateLimitedError: RateLimitedError,
@@ -659,6 +702,7 @@ const constructors = {
   TemplateSourceError: TemplateSourceError,
   UnauthorizedError: UnauthorizedError,
   ValidationError: ValidationError,
+  WhatsAppServiceWindowClosedError: WhatsAppServiceWindowClosedError,
 } as const satisfies Record<SamvaApiErrorTag, ErrorConstructor>;
 
 type RuntimeSchema = {
@@ -1428,6 +1472,21 @@ const payloadSchemas = {
     required: ["_tag", "message", "receipt"],
     additionalProperties: false,
   },
+  MalformedRequestError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["MalformedRequestError"] },
+      message: { type: "string" },
+      fields: {
+        type: "object",
+        additionalProperties: { type: "array", items: { type: "string" } },
+      },
+    },
+    required: ["_tag", "message", "fields"],
+    additionalProperties: false,
+    "x-category": ["validation"],
+    "x-retryable": false,
+  },
   OnboardingReviewRequiredError: {
     type: "object",
     properties: {
@@ -1644,6 +1703,16 @@ const payloadSchemas = {
     additionalProperties: false,
     "x-category": ["validation"],
     "x-retryable": false,
+  },
+  WhatsAppServiceWindowClosedError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["WhatsAppServiceWindowClosedError"] },
+      message: { type: "string" },
+      closedAt: { anyOf: [{ type: "string" }, { type: "null" }] },
+    },
+    required: ["_tag", "message", "closedAt"],
+    additionalProperties: false,
   },
 } as const satisfies Record<SamvaApiErrorTag, RuntimeSchema>;
 

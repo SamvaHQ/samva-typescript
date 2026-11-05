@@ -127,7 +127,7 @@ export type SamvaClientConfig =
     });
 
 type MessageSendBody = MessagesSendData["body"];
-type MessageRecipient = MessageSendBody["to"][number];
+type MessageRecipient = EmailMessageSendBody["to"][number];
 type MessageSendRequestOptions<ThrowOnError extends boolean = false> = Omit<
   NonNullable<Parameters<typeof messages.send<ThrowOnError>>[1]>,
   "client"

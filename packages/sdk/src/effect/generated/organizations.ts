@@ -13,6 +13,7 @@ import {
   InternalError,
   JsonValue,
   MailboxId,
+  MalformedRequestError,
   OperationAccepted,
   PaymentRequiredError,
   ResourceNotFoundError,
@@ -26,7 +27,7 @@ export const PhoneRegion = /* @__PURE__ */ (() =>
   Schema.String.annotate({
     description: "An ISO 3166-1 alpha-2 region code, such as US or IN.",
   }).check(
-    Schema.isPattern(new RegExp("^[A-Z]{2}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^[A-Z]{2}$", "u")).annotate({
       expected: "a string matching the RegExp ^[A-Z]{2}$",
       identifier: "PhoneRegion",
     }),
@@ -48,6 +49,10 @@ export type Organization = {
   readonly emailFooterEnabledDefault: boolean | null;
   readonly messagesUsed: number;
   readonly messagesUsedThisMonth: number;
+  readonly smsUsed: number;
+  readonly smsUsedThisMonth: number;
+  readonly whatsappUsed: number;
+  readonly whatsappUsedThisMonth: number;
   readonly emailUsed: number;
   readonly emailUsedThisMonth: number;
   readonly contactsUsed: number;
@@ -78,6 +83,14 @@ export const Organization = /* @__PURE__ */ (() =>
     messagesUsedThisMonth: Schema.Finite.check(
       Schema.isFinite().annotate({ expected: "a finite number" }),
     ),
+    smsUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    smsUsedThisMonth: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
+    whatsappUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    whatsappUsedThisMonth: Schema.Finite.check(
+      Schema.isFinite().annotate({ expected: "a finite number" }),
+    ),
     emailUsed: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
     emailUsedThisMonth: Schema.Finite.check(
       Schema.isFinite().annotate({ expected: "a finite number" }),
@@ -100,6 +113,8 @@ export const OrganizationsCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type OrganizationsCreate200 = Organization;
 export const OrganizationsCreate200 = Organization;
+export type OrganizationsCreate400 = MalformedRequestError;
+export const OrganizationsCreate400 = MalformedRequestError;
 export type OrganizationsCreate401 = UnauthorizedError;
 export const OrganizationsCreate401 = UnauthorizedError;
 export type OrganizationsCreate402 = PaymentRequiredError;
@@ -116,6 +131,8 @@ export type OrganizationsCreate504 = GatewayTimeoutError;
 export const OrganizationsCreate504 = GatewayTimeoutError;
 export type OrganizationsGet200 = Organization;
 export const OrganizationsGet200 = Organization;
+export type OrganizationsGet400 = MalformedRequestError;
+export const OrganizationsGet400 = MalformedRequestError;
 export type OrganizationsGet401 = UnauthorizedError;
 export const OrganizationsGet401 = UnauthorizedError;
 export type OrganizationsGet403 = ForbiddenError;
@@ -174,6 +191,8 @@ export const OrganizationsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type OrganizationsUpdate200 = Organization;
 export const OrganizationsUpdate200 = Organization;
+export type OrganizationsUpdate400 = MalformedRequestError;
+export const OrganizationsUpdate400 = MalformedRequestError;
 export type OrganizationsUpdate401 = UnauthorizedError;
 export const OrganizationsUpdate401 = UnauthorizedError;
 export type OrganizationsUpdate403 = ForbiddenError;
@@ -201,6 +220,8 @@ export const OrganizationsCreateAvatarUpload200 = /* @__PURE__ */ (() =>
       description: "The image content types the upload accepts.",
     }),
   }))();
+export type OrganizationsCreateAvatarUpload400 = MalformedRequestError;
+export const OrganizationsCreateAvatarUpload400 = MalformedRequestError;
 export type OrganizationsCreateAvatarUpload401 = UnauthorizedError;
 export const OrganizationsCreateAvatarUpload401 = UnauthorizedError;
 export type OrganizationsCreateAvatarUpload403 = ForbiddenError;
@@ -222,6 +243,8 @@ export const OrganizationsGetProfile200 = /* @__PURE__ */ (() =>
     name: Schema.String.annotate({ description: "Your display name" }),
     nickname: Schema.String.annotate({ description: "Your display name and organization name" }),
   }))();
+export type OrganizationsGetProfile400 = MalformedRequestError;
+export const OrganizationsGetProfile400 = MalformedRequestError;
 export type OrganizationsGetProfile401 = UnauthorizedError;
 export const OrganizationsGetProfile401 = UnauthorizedError;
 export type OrganizationsGetProfile403 = ForbiddenError;
@@ -250,6 +273,8 @@ export const OrganizationsDeleteRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({ confirmationName: Schema.String }))();
 export type OrganizationsDelete202 = OperationAccepted;
 export const OrganizationsDelete202 = OperationAccepted;
+export type OrganizationsDelete400 = MalformedRequestError;
+export const OrganizationsDelete400 = MalformedRequestError;
 export type OrganizationsDelete401 = UnauthorizedError;
 export const OrganizationsDelete401 = UnauthorizedError;
 export type OrganizationsDelete403 = ForbiddenError;
@@ -271,6 +296,8 @@ export const OrganizationsAssignPersonalMailboxRequestJson = /* @__PURE__ */ (()
 export type OrganizationsAssignPersonalMailbox200 = { readonly mailboxId: MailboxId };
 export const OrganizationsAssignPersonalMailbox200 = /* @__PURE__ */ (() =>
   Schema.Struct({ mailboxId: MailboxId }))();
+export type OrganizationsAssignPersonalMailbox400 = MalformedRequestError;
+export const OrganizationsAssignPersonalMailbox400 = MalformedRequestError;
 export type OrganizationsAssignPersonalMailbox401 = UnauthorizedError;
 export const OrganizationsAssignPersonalMailbox401 = UnauthorizedError;
 export type OrganizationsAssignPersonalMailbox402 = PaymentRequiredError;
@@ -295,6 +322,8 @@ export type OrganizationsGetPersonalMailboxAddressOptions200 = {
 };
 export const OrganizationsGetPersonalMailboxAddressOptions200 = /* @__PURE__ */ (() =>
   Schema.Struct({ domains: Schema.Array(Schema.String), defaultDomain: Schema.String }))();
+export type OrganizationsGetPersonalMailboxAddressOptions400 = MalformedRequestError;
+export const OrganizationsGetPersonalMailboxAddressOptions400 = MalformedRequestError;
 export type OrganizationsGetPersonalMailboxAddressOptions401 = UnauthorizedError;
 export const OrganizationsGetPersonalMailboxAddressOptions401 = UnauthorizedError;
 export type OrganizationsGetPersonalMailboxAddressOptions403 = ForbiddenError;
@@ -310,6 +339,8 @@ export type OrganizationsListPersonalMailboxAssignments200 = {
 };
 export const OrganizationsListPersonalMailboxAssignments200 = /* @__PURE__ */ (() =>
   Schema.Struct({ items: Schema.Array(Schema.Struct({ userId: UserId })) }))();
+export type OrganizationsListPersonalMailboxAssignments400 = MalformedRequestError;
+export const OrganizationsListPersonalMailboxAssignments400 = MalformedRequestError;
 export type OrganizationsListPersonalMailboxAssignments401 = UnauthorizedError;
 export const OrganizationsListPersonalMailboxAssignments401 = UnauthorizedError;
 export type OrganizationsListPersonalMailboxAssignments403 = ForbiddenError;
@@ -426,6 +457,8 @@ export const OrganizationsGetTrustTier200 = /* @__PURE__ */ (() =>
       Schema.Null,
     ]),
   }))();
+export type OrganizationsGetTrustTier400 = MalformedRequestError;
+export const OrganizationsGetTrustTier400 = MalformedRequestError;
 export type OrganizationsGetTrustTier401 = UnauthorizedError;
 export const OrganizationsGetTrustTier401 = UnauthorizedError;
 export type OrganizationsGetTrustTier403 = ForbiddenError;
@@ -440,20 +473,19 @@ export type OrganizationsGetTrustTier502 = BillingProviderError;
 export const OrganizationsGetTrustTier502 = BillingProviderError;
 export type OrganizationsGetTrustTier504 = GatewayTimeoutError;
 export const OrganizationsGetTrustTier504 = GatewayTimeoutError;
-export type OrganizationsGetUsageQuery = {
-  readonly after?: string | null;
-  readonly before?: string | null;
-};
+export type OrganizationsGetUsageQuery = { readonly after?: string; readonly before?: string };
 export const OrganizationsGetUsageQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type OrganizationsGetUsage200 = {
   readonly usage: {
     readonly periodStart: string;
     readonly periodEnd: string;
+    readonly smsCount: number;
     readonly emailCount: number;
+    readonly whatsappCount: number;
     readonly totalMessages: number;
   };
   readonly billing: {
@@ -477,7 +509,11 @@ export const OrganizationsGetUsage200 = /* @__PURE__ */ (() =>
     usage: Schema.Struct({
       periodStart: Schema.String,
       periodEnd: Schema.String,
+      smsCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
       emailCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      whatsappCount: Schema.Finite.check(
+        Schema.isFinite().annotate({ expected: "a finite number" }),
+      ),
       totalMessages: Schema.Finite.check(
         Schema.isFinite().annotate({ expected: "a finite number" }),
       ),
@@ -525,6 +561,8 @@ export const OrganizationsGetUsage200 = /* @__PURE__ */ (() =>
       creditsResetsAt: Schema.Union([Schema.String, Schema.Null]),
     }),
   }))();
+export type OrganizationsGetUsage400 = MalformedRequestError;
+export const OrganizationsGetUsage400 = MalformedRequestError;
 export type OrganizationsGetUsage401 = UnauthorizedError;
 export const OrganizationsGetUsage401 = UnauthorizedError;
 export type OrganizationsGetUsage403 = ForbiddenError;
@@ -542,6 +580,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       payload: OrganizationsCreateRequestJson,
       success: OrganizationsCreate200,
       error: [
+        OrganizationsCreate400.pipe(HttpApiSchema.status(400)),
         OrganizationsCreate401.pipe(HttpApiSchema.status(401)),
         OrganizationsCreate402.pipe(HttpApiSchema.status(402)),
         OrganizationsCreate403.pipe(HttpApiSchema.status(403)),
@@ -561,6 +600,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
     HttpApiEndpoint.get("organizationsGet", "/v1/organizations/current", {
       success: OrganizationsGet200,
       error: [
+        OrganizationsGet400.pipe(HttpApiSchema.status(400)),
         OrganizationsGet401.pipe(HttpApiSchema.status(401)),
         OrganizationsGet403.pipe(HttpApiSchema.status(403)),
         OrganizationsGet404.pipe(HttpApiSchema.status(404)),
@@ -577,6 +617,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       payload: OrganizationsUpdateRequestJson,
       success: OrganizationsUpdate200,
       error: [
+        OrganizationsUpdate400.pipe(HttpApiSchema.status(400)),
         OrganizationsUpdate401.pipe(HttpApiSchema.status(401)),
         OrganizationsUpdate403.pipe(HttpApiSchema.status(403)),
         OrganizationsUpdate404.pipe(HttpApiSchema.status(404)),
@@ -598,6 +639,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       {
         success: OrganizationsCreateAvatarUpload200,
         error: [
+          OrganizationsCreateAvatarUpload400.pipe(HttpApiSchema.status(400)),
           OrganizationsCreateAvatarUpload401.pipe(HttpApiSchema.status(401)),
           OrganizationsCreateAvatarUpload403.pipe(HttpApiSchema.status(403)),
           OrganizationsCreateAvatarUpload422.pipe(HttpApiSchema.status(422)),
@@ -616,6 +658,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
     HttpApiEndpoint.get("organizationsGetProfile", "/v1/organizations/current/profile", {
       success: OrganizationsGetProfile200,
       error: [
+        OrganizationsGetProfile400.pipe(HttpApiSchema.status(400)),
         OrganizationsGetProfile401.pipe(HttpApiSchema.status(401)),
         OrganizationsGetProfile403.pipe(HttpApiSchema.status(403)),
         OrganizationsGetProfile422.pipe(HttpApiSchema.status(422)),
@@ -635,6 +678,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       payload: OrganizationsDeleteRequestJson,
       success: OrganizationsDelete202.pipe(HttpApiSchema.status(202)),
       error: [
+        OrganizationsDelete400.pipe(HttpApiSchema.status(400)),
         OrganizationsDelete401.pipe(HttpApiSchema.status(401)),
         OrganizationsDelete403.pipe(HttpApiSchema.status(403)),
         OrganizationsDelete409.pipe(HttpApiSchema.status(409)),
@@ -658,6 +702,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
         payload: OrganizationsAssignPersonalMailboxRequestJson,
         success: OrganizationsAssignPersonalMailbox200,
         error: [
+          OrganizationsAssignPersonalMailbox400.pipe(HttpApiSchema.status(400)),
           OrganizationsAssignPersonalMailbox401.pipe(HttpApiSchema.status(401)),
           OrganizationsAssignPersonalMailbox402.pipe(HttpApiSchema.status(402)),
           OrganizationsAssignPersonalMailbox403.pipe(HttpApiSchema.status(403)),
@@ -683,6 +728,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       {
         success: OrganizationsGetPersonalMailboxAddressOptions200,
         error: [
+          OrganizationsGetPersonalMailboxAddressOptions400.pipe(HttpApiSchema.status(400)),
           OrganizationsGetPersonalMailboxAddressOptions401.pipe(HttpApiSchema.status(401)),
           OrganizationsGetPersonalMailboxAddressOptions403.pipe(HttpApiSchema.status(403)),
           OrganizationsGetPersonalMailboxAddressOptions422.pipe(HttpApiSchema.status(422)),
@@ -704,6 +750,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       {
         success: OrganizationsListPersonalMailboxAssignments200,
         error: [
+          OrganizationsListPersonalMailboxAssignments400.pipe(HttpApiSchema.status(400)),
           OrganizationsListPersonalMailboxAssignments401.pipe(HttpApiSchema.status(401)),
           OrganizationsListPersonalMailboxAssignments403.pipe(HttpApiSchema.status(403)),
           OrganizationsListPersonalMailboxAssignments422.pipe(HttpApiSchema.status(422)),
@@ -722,6 +769,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
     HttpApiEndpoint.get("organizationsGetTrustTier", "/v1/organizations/trust-tier", {
       success: OrganizationsGetTrustTier200,
       error: [
+        OrganizationsGetTrustTier400.pipe(HttpApiSchema.status(400)),
         OrganizationsGetTrustTier401.pipe(HttpApiSchema.status(401)),
         OrganizationsGetTrustTier403.pipe(HttpApiSchema.status(403)),
         OrganizationsGetTrustTier404.pipe(HttpApiSchema.status(404)),
@@ -742,6 +790,7 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
       query: OrganizationsGetUsageQuery,
       success: OrganizationsGetUsage200,
       error: [
+        OrganizationsGetUsage400.pipe(HttpApiSchema.status(400)),
         OrganizationsGetUsage401.pipe(HttpApiSchema.status(401)),
         OrganizationsGetUsage403.pipe(HttpApiSchema.status(403)),
         OrganizationsGetUsage422.pipe(HttpApiSchema.status(422)),

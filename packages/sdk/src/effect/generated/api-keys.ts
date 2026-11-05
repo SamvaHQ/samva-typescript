@@ -8,11 +8,11 @@ import {
   ApiKeyId,
   ApiKeySecurityMiddleware,
   BillingProviderError,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
   MailboxSendMode,
+  MalformedRequestError,
   PaymentRequiredError,
   RateLimitedError,
   ResourceNotFoundError,
@@ -142,9 +142,9 @@ export const ApiKeyPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "ApiKeyPage" }))();
 export type ApiKeysListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly status?: "active" | "revoked" | null;
-  readonly search?: string | null;
+  readonly cursor?: string;
+  readonly status?: "active" | "revoked";
+  readonly search?: string;
 };
 export const ApiKeysListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -161,17 +161,14 @@ export const ApiKeysListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    status: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("active"), Schema.Literal("revoked")]),
-        Schema.Null,
-      ]),
-    ),
-    search: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    status: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("revoked")])),
+    search: Schema.optionalKey(Schema.String),
   }))();
 export type ApiKeysList200 = ApiKeyPage;
 export const ApiKeysList200 = ApiKeyPage;
+export type ApiKeysList400 = MalformedRequestError;
+export const ApiKeysList400 = MalformedRequestError;
 export type ApiKeysList401 = UnauthorizedError;
 export const ApiKeysList401 = UnauthorizedError;
 export type ApiKeysList403 = ForbiddenError;
@@ -208,6 +205,8 @@ export const ApiKeysCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ApiKeysCreate201 = ApiKeyWithSecret;
 export const ApiKeysCreate201 = ApiKeyWithSecret;
+export type ApiKeysCreate400 = MalformedRequestError;
+export const ApiKeysCreate400 = MalformedRequestError;
 export type ApiKeysCreate401 = UnauthorizedError;
 export const ApiKeysCreate401 = UnauthorizedError;
 export type ApiKeysCreate402 = PaymentRequiredError;
@@ -230,6 +229,8 @@ export type ApiKeysGetPathParams = { readonly id: ApiKeyId };
 export const ApiKeysGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysGet200 = ApiKey;
 export const ApiKeysGet200 = ApiKey;
+export type ApiKeysGet400 = MalformedRequestError;
+export const ApiKeysGet400 = MalformedRequestError;
 export type ApiKeysGet401 = UnauthorizedError;
 export const ApiKeysGet401 = UnauthorizedError;
 export type ApiKeysGet403 = ForbiddenError;
@@ -277,6 +278,8 @@ export const ApiKeysUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type ApiKeysUpdate200 = ApiKey;
 export const ApiKeysUpdate200 = ApiKey;
+export type ApiKeysUpdate400 = MalformedRequestError;
+export const ApiKeysUpdate400 = MalformedRequestError;
 export type ApiKeysUpdate401 = UnauthorizedError;
 export const ApiKeysUpdate401 = UnauthorizedError;
 export type ApiKeysUpdate403 = ForbiddenError;
@@ -292,10 +295,7 @@ export const ApiKeysUpdate504 = GatewayTimeoutError;
 export type ApiKeysGetActivityPathParams = { readonly id: ApiKeyId };
 export const ApiKeysGetActivityPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ApiKeyId }))();
-export type ApiKeysGetActivityQuery = {
-  readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-};
+export type ApiKeysGetActivityQuery = { readonly limit?: number | null; readonly cursor?: string };
 export const ApiKeysGetActivityQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     limit: Schema.optionalKey(
@@ -311,10 +311,12 @@ export const ApiKeysGetActivityQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type ApiKeysGetActivity200 = ApiKeyActivityPage;
 export const ApiKeysGetActivity200 = ApiKeyActivityPage;
+export type ApiKeysGetActivity400 = MalformedRequestError;
+export const ApiKeysGetActivity400 = MalformedRequestError;
 export type ApiKeysGetActivity401 = UnauthorizedError;
 export const ApiKeysGetActivity401 = UnauthorizedError;
 export type ApiKeysGetActivity403 = ForbiddenError;
@@ -331,6 +333,8 @@ export type ApiKeysRevokePathParams = { readonly id: ApiKeyId };
 export const ApiKeysRevokePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysRevoke200 = SuccessResponse;
 export const ApiKeysRevoke200 = SuccessResponse;
+export type ApiKeysRevoke400 = MalformedRequestError;
+export const ApiKeysRevoke400 = MalformedRequestError;
 export type ApiKeysRevoke401 = UnauthorizedError;
 export const ApiKeysRevoke401 = UnauthorizedError;
 export type ApiKeysRevoke403 = ForbiddenError;
@@ -349,6 +353,8 @@ export type ApiKeysRotatePathParams = { readonly id: ApiKeyId };
 export const ApiKeysRotatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
 export type ApiKeysRotate200 = ApiKeyWithSecret;
 export const ApiKeysRotate200 = ApiKeyWithSecret;
+export type ApiKeysRotate400 = MalformedRequestError;
+export const ApiKeysRotate400 = MalformedRequestError;
 export type ApiKeysRotate401 = UnauthorizedError;
 export const ApiKeysRotate401 = UnauthorizedError;
 export type ApiKeysRotate403 = ForbiddenError;
@@ -363,14 +369,11 @@ export type ApiKeysRotate504 = GatewayTimeoutError;
 export const ApiKeysRotate504 = GatewayTimeoutError;
 export type ApiKeysGetStatsPathParams = { readonly id: ApiKeyId };
 export const ApiKeysGetStatsPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ApiKeyId }))();
-export type ApiKeysGetStatsQuery = {
-  readonly after?: string | null;
-  readonly before?: string | null;
-};
+export type ApiKeysGetStatsQuery = { readonly after?: string; readonly before?: string };
 export const ApiKeysGetStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type ApiKeysGetStats200 = {
   readonly totalRequests: number;
@@ -430,6 +433,8 @@ export const ApiKeysGetStats200 = /* @__PURE__ */ (() =>
       }),
     ),
   }))();
+export type ApiKeysGetStats400 = MalformedRequestError;
+export const ApiKeysGetStats400 = MalformedRequestError;
 export type ApiKeysGetStats401 = UnauthorizedError;
 export const ApiKeysGetStats401 = UnauthorizedError;
 export type ApiKeysGetStats403 = ForbiddenError;
@@ -449,6 +454,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       query: ApiKeysListQuery,
       success: ApiKeysList200,
       error: [
+        ApiKeysList400.pipe(HttpApiSchema.status(400)),
         ApiKeysList401.pipe(HttpApiSchema.status(401)),
         ApiKeysList403.pipe(HttpApiSchema.status(403)),
         ApiKeysList422.pipe(HttpApiSchema.status(422)),
@@ -467,6 +473,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       payload: ApiKeysCreateRequestJson,
       success: ApiKeysCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        ApiKeysCreate400.pipe(HttpApiSchema.status(400)),
         ApiKeysCreate401.pipe(HttpApiSchema.status(401)),
         ApiKeysCreate402.pipe(HttpApiSchema.status(402)),
         ApiKeysCreate403.pipe(HttpApiSchema.status(403)),
@@ -489,6 +496,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       params: ApiKeysGetPathParams,
       success: ApiKeysGet200,
       error: [
+        ApiKeysGet400.pipe(HttpApiSchema.status(400)),
         ApiKeysGet401.pipe(HttpApiSchema.status(401)),
         ApiKeysGet403.pipe(HttpApiSchema.status(403)),
         ApiKeysGet404.pipe(HttpApiSchema.status(404)),
@@ -509,6 +517,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       payload: ApiKeysUpdateRequestJson,
       success: ApiKeysUpdate200,
       error: [
+        ApiKeysUpdate400.pipe(HttpApiSchema.status(400)),
         ApiKeysUpdate401.pipe(HttpApiSchema.status(401)),
         ApiKeysUpdate403.pipe(HttpApiSchema.status(403)),
         ApiKeysUpdate404.pipe(HttpApiSchema.status(404)),
@@ -529,6 +538,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       query: ApiKeysGetActivityQuery,
       success: ApiKeysGetActivity200,
       error: [
+        ApiKeysGetActivity400.pipe(HttpApiSchema.status(400)),
         ApiKeysGetActivity401.pipe(HttpApiSchema.status(401)),
         ApiKeysGetActivity403.pipe(HttpApiSchema.status(403)),
         ApiKeysGetActivity404.pipe(HttpApiSchema.status(404)),
@@ -548,6 +558,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       params: ApiKeysRevokePathParams,
       success: ApiKeysRevoke200,
       error: [
+        ApiKeysRevoke400.pipe(HttpApiSchema.status(400)),
         ApiKeysRevoke401.pipe(HttpApiSchema.status(401)),
         ApiKeysRevoke403.pipe(HttpApiSchema.status(403)),
         ApiKeysRevoke404.pipe(HttpApiSchema.status(404)),
@@ -568,6 +579,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       params: ApiKeysRotatePathParams,
       success: ApiKeysRotate200,
       error: [
+        ApiKeysRotate400.pipe(HttpApiSchema.status(400)),
         ApiKeysRotate401.pipe(HttpApiSchema.status(401)),
         ApiKeysRotate403.pipe(HttpApiSchema.status(403)),
         ApiKeysRotate404.pipe(HttpApiSchema.status(404)),
@@ -588,6 +600,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       query: ApiKeysGetStatsQuery,
       success: ApiKeysGetStats200,
       error: [
+        ApiKeysGetStats400.pipe(HttpApiSchema.status(400)),
         ApiKeysGetStats401.pipe(HttpApiSchema.status(401)),
         ApiKeysGetStats403.pipe(HttpApiSchema.status(403)),
         ApiKeysGetStats404.pipe(HttpApiSchema.status(404)),

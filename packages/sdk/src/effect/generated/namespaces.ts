@@ -6,10 +6,10 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   NamespaceId,
   NamespaceMetadata,
   NamespaceResourceType,
@@ -33,6 +33,8 @@ export type NamespaceUsage = {
   readonly periodStart: string;
   readonly periodEnd: string;
   readonly emailCount: number;
+  readonly smsCount: number;
+  readonly whatsappCount: number;
   readonly totalMessages: number;
 };
 export const NamespaceUsage = /* @__PURE__ */ (() =>
@@ -41,6 +43,8 @@ export const NamespaceUsage = /* @__PURE__ */ (() =>
     periodStart: Schema.String,
     periodEnd: Schema.String,
     emailCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    smsCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+    whatsappCount: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
     totalMessages: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
   }).annotate({ identifier: "NamespaceUsage" }))();
 export type Namespace = {
@@ -80,9 +84,9 @@ export const NamespacePage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "NamespacePage" }))();
 export type NamespacesListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const NamespacesListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -99,12 +103,14 @@ export const NamespacesListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type NamespacesList200 = NamespacePage;
 export const NamespacesList200 = NamespacePage;
+export type NamespacesList400 = MalformedRequestError;
+export const NamespacesList400 = MalformedRequestError;
 export type NamespacesList401 = UnauthorizedError;
 export const NamespacesList401 = UnauthorizedError;
 export type NamespacesList403 = ForbiddenError;
@@ -128,7 +134,7 @@ export const NamespacesCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
       )
       .check(
-        Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+        Schema.isPattern(new globalThis.RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
           expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
         }),
       )
@@ -139,6 +145,8 @@ export const NamespacesCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type NamespacesCreate201 = Namespace;
 export const NamespacesCreate201 = Namespace;
+export type NamespacesCreate400 = MalformedRequestError;
+export const NamespacesCreate400 = MalformedRequestError;
 export type NamespacesCreate401 = UnauthorizedError;
 export const NamespacesCreate401 = UnauthorizedError;
 export type NamespacesCreate403 = ForbiddenError;
@@ -155,6 +163,8 @@ export type NamespacesGetPathParams = { readonly id: NamespaceId };
 export const NamespacesGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: NamespaceId }))();
 export type NamespacesGet200 = Namespace;
 export const NamespacesGet200 = Namespace;
+export type NamespacesGet400 = MalformedRequestError;
+export const NamespacesGet400 = MalformedRequestError;
 export type NamespacesGet401 = UnauthorizedError;
 export const NamespacesGet401 = UnauthorizedError;
 export type NamespacesGet403 = ForbiddenError;
@@ -172,6 +182,8 @@ export const NamespacesRemovePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NamespaceId }))();
 export type NamespacesRemove200 = SuccessResponse;
 export const NamespacesRemove200 = SuccessResponse;
+export type NamespacesRemove400 = MalformedRequestError;
+export const NamespacesRemove400 = MalformedRequestError;
 export type NamespacesRemove401 = UnauthorizedError;
 export const NamespacesRemove401 = UnauthorizedError;
 export type NamespacesRemove403 = ForbiddenError;
@@ -206,7 +218,7 @@ export const NamespacesUpdateRequestJson = /* @__PURE__ */ (() =>
             }),
           )
           .check(
-            Schema.isPattern(new RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^\\S[\\s\\S]*\\S$|^\\S$|^$", "u")).annotate({
               expected: "a string matching the RegExp ^\\S[\\s\\S]*\\S$|^\\S$|^$",
             }),
           )
@@ -225,6 +237,8 @@ export const NamespacesUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type NamespacesUpdate200 = Namespace;
 export const NamespacesUpdate200 = Namespace;
+export type NamespacesUpdate400 = MalformedRequestError;
+export const NamespacesUpdate400 = MalformedRequestError;
 export type NamespacesUpdate401 = UnauthorizedError;
 export const NamespacesUpdate401 = UnauthorizedError;
 export type NamespacesUpdate403 = ForbiddenError;
@@ -255,6 +269,8 @@ export const NamespacesAssignResourceRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type NamespacesAssignResource200 = NamespaceResource;
 export const NamespacesAssignResource200 = NamespaceResource;
+export type NamespacesAssignResource400 = MalformedRequestError;
+export const NamespacesAssignResource400 = MalformedRequestError;
 export type NamespacesAssignResource401 = UnauthorizedError;
 export const NamespacesAssignResource401 = UnauthorizedError;
 export type NamespacesAssignResource403 = ForbiddenError;
@@ -278,6 +294,8 @@ export const NamespacesRemoveResourcePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NamespaceId, type: NamespaceResourceType, resourceId: Schema.String }))();
 export type NamespacesRemoveResource200 = NamespaceResource;
 export const NamespacesRemoveResource200 = NamespaceResource;
+export type NamespacesRemoveResource400 = MalformedRequestError;
+export const NamespacesRemoveResource400 = MalformedRequestError;
 export type NamespacesRemoveResource401 = UnauthorizedError;
 export const NamespacesRemoveResource401 = UnauthorizedError;
 export type NamespacesRemoveResource403 = ForbiddenError;
@@ -295,17 +313,16 @@ export const NamespacesRemoveResource504 = GatewayTimeoutError;
 export type NamespacesGetUsagePathParams = { readonly id: NamespaceId };
 export const NamespacesGetUsagePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NamespaceId }))();
-export type NamespacesGetUsageQuery = {
-  readonly after?: string | null;
-  readonly before?: string | null;
-};
+export type NamespacesGetUsageQuery = { readonly after?: string; readonly before?: string };
 export const NamespacesGetUsageQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type NamespacesGetUsage200 = NamespaceUsage;
 export const NamespacesGetUsage200 = NamespaceUsage;
+export type NamespacesGetUsage400 = MalformedRequestError;
+export const NamespacesGetUsage400 = MalformedRequestError;
 export type NamespacesGetUsage401 = UnauthorizedError;
 export const NamespacesGetUsage401 = UnauthorizedError;
 export type NamespacesGetUsage403 = ForbiddenError;
@@ -325,6 +342,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       query: NamespacesListQuery,
       success: NamespacesList200,
       error: [
+        NamespacesList400.pipe(HttpApiSchema.status(400)),
         NamespacesList401.pipe(HttpApiSchema.status(401)),
         NamespacesList403.pipe(HttpApiSchema.status(403)),
         NamespacesList422.pipe(HttpApiSchema.status(422)),
@@ -343,6 +361,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       payload: NamespacesCreateRequestJson,
       success: NamespacesCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        NamespacesCreate400.pipe(HttpApiSchema.status(400)),
         NamespacesCreate401.pipe(HttpApiSchema.status(401)),
         NamespacesCreate403.pipe(HttpApiSchema.status(403)),
         NamespacesCreate409.pipe(HttpApiSchema.status(409)),
@@ -362,6 +381,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       params: NamespacesGetPathParams,
       success: NamespacesGet200,
       error: [
+        NamespacesGet400.pipe(HttpApiSchema.status(400)),
         NamespacesGet401.pipe(HttpApiSchema.status(401)),
         NamespacesGet403.pipe(HttpApiSchema.status(403)),
         NamespacesGet404.pipe(HttpApiSchema.status(404)),
@@ -378,6 +398,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       params: NamespacesRemovePathParams,
       success: NamespacesRemove200,
       error: [
+        NamespacesRemove400.pipe(HttpApiSchema.status(400)),
         NamespacesRemove401.pipe(HttpApiSchema.status(401)),
         NamespacesRemove403.pipe(HttpApiSchema.status(403)),
         NamespacesRemove404.pipe(HttpApiSchema.status(404)),
@@ -399,6 +420,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       payload: NamespacesUpdateRequestJson,
       success: NamespacesUpdate200,
       error: [
+        NamespacesUpdate400.pipe(HttpApiSchema.status(400)),
         NamespacesUpdate401.pipe(HttpApiSchema.status(401)),
         NamespacesUpdate403.pipe(HttpApiSchema.status(403)),
         NamespacesUpdate404.pipe(HttpApiSchema.status(404)),
@@ -420,6 +442,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       payload: NamespacesAssignResourceRequestJson,
       success: NamespacesAssignResource200,
       error: [
+        NamespacesAssignResource400.pipe(HttpApiSchema.status(400)),
         NamespacesAssignResource401.pipe(HttpApiSchema.status(401)),
         NamespacesAssignResource403.pipe(HttpApiSchema.status(403)),
         NamespacesAssignResource404.pipe(HttpApiSchema.status(404)),
@@ -443,6 +466,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
         params: NamespacesRemoveResourcePathParams,
         success: NamespacesRemoveResource200,
         error: [
+          NamespacesRemoveResource400.pipe(HttpApiSchema.status(400)),
           NamespacesRemoveResource401.pipe(HttpApiSchema.status(401)),
           NamespacesRemoveResource403.pipe(HttpApiSchema.status(403)),
           NamespacesRemoveResource404.pipe(HttpApiSchema.status(404)),
@@ -465,6 +489,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       query: NamespacesGetUsageQuery,
       success: NamespacesGetUsage200,
       error: [
+        NamespacesGetUsage400.pipe(HttpApiSchema.status(400)),
         NamespacesGetUsage401.pipe(HttpApiSchema.status(401)),
         NamespacesGetUsage403.pipe(HttpApiSchema.status(403)),
         NamespacesGetUsage404.pipe(HttpApiSchema.status(404)),

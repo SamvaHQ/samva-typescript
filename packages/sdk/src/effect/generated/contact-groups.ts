@@ -8,11 +8,11 @@ import {
   ContactGroupId,
   ContactId,
   ContactIdentity,
-  Cursor,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
   JsonValue,
+  MalformedRequestError,
   OrganizationId,
   ResourceNotFoundError,
   UnauthorizedError,
@@ -141,13 +141,8 @@ export const ContactGroupMemberPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "ContactGroupMemberPage" }))();
 export type ContactGroupsListQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly type?:
-    | "static"
-    | "dynamic"
-    | "smart"
-    | ReadonlyArray<"static" | "dynamic" | "smart">
-    | null;
+  readonly cursor?: string;
+  readonly type?: "static" | "dynamic" | "smart" | ReadonlyArray<"static" | "dynamic" | "smart">;
   readonly isActive?: boolean | null;
 };
 export const ContactGroupsListQuery = /* @__PURE__ */ (() =>
@@ -165,7 +160,7 @@ export const ContactGroupsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
     type: Schema.optionalKey(
       Schema.Union([
         Schema.Union([
@@ -180,13 +175,14 @@ export const ContactGroupsListQuery = /* @__PURE__ */ (() =>
             Schema.Literal("smart"),
           ]),
         ),
-        Schema.Null,
       ]),
     ),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type ContactGroupsList200 = ContactGroupPage;
 export const ContactGroupsList200 = ContactGroupPage;
+export type ContactGroupsList400 = MalformedRequestError;
+export const ContactGroupsList400 = MalformedRequestError;
 export type ContactGroupsList401 = UnauthorizedError;
 export const ContactGroupsList401 = UnauthorizedError;
 export type ContactGroupsList403 = ForbiddenError;
@@ -309,6 +305,8 @@ export const ContactGroupsCreate201 = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }))();
+export type ContactGroupsCreate400 = MalformedRequestError;
+export const ContactGroupsCreate400 = MalformedRequestError;
 export type ContactGroupsCreate401 = UnauthorizedError;
 export const ContactGroupsCreate401 = UnauthorizedError;
 export type ContactGroupsCreate403 = ForbiddenError;
@@ -382,6 +380,8 @@ export const ContactGroupsGetById200 = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }))();
+export type ContactGroupsGetById400 = MalformedRequestError;
+export const ContactGroupsGetById400 = MalformedRequestError;
 export type ContactGroupsGetById401 = UnauthorizedError;
 export const ContactGroupsGetById401 = UnauthorizedError;
 export type ContactGroupsGetById403 = ForbiddenError;
@@ -400,6 +400,8 @@ export const ContactGroupsRemovePathParams = /* @__PURE__ */ (() =>
 export type ContactGroupsRemove200 = { readonly success: boolean };
 export const ContactGroupsRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean }))();
+export type ContactGroupsRemove400 = MalformedRequestError;
+export const ContactGroupsRemove400 = MalformedRequestError;
 export type ContactGroupsRemove401 = UnauthorizedError;
 export const ContactGroupsRemove401 = UnauthorizedError;
 export type ContactGroupsRemove403 = ForbiddenError;
@@ -536,6 +538,8 @@ export const ContactGroupsUpdate200 = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }))();
+export type ContactGroupsUpdate400 = MalformedRequestError;
+export const ContactGroupsUpdate400 = MalformedRequestError;
 export type ContactGroupsUpdate401 = UnauthorizedError;
 export const ContactGroupsUpdate401 = UnauthorizedError;
 export type ContactGroupsUpdate403 = ForbiddenError;
@@ -592,6 +596,8 @@ export const ContactGroupsEvaluateDynamic200 = /* @__PURE__ */ (() =>
         }),
       ),
   }))();
+export type ContactGroupsEvaluateDynamic400 = MalformedRequestError;
+export const ContactGroupsEvaluateDynamic400 = MalformedRequestError;
 export type ContactGroupsEvaluateDynamic401 = UnauthorizedError;
 export const ContactGroupsEvaluateDynamic401 = UnauthorizedError;
 export type ContactGroupsEvaluateDynamic403 = ForbiddenError;
@@ -609,7 +615,7 @@ export const ContactGroupsGetMembersPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: ContactGroupId }))();
 export type ContactGroupsGetMembersQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const ContactGroupsGetMembersQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -626,10 +632,12 @@ export const ContactGroupsGetMembersQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type ContactGroupsGetMembers200 = ContactGroupMemberPage;
 export const ContactGroupsGetMembers200 = ContactGroupMemberPage;
+export type ContactGroupsGetMembers400 = MalformedRequestError;
+export const ContactGroupsGetMembers400 = MalformedRequestError;
 export type ContactGroupsGetMembers401 = UnauthorizedError;
 export const ContactGroupsGetMembers401 = UnauthorizedError;
 export type ContactGroupsGetMembers403 = ForbiddenError;
@@ -691,6 +699,8 @@ export const ContactGroupsAddMembers200 = /* @__PURE__ */ (() =>
         }),
       ),
   }))();
+export type ContactGroupsAddMembers400 = MalformedRequestError;
+export const ContactGroupsAddMembers400 = MalformedRequestError;
 export type ContactGroupsAddMembers401 = UnauthorizedError;
 export const ContactGroupsAddMembers401 = UnauthorizedError;
 export type ContactGroupsAddMembers403 = ForbiddenError;
@@ -730,6 +740,8 @@ export const ContactGroupsRemoveMembers200 = /* @__PURE__ */ (() =>
         }),
       ),
   }))();
+export type ContactGroupsRemoveMembers400 = MalformedRequestError;
+export const ContactGroupsRemoveMembers400 = MalformedRequestError;
 export type ContactGroupsRemoveMembers401 = UnauthorizedError;
 export const ContactGroupsRemoveMembers401 = UnauthorizedError;
 export type ContactGroupsRemoveMembers403 = ForbiddenError;
@@ -797,6 +809,8 @@ export const ContactGroupsPreview200 = /* @__PURE__ */ (() =>
       Schema.Struct({ id: ContactId, name: Schema.String, status: Schema.String }),
     ),
   }))();
+export type ContactGroupsPreview400 = MalformedRequestError;
+export const ContactGroupsPreview400 = MalformedRequestError;
 export type ContactGroupsPreview401 = UnauthorizedError;
 export const ContactGroupsPreview401 = UnauthorizedError;
 export type ContactGroupsPreview403 = ForbiddenError;
@@ -814,6 +828,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       query: ContactGroupsListQuery,
       success: ContactGroupsList200,
       error: [
+        ContactGroupsList400.pipe(HttpApiSchema.status(400)),
         ContactGroupsList401.pipe(HttpApiSchema.status(401)),
         ContactGroupsList403.pipe(HttpApiSchema.status(403)),
         ContactGroupsList422.pipe(HttpApiSchema.status(422)),
@@ -832,6 +847,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       payload: ContactGroupsCreateRequestJson,
       success: ContactGroupsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        ContactGroupsCreate400.pipe(HttpApiSchema.status(400)),
         ContactGroupsCreate401.pipe(HttpApiSchema.status(401)),
         ContactGroupsCreate403.pipe(HttpApiSchema.status(403)),
         ContactGroupsCreate422.pipe(HttpApiSchema.status(422)),
@@ -850,6 +866,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       params: ContactGroupsGetByIdPathParams,
       success: ContactGroupsGetById200,
       error: [
+        ContactGroupsGetById400.pipe(HttpApiSchema.status(400)),
         ContactGroupsGetById401.pipe(HttpApiSchema.status(401)),
         ContactGroupsGetById403.pipe(HttpApiSchema.status(403)),
         ContactGroupsGetById404.pipe(HttpApiSchema.status(404)),
@@ -866,6 +883,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       params: ContactGroupsRemovePathParams,
       success: ContactGroupsRemove200,
       error: [
+        ContactGroupsRemove400.pipe(HttpApiSchema.status(400)),
         ContactGroupsRemove401.pipe(HttpApiSchema.status(401)),
         ContactGroupsRemove403.pipe(HttpApiSchema.status(403)),
         ContactGroupsRemove404.pipe(HttpApiSchema.status(404)),
@@ -883,6 +901,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       payload: ContactGroupsUpdateRequestJson,
       success: ContactGroupsUpdate200,
       error: [
+        ContactGroupsUpdate400.pipe(HttpApiSchema.status(400)),
         ContactGroupsUpdate401.pipe(HttpApiSchema.status(401)),
         ContactGroupsUpdate403.pipe(HttpApiSchema.status(403)),
         ContactGroupsUpdate404.pipe(HttpApiSchema.status(404)),
@@ -902,6 +921,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       params: ContactGroupsEvaluateDynamicPathParams,
       success: ContactGroupsEvaluateDynamic200,
       error: [
+        ContactGroupsEvaluateDynamic400.pipe(HttpApiSchema.status(400)),
         ContactGroupsEvaluateDynamic401.pipe(HttpApiSchema.status(401)),
         ContactGroupsEvaluateDynamic403.pipe(HttpApiSchema.status(403)),
         ContactGroupsEvaluateDynamic404.pipe(HttpApiSchema.status(404)),
@@ -922,6 +942,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       query: ContactGroupsGetMembersQuery,
       success: ContactGroupsGetMembers200,
       error: [
+        ContactGroupsGetMembers400.pipe(HttpApiSchema.status(400)),
         ContactGroupsGetMembers401.pipe(HttpApiSchema.status(401)),
         ContactGroupsGetMembers403.pipe(HttpApiSchema.status(403)),
         ContactGroupsGetMembers404.pipe(HttpApiSchema.status(404)),
@@ -942,6 +963,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       payload: ContactGroupsAddMembersRequestJson,
       success: ContactGroupsAddMembers200,
       error: [
+        ContactGroupsAddMembers400.pipe(HttpApiSchema.status(400)),
         ContactGroupsAddMembers401.pipe(HttpApiSchema.status(401)),
         ContactGroupsAddMembers403.pipe(HttpApiSchema.status(403)),
         ContactGroupsAddMembers404.pipe(HttpApiSchema.status(404)),
@@ -962,6 +984,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       payload: ContactGroupsRemoveMembersRequestJson,
       success: ContactGroupsRemoveMembers200,
       error: [
+        ContactGroupsRemoveMembers400.pipe(HttpApiSchema.status(400)),
         ContactGroupsRemoveMembers401.pipe(HttpApiSchema.status(401)),
         ContactGroupsRemoveMembers403.pipe(HttpApiSchema.status(403)),
         ContactGroupsRemoveMembers404.pipe(HttpApiSchema.status(404)),
@@ -981,6 +1004,7 @@ export class ContactGroupsGroup extends HttpApiGroup.make("Contact Groups")
       payload: ContactGroupsPreviewRequestJson,
       success: ContactGroupsPreview200,
       error: [
+        ContactGroupsPreview400.pipe(HttpApiSchema.status(400)),
         ContactGroupsPreview401.pipe(HttpApiSchema.status(401)),
         ContactGroupsPreview403.pipe(HttpApiSchema.status(403)),
         ContactGroupsPreview422.pipe(HttpApiSchema.status(422)),

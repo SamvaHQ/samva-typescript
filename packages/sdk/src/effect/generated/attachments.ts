@@ -9,6 +9,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   MessageId,
   OrganizationId,
   ResourceNotFoundError,
@@ -60,6 +61,8 @@ export const AttachmentsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({ messageId: MessageId }))();
 export type AttachmentsList200 = AttachmentList;
 export const AttachmentsList200 = AttachmentList;
+export type AttachmentsList400 = MalformedRequestError;
+export const AttachmentsList400 = MalformedRequestError;
 export type AttachmentsList401 = UnauthorizedError;
 export const AttachmentsList401 = UnauthorizedError;
 export type AttachmentsList403 = ForbiddenError;
@@ -108,6 +111,8 @@ export const AttachmentsGetById200 = /* @__PURE__ */ (() =>
     isInline: Schema.Boolean,
     createdAt: Schema.String,
   }))();
+export type AttachmentsGetById400 = MalformedRequestError;
+export const AttachmentsGetById400 = MalformedRequestError;
 export type AttachmentsGetById401 = UnauthorizedError;
 export const AttachmentsGetById401 = UnauthorizedError;
 export type AttachmentsGetById403 = ForbiddenError;
@@ -126,6 +131,8 @@ export const AttachmentsRemovePathParams = /* @__PURE__ */ (() =>
 export type AttachmentsRemove200 = { readonly success: boolean; readonly deletedId: AttachmentId };
 export const AttachmentsRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean, deletedId: AttachmentId }))();
+export type AttachmentsRemove400 = MalformedRequestError;
+export const AttachmentsRemove400 = MalformedRequestError;
 export type AttachmentsRemove401 = UnauthorizedError;
 export const AttachmentsRemove401 = UnauthorizedError;
 export type AttachmentsRemove403 = ForbiddenError;
@@ -192,6 +199,8 @@ export const AttachmentsDownloadUrl200 = /* @__PURE__ */ (() =>
       createdAt: Schema.String,
     }),
   }))();
+export type AttachmentsDownloadUrl400 = MalformedRequestError;
+export const AttachmentsDownloadUrl400 = MalformedRequestError;
 export type AttachmentsDownloadUrl401 = UnauthorizedError;
 export const AttachmentsDownloadUrl401 = UnauthorizedError;
 export type AttachmentsDownloadUrl403 = ForbiddenError;
@@ -211,6 +220,7 @@ export class AttachmentsGroup extends HttpApiGroup.make("Attachments")
       query: AttachmentsListQuery,
       success: AttachmentsList200,
       error: [
+        AttachmentsList400.pipe(HttpApiSchema.status(400)),
         AttachmentsList401.pipe(HttpApiSchema.status(401)),
         AttachmentsList403.pipe(HttpApiSchema.status(403)),
         AttachmentsList404.pipe(HttpApiSchema.status(404)),
@@ -230,6 +240,7 @@ export class AttachmentsGroup extends HttpApiGroup.make("Attachments")
       params: AttachmentsGetByIdPathParams,
       success: AttachmentsGetById200,
       error: [
+        AttachmentsGetById400.pipe(HttpApiSchema.status(400)),
         AttachmentsGetById401.pipe(HttpApiSchema.status(401)),
         AttachmentsGetById403.pipe(HttpApiSchema.status(403)),
         AttachmentsGetById404.pipe(HttpApiSchema.status(404)),
@@ -249,6 +260,7 @@ export class AttachmentsGroup extends HttpApiGroup.make("Attachments")
       params: AttachmentsRemovePathParams,
       success: AttachmentsRemove200,
       error: [
+        AttachmentsRemove400.pipe(HttpApiSchema.status(400)),
         AttachmentsRemove401.pipe(HttpApiSchema.status(401)),
         AttachmentsRemove403.pipe(HttpApiSchema.status(403)),
         AttachmentsRemove404.pipe(HttpApiSchema.status(404)),
@@ -269,6 +281,7 @@ export class AttachmentsGroup extends HttpApiGroup.make("Attachments")
       query: AttachmentsDownloadUrlQuery,
       success: AttachmentsDownloadUrl200,
       error: [
+        AttachmentsDownloadUrl400.pipe(HttpApiSchema.status(400)),
         AttachmentsDownloadUrl401.pipe(HttpApiSchema.status(401)),
         AttachmentsDownloadUrl403.pipe(HttpApiSchema.status(403)),
         AttachmentsDownloadUrl404.pipe(HttpApiSchema.status(404)),

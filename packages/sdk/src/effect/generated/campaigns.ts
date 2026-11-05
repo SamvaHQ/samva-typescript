@@ -19,7 +19,6 @@ import {
   CampaignRunId,
   ConflictError,
   ContactId,
-  Cursor,
   DeliveryUnavailableError,
   EmailAttachments,
   EmailCustomHeaders,
@@ -32,6 +31,7 @@ import {
   FromAddressRequiredError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   MessageId,
   OnboardingReviewRequiredError,
   PaymentRequiredError,
@@ -43,6 +43,7 @@ import {
   SenderNotReadyError,
   SendsSeries,
   ServiceUnavailableError,
+  SmsContent,
   TemplateData,
   TemplateId,
   TemplateInputContractId,
@@ -51,6 +52,7 @@ import {
   TopicId,
   UnauthorizedError,
   ValidationError,
+  WhatsAppTemplateDispatch,
   __SamvaRuntimeAbsoluteInstant,
 } from "./shared";
 
@@ -104,6 +106,7 @@ export type CampaignRunSkippedReason = {
     | "blocked"
     | "suppressed"
     | "opted_out"
+    | "consent_required"
     | "unreachable"
     | "no_identity"
     | "inactive"
@@ -119,6 +122,7 @@ export const CampaignRunSkippedReason = /* @__PURE__ */ (() =>
       Schema.Literal("blocked"),
       Schema.Literal("suppressed"),
       Schema.Literal("opted_out"),
+      Schema.Literal("consent_required"),
       Schema.Literal("unreachable"),
       Schema.Literal("no_identity"),
       Schema.Literal("inactive"),
@@ -131,7 +135,7 @@ export const CampaignRunSkippedReason = /* @__PURE__ */ (() =>
 export type CampaignRecipientId = string & EffectBrand.Brand<"CampaignRecipientId">;
 export const CampaignRecipientId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^crcpt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^crcpt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^crcpt_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "CampaignRecipientId",
     }),
@@ -181,6 +185,7 @@ export type CampaignRunReportSkippedReason = {
     | "blocked"
     | "suppressed"
     | "opted_out"
+    | "consent_required"
     | "unreachable"
     | "no_identity"
     | "inactive"
@@ -196,6 +201,7 @@ export const CampaignRunReportSkippedReason = /* @__PURE__ */ (() =>
       Schema.Literal("blocked"),
       Schema.Literal("suppressed"),
       Schema.Literal("opted_out"),
+      Schema.Literal("consent_required"),
       Schema.Literal("unreachable"),
       Schema.Literal("no_identity"),
       Schema.Literal("inactive"),
@@ -279,6 +285,7 @@ export type CampaignRecipientPage = {
       | "blocked"
       | "suppressed"
       | "opted_out"
+      | "consent_required"
       | "unreachable"
       | "no_identity"
       | "inactive"
@@ -313,6 +320,7 @@ export const CampaignRecipientPage = /* @__PURE__ */ (() =>
             Schema.Literal("blocked"),
             Schema.Literal("suppressed"),
             Schema.Literal("opted_out"),
+            Schema.Literal("consent_required"),
             Schema.Literal("unreachable"),
             Schema.Literal("no_identity"),
             Schema.Literal("inactive"),
@@ -483,7 +491,9 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
@@ -506,7 +516,20 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
     preheader: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }).annotate({ identifier: "CampaignEmailContent" }))();
-export type CampaignContent = {
+export type SmsCampaignContent = {
+  readonly channel: "sms";
+  readonly sms: SmsContent;
+  readonly conversationId?: CampaignConversationRef;
+  readonly metadata?: CampaignContentMetadata;
+};
+export const SmsCampaignContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("sms"),
+    sms: SmsContent,
+    conversationId: Schema.optionalKey(CampaignConversationRef),
+    metadata: Schema.optionalKey(CampaignContentMetadata),
+  }).annotate({ identifier: "SmsCampaignContent" }))();
+export type EmailCampaignContent = {
   readonly channel: "email";
   readonly email: CampaignEmailContent;
   readonly issue?: { readonly path: string; readonly commit: string } | null;
@@ -515,7 +538,7 @@ export type CampaignContent = {
   readonly conversationId?: CampaignConversationRef;
   readonly metadata?: CampaignContentMetadata;
 };
-export const CampaignContent = /* @__PURE__ */ (() =>
+export const EmailCampaignContent = /* @__PURE__ */ (() =>
   Schema.Struct({
     channel: Schema.Literal("email"),
     email: CampaignEmailContent,
@@ -529,7 +552,7 @@ export const CampaignContent = /* @__PURE__ */ (() =>
           )
             .check(
               Schema.isPattern(
-                new RegExp(
+                new globalThis.RegExp(
                   "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
                   "u",
                 ),
@@ -544,7 +567,7 @@ export const CampaignContent = /* @__PURE__ */ (() =>
               }),
             ),
           commit: Schema.String.check(
-            Schema.isPattern(new RegExp("^[a-f0-9]{40}$", "u")).annotate({
+            Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
               expected: "a string matching the RegExp ^[a-f0-9]{40}$",
             }),
           ),
@@ -559,11 +582,29 @@ export const CampaignContent = /* @__PURE__ */ (() =>
     replyMailboxId: Schema.optionalKey(CampaignReplyMailbox),
     conversationId: Schema.optionalKey(CampaignConversationRef),
     metadata: Schema.optionalKey(CampaignContentMetadata),
-  }).annotate({ identifier: "CampaignContent" }))();
+  }).annotate({ identifier: "EmailCampaignContent" }))();
+export type WhatsAppCampaignContent = {
+  readonly channel: "whatsapp";
+  readonly whatsapp: WhatsAppTemplateDispatch;
+  readonly conversationId?: CampaignConversationRef;
+  readonly metadata?: CampaignContentMetadata;
+};
+export const WhatsAppCampaignContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("whatsapp"),
+    whatsapp: WhatsAppTemplateDispatch,
+    conversationId: Schema.optionalKey(CampaignConversationRef),
+    metadata: Schema.optionalKey(CampaignContentMetadata),
+  }).annotate({ identifier: "WhatsAppCampaignContent" }))();
+export type CampaignContent = EmailCampaignContent | SmsCampaignContent | WhatsAppCampaignContent;
+export const CampaignContent = /* @__PURE__ */ (() =>
+  Schema.Union([EmailCampaignContent, SmsCampaignContent, WhatsAppCampaignContent]).annotate({
+    identifier: "CampaignContent",
+  }))();
 export type CampaignListItem = {
   readonly id: CampaignId;
   readonly name: string;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly content: CampaignContent;
   readonly audience: CampaignAudience;
   readonly policy: CampaignPolicy;
@@ -580,7 +621,11 @@ export const CampaignListItem = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: CampaignId,
     name: Schema.String,
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     content: CampaignContent,
     audience: CampaignAudience,
     policy: CampaignPolicy,
@@ -596,7 +641,7 @@ export const CampaignListItem = /* @__PURE__ */ (() =>
 export type Campaign = {
   readonly id: CampaignId;
   readonly name: string;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly content: CampaignContent;
   readonly audience: CampaignAudience;
   readonly policy: CampaignPolicy;
@@ -612,7 +657,11 @@ export const Campaign = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: CampaignId,
     name: Schema.String,
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     content: CampaignContent,
     audience: CampaignAudience,
     policy: CampaignPolicy,
@@ -728,18 +777,13 @@ export const CampaignRunAction = /* @__PURE__ */ (() =>
     identifier: "CampaignRunAction",
   }))();
 export type CampaignsListQuery = {
-  readonly status?: "draft" | "archived" | null;
+  readonly status?: "draft" | "archived";
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const CampaignsListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    status: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("draft"), Schema.Literal("archived")]),
-        Schema.Null,
-      ]),
-    ),
+    status: Schema.optionalKey(Schema.Union([Schema.Literal("draft"), Schema.Literal("archived")])),
     limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.annotate({ description: "Items per page, at most 100." })
@@ -753,10 +797,12 @@ export const CampaignsListQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type CampaignsList200 = CampaignPage;
 export const CampaignsList200 = CampaignPage;
+export type CampaignsList400 = MalformedRequestError;
+export const CampaignsList400 = MalformedRequestError;
 export type CampaignsList401 = UnauthorizedError;
 export const CampaignsList401 = UnauthorizedError;
 export type CampaignsList403 = ForbiddenError;
@@ -769,7 +815,7 @@ export type CampaignsList504 = GatewayTimeoutError;
 export const CampaignsList504 = GatewayTimeoutError;
 export type CampaignsCreateRequestJson = {
   readonly name: string;
-  readonly channel: "email";
+  readonly channel: "sms" | "whatsapp" | "email";
   readonly content: CampaignContentInput;
   readonly audience: CampaignAudience;
   readonly policy?: CampaignPolicy | null;
@@ -779,13 +825,19 @@ export const CampaignsCreateRequestJson = /* @__PURE__ */ (() =>
     name: Schema.String.check(
       Schema.isMaxCodePoints(120).annotate({ expected: "a string with at most 120 code points" }),
     ).check(Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" })),
-    channel: Schema.Literal("email"),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
     content: CampaignContentInput,
     audience: CampaignAudience,
     policy: Schema.optionalKey(Schema.Union([CampaignPolicy, Schema.Null])),
   }))();
 export type CampaignsCreate201 = Campaign;
 export const CampaignsCreate201 = Campaign;
+export type CampaignsCreate400 = MalformedRequestError;
+export const CampaignsCreate400 = MalformedRequestError;
 export type CampaignsCreate401 = UnauthorizedError;
 export const CampaignsCreate401 = UnauthorizedError;
 export type CampaignsCreate402 = PaymentRequiredError;
@@ -805,6 +857,8 @@ export type CampaignsGetPathParams = { readonly id: CampaignId };
 export const CampaignsGetPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: CampaignId }))();
 export type CampaignsGet200 = Campaign;
 export const CampaignsGet200 = Campaign;
+export type CampaignsGet400 = MalformedRequestError;
+export const CampaignsGet400 = MalformedRequestError;
 export type CampaignsGet401 = UnauthorizedError;
 export const CampaignsGet401 = UnauthorizedError;
 export type CampaignsGet403 = ForbiddenError;
@@ -846,6 +900,8 @@ export const CampaignsUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type CampaignsUpdate200 = Campaign;
 export const CampaignsUpdate200 = Campaign;
+export type CampaignsUpdate400 = MalformedRequestError;
+export const CampaignsUpdate400 = MalformedRequestError;
 export type CampaignsUpdate401 = UnauthorizedError;
 export const CampaignsUpdate401 = UnauthorizedError;
 export type CampaignsUpdate403 = FlagDisabledError | ForbiddenError;
@@ -866,6 +922,8 @@ export const CampaignsArchivePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId }))();
 export type CampaignsArchive200 = Campaign;
 export const CampaignsArchive200 = Campaign;
+export type CampaignsArchive400 = MalformedRequestError;
+export const CampaignsArchive400 = MalformedRequestError;
 export type CampaignsArchive401 = UnauthorizedError;
 export const CampaignsArchive401 = UnauthorizedError;
 export type CampaignsArchive403 = ForbiddenError;
@@ -891,25 +949,21 @@ export type CampaignsListRunsQuery = {
     | "paused"
     | "completed"
     | "cancelled"
-    | "failed"
-    | null;
+    | "failed";
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const CampaignsListRunsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("scheduled"),
-          Schema.Literal("resolving"),
-          Schema.Literal("dispatching"),
-          Schema.Literal("paused"),
-          Schema.Literal("completed"),
-          Schema.Literal("cancelled"),
-          Schema.Literal("failed"),
-        ]),
-        Schema.Null,
+        Schema.Literal("scheduled"),
+        Schema.Literal("resolving"),
+        Schema.Literal("dispatching"),
+        Schema.Literal("paused"),
+        Schema.Literal("completed"),
+        Schema.Literal("cancelled"),
+        Schema.Literal("failed"),
       ]),
     ),
     limit: Schema.optionalKey(
@@ -925,10 +979,12 @@ export const CampaignsListRunsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type CampaignsListRuns200 = CampaignRunPage;
 export const CampaignsListRuns200 = CampaignRunPage;
+export type CampaignsListRuns400 = MalformedRequestError;
+export const CampaignsListRuns400 = MalformedRequestError;
 export type CampaignsListRuns401 = UnauthorizedError;
 export const CampaignsListRuns401 = UnauthorizedError;
 export type CampaignsListRuns403 = ForbiddenError;
@@ -944,24 +1000,21 @@ export const CampaignsListRuns504 = GatewayTimeoutError;
 export type CampaignsScheduleRunPathParams = { readonly id: CampaignId };
 export const CampaignsScheduleRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId }))();
-export type CampaignsScheduleRunHeaders = { readonly "idempotency-key"?: string | null };
+export type CampaignsScheduleRunHeaders = { readonly "idempotency-key"?: string };
 export const CampaignsScheduleRunHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type CampaignsScheduleRunRequestJson = {
@@ -973,6 +1026,8 @@ export const CampaignsScheduleRunRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type CampaignsScheduleRun201 = CampaignRun;
 export const CampaignsScheduleRun201 = CampaignRun;
+export type CampaignsScheduleRun400 = MalformedRequestError;
+export const CampaignsScheduleRun400 = MalformedRequestError;
 export type CampaignsScheduleRun401 = UnauthorizedError;
 export const CampaignsScheduleRun401 = UnauthorizedError;
 export type CampaignsScheduleRun402 = PaymentRequiredError;
@@ -1013,6 +1068,8 @@ export const CampaignsGetRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId, runId: CampaignRunId }))();
 export type CampaignsGetRun200 = CampaignRun;
 export const CampaignsGetRun200 = CampaignRun;
+export type CampaignsGetRun400 = MalformedRequestError;
+export const CampaignsGetRun400 = MalformedRequestError;
 export type CampaignsGetRun401 = UnauthorizedError;
 export const CampaignsGetRun401 = UnauthorizedError;
 export type CampaignsGetRun403 = ForbiddenError;
@@ -1033,6 +1090,8 @@ export const CampaignsCancelRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId, runId: CampaignRunId }))();
 export type CampaignsCancelRun200 = CampaignRunAction;
 export const CampaignsCancelRun200 = CampaignRunAction;
+export type CampaignsCancelRun400 = MalformedRequestError;
+export const CampaignsCancelRun400 = MalformedRequestError;
 export type CampaignsCancelRun401 = UnauthorizedError;
 export const CampaignsCancelRun401 = UnauthorizedError;
 export type CampaignsCancelRun403 = ForbiddenError;
@@ -1057,6 +1116,8 @@ export const CampaignsPauseRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId, runId: CampaignRunId }))();
 export type CampaignsPauseRun200 = CampaignRunAction;
 export const CampaignsPauseRun200 = CampaignRunAction;
+export type CampaignsPauseRun400 = MalformedRequestError;
+export const CampaignsPauseRun400 = MalformedRequestError;
 export type CampaignsPauseRun401 = UnauthorizedError;
 export const CampaignsPauseRun401 = UnauthorizedError;
 export type CampaignsPauseRun403 = ForbiddenError;
@@ -1080,22 +1141,19 @@ export type CampaignsListRecipientsPathParams = {
 export const CampaignsListRecipientsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId, runId: CampaignRunId }))();
 export type CampaignsListRecipientsQuery = {
-  readonly status?: "pending" | "dispatching" | "dispatched" | "failed" | "skipped" | null;
+  readonly status?: "pending" | "dispatching" | "dispatched" | "failed" | "skipped";
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const CampaignsListRecipientsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("pending"),
-          Schema.Literal("dispatching"),
-          Schema.Literal("dispatched"),
-          Schema.Literal("failed"),
-          Schema.Literal("skipped"),
-        ]),
-        Schema.Null,
+        Schema.Literal("pending"),
+        Schema.Literal("dispatching"),
+        Schema.Literal("dispatched"),
+        Schema.Literal("failed"),
+        Schema.Literal("skipped"),
       ]),
     ),
     limit: Schema.optionalKey(
@@ -1111,10 +1169,12 @@ export const CampaignsListRecipientsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type CampaignsListRecipients200 = CampaignRecipientPage;
 export const CampaignsListRecipients200 = CampaignRecipientPage;
+export type CampaignsListRecipients400 = MalformedRequestError;
+export const CampaignsListRecipients400 = MalformedRequestError;
 export type CampaignsListRecipients401 = UnauthorizedError;
 export const CampaignsListRecipients401 = UnauthorizedError;
 export type CampaignsListRecipients403 = ForbiddenError;
@@ -1135,6 +1195,8 @@ export const CampaignsGetRunReportPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId, runId: CampaignRunId }))();
 export type CampaignsGetRunReport200 = CampaignRunReport;
 export const CampaignsGetRunReport200 = CampaignRunReport;
+export type CampaignsGetRunReport400 = MalformedRequestError;
+export const CampaignsGetRunReport400 = MalformedRequestError;
 export type CampaignsGetRunReport401 = UnauthorizedError;
 export const CampaignsGetRunReport401 = UnauthorizedError;
 export type CampaignsGetRunReport403 = ForbiddenError;
@@ -1155,6 +1217,8 @@ export const CampaignsResumeRunPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: CampaignId, runId: CampaignRunId }))();
 export type CampaignsResumeRun200 = CampaignRunAction;
 export const CampaignsResumeRun200 = CampaignRunAction;
+export type CampaignsResumeRun400 = MalformedRequestError;
+export const CampaignsResumeRun400 = MalformedRequestError;
 export type CampaignsResumeRun401 = UnauthorizedError;
 export const CampaignsResumeRun401 = UnauthorizedError;
 export type CampaignsResumeRun402 = PaymentRequiredError;
@@ -1187,6 +1251,8 @@ export const CampaignsPreviewRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type CampaignsPreview200 = CampaignPreview;
 export const CampaignsPreview200 = CampaignPreview;
+export type CampaignsPreview400 = MalformedRequestError;
+export const CampaignsPreview400 = MalformedRequestError;
 export type CampaignsPreview401 = UnauthorizedError;
 export const CampaignsPreview401 = UnauthorizedError;
 export type CampaignsPreview403 = FlagDisabledError | ForbiddenError;
@@ -1218,6 +1284,8 @@ export const CampaignsSendTestRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type CampaignsSendTest200 = CampaignTestSend;
 export const CampaignsSendTest200 = CampaignTestSend;
+export type CampaignsSendTest400 = MalformedRequestError;
+export const CampaignsSendTest400 = MalformedRequestError;
 export type CampaignsSendTest401 = UnauthorizedError;
 export const CampaignsSendTest401 = UnauthorizedError;
 export type CampaignsSendTest402 = PaymentRequiredError;
@@ -1268,6 +1336,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       query: CampaignsListQuery,
       success: CampaignsList200,
       error: [
+        CampaignsList400.pipe(HttpApiSchema.status(400)),
         CampaignsList401.pipe(HttpApiSchema.status(401)),
         CampaignsList403.pipe(HttpApiSchema.status(403)),
         CampaignsList422.pipe(HttpApiSchema.status(422)),
@@ -1286,6 +1355,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       payload: CampaignsCreateRequestJson,
       success: CampaignsCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        CampaignsCreate400.pipe(HttpApiSchema.status(400)),
         CampaignsCreate401.pipe(HttpApiSchema.status(401)),
         CampaignsCreate402.pipe(HttpApiSchema.status(402)),
         CampaignsCreate403.pipe(HttpApiSchema.status(403)),
@@ -1306,6 +1376,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsGetPathParams,
       success: CampaignsGet200,
       error: [
+        CampaignsGet400.pipe(HttpApiSchema.status(400)),
         CampaignsGet401.pipe(HttpApiSchema.status(401)),
         CampaignsGet403.pipe(HttpApiSchema.status(403)),
         CampaignsGet404.pipe(HttpApiSchema.status(404)),
@@ -1326,6 +1397,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       payload: CampaignsUpdateRequestJson,
       success: CampaignsUpdate200,
       error: [
+        CampaignsUpdate400.pipe(HttpApiSchema.status(400)),
         CampaignsUpdate401.pipe(HttpApiSchema.status(401)),
         CampaignsUpdate403.pipe(HttpApiSchema.status(403)),
         CampaignsUpdate404.pipe(HttpApiSchema.status(404)),
@@ -1346,6 +1418,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsArchivePathParams,
       success: CampaignsArchive200,
       error: [
+        CampaignsArchive400.pipe(HttpApiSchema.status(400)),
         CampaignsArchive401.pipe(HttpApiSchema.status(401)),
         CampaignsArchive403.pipe(HttpApiSchema.status(403)),
         CampaignsArchive404.pipe(HttpApiSchema.status(404)),
@@ -1367,6 +1440,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       query: CampaignsListRunsQuery,
       success: CampaignsListRuns200,
       error: [
+        CampaignsListRuns400.pipe(HttpApiSchema.status(400)),
         CampaignsListRuns401.pipe(HttpApiSchema.status(401)),
         CampaignsListRuns403.pipe(HttpApiSchema.status(403)),
         CampaignsListRuns404.pipe(HttpApiSchema.status(404)),
@@ -1388,6 +1462,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       payload: CampaignsScheduleRunRequestJson,
       success: CampaignsScheduleRun201.pipe(HttpApiSchema.status(201)),
       error: [
+        CampaignsScheduleRun400.pipe(HttpApiSchema.status(400)),
         CampaignsScheduleRun401.pipe(HttpApiSchema.status(401)),
         CampaignsScheduleRun402.pipe(HttpApiSchema.status(402)),
         CampaignsScheduleRun403.pipe(HttpApiSchema.status(403)),
@@ -1411,6 +1486,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsGetRunPathParams,
       success: CampaignsGetRun200,
       error: [
+        CampaignsGetRun400.pipe(HttpApiSchema.status(400)),
         CampaignsGetRun401.pipe(HttpApiSchema.status(401)),
         CampaignsGetRun403.pipe(HttpApiSchema.status(403)),
         CampaignsGetRun404.pipe(HttpApiSchema.status(404)),
@@ -1427,6 +1503,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsCancelRunPathParams,
       success: CampaignsCancelRun200,
       error: [
+        CampaignsCancelRun400.pipe(HttpApiSchema.status(400)),
         CampaignsCancelRun401.pipe(HttpApiSchema.status(401)),
         CampaignsCancelRun403.pipe(HttpApiSchema.status(403)),
         CampaignsCancelRun404.pipe(HttpApiSchema.status(404)),
@@ -1448,6 +1525,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsPauseRunPathParams,
       success: CampaignsPauseRun200,
       error: [
+        CampaignsPauseRun400.pipe(HttpApiSchema.status(400)),
         CampaignsPauseRun401.pipe(HttpApiSchema.status(401)),
         CampaignsPauseRun403.pipe(HttpApiSchema.status(403)),
         CampaignsPauseRun404.pipe(HttpApiSchema.status(404)),
@@ -1470,6 +1548,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       query: CampaignsListRecipientsQuery,
       success: CampaignsListRecipients200,
       error: [
+        CampaignsListRecipients400.pipe(HttpApiSchema.status(400)),
         CampaignsListRecipients401.pipe(HttpApiSchema.status(401)),
         CampaignsListRecipients403.pipe(HttpApiSchema.status(403)),
         CampaignsListRecipients404.pipe(HttpApiSchema.status(404)),
@@ -1489,6 +1568,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsGetRunReportPathParams,
       success: CampaignsGetRunReport200,
       error: [
+        CampaignsGetRunReport400.pipe(HttpApiSchema.status(400)),
         CampaignsGetRunReport401.pipe(HttpApiSchema.status(401)),
         CampaignsGetRunReport403.pipe(HttpApiSchema.status(403)),
         CampaignsGetRunReport404.pipe(HttpApiSchema.status(404)),
@@ -1508,6 +1588,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       params: CampaignsResumeRunPathParams,
       success: CampaignsResumeRun200,
       error: [
+        CampaignsResumeRun400.pipe(HttpApiSchema.status(400)),
         CampaignsResumeRun401.pipe(HttpApiSchema.status(401)),
         CampaignsResumeRun402.pipe(HttpApiSchema.status(402)),
         CampaignsResumeRun403.pipe(HttpApiSchema.status(403)),
@@ -1530,6 +1611,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       payload: CampaignsPreviewRequestJson,
       success: CampaignsPreview200,
       error: [
+        CampaignsPreview400.pipe(HttpApiSchema.status(400)),
         CampaignsPreview401.pipe(HttpApiSchema.status(401)),
         CampaignsPreview403.pipe(HttpApiSchema.status(403)),
         CampaignsPreview404.pipe(HttpApiSchema.status(404)),
@@ -1551,6 +1633,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       payload: CampaignsSendTestRequestJson,
       success: CampaignsSendTest200,
       error: [
+        CampaignsSendTest400.pipe(HttpApiSchema.status(400)),
         CampaignsSendTest401.pipe(HttpApiSchema.status(401)),
         CampaignsSendTest402.pipe(HttpApiSchema.status(402)),
         CampaignsSendTest403.pipe(HttpApiSchema.status(403)),

@@ -8,7 +8,6 @@ import {
   ApiKeySecurityMiddleware,
   BillingProviderError,
   ConflictError,
-  Cursor,
   EmailChannelError,
   EmailDomainId,
   EmailSenderId,
@@ -18,6 +17,7 @@ import {
   InternalError,
   JsonValue,
   MailboxId,
+  MalformedRequestError,
   MediaId,
   MessageId,
   NamespaceId,
@@ -35,7 +35,7 @@ import {
 export type BlockedEmailId = string & EffectBrand.Brand<"BlockedEmailId">;
 export const BlockedEmailId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^blk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^blk_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^blk_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "BlockedEmailId",
     }),
@@ -48,7 +48,7 @@ export const SuccessResult = /* @__PURE__ */ (() =>
 export type BlockedEmailLogId = string & EffectBrand.Brand<"BlockedEmailLogId">;
 export const BlockedEmailLogId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^blklog_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^blklog_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^blklog_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "BlockedEmailLogId",
     }),
@@ -238,7 +238,7 @@ export const EmailDomainProvisioningExecution = /* @__PURE__ */ (() =>
 export type EmailDomainWarmingPlanId = string & EffectBrand.Brand<"EmailDomainWarmingPlanId">;
 export const EmailDomainWarmingPlanId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^warm_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^warm_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^warm_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "EmailDomainWarmingPlanId",
     }),
@@ -246,7 +246,7 @@ export const EmailDomainWarmingPlanId = /* @__PURE__ */ (() =>
 export type EmailDomainWarmingBatchId = string & EffectBrand.Brand<"EmailDomainWarmingBatchId">;
 export const EmailDomainWarmingBatchId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^wbatch_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "EmailDomainWarmingBatchId",
     }),
@@ -255,7 +255,7 @@ export type EmailDomainWarmingDecisionId = string &
   EffectBrand.Brand<"EmailDomainWarmingDecisionId">;
 export const EmailDomainWarmingDecisionId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^wdec_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^wdec_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^wdec_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "EmailDomainWarmingDecisionId",
     }),
@@ -290,7 +290,7 @@ export const DomainWarmingHolds = /* @__PURE__ */ (() =>
 export type EmailForwardingRuleId = string & EffectBrand.Brand<"EmailForwardingRuleId">;
 export const EmailForwardingRuleId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^fwd_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^fwd_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^fwd_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "EmailForwardingRuleId",
     }),
@@ -376,7 +376,7 @@ export const IdentityClearanceStatus = /* @__PURE__ */ (() =>
 export type SuppressionId = string & EffectBrand.Brand<"SuppressionId">;
 export const SuppressionId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^supp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^supp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
       expected: "a string matching the RegExp ^supp_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "SuppressionId",
     }),
@@ -442,7 +442,7 @@ export const EmailTrackingDefaults = /* @__PURE__ */ (() =>
 export type TrackingRecipientEmail = string;
 export const TrackingRecipientEmail = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
+    Schema.isPattern(new globalThis.RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
       expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
       identifier: "TrackingRecipientEmail",
     }),
@@ -1837,18 +1837,15 @@ export const SuppressionPage = /* @__PURE__ */ (() =>
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "SuppressionPage" }))();
 export type EmailListBlocksQuery = {
-  readonly blockType?: "email" | "domain" | null;
+  readonly blockType?: "email" | "domain";
   readonly isActive?: boolean | null;
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const EmailListBlocksQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     blockType: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
-        Schema.Null,
-      ]),
+      Schema.Union([Schema.Literal("email"), Schema.Literal("domain")]),
     ),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     limit: Schema.optionalKey(
@@ -1864,10 +1861,12 @@ export const EmailListBlocksQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type EmailListBlocks200 = BlockPage;
 export const EmailListBlocks200 = BlockPage;
+export type EmailListBlocks400 = MalformedRequestError;
+export const EmailListBlocks400 = MalformedRequestError;
 export type EmailListBlocks401 = UnauthorizedError;
 export const EmailListBlocks401 = UnauthorizedError;
 export type EmailListBlocks403 = ForbiddenError;
@@ -1914,6 +1913,8 @@ export const EmailAddBlock201 = /* @__PURE__ */ (() =>
     expiresAt: Schema.Union([Schema.String, Schema.Null]),
     createdAt: Schema.String,
   }))();
+export type EmailAddBlock400 = MalformedRequestError;
+export const EmailAddBlock400 = MalformedRequestError;
 export type EmailAddBlock401 = UnauthorizedError;
 export const EmailAddBlock401 = UnauthorizedError;
 export type EmailAddBlock403 = ForbiddenError;
@@ -1931,6 +1932,8 @@ export const EmailRemoveBlockPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: BlockedEmailId }))();
 export type EmailRemoveBlock200 = SuccessResult;
 export const EmailRemoveBlock200 = SuccessResult;
+export type EmailRemoveBlock400 = MalformedRequestError;
+export const EmailRemoveBlock400 = MalformedRequestError;
 export type EmailRemoveBlock401 = UnauthorizedError;
 export const EmailRemoveBlock401 = UnauthorizedError;
 export type EmailRemoveBlock403 = ForbiddenError;
@@ -1980,6 +1983,8 @@ export const EmailUpdateBlock200 = /* @__PURE__ */ (() =>
     expiresAt: Schema.Union([Schema.String, Schema.Null]),
     updatedAt: Schema.String,
   }))();
+export type EmailUpdateBlock400 = MalformedRequestError;
+export const EmailUpdateBlock400 = MalformedRequestError;
 export type EmailUpdateBlock401 = UnauthorizedError;
 export const EmailUpdateBlock401 = UnauthorizedError;
 export type EmailUpdateBlock403 = ForbiddenError;
@@ -2021,6 +2026,8 @@ export const EmailCheckBlocked200 = /* @__PURE__ */ (() =>
     ]),
     reason: Schema.Union([Schema.String, Schema.Null]),
   }))();
+export type EmailCheckBlocked400 = MalformedRequestError;
+export const EmailCheckBlocked400 = MalformedRequestError;
 export type EmailCheckBlocked401 = UnauthorizedError;
 export const EmailCheckBlocked401 = UnauthorizedError;
 export type EmailCheckBlocked403 = ForbiddenError;
@@ -2032,19 +2039,19 @@ export const EmailCheckBlocked500 = InternalError;
 export type EmailCheckBlocked504 = GatewayTimeoutError;
 export const EmailCheckBlocked504 = GatewayTimeoutError;
 export type EmailGetBlockLogsQuery = {
-  readonly blockedEmailId?: BlockedEmailId | null;
-  readonly fromAddress?: string | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly blockedEmailId?: BlockedEmailId;
+  readonly fromAddress?: string;
+  readonly after?: string;
+  readonly before?: string;
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const EmailGetBlockLogsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    blockedEmailId: Schema.optionalKey(Schema.Union([BlockedEmailId, Schema.Null])),
-    fromAddress: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    blockedEmailId: Schema.optionalKey(BlockedEmailId),
+    fromAddress: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
     limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.annotate({ description: "Items per page, at most 100." })
@@ -2058,10 +2065,12 @@ export const EmailGetBlockLogsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type EmailGetBlockLogs200 = BlockLogPage;
 export const EmailGetBlockLogs200 = BlockLogPage;
+export type EmailGetBlockLogs400 = MalformedRequestError;
+export const EmailGetBlockLogs400 = MalformedRequestError;
 export type EmailGetBlockLogs401 = UnauthorizedError;
 export const EmailGetBlockLogs401 = UnauthorizedError;
 export type EmailGetBlockLogs403 = ForbiddenError;
@@ -2103,6 +2112,8 @@ export const EmailGetCatchAllConfig200 = /* @__PURE__ */ (() =>
       ),
     lastEmailAt: Schema.Union([Schema.String, Schema.Null]),
   }))();
+export type EmailGetCatchAllConfig400 = MalformedRequestError;
+export const EmailGetCatchAllConfig400 = MalformedRequestError;
 export type EmailGetCatchAllConfig401 = UnauthorizedError;
 export const EmailGetCatchAllConfig401 = UnauthorizedError;
 export type EmailGetCatchAllConfig403 = ForbiddenError;
@@ -2123,7 +2134,12 @@ export type EmailUpdateCatchAllConfigRequestJson = {
 export const EmailUpdateCatchAllConfigRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     domainId: EmailDomainId,
-    endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
+    endpointId: Schema.optionalKey(
+      Schema.Union([WebhookEndpointId, Schema.Null]).annotate({
+        description:
+          "The catch-all webhook endpoint. Null removes it without disabling catch-all: unknown addresses reach the unknown-recipient mailbox when configured, otherwise they are dropped without a bounce. Omission leaves the endpoint unchanged.",
+      }),
+    ),
     unknownRecipientMailboxId: Schema.optionalKey(
       Schema.Union([MailboxId, Schema.Null]).annotate({
         description:
@@ -2134,6 +2150,8 @@ export const EmailUpdateCatchAllConfigRequestJson = /* @__PURE__ */ (() =>
 export type EmailUpdateCatchAllConfig200 = { readonly success: true };
 export const EmailUpdateCatchAllConfig200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Literal(true) }))();
+export type EmailUpdateCatchAllConfig400 = MalformedRequestError;
+export const EmailUpdateCatchAllConfig400 = MalformedRequestError;
 export type EmailUpdateCatchAllConfig401 = UnauthorizedError;
 export const EmailUpdateCatchAllConfig401 = UnauthorizedError;
 export type EmailUpdateCatchAllConfig403 = ForbiddenError;
@@ -2148,14 +2166,14 @@ export type EmailUpdateCatchAllConfig504 = GatewayTimeoutError;
 export const EmailUpdateCatchAllConfig504 = GatewayTimeoutError;
 export type EmailGetCatchAllStatsQuery = {
   readonly domainId: EmailDomainId;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly after?: string;
+  readonly before?: string;
 };
 export const EmailGetCatchAllStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     domainId: EmailDomainId,
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type EmailGetCatchAllStats200 = {
   readonly domain: string;
@@ -2209,6 +2227,8 @@ export const EmailGetCatchAllStats200 = /* @__PURE__ */ (() =>
       ]),
     ),
   }))();
+export type EmailGetCatchAllStats400 = MalformedRequestError;
+export const EmailGetCatchAllStats400 = MalformedRequestError;
 export type EmailGetCatchAllStats401 = UnauthorizedError;
 export const EmailGetCatchAllStats401 = UnauthorizedError;
 export type EmailGetCatchAllStats403 = ForbiddenError;
@@ -2223,9 +2243,9 @@ export type EmailGetCatchAllStats504 = GatewayTimeoutError;
 export const EmailGetCatchAllStats504 = GatewayTimeoutError;
 export type EmailListDomainsQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
   readonly sendable?: true | null;
-  readonly namespaceId?: NamespaceId | null;
+  readonly namespaceId?: NamespaceId;
 };
 export const EmailListDomainsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2242,12 +2262,14 @@ export const EmailListDomainsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
     sendable: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
-    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    namespaceId: Schema.optionalKey(NamespaceId),
   }))();
 export type EmailListDomains200 = EmailDomainPage;
 export const EmailListDomains200 = EmailDomainPage;
+export type EmailListDomains400 = MalformedRequestError;
+export const EmailListDomains400 = MalformedRequestError;
 export type EmailListDomains401 = UnauthorizedError;
 export const EmailListDomains401 = UnauthorizedError;
 export type EmailListDomains403 = ForbiddenError;
@@ -2276,6 +2298,8 @@ export const EmailAddDomainRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailAddDomain201 = EmailDomainDetailed;
 export const EmailAddDomain201 = EmailDomainDetailed;
+export type EmailAddDomain400 = MalformedRequestError;
+export const EmailAddDomain400 = MalformedRequestError;
 export type EmailAddDomain401 = UnauthorizedError;
 export const EmailAddDomain401 = UnauthorizedError;
 export type EmailAddDomain402 = PaymentRequiredError;
@@ -2302,6 +2326,8 @@ export const EmailGetDomainByIdPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainById200 = EmailDomainDetailed;
 export const EmailGetDomainById200 = EmailDomainDetailed;
+export type EmailGetDomainById400 = MalformedRequestError;
+export const EmailGetDomainById400 = MalformedRequestError;
 export type EmailGetDomainById401 = UnauthorizedError;
 export const EmailGetDomainById401 = UnauthorizedError;
 export type EmailGetDomainById403 = ForbiddenError;
@@ -2319,6 +2345,8 @@ export const EmailRemoveDomainPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailRemoveDomain200 = SuccessResult;
 export const EmailRemoveDomain200 = SuccessResult;
+export type EmailRemoveDomain400 = MalformedRequestError;
+export const EmailRemoveDomain400 = MalformedRequestError;
 export type EmailRemoveDomain401 = UnauthorizedError;
 export const EmailRemoveDomain401 = UnauthorizedError;
 export type EmailRemoveDomain403 = ForbiddenError;
@@ -2355,7 +2383,9 @@ export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
     brandSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
           }),
         ),
@@ -2382,13 +2412,17 @@ export const EmailUpdateDomainConfig200 = /* @__PURE__ */ (() =>
     footerEnabled: Schema.Union([Schema.Boolean, Schema.Null]),
     brandSlug: Schema.Union([
       Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u")).annotate({
+        Schema.isPattern(
+          new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$", "u"),
+        ).annotate({
           expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
         }),
       ),
       Schema.Null,
     ]),
   }))();
+export type EmailUpdateDomainConfig400 = MalformedRequestError;
+export const EmailUpdateDomainConfig400 = MalformedRequestError;
 export type EmailUpdateDomainConfig401 = UnauthorizedError;
 export const EmailUpdateDomainConfig401 = UnauthorizedError;
 export type EmailUpdateDomainConfig403 = ForbiddenError;
@@ -2406,6 +2440,8 @@ export const EmailGetCustomTrackingPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetCustomTracking200 = CustomTrackingStatus;
 export const EmailGetCustomTracking200 = CustomTrackingStatus;
+export type EmailGetCustomTracking400 = MalformedRequestError;
+export const EmailGetCustomTracking400 = MalformedRequestError;
 export type EmailGetCustomTracking401 = UnauthorizedError;
 export const EmailGetCustomTracking401 = UnauthorizedError;
 export type EmailGetCustomTracking403 = ForbiddenError;
@@ -2447,6 +2483,8 @@ export const EmailEnableCustomTrackingRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailEnableCustomTracking200 = CustomTrackingStatus;
 export const EmailEnableCustomTracking200 = CustomTrackingStatus;
+export type EmailEnableCustomTracking400 = MalformedRequestError;
+export const EmailEnableCustomTracking400 = MalformedRequestError;
 export type EmailEnableCustomTracking401 = UnauthorizedError;
 export const EmailEnableCustomTracking401 = UnauthorizedError;
 export type EmailEnableCustomTracking403 = ForbiddenError;
@@ -2469,6 +2507,8 @@ export const EmailDisableCustomTrackingPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailDisableCustomTracking200 = SuccessResult;
 export const EmailDisableCustomTracking200 = SuccessResult;
+export type EmailDisableCustomTracking400 = MalformedRequestError;
+export const EmailDisableCustomTracking400 = MalformedRequestError;
 export type EmailDisableCustomTracking401 = UnauthorizedError;
 export const EmailDisableCustomTracking401 = UnauthorizedError;
 export type EmailDisableCustomTracking403 = ForbiddenError;
@@ -2490,6 +2530,8 @@ export const EmailGetCustomTrackingDomainConnectPathParams = /* @__PURE__ */ (()
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetCustomTrackingDomainConnect200 = DomainConnectEligibility;
 export const EmailGetCustomTrackingDomainConnect200 = DomainConnectEligibility;
+export type EmailGetCustomTrackingDomainConnect400 = MalformedRequestError;
+export const EmailGetCustomTrackingDomainConnect400 = MalformedRequestError;
 export type EmailGetCustomTrackingDomainConnect401 = UnauthorizedError;
 export const EmailGetCustomTrackingDomainConnect401 = UnauthorizedError;
 export type EmailGetCustomTrackingDomainConnect403 = ForbiddenError;
@@ -2509,6 +2551,8 @@ export const EmailBuildCustomTrackingDomainConnectApplyUrlPathParams = /* @__PUR
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailBuildCustomTrackingDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
 export const EmailBuildCustomTrackingDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
+export type EmailBuildCustomTrackingDomainConnectApplyUrl400 = MalformedRequestError;
+export const EmailBuildCustomTrackingDomainConnectApplyUrl400 = MalformedRequestError;
 export type EmailBuildCustomTrackingDomainConnectApplyUrl401 = UnauthorizedError;
 export const EmailBuildCustomTrackingDomainConnectApplyUrl401 = UnauthorizedError;
 export type EmailBuildCustomTrackingDomainConnectApplyUrl403 = ForbiddenError;
@@ -2542,6 +2586,8 @@ export const EmailCompleteCustomTrackingDomainConnectRequestJson = /* @__PURE__ 
 export type EmailCompleteCustomTrackingDomainConnect200 = CustomTrackingDomainConnectCompleteResult;
 export const EmailCompleteCustomTrackingDomainConnect200 =
   CustomTrackingDomainConnectCompleteResult;
+export type EmailCompleteCustomTrackingDomainConnect400 = MalformedRequestError;
+export const EmailCompleteCustomTrackingDomainConnect400 = MalformedRequestError;
 export type EmailCompleteCustomTrackingDomainConnect401 = UnauthorizedError;
 export const EmailCompleteCustomTrackingDomainConnect401 = UnauthorizedError;
 export type EmailCompleteCustomTrackingDomainConnect403 = ForbiddenError;
@@ -2559,6 +2605,8 @@ export const EmailRecheckCustomTrackingPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailRecheckCustomTracking200 = CustomTrackingStatus;
 export const EmailRecheckCustomTracking200 = CustomTrackingStatus;
+export type EmailRecheckCustomTracking400 = MalformedRequestError;
+export const EmailRecheckCustomTracking400 = MalformedRequestError;
 export type EmailRecheckCustomTracking401 = UnauthorizedError;
 export const EmailRecheckCustomTracking401 = UnauthorizedError;
 export type EmailRecheckCustomTracking403 = ForbiddenError;
@@ -2580,6 +2628,8 @@ export const EmailSetDefaultDomainPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailSetDefaultDomain200 = SuccessResult;
 export const EmailSetDefaultDomain200 = SuccessResult;
+export type EmailSetDefaultDomain400 = MalformedRequestError;
+export const EmailSetDefaultDomain400 = MalformedRequestError;
 export type EmailSetDefaultDomain401 = UnauthorizedError;
 export const EmailSetDefaultDomain401 = UnauthorizedError;
 export type EmailSetDefaultDomain403 = ForbiddenError;
@@ -2598,6 +2648,8 @@ export const EmailDisableCatchAllPathParams = /* @__PURE__ */ (() =>
 export type EmailDisableCatchAll200 = { readonly success: true };
 export const EmailDisableCatchAll200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Literal(true) }))();
+export type EmailDisableCatchAll400 = MalformedRequestError;
+export const EmailDisableCatchAll400 = MalformedRequestError;
 export type EmailDisableCatchAll401 = UnauthorizedError;
 export const EmailDisableCatchAll401 = UnauthorizedError;
 export type EmailDisableCatchAll403 = ForbiddenError;
@@ -2622,6 +2674,8 @@ export const EmailGetDomainConnectQuery = /* @__PURE__ */ (() =>
   }))();
 export type EmailGetDomainConnect200 = DomainConnectEligibility;
 export const EmailGetDomainConnect200 = DomainConnectEligibility;
+export type EmailGetDomainConnect400 = MalformedRequestError;
+export const EmailGetDomainConnect400 = MalformedRequestError;
 export type EmailGetDomainConnect401 = UnauthorizedError;
 export const EmailGetDomainConnect401 = UnauthorizedError;
 export type EmailGetDomainConnect403 = ForbiddenError;
@@ -2646,6 +2700,8 @@ export const EmailBuildDomainConnectApplyUrlRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailBuildDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
 export const EmailBuildDomainConnectApplyUrl200 = DomainConnectApplyUrlResult;
+export type EmailBuildDomainConnectApplyUrl400 = MalformedRequestError;
+export const EmailBuildDomainConnectApplyUrl400 = MalformedRequestError;
 export type EmailBuildDomainConnectApplyUrl401 = UnauthorizedError;
 export const EmailBuildDomainConnectApplyUrl401 = UnauthorizedError;
 export type EmailBuildDomainConnectApplyUrl403 = ForbiddenError;
@@ -2678,6 +2734,8 @@ export const EmailCompleteDomainConnectRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailCompleteDomainConnect200 = DomainConnectCompleteResult;
 export const EmailCompleteDomainConnect200 = DomainConnectCompleteResult;
+export type EmailCompleteDomainConnect400 = MalformedRequestError;
+export const EmailCompleteDomainConnect400 = MalformedRequestError;
 export type EmailCompleteDomainConnect401 = UnauthorizedError;
 export const EmailCompleteDomainConnect401 = UnauthorizedError;
 export type EmailCompleteDomainConnect403 = ForbiddenError;
@@ -2703,6 +2761,8 @@ export const EmailEnableCatchAllRequestJson = /* @__PURE__ */ (() =>
 export type EmailEnableCatchAll201 = { readonly success: true };
 export const EmailEnableCatchAll201 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Literal(true) }))();
+export type EmailEnableCatchAll400 = MalformedRequestError;
+export const EmailEnableCatchAll400 = MalformedRequestError;
 export type EmailEnableCatchAll401 = UnauthorizedError;
 export const EmailEnableCatchAll401 = UnauthorizedError;
 export type EmailEnableCatchAll403 = ForbiddenError;
@@ -2739,6 +2799,8 @@ export type EmailEnableReceiving200 = {
 };
 export const EmailEnableReceiving200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Literal(true), recipients: Schema.Array(Schema.String) }))();
+export type EmailEnableReceiving400 = MalformedRequestError;
+export const EmailEnableReceiving400 = MalformedRequestError;
 export type EmailEnableReceiving401 = UnauthorizedError;
 export const EmailEnableReceiving401 = UnauthorizedError;
 export type EmailEnableReceiving403 = ForbiddenError;
@@ -2756,6 +2818,8 @@ export const EmailGetReceivingStatusPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetReceivingStatus200 = ReceivingStatus;
 export const EmailGetReceivingStatus200 = ReceivingStatus;
+export type EmailGetReceivingStatus400 = MalformedRequestError;
+export const EmailGetReceivingStatus400 = MalformedRequestError;
 export type EmailGetReceivingStatus401 = UnauthorizedError;
 export const EmailGetReceivingStatus401 = UnauthorizedError;
 export type EmailGetReceivingStatus403 = ForbiddenError;
@@ -2787,6 +2851,8 @@ export const EmailDetectRegistrar200 = /* @__PURE__ */ (() =>
     nameservers: Schema.Array(Schema.String),
     docsUrl: Schema.String,
   }))();
+export type EmailDetectRegistrar400 = MalformedRequestError;
+export const EmailDetectRegistrar400 = MalformedRequestError;
 export type EmailDetectRegistrar401 = UnauthorizedError;
 export const EmailDetectRegistrar401 = UnauthorizedError;
 export type EmailDetectRegistrar403 = ForbiddenError;
@@ -2817,6 +2883,8 @@ export const EmailRotateDomainDkimHeaders = /* @__PURE__ */ (() =>
   }))();
 export type EmailRotateDomainDkim200 = EmailDkimRotation;
 export const EmailRotateDomainDkim200 = EmailDkimRotation;
+export type EmailRotateDomainDkim400 = MalformedRequestError;
+export const EmailRotateDomainDkim400 = MalformedRequestError;
 export type EmailRotateDomainDkim401 = UnauthorizedError;
 export const EmailRotateDomainDkim401 = UnauthorizedError;
 export type EmailRotateDomainDkim403 = ForbiddenError;
@@ -2838,6 +2906,8 @@ export const EmailGetDomainVerificationPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainVerification200 = EmailDomainVerification;
 export const EmailGetDomainVerification200 = EmailDomainVerification;
+export type EmailGetDomainVerification400 = MalformedRequestError;
+export const EmailGetDomainVerification400 = MalformedRequestError;
 export type EmailGetDomainVerification401 = UnauthorizedError;
 export const EmailGetDomainVerification401 = UnauthorizedError;
 export type EmailGetDomainVerification403 = ForbiddenError;
@@ -2855,6 +2925,8 @@ export const EmailAdvanceDomainVerificationPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailAdvanceDomainVerification200 = EmailDomainVerification;
 export const EmailAdvanceDomainVerification200 = EmailDomainVerification;
+export type EmailAdvanceDomainVerification400 = MalformedRequestError;
+export const EmailAdvanceDomainVerification400 = MalformedRequestError;
 export type EmailAdvanceDomainVerification401 = UnauthorizedError;
 export const EmailAdvanceDomainVerification401 = UnauthorizedError;
 export type EmailAdvanceDomainVerification403 = ForbiddenError;
@@ -2878,6 +2950,8 @@ export const EmailGetDomainWarmingPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailGetDomainWarming200 = DomainWarming;
 export const EmailGetDomainWarming200 = DomainWarming;
+export type EmailGetDomainWarming400 = MalformedRequestError;
+export const EmailGetDomainWarming400 = MalformedRequestError;
 export type EmailGetDomainWarming401 = UnauthorizedError;
 export const EmailGetDomainWarming401 = UnauthorizedError;
 export type EmailGetDomainWarming403 = ForbiddenError;
@@ -2934,6 +3008,8 @@ export const EmailCreateDomainWarmingPlanRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailCreateDomainWarmingPlan201 = DomainWarming;
 export const EmailCreateDomainWarmingPlan201 = DomainWarming;
+export type EmailCreateDomainWarmingPlan400 = MalformedRequestError;
+export const EmailCreateDomainWarmingPlan400 = MalformedRequestError;
 export type EmailCreateDomainWarmingPlan401 = UnauthorizedError;
 export const EmailCreateDomainWarmingPlan401 = UnauthorizedError;
 export type EmailCreateDomainWarmingPlan403 = ForbiddenError;
@@ -2956,6 +3032,8 @@ export const EmailCancelDomainWarmingBatchPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId, batchId: EmailDomainWarmingBatchId }))();
 export type EmailCancelDomainWarmingBatch200 = DomainWarming;
 export const EmailCancelDomainWarmingBatch200 = DomainWarming;
+export type EmailCancelDomainWarmingBatch400 = MalformedRequestError;
+export const EmailCancelDomainWarmingBatch400 = MalformedRequestError;
 export type EmailCancelDomainWarmingBatch401 = UnauthorizedError;
 export const EmailCancelDomainWarmingBatch401 = UnauthorizedError;
 export type EmailCancelDomainWarmingBatch403 = ForbiddenError;
@@ -2991,6 +3069,8 @@ export const EmailCompleteDomainWarmingRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailCompleteDomainWarming200 = DomainWarming;
 export const EmailCompleteDomainWarming200 = DomainWarming;
+export type EmailCompleteDomainWarming400 = MalformedRequestError;
+export const EmailCompleteDomainWarming400 = MalformedRequestError;
 export type EmailCompleteDomainWarming401 = UnauthorizedError;
 export const EmailCompleteDomainWarming401 = UnauthorizedError;
 export type EmailCompleteDomainWarming403 = ForbiddenError;
@@ -3026,6 +3106,8 @@ export const EmailPauseDomainWarmingRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailPauseDomainWarming200 = DomainWarming;
 export const EmailPauseDomainWarming200 = DomainWarming;
+export type EmailPauseDomainWarming400 = MalformedRequestError;
+export const EmailPauseDomainWarming400 = MalformedRequestError;
 export type EmailPauseDomainWarming401 = UnauthorizedError;
 export const EmailPauseDomainWarming401 = UnauthorizedError;
 export type EmailPauseDomainWarming403 = ForbiddenError;
@@ -3083,6 +3165,8 @@ export const EmailUpdateDomainWarmingPolicyRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailUpdateDomainWarmingPolicy200 = DomainWarming;
 export const EmailUpdateDomainWarmingPolicy200 = DomainWarming;
+export type EmailUpdateDomainWarmingPolicy400 = MalformedRequestError;
+export const EmailUpdateDomainWarmingPolicy400 = MalformedRequestError;
 export type EmailUpdateDomainWarmingPolicy401 = UnauthorizedError;
 export const EmailUpdateDomainWarmingPolicy401 = UnauthorizedError;
 export type EmailUpdateDomainWarmingPolicy403 = ForbiddenError;
@@ -3118,6 +3202,8 @@ export const EmailResumeDomainWarmingRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailResumeDomainWarming200 = DomainWarming;
 export const EmailResumeDomainWarming200 = DomainWarming;
+export type EmailResumeDomainWarming400 = MalformedRequestError;
+export const EmailResumeDomainWarming400 = MalformedRequestError;
 export type EmailResumeDomainWarming401 = UnauthorizedError;
 export const EmailResumeDomainWarming401 = UnauthorizedError;
 export type EmailResumeDomainWarming403 = ForbiddenError;
@@ -3133,16 +3219,18 @@ export const EmailResumeDomainWarming500 = InternalError;
 export type EmailResumeDomainWarming504 = GatewayTimeoutError;
 export const EmailResumeDomainWarming504 = GatewayTimeoutError;
 export type EmailListForwardingRulesQuery = {
-  readonly domainId?: EmailDomainId | null;
+  readonly domainId?: EmailDomainId;
   readonly isActive?: boolean | null;
 };
 export const EmailListForwardingRulesQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
+    domainId: Schema.optionalKey(EmailDomainId),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type EmailListForwardingRules200 = ForwardingRuleList;
 export const EmailListForwardingRules200 = ForwardingRuleList;
+export type EmailListForwardingRules400 = MalformedRequestError;
+export const EmailListForwardingRules400 = MalformedRequestError;
 export type EmailListForwardingRules401 = UnauthorizedError;
 export const EmailListForwardingRules401 = UnauthorizedError;
 export type EmailListForwardingRules403 = ForbiddenError;
@@ -3224,6 +3312,8 @@ export const EmailCreateForwardingRule201 = /* @__PURE__ */ (() =>
     isActive: Schema.Boolean,
     createdAt: Schema.String,
   }))();
+export type EmailCreateForwardingRule400 = MalformedRequestError;
+export const EmailCreateForwardingRule400 = MalformedRequestError;
 export type EmailCreateForwardingRule401 = UnauthorizedError;
 export const EmailCreateForwardingRule401 = UnauthorizedError;
 export type EmailCreateForwardingRule403 = ForbiddenError;
@@ -3243,6 +3333,8 @@ export const EmailDeleteForwardingRulePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailForwardingRuleId }))();
 export type EmailDeleteForwardingRule200 = SuccessResult;
 export const EmailDeleteForwardingRule200 = SuccessResult;
+export type EmailDeleteForwardingRule400 = MalformedRequestError;
+export const EmailDeleteForwardingRule400 = MalformedRequestError;
 export type EmailDeleteForwardingRule401 = UnauthorizedError;
 export const EmailDeleteForwardingRule401 = UnauthorizedError;
 export type EmailDeleteForwardingRule403 = ForbiddenError;
@@ -3329,6 +3421,8 @@ export const EmailUpdateForwardingRule200 = /* @__PURE__ */ (() =>
     isActive: Schema.Boolean,
     updatedAt: Schema.String,
   }))();
+export type EmailUpdateForwardingRule400 = MalformedRequestError;
+export const EmailUpdateForwardingRule400 = MalformedRequestError;
 export type EmailUpdateForwardingRule401 = UnauthorizedError;
 export const EmailUpdateForwardingRule401 = UnauthorizedError;
 export type EmailUpdateForwardingRule403 = ForbiddenError;
@@ -3342,28 +3436,25 @@ export const EmailUpdateForwardingRule500 = InternalError;
 export type EmailUpdateForwardingRule504 = GatewayTimeoutError;
 export const EmailUpdateForwardingRule504 = GatewayTimeoutError;
 export type EmailGetForwardingLogQuery = {
-  readonly forwardingRuleId?: EmailForwardingRuleId | null;
-  readonly status?: "pending" | "forwarded" | "failed" | null;
-  readonly after?: string | null;
-  readonly before?: string | null;
+  readonly forwardingRuleId?: EmailForwardingRuleId;
+  readonly status?: "pending" | "forwarded" | "failed";
+  readonly after?: string;
+  readonly before?: string;
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const EmailGetForwardingLogQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    forwardingRuleId: Schema.optionalKey(Schema.Union([EmailForwardingRuleId, Schema.Null])),
+    forwardingRuleId: Schema.optionalKey(EmailForwardingRuleId),
     status: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("pending"),
-          Schema.Literal("forwarded"),
-          Schema.Literal("failed"),
-        ]),
-        Schema.Null,
+        Schema.Literal("pending"),
+        Schema.Literal("forwarded"),
+        Schema.Literal("failed"),
       ]),
     ),
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
     limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.annotate({ description: "Items per page, at most 100." })
@@ -3377,10 +3468,12 @@ export const EmailGetForwardingLogQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type EmailGetForwardingLog200 = ForwardingLogPage;
 export const EmailGetForwardingLog200 = ForwardingLogPage;
+export type EmailGetForwardingLog400 = MalformedRequestError;
+export const EmailGetForwardingLog400 = MalformedRequestError;
 export type EmailGetForwardingLog401 = UnauthorizedError;
 export const EmailGetForwardingLog401 = UnauthorizedError;
 export type EmailGetForwardingLog403 = ForbiddenError;
@@ -3393,6 +3486,8 @@ export type EmailGetForwardingLog504 = GatewayTimeoutError;
 export const EmailGetForwardingLog504 = GatewayTimeoutError;
 export type EmailGetOnboardingReview200 = OnboardingReviewStatus;
 export const EmailGetOnboardingReview200 = OnboardingReviewStatus;
+export type EmailGetOnboardingReview400 = MalformedRequestError;
+export const EmailGetOnboardingReview400 = MalformedRequestError;
 export type EmailGetOnboardingReview401 = UnauthorizedError;
 export const EmailGetOnboardingReview401 = UnauthorizedError;
 export type EmailGetOnboardingReview403 = ForbiddenError;
@@ -3420,6 +3515,8 @@ export const EmailReapplyOnboardingReviewRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailReapplyOnboardingReview200 = OnboardingReviewStatus;
 export const EmailReapplyOnboardingReview200 = OnboardingReviewStatus;
+export type EmailReapplyOnboardingReview400 = MalformedRequestError;
+export const EmailReapplyOnboardingReview400 = MalformedRequestError;
 export type EmailReapplyOnboardingReview401 = UnauthorizedError;
 export const EmailReapplyOnboardingReview401 = UnauthorizedError;
 export type EmailReapplyOnboardingReview403 = ForbiddenError;
@@ -3463,6 +3560,8 @@ export const EmailRespondToOnboardingInformationRequestRequestJson = /* @__PURE_
   }))();
 export type EmailRespondToOnboardingInformationRequest200 = OnboardingReviewStatus;
 export const EmailRespondToOnboardingInformationRequest200 = OnboardingReviewStatus;
+export type EmailRespondToOnboardingInformationRequest400 = MalformedRequestError;
+export const EmailRespondToOnboardingInformationRequest400 = MalformedRequestError;
 export type EmailRespondToOnboardingInformationRequest401 = UnauthorizedError;
 export const EmailRespondToOnboardingInformationRequest401 = UnauthorizedError;
 export type EmailRespondToOnboardingInformationRequest403 = ForbiddenError;
@@ -3477,11 +3576,11 @@ export type EmailRespondToOnboardingInformationRequest504 = GatewayTimeoutError;
 export const EmailRespondToOnboardingInformationRequest504 = GatewayTimeoutError;
 export type EmailListSendersQuery = {
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
-  readonly verificationStatus?: "pending" | "verified" | "failed" | null;
+  readonly cursor?: string;
+  readonly verificationStatus?: "pending" | "verified" | "failed";
   readonly isActive?: boolean | null;
   readonly isDefault?: boolean | null;
-  readonly namespaceId?: NamespaceId | null;
+  readonly namespaceId?: NamespaceId;
 };
 export const EmailListSendersQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3498,23 +3597,22 @@ export const EmailListSendersQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
     verificationStatus: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("pending"),
-          Schema.Literal("verified"),
-          Schema.Literal("failed"),
-        ]),
-        Schema.Null,
+        Schema.Literal("pending"),
+        Schema.Literal("verified"),
+        Schema.Literal("failed"),
       ]),
     ),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     isDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    namespaceId: Schema.optionalKey(NamespaceId),
   }))();
 export type EmailListSenders200 = EmailSenderPage;
 export const EmailListSenders200 = EmailSenderPage;
+export type EmailListSenders400 = MalformedRequestError;
+export const EmailListSenders400 = MalformedRequestError;
 export type EmailListSenders401 = UnauthorizedError;
 export const EmailListSenders401 = UnauthorizedError;
 export type EmailListSenders403 = ForbiddenError;
@@ -3590,6 +3688,8 @@ export const EmailAddSender201 = /* @__PURE__ */ (() =>
     providerFailureCode: Schema.Union([Schema.String, Schema.Null]),
     createdAt: Schema.String,
   }))();
+export type EmailAddSender400 = MalformedRequestError;
+export const EmailAddSender400 = MalformedRequestError;
 export type EmailAddSender401 = UnauthorizedError;
 export const EmailAddSender401 = UnauthorizedError;
 export type EmailAddSender403 = ForbiddenError;
@@ -3662,6 +3762,8 @@ export const EmailGetSender200 = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }))();
+export type EmailGetSender400 = MalformedRequestError;
+export const EmailGetSender400 = MalformedRequestError;
 export type EmailGetSender401 = UnauthorizedError;
 export const EmailGetSender401 = UnauthorizedError;
 export type EmailGetSender403 = ForbiddenError;
@@ -3679,6 +3781,8 @@ export const EmailRemoveSenderPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailSenderId }))();
 export type EmailRemoveSender200 = SuccessResult;
 export const EmailRemoveSender200 = SuccessResult;
+export type EmailRemoveSender400 = MalformedRequestError;
+export const EmailRemoveSender400 = MalformedRequestError;
 export type EmailRemoveSender401 = UnauthorizedError;
 export const EmailRemoveSender401 = UnauthorizedError;
 export type EmailRemoveSender403 = ForbiddenError;
@@ -3696,6 +3800,8 @@ export const EmailSetDefaultSenderPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailSenderId }))();
 export type EmailSetDefaultSender200 = SuccessResult;
 export const EmailSetDefaultSender200 = SuccessResult;
+export type EmailSetDefaultSender400 = MalformedRequestError;
+export const EmailSetDefaultSender400 = MalformedRequestError;
 export type EmailSetDefaultSender401 = UnauthorizedError;
 export const EmailSetDefaultSender401 = UnauthorizedError;
 export type EmailSetDefaultSender403 = ForbiddenError;
@@ -3728,6 +3834,8 @@ export const EmailCheckSenderVerification200 = /* @__PURE__ */ (() =>
     ]),
     verifiedAt: Schema.Union([Schema.String, Schema.Null]),
   }))();
+export type EmailCheckSenderVerification400 = MalformedRequestError;
+export const EmailCheckSenderVerification400 = MalformedRequestError;
 export type EmailCheckSenderVerification401 = UnauthorizedError;
 export const EmailCheckSenderVerification401 = UnauthorizedError;
 export type EmailCheckSenderVerification403 = ForbiddenError;
@@ -3742,14 +3850,11 @@ export type EmailCheckSenderVerification502 = ExternalServiceError;
 export const EmailCheckSenderVerification502 = ExternalServiceError;
 export type EmailCheckSenderVerification504 = GatewayTimeoutError;
 export const EmailCheckSenderVerification504 = GatewayTimeoutError;
-export type EmailGetStatsQuery = {
-  readonly after?: string | null;
-  readonly before?: string | null;
-};
+export type EmailGetStatsQuery = { readonly after?: string; readonly before?: string };
 export const EmailGetStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    after: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    before: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
   }))();
 export type EmailGetStats200 = {
   readonly totalSent: number;
@@ -3810,6 +3915,8 @@ export const EmailGetStats200 = /* @__PURE__ */ (() =>
     bounceRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
     complaintRate: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
   }))();
+export type EmailGetStats400 = MalformedRequestError;
+export const EmailGetStats400 = MalformedRequestError;
 export type EmailGetStats401 = UnauthorizedError;
 export const EmailGetStats401 = UnauthorizedError;
 export type EmailGetStats403 = ForbiddenError;
@@ -3821,42 +3928,29 @@ export const EmailGetStats500 = InternalError;
 export type EmailGetStats504 = GatewayTimeoutError;
 export const EmailGetStats504 = GatewayTimeoutError;
 export type EmailListSuppressionsQuery = {
-  readonly type?: "bounce" | "complaint" | "unsubscribe" | "manual" | null;
-  readonly status?: "active" | "expired" | null;
-  readonly search?: string | null;
+  readonly type?: "bounce" | "complaint" | "unsubscribe" | "manual";
+  readonly status?: "active" | "expired";
+  readonly search?: string;
   readonly limit?: number | null;
-  readonly cursor?: Cursor | null;
+  readonly cursor?: string;
 };
 export const EmailListSuppressionsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
     type: Schema.optionalKey(
       Schema.Union([
-        Schema.Union([
-          Schema.Literal("bounce"),
-          Schema.Literal("complaint"),
-          Schema.Literal("unsubscribe"),
-          Schema.Literal("manual"),
-        ]),
-        Schema.Null,
+        Schema.Literal("bounce"),
+        Schema.Literal("complaint"),
+        Schema.Literal("unsubscribe"),
+        Schema.Literal("manual"),
       ]),
     ),
-    status: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("active"), Schema.Literal("expired")]),
-        Schema.Null,
-      ]),
-    ),
+    status: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("expired")])),
     search: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMaxCodePoints(256).annotate({
-            expected: "a string with at most 256 code points",
-          }),
-        ).check(
-          Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
-        ),
-        Schema.Null,
-      ]),
+      Schema.String.check(
+        Schema.isMaxCodePoints(256).annotate({ expected: "a string with at most 256 code points" }),
+      ).check(
+        Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
+      ),
     ),
     limit: Schema.optionalKey(
       Schema.Union([
@@ -3871,10 +3965,12 @@ export const EmailListSuppressionsQuery = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    cursor: Schema.optionalKey(Schema.Union([Cursor, Schema.Null])),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type EmailListSuppressions200 = SuppressionPage;
 export const EmailListSuppressions200 = SuppressionPage;
+export type EmailListSuppressions400 = MalformedRequestError;
+export const EmailListSuppressions400 = MalformedRequestError;
 export type EmailListSuppressions401 = UnauthorizedError;
 export const EmailListSuppressions401 = UnauthorizedError;
 export type EmailListSuppressions403 = ForbiddenError;
@@ -3890,6 +3986,8 @@ export const EmailRemoveSuppressionPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: SuppressionId }))();
 export type EmailRemoveSuppression200 = SuccessResult;
 export const EmailRemoveSuppression200 = SuccessResult;
+export type EmailRemoveSuppression400 = MalformedRequestError;
+export const EmailRemoveSuppression400 = MalformedRequestError;
 export type EmailRemoveSuppression401 = UnauthorizedError;
 export const EmailRemoveSuppression401 = UnauthorizedError;
 export type EmailRemoveSuppression403 = ForbiddenError;
@@ -3906,6 +4004,8 @@ export type EmailRemoveSuppression504 = GatewayTimeoutError;
 export const EmailRemoveSuppression504 = GatewayTimeoutError;
 export type EmailCountSuppressions200 = SuppressionCounts;
 export const EmailCountSuppressions200 = SuppressionCounts;
+export type EmailCountSuppressions400 = MalformedRequestError;
+export const EmailCountSuppressions400 = MalformedRequestError;
 export type EmailCountSuppressions401 = UnauthorizedError;
 export const EmailCountSuppressions401 = UnauthorizedError;
 export type EmailCountSuppressions403 = ForbiddenError;
@@ -3918,6 +4018,8 @@ export type EmailCountSuppressions504 = GatewayTimeoutError;
 export const EmailCountSuppressions504 = GatewayTimeoutError;
 export type EmailGetTrackingDefaults200 = EmailTrackingDefaults;
 export const EmailGetTrackingDefaults200 = EmailTrackingDefaults;
+export type EmailGetTrackingDefaults400 = MalformedRequestError;
+export const EmailGetTrackingDefaults400 = MalformedRequestError;
 export type EmailGetTrackingDefaults401 = UnauthorizedError;
 export const EmailGetTrackingDefaults401 = UnauthorizedError;
 export type EmailGetTrackingDefaults403 = ForbiddenError;
@@ -3941,6 +4043,8 @@ export const EmailUpdateTrackingDefaultsRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailUpdateTrackingDefaults200 = EmailTrackingDefaults;
 export const EmailUpdateTrackingDefaults200 = EmailTrackingDefaults;
+export type EmailUpdateTrackingDefaults400 = MalformedRequestError;
+export const EmailUpdateTrackingDefaults400 = MalformedRequestError;
 export type EmailUpdateTrackingDefaults401 = UnauthorizedError;
 export const EmailUpdateTrackingDefaults401 = UnauthorizedError;
 export type EmailUpdateTrackingDefaults403 = ForbiddenError;
@@ -3958,6 +4062,8 @@ export const EmailGetRecipientTrackingPreferenceQuery = /* @__PURE__ */ (() =>
   Schema.Struct({ email: TrackingRecipientEmail }))();
 export type EmailGetRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
 export const EmailGetRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
+export type EmailGetRecipientTrackingPreference400 = MalformedRequestError;
+export const EmailGetRecipientTrackingPreference400 = MalformedRequestError;
 export type EmailGetRecipientTrackingPreference401 = UnauthorizedError;
 export const EmailGetRecipientTrackingPreference401 = UnauthorizedError;
 export type EmailGetRecipientTrackingPreference403 = ForbiddenError;
@@ -3976,6 +4082,8 @@ export const EmailUpdateRecipientTrackingPreferenceRequestJson = /* @__PURE__ */
   Schema.Struct({ email: TrackingRecipientEmail, optedOut: Schema.Boolean }))();
 export type EmailUpdateRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
 export const EmailUpdateRecipientTrackingPreference200 = EmailRecipientTrackingPreference;
+export type EmailUpdateRecipientTrackingPreference400 = MalformedRequestError;
+export const EmailUpdateRecipientTrackingPreference400 = MalformedRequestError;
 export type EmailUpdateRecipientTrackingPreference401 = UnauthorizedError;
 export const EmailUpdateRecipientTrackingPreference401 = UnauthorizedError;
 export type EmailUpdateRecipientTrackingPreference403 = ForbiddenError;
@@ -3993,6 +4101,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailListBlocksQuery,
       success: EmailListBlocks200,
       error: [
+        EmailListBlocks400.pipe(HttpApiSchema.status(400)),
         EmailListBlocks401.pipe(HttpApiSchema.status(401)),
         EmailListBlocks403.pipe(HttpApiSchema.status(403)),
         EmailListBlocks422.pipe(HttpApiSchema.status(422)),
@@ -4011,6 +4120,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailAddBlockRequestJson,
       success: EmailAddBlock201.pipe(HttpApiSchema.status(201)),
       error: [
+        EmailAddBlock400.pipe(HttpApiSchema.status(400)),
         EmailAddBlock401.pipe(HttpApiSchema.status(401)),
         EmailAddBlock403.pipe(HttpApiSchema.status(403)),
         EmailAddBlock409.pipe(HttpApiSchema.status(409)),
@@ -4030,6 +4140,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailRemoveBlockPathParams,
       success: EmailRemoveBlock200,
       error: [
+        EmailRemoveBlock400.pipe(HttpApiSchema.status(400)),
         EmailRemoveBlock401.pipe(HttpApiSchema.status(401)),
         EmailRemoveBlock403.pipe(HttpApiSchema.status(403)),
         EmailRemoveBlock404.pipe(HttpApiSchema.status(404)),
@@ -4050,6 +4161,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailUpdateBlockRequestJson,
       success: EmailUpdateBlock200,
       error: [
+        EmailUpdateBlock400.pipe(HttpApiSchema.status(400)),
         EmailUpdateBlock401.pipe(HttpApiSchema.status(401)),
         EmailUpdateBlock403.pipe(HttpApiSchema.status(403)),
         EmailUpdateBlock404.pipe(HttpApiSchema.status(404)),
@@ -4069,6 +4181,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailCheckBlockedRequestJson,
       success: EmailCheckBlocked200,
       error: [
+        EmailCheckBlocked400.pipe(HttpApiSchema.status(400)),
         EmailCheckBlocked401.pipe(HttpApiSchema.status(401)),
         EmailCheckBlocked403.pipe(HttpApiSchema.status(403)),
         EmailCheckBlocked422.pipe(HttpApiSchema.status(422)),
@@ -4087,6 +4200,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailGetBlockLogsQuery,
       success: EmailGetBlockLogs200,
       error: [
+        EmailGetBlockLogs400.pipe(HttpApiSchema.status(400)),
         EmailGetBlockLogs401.pipe(HttpApiSchema.status(401)),
         EmailGetBlockLogs403.pipe(HttpApiSchema.status(403)),
         EmailGetBlockLogs422.pipe(HttpApiSchema.status(422)),
@@ -4105,6 +4219,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailGetCatchAllConfigQuery,
       success: EmailGetCatchAllConfig200,
       error: [
+        EmailGetCatchAllConfig400.pipe(HttpApiSchema.status(400)),
         EmailGetCatchAllConfig401.pipe(HttpApiSchema.status(401)),
         EmailGetCatchAllConfig403.pipe(HttpApiSchema.status(403)),
         EmailGetCatchAllConfig404.pipe(HttpApiSchema.status(404)),
@@ -4124,6 +4239,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailUpdateCatchAllConfigRequestJson,
       success: EmailUpdateCatchAllConfig200,
       error: [
+        EmailUpdateCatchAllConfig400.pipe(HttpApiSchema.status(400)),
         EmailUpdateCatchAllConfig401.pipe(HttpApiSchema.status(401)),
         EmailUpdateCatchAllConfig403.pipe(HttpApiSchema.status(403)),
         EmailUpdateCatchAllConfig404.pipe(HttpApiSchema.status(404)),
@@ -4137,12 +4253,13 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Update catch-all configuration")
       .annotate(
         OpenApi.Description,
-        "Updates a domain's catch-all webhook endpoint or unknown-address mailbox. The mailbox must be active, in the same organization, and have an email address on the domain. Omitted fields stay unchanged; `unknownRecipientMailboxId: null` drops unknown addresses without a bounce. A webhook endpoint takes precedence over the unknown-address setting.",
+        "Updates a domain's catch-all webhook endpoint or unknown-address mailbox without disabling catch-all. The mailbox must be active, in the same organization, and have an email address on the domain. Omitted fields stay unchanged. `endpointId: null` removes the webhook endpoint, so unknown addresses reach the configured unknown-address mailbox or are dropped without a bounce when none is set. A webhook endpoint takes precedence over the unknown-address setting.",
       ),
     HttpApiEndpoint.get("emailGetCatchAllStats", "/v1/email/catch-all/stats", {
       query: EmailGetCatchAllStatsQuery,
       success: EmailGetCatchAllStats200,
       error: [
+        EmailGetCatchAllStats400.pipe(HttpApiSchema.status(400)),
         EmailGetCatchAllStats401.pipe(HttpApiSchema.status(401)),
         EmailGetCatchAllStats403.pipe(HttpApiSchema.status(403)),
         EmailGetCatchAllStats404.pipe(HttpApiSchema.status(404)),
@@ -4162,6 +4279,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailListDomainsQuery,
       success: EmailListDomains200,
       error: [
+        EmailListDomains400.pipe(HttpApiSchema.status(400)),
         EmailListDomains401.pipe(HttpApiSchema.status(401)),
         EmailListDomains403.pipe(HttpApiSchema.status(403)),
         EmailListDomains422.pipe(HttpApiSchema.status(422)),
@@ -4180,6 +4298,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailAddDomainRequestJson,
       success: EmailAddDomain201.pipe(HttpApiSchema.status(201)),
       error: [
+        EmailAddDomain400.pipe(HttpApiSchema.status(400)),
         EmailAddDomain401.pipe(HttpApiSchema.status(401)),
         EmailAddDomain402.pipe(HttpApiSchema.status(402)),
         EmailAddDomain403.pipe(HttpApiSchema.status(403)),
@@ -4203,6 +4322,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailGetDomainByIdPathParams,
       success: EmailGetDomainById200,
       error: [
+        EmailGetDomainById400.pipe(HttpApiSchema.status(400)),
         EmailGetDomainById401.pipe(HttpApiSchema.status(401)),
         EmailGetDomainById403.pipe(HttpApiSchema.status(403)),
         EmailGetDomainById404.pipe(HttpApiSchema.status(404)),
@@ -4222,6 +4342,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailRemoveDomainPathParams,
       success: EmailRemoveDomain200,
       error: [
+        EmailRemoveDomain400.pipe(HttpApiSchema.status(400)),
         EmailRemoveDomain401.pipe(HttpApiSchema.status(401)),
         EmailRemoveDomain403.pipe(HttpApiSchema.status(403)),
         EmailRemoveDomain404.pipe(HttpApiSchema.status(404)),
@@ -4240,6 +4361,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailUpdateDomainConfigRequestJson,
       success: EmailUpdateDomainConfig200,
       error: [
+        EmailUpdateDomainConfig400.pipe(HttpApiSchema.status(400)),
         EmailUpdateDomainConfig401.pipe(HttpApiSchema.status(401)),
         EmailUpdateDomainConfig403.pipe(HttpApiSchema.status(403)),
         EmailUpdateDomainConfig404.pipe(HttpApiSchema.status(404)),
@@ -4259,6 +4381,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailGetCustomTrackingPathParams,
       success: EmailGetCustomTracking200,
       error: [
+        EmailGetCustomTracking400.pipe(HttpApiSchema.status(400)),
         EmailGetCustomTracking401.pipe(HttpApiSchema.status(401)),
         EmailGetCustomTracking403.pipe(HttpApiSchema.status(403)),
         EmailGetCustomTracking404.pipe(HttpApiSchema.status(404)),
@@ -4279,6 +4402,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailEnableCustomTrackingRequestJson,
       success: EmailEnableCustomTracking200,
       error: [
+        EmailEnableCustomTracking400.pipe(HttpApiSchema.status(400)),
         EmailEnableCustomTracking401.pipe(HttpApiSchema.status(401)),
         EmailEnableCustomTracking403.pipe(HttpApiSchema.status(403)),
         EmailEnableCustomTracking404.pipe(HttpApiSchema.status(404)),
@@ -4300,6 +4424,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailDisableCustomTrackingPathParams,
       success: EmailDisableCustomTracking200,
       error: [
+        EmailDisableCustomTracking400.pipe(HttpApiSchema.status(400)),
         EmailDisableCustomTracking401.pipe(HttpApiSchema.status(401)),
         EmailDisableCustomTracking403.pipe(HttpApiSchema.status(403)),
         EmailDisableCustomTracking404.pipe(HttpApiSchema.status(404)),
@@ -4324,6 +4449,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         params: EmailGetCustomTrackingDomainConnectPathParams,
         success: EmailGetCustomTrackingDomainConnect200,
         error: [
+          EmailGetCustomTrackingDomainConnect400.pipe(HttpApiSchema.status(400)),
           EmailGetCustomTrackingDomainConnect401.pipe(HttpApiSchema.status(401)),
           EmailGetCustomTrackingDomainConnect403.pipe(HttpApiSchema.status(403)),
           EmailGetCustomTrackingDomainConnect404.pipe(HttpApiSchema.status(404)),
@@ -4347,6 +4473,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         params: EmailBuildCustomTrackingDomainConnectApplyUrlPathParams,
         success: EmailBuildCustomTrackingDomainConnectApplyUrl200,
         error: [
+          EmailBuildCustomTrackingDomainConnectApplyUrl400.pipe(HttpApiSchema.status(400)),
           EmailBuildCustomTrackingDomainConnectApplyUrl401.pipe(HttpApiSchema.status(401)),
           EmailBuildCustomTrackingDomainConnectApplyUrl403.pipe(HttpApiSchema.status(403)),
           EmailBuildCustomTrackingDomainConnectApplyUrl404.pipe(HttpApiSchema.status(404)),
@@ -4373,6 +4500,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         payload: EmailCompleteCustomTrackingDomainConnectRequestJson,
         success: EmailCompleteCustomTrackingDomainConnect200,
         error: [
+          EmailCompleteCustomTrackingDomainConnect400.pipe(HttpApiSchema.status(400)),
           EmailCompleteCustomTrackingDomainConnect401.pipe(HttpApiSchema.status(401)),
           EmailCompleteCustomTrackingDomainConnect403.pipe(HttpApiSchema.status(403)),
           EmailCompleteCustomTrackingDomainConnect404.pipe(HttpApiSchema.status(404)),
@@ -4396,6 +4524,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         params: EmailRecheckCustomTrackingPathParams,
         success: EmailRecheckCustomTracking200,
         error: [
+          EmailRecheckCustomTracking400.pipe(HttpApiSchema.status(400)),
           EmailRecheckCustomTracking401.pipe(HttpApiSchema.status(401)),
           EmailRecheckCustomTracking403.pipe(HttpApiSchema.status(403)),
           EmailRecheckCustomTracking404.pipe(HttpApiSchema.status(404)),
@@ -4418,6 +4547,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailSetDefaultDomainPathParams,
       success: EmailSetDefaultDomain200,
       error: [
+        EmailSetDefaultDomain400.pipe(HttpApiSchema.status(400)),
         EmailSetDefaultDomain401.pipe(HttpApiSchema.status(401)),
         EmailSetDefaultDomain403.pipe(HttpApiSchema.status(403)),
         EmailSetDefaultDomain404.pipe(HttpApiSchema.status(404)),
@@ -4437,6 +4567,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailDisableCatchAllPathParams,
       success: EmailDisableCatchAll200,
       error: [
+        EmailDisableCatchAll400.pipe(HttpApiSchema.status(400)),
         EmailDisableCatchAll401.pipe(HttpApiSchema.status(401)),
         EmailDisableCatchAll403.pipe(HttpApiSchema.status(403)),
         EmailDisableCatchAll404.pipe(HttpApiSchema.status(404)),
@@ -4455,6 +4586,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailGetDomainConnectQuery,
       success: EmailGetDomainConnect200,
       error: [
+        EmailGetDomainConnect400.pipe(HttpApiSchema.status(400)),
         EmailGetDomainConnect401.pipe(HttpApiSchema.status(401)),
         EmailGetDomainConnect403.pipe(HttpApiSchema.status(403)),
         EmailGetDomainConnect404.pipe(HttpApiSchema.status(404)),
@@ -4478,6 +4610,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         payload: EmailBuildDomainConnectApplyUrlRequestJson,
         success: EmailBuildDomainConnectApplyUrl200,
         error: [
+          EmailBuildDomainConnectApplyUrl400.pipe(HttpApiSchema.status(400)),
           EmailBuildDomainConnectApplyUrl401.pipe(HttpApiSchema.status(401)),
           EmailBuildDomainConnectApplyUrl403.pipe(HttpApiSchema.status(403)),
           EmailBuildDomainConnectApplyUrl404.pipe(HttpApiSchema.status(404)),
@@ -4504,6 +4637,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         payload: EmailCompleteDomainConnectRequestJson,
         success: EmailCompleteDomainConnect200,
         error: [
+          EmailCompleteDomainConnect400.pipe(HttpApiSchema.status(400)),
           EmailCompleteDomainConnect401.pipe(HttpApiSchema.status(401)),
           EmailCompleteDomainConnect403.pipe(HttpApiSchema.status(403)),
           EmailCompleteDomainConnect404.pipe(HttpApiSchema.status(404)),
@@ -4526,6 +4660,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailEnableCatchAllRequestJson,
       success: EmailEnableCatchAll201.pipe(HttpApiSchema.status(201)),
       error: [
+        EmailEnableCatchAll400.pipe(HttpApiSchema.status(400)),
         EmailEnableCatchAll401.pipe(HttpApiSchema.status(401)),
         EmailEnableCatchAll403.pipe(HttpApiSchema.status(403)),
         EmailEnableCatchAll404.pipe(HttpApiSchema.status(404)),
@@ -4547,6 +4682,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailEnableReceivingRequestJson,
       success: EmailEnableReceiving200,
       error: [
+        EmailEnableReceiving400.pipe(HttpApiSchema.status(400)),
         EmailEnableReceiving401.pipe(HttpApiSchema.status(401)),
         EmailEnableReceiving403.pipe(HttpApiSchema.status(403)),
         EmailEnableReceiving404.pipe(HttpApiSchema.status(404)),
@@ -4566,6 +4702,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailGetReceivingStatusPathParams,
       success: EmailGetReceivingStatus200,
       error: [
+        EmailGetReceivingStatus400.pipe(HttpApiSchema.status(400)),
         EmailGetReceivingStatus401.pipe(HttpApiSchema.status(401)),
         EmailGetReceivingStatus403.pipe(HttpApiSchema.status(403)),
         EmailGetReceivingStatus404.pipe(HttpApiSchema.status(404)),
@@ -4586,6 +4723,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailDetectRegistrarRequestJson,
       success: EmailDetectRegistrar200,
       error: [
+        EmailDetectRegistrar400.pipe(HttpApiSchema.status(400)),
         EmailDetectRegistrar401.pipe(HttpApiSchema.status(401)),
         EmailDetectRegistrar403.pipe(HttpApiSchema.status(403)),
         EmailDetectRegistrar404.pipe(HttpApiSchema.status(404)),
@@ -4606,6 +4744,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       headers: EmailRotateDomainDkimHeaders,
       success: EmailRotateDomainDkim200,
       error: [
+        EmailRotateDomainDkim400.pipe(HttpApiSchema.status(400)),
         EmailRotateDomainDkim401.pipe(HttpApiSchema.status(401)),
         EmailRotateDomainDkim403.pipe(HttpApiSchema.status(403)),
         EmailRotateDomainDkim404.pipe(HttpApiSchema.status(404)),
@@ -4627,6 +4766,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailGetDomainVerificationPathParams,
       success: EmailGetDomainVerification200,
       error: [
+        EmailGetDomainVerification400.pipe(HttpApiSchema.status(400)),
         EmailGetDomainVerification401.pipe(HttpApiSchema.status(401)),
         EmailGetDomainVerification403.pipe(HttpApiSchema.status(403)),
         EmailGetDomainVerification404.pipe(HttpApiSchema.status(404)),
@@ -4646,6 +4786,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailAdvanceDomainVerificationPathParams,
       success: EmailAdvanceDomainVerification200,
       error: [
+        EmailAdvanceDomainVerification400.pipe(HttpApiSchema.status(400)),
         EmailAdvanceDomainVerification401.pipe(HttpApiSchema.status(401)),
         EmailAdvanceDomainVerification403.pipe(HttpApiSchema.status(403)),
         EmailAdvanceDomainVerification404.pipe(HttpApiSchema.status(404)),
@@ -4668,6 +4809,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailGetDomainWarmingPathParams,
       success: EmailGetDomainWarming200,
       error: [
+        EmailGetDomainWarming400.pipe(HttpApiSchema.status(400)),
         EmailGetDomainWarming401.pipe(HttpApiSchema.status(401)),
         EmailGetDomainWarming403.pipe(HttpApiSchema.status(403)),
         EmailGetDomainWarming404.pipe(HttpApiSchema.status(404)),
@@ -4688,6 +4830,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailCreateDomainWarmingPlanRequestJson,
       success: EmailCreateDomainWarmingPlan201.pipe(HttpApiSchema.status(201)),
       error: [
+        EmailCreateDomainWarmingPlan400.pipe(HttpApiSchema.status(400)),
         EmailCreateDomainWarmingPlan401.pipe(HttpApiSchema.status(401)),
         EmailCreateDomainWarmingPlan403.pipe(HttpApiSchema.status(403)),
         EmailCreateDomainWarmingPlan404.pipe(HttpApiSchema.status(404)),
@@ -4711,6 +4854,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         params: EmailCancelDomainWarmingBatchPathParams,
         success: EmailCancelDomainWarmingBatch200,
         error: [
+          EmailCancelDomainWarmingBatch400.pipe(HttpApiSchema.status(400)),
           EmailCancelDomainWarmingBatch401.pipe(HttpApiSchema.status(401)),
           EmailCancelDomainWarmingBatch403.pipe(HttpApiSchema.status(403)),
           EmailCancelDomainWarmingBatch404.pipe(HttpApiSchema.status(404)),
@@ -4733,6 +4877,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailCompleteDomainWarmingRequestJson,
       success: EmailCompleteDomainWarming200,
       error: [
+        EmailCompleteDomainWarming400.pipe(HttpApiSchema.status(400)),
         EmailCompleteDomainWarming401.pipe(HttpApiSchema.status(401)),
         EmailCompleteDomainWarming403.pipe(HttpApiSchema.status(403)),
         EmailCompleteDomainWarming404.pipe(HttpApiSchema.status(404)),
@@ -4754,6 +4899,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailPauseDomainWarmingRequestJson,
       success: EmailPauseDomainWarming200,
       error: [
+        EmailPauseDomainWarming400.pipe(HttpApiSchema.status(400)),
         EmailPauseDomainWarming401.pipe(HttpApiSchema.status(401)),
         EmailPauseDomainWarming403.pipe(HttpApiSchema.status(403)),
         EmailPauseDomainWarming404.pipe(HttpApiSchema.status(404)),
@@ -4778,6 +4924,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         payload: EmailUpdateDomainWarmingPolicyRequestJson,
         success: EmailUpdateDomainWarmingPolicy200,
         error: [
+          EmailUpdateDomainWarmingPolicy400.pipe(HttpApiSchema.status(400)),
           EmailUpdateDomainWarmingPolicy401.pipe(HttpApiSchema.status(401)),
           EmailUpdateDomainWarmingPolicy403.pipe(HttpApiSchema.status(403)),
           EmailUpdateDomainWarmingPolicy404.pipe(HttpApiSchema.status(404)),
@@ -4800,6 +4947,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailResumeDomainWarmingRequestJson,
       success: EmailResumeDomainWarming200,
       error: [
+        EmailResumeDomainWarming400.pipe(HttpApiSchema.status(400)),
         EmailResumeDomainWarming401.pipe(HttpApiSchema.status(401)),
         EmailResumeDomainWarming403.pipe(HttpApiSchema.status(403)),
         EmailResumeDomainWarming404.pipe(HttpApiSchema.status(404)),
@@ -4820,6 +4968,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailListForwardingRulesQuery,
       success: EmailListForwardingRules200,
       error: [
+        EmailListForwardingRules400.pipe(HttpApiSchema.status(400)),
         EmailListForwardingRules401.pipe(HttpApiSchema.status(401)),
         EmailListForwardingRules403.pipe(HttpApiSchema.status(403)),
         EmailListForwardingRules422.pipe(HttpApiSchema.status(422)),
@@ -4838,6 +4987,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailCreateForwardingRuleRequestJson,
       success: EmailCreateForwardingRule201.pipe(HttpApiSchema.status(201)),
       error: [
+        EmailCreateForwardingRule400.pipe(HttpApiSchema.status(400)),
         EmailCreateForwardingRule401.pipe(HttpApiSchema.status(401)),
         EmailCreateForwardingRule403.pipe(HttpApiSchema.status(403)),
         EmailCreateForwardingRule404.pipe(HttpApiSchema.status(404)),
@@ -4858,6 +5008,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailDeleteForwardingRulePathParams,
       success: EmailDeleteForwardingRule200,
       error: [
+        EmailDeleteForwardingRule400.pipe(HttpApiSchema.status(400)),
         EmailDeleteForwardingRule401.pipe(HttpApiSchema.status(401)),
         EmailDeleteForwardingRule403.pipe(HttpApiSchema.status(403)),
         EmailDeleteForwardingRule404.pipe(HttpApiSchema.status(404)),
@@ -4875,6 +5026,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailUpdateForwardingRuleRequestJson,
       success: EmailUpdateForwardingRule200,
       error: [
+        EmailUpdateForwardingRule400.pipe(HttpApiSchema.status(400)),
         EmailUpdateForwardingRule401.pipe(HttpApiSchema.status(401)),
         EmailUpdateForwardingRule403.pipe(HttpApiSchema.status(403)),
         EmailUpdateForwardingRule404.pipe(HttpApiSchema.status(404)),
@@ -4894,6 +5046,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailGetForwardingLogQuery,
       success: EmailGetForwardingLog200,
       error: [
+        EmailGetForwardingLog400.pipe(HttpApiSchema.status(400)),
         EmailGetForwardingLog401.pipe(HttpApiSchema.status(401)),
         EmailGetForwardingLog403.pipe(HttpApiSchema.status(403)),
         EmailGetForwardingLog422.pipe(HttpApiSchema.status(422)),
@@ -4911,6 +5064,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
     HttpApiEndpoint.get("emailGetOnboardingReview", "/v1/email/onboarding-review", {
       success: EmailGetOnboardingReview200,
       error: [
+        EmailGetOnboardingReview400.pipe(HttpApiSchema.status(400)),
         EmailGetOnboardingReview401.pipe(HttpApiSchema.status(401)),
         EmailGetOnboardingReview403.pipe(HttpApiSchema.status(403)),
         EmailGetOnboardingReview422.pipe(HttpApiSchema.status(422)),
@@ -4929,6 +5083,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailReapplyOnboardingReviewRequestJson,
       success: EmailReapplyOnboardingReview200,
       error: [
+        EmailReapplyOnboardingReview400.pipe(HttpApiSchema.status(400)),
         EmailReapplyOnboardingReview401.pipe(HttpApiSchema.status(401)),
         EmailReapplyOnboardingReview403.pipe(HttpApiSchema.status(403)),
         EmailReapplyOnboardingReview409.pipe(HttpApiSchema.status(409)),
@@ -4951,6 +5106,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         payload: EmailRespondToOnboardingInformationRequestRequestJson,
         success: EmailRespondToOnboardingInformationRequest200,
         error: [
+          EmailRespondToOnboardingInformationRequest400.pipe(HttpApiSchema.status(400)),
           EmailRespondToOnboardingInformationRequest401.pipe(HttpApiSchema.status(401)),
           EmailRespondToOnboardingInformationRequest403.pipe(HttpApiSchema.status(403)),
           EmailRespondToOnboardingInformationRequest409.pipe(HttpApiSchema.status(409)),
@@ -4971,6 +5127,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailListSendersQuery,
       success: EmailListSenders200,
       error: [
+        EmailListSenders400.pipe(HttpApiSchema.status(400)),
         EmailListSenders401.pipe(HttpApiSchema.status(401)),
         EmailListSenders403.pipe(HttpApiSchema.status(403)),
         EmailListSenders422.pipe(HttpApiSchema.status(422)),
@@ -4990,6 +5147,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailAddSenderRequestJson,
       success: EmailAddSender201.pipe(HttpApiSchema.status(201)),
       error: [
+        EmailAddSender400.pipe(HttpApiSchema.status(400)),
         EmailAddSender401.pipe(HttpApiSchema.status(401)),
         EmailAddSender403.pipe(HttpApiSchema.status(403)),
         EmailAddSender404.pipe(HttpApiSchema.status(404)),
@@ -5011,6 +5169,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailGetSenderPathParams,
       success: EmailGetSender200,
       error: [
+        EmailGetSender400.pipe(HttpApiSchema.status(400)),
         EmailGetSender401.pipe(HttpApiSchema.status(401)),
         EmailGetSender403.pipe(HttpApiSchema.status(403)),
         EmailGetSender404.pipe(HttpApiSchema.status(404)),
@@ -5030,6 +5189,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailRemoveSenderPathParams,
       success: EmailRemoveSender200,
       error: [
+        EmailRemoveSender400.pipe(HttpApiSchema.status(400)),
         EmailRemoveSender401.pipe(HttpApiSchema.status(401)),
         EmailRemoveSender403.pipe(HttpApiSchema.status(403)),
         EmailRemoveSender404.pipe(HttpApiSchema.status(404)),
@@ -5049,6 +5209,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailSetDefaultSenderPathParams,
       success: EmailSetDefaultSender200,
       error: [
+        EmailSetDefaultSender400.pipe(HttpApiSchema.status(400)),
         EmailSetDefaultSender401.pipe(HttpApiSchema.status(401)),
         EmailSetDefaultSender403.pipe(HttpApiSchema.status(403)),
         EmailSetDefaultSender404.pipe(HttpApiSchema.status(404)),
@@ -5068,6 +5229,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailCheckSenderVerificationPathParams,
       success: EmailCheckSenderVerification200,
       error: [
+        EmailCheckSenderVerification400.pipe(HttpApiSchema.status(400)),
         EmailCheckSenderVerification401.pipe(HttpApiSchema.status(401)),
         EmailCheckSenderVerification403.pipe(HttpApiSchema.status(403)),
         EmailCheckSenderVerification404.pipe(HttpApiSchema.status(404)),
@@ -5085,6 +5247,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailGetStatsQuery,
       success: EmailGetStats200,
       error: [
+        EmailGetStats400.pipe(HttpApiSchema.status(400)),
         EmailGetStats401.pipe(HttpApiSchema.status(401)),
         EmailGetStats403.pipe(HttpApiSchema.status(403)),
         EmailGetStats422.pipe(HttpApiSchema.status(422)),
@@ -5103,6 +5266,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailListSuppressionsQuery,
       success: EmailListSuppressions200,
       error: [
+        EmailListSuppressions400.pipe(HttpApiSchema.status(400)),
         EmailListSuppressions401.pipe(HttpApiSchema.status(401)),
         EmailListSuppressions403.pipe(HttpApiSchema.status(403)),
         EmailListSuppressions422.pipe(HttpApiSchema.status(422)),
@@ -5121,6 +5285,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       params: EmailRemoveSuppressionPathParams,
       success: EmailRemoveSuppression200,
       error: [
+        EmailRemoveSuppression400.pipe(HttpApiSchema.status(400)),
         EmailRemoveSuppression401.pipe(HttpApiSchema.status(401)),
         EmailRemoveSuppression403.pipe(HttpApiSchema.status(403)),
         EmailRemoveSuppression404.pipe(HttpApiSchema.status(404)),
@@ -5140,6 +5305,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
     HttpApiEndpoint.get("emailCountSuppressions", "/v1/email/suppressions/counts", {
       success: EmailCountSuppressions200,
       error: [
+        EmailCountSuppressions400.pipe(HttpApiSchema.status(400)),
         EmailCountSuppressions401.pipe(HttpApiSchema.status(401)),
         EmailCountSuppressions403.pipe(HttpApiSchema.status(403)),
         EmailCountSuppressions422.pipe(HttpApiSchema.status(422)),
@@ -5157,6 +5323,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
     HttpApiEndpoint.get("emailGetTrackingDefaults", "/v1/email/tracking/defaults", {
       success: EmailGetTrackingDefaults200,
       error: [
+        EmailGetTrackingDefaults400.pipe(HttpApiSchema.status(400)),
         EmailGetTrackingDefaults401.pipe(HttpApiSchema.status(401)),
         EmailGetTrackingDefaults403.pipe(HttpApiSchema.status(403)),
         EmailGetTrackingDefaults404.pipe(HttpApiSchema.status(404)),
@@ -5176,6 +5343,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       payload: EmailUpdateTrackingDefaultsRequestJson,
       success: EmailUpdateTrackingDefaults200,
       error: [
+        EmailUpdateTrackingDefaults400.pipe(HttpApiSchema.status(400)),
         EmailUpdateTrackingDefaults401.pipe(HttpApiSchema.status(401)),
         EmailUpdateTrackingDefaults403.pipe(HttpApiSchema.status(403)),
         EmailUpdateTrackingDefaults404.pipe(HttpApiSchema.status(404)),
@@ -5195,6 +5363,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       query: EmailGetRecipientTrackingPreferenceQuery,
       success: EmailGetRecipientTrackingPreference200,
       error: [
+        EmailGetRecipientTrackingPreference400.pipe(HttpApiSchema.status(400)),
         EmailGetRecipientTrackingPreference401.pipe(HttpApiSchema.status(401)),
         EmailGetRecipientTrackingPreference403.pipe(HttpApiSchema.status(403)),
         EmailGetRecipientTrackingPreference422.pipe(HttpApiSchema.status(422)),
@@ -5216,6 +5385,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         payload: EmailUpdateRecipientTrackingPreferenceRequestJson,
         success: EmailUpdateRecipientTrackingPreference200,
         error: [
+          EmailUpdateRecipientTrackingPreference400.pipe(HttpApiSchema.status(400)),
           EmailUpdateRecipientTrackingPreference401.pipe(HttpApiSchema.status(401)),
           EmailUpdateRecipientTrackingPreference403.pipe(HttpApiSchema.status(403)),
           EmailUpdateRecipientTrackingPreference422.pipe(HttpApiSchema.status(422)),

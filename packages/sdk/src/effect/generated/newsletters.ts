@@ -10,6 +10,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  MalformedRequestError,
   NamespaceId,
   NewsletterId,
   ResourceNotFoundError,
@@ -42,7 +43,9 @@ export const Newsletter = /* @__PURE__ */ (() =>
     archiveEnabled: Schema.Boolean,
     publicationSlug: Schema.Union([
       Schema.String.check(
-        Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u")).annotate({
+        Schema.isPattern(
+          new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u"),
+        ).annotate({
           expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
         }),
       ),
@@ -51,12 +54,14 @@ export const Newsletter = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Newsletter" }))();
-export type NewslettersListQuery = { readonly namespaceId?: NamespaceId | null };
+export type NewslettersListQuery = { readonly namespaceId?: NamespaceId };
 export const NewslettersListQuery = /* @__PURE__ */ (() =>
-  Schema.Struct({ namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])) }))();
+  Schema.Struct({ namespaceId: Schema.optionalKey(NamespaceId) }))();
 export type NewslettersList200 = { readonly items: ReadonlyArray<Newsletter> };
 export const NewslettersList200 = /* @__PURE__ */ (() =>
   Schema.Struct({ items: Schema.Array(Newsletter) }))();
+export type NewslettersList400 = MalformedRequestError;
+export const NewslettersList400 = MalformedRequestError;
 export type NewslettersList401 = UnauthorizedError;
 export const NewslettersList401 = UnauthorizedError;
 export type NewslettersList403 = ForbiddenError | FlagDisabledError;
@@ -72,24 +77,21 @@ export type NewslettersList500 = InternalError;
 export const NewslettersList500 = InternalError;
 export type NewslettersList504 = GatewayTimeoutError;
 export const NewslettersList504 = GatewayTimeoutError;
-export type NewslettersCreateHeaders = { readonly "idempotency-key"?: string | null };
+export type NewslettersCreateHeaders = { readonly "idempotency-key"?: string };
 export const NewslettersCreateHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewslettersCreateRequestJson = {
@@ -125,7 +127,9 @@ export const NewslettersCreateRequestJson = /* @__PURE__ */ (() =>
     publicationSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
           }),
         ),
@@ -135,6 +139,8 @@ export const NewslettersCreateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type NewslettersCreate201 = Newsletter;
 export const NewslettersCreate201 = Newsletter;
+export type NewslettersCreate400 = MalformedRequestError;
+export const NewslettersCreate400 = MalformedRequestError;
 export type NewslettersCreate401 = UnauthorizedError;
 export const NewslettersCreate401 = UnauthorizedError;
 export type NewslettersCreate403 = ForbiddenError | FlagDisabledError;
@@ -155,6 +161,8 @@ export const NewslettersGetPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
 export type NewslettersGet200 = Newsletter;
 export const NewslettersGet200 = Newsletter;
+export type NewslettersGet400 = MalformedRequestError;
+export const NewslettersGet400 = MalformedRequestError;
 export type NewslettersGet401 = UnauthorizedError;
 export const NewslettersGet401 = UnauthorizedError;
 export type NewslettersGet403 = ForbiddenError | FlagDisabledError;
@@ -173,29 +181,28 @@ export const NewslettersGet504 = GatewayTimeoutError;
 export type NewslettersRemovePathParams = { readonly id: NewsletterId };
 export const NewslettersRemovePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewslettersRemoveHeaders = { readonly "idempotency-key"?: string | null };
+export type NewslettersRemoveHeaders = { readonly "idempotency-key"?: string };
 export const NewslettersRemoveHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewslettersRemove200 = { readonly success: boolean };
 export const NewslettersRemove200 = /* @__PURE__ */ (() =>
   Schema.Struct({ success: Schema.Boolean }))();
+export type NewslettersRemove400 = MalformedRequestError;
+export const NewslettersRemove400 = MalformedRequestError;
 export type NewslettersRemove401 = UnauthorizedError;
 export const NewslettersRemove401 = UnauthorizedError;
 export type NewslettersRemove403 = ForbiddenError | FlagDisabledError;
@@ -214,24 +221,21 @@ export const NewslettersRemove504 = GatewayTimeoutError;
 export type NewslettersUpdatePathParams = { readonly id: NewsletterId };
 export const NewslettersUpdatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NewsletterId }))();
-export type NewslettersUpdateHeaders = { readonly "idempotency-key"?: string | null };
+export type NewslettersUpdateHeaders = { readonly "idempotency-key"?: string };
 export const NewslettersUpdateHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
     "idempotency-key": Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(255).annotate({
+            expected: "a string with at most 255 code points",
+          }),
         )
-          .check(
-            Schema.isMaxCodePoints(255).annotate({
-              expected: "a string with at most 255 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
-          ),
-        Schema.Null,
-      ]),
+        .check(
+          Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+        ),
     ),
   }))();
 export type NewslettersUpdateRequestJson = {
@@ -244,7 +248,9 @@ export const NewslettersUpdateRequestJson = /* @__PURE__ */ (() =>
     publicationSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(new RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
           }),
         ),
@@ -254,6 +260,8 @@ export const NewslettersUpdateRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type NewslettersUpdate200 = Newsletter;
 export const NewslettersUpdate200 = Newsletter;
+export type NewslettersUpdate400 = MalformedRequestError;
+export const NewslettersUpdate400 = MalformedRequestError;
 export type NewslettersUpdate401 = UnauthorizedError;
 export const NewslettersUpdate401 = UnauthorizedError;
 export type NewslettersUpdate403 = ForbiddenError | FlagDisabledError;
@@ -276,6 +284,7 @@ export class NewslettersGroup extends HttpApiGroup.make("Newsletters")
       query: NewslettersListQuery,
       success: NewslettersList200,
       error: [
+        NewslettersList400.pipe(HttpApiSchema.status(400)),
         NewslettersList401.pipe(HttpApiSchema.status(401)),
         NewslettersList403.pipe(HttpApiSchema.status(403)),
         NewslettersList404.pipe(HttpApiSchema.status(404)),
@@ -297,6 +306,7 @@ export class NewslettersGroup extends HttpApiGroup.make("Newsletters")
       payload: NewslettersCreateRequestJson,
       success: NewslettersCreate201.pipe(HttpApiSchema.status(201)),
       error: [
+        NewslettersCreate400.pipe(HttpApiSchema.status(400)),
         NewslettersCreate401.pipe(HttpApiSchema.status(401)),
         NewslettersCreate403.pipe(HttpApiSchema.status(403)),
         NewslettersCreate404.pipe(HttpApiSchema.status(404)),
@@ -317,6 +327,7 @@ export class NewslettersGroup extends HttpApiGroup.make("Newsletters")
       params: NewslettersGetPathParams,
       success: NewslettersGet200,
       error: [
+        NewslettersGet400.pipe(HttpApiSchema.status(400)),
         NewslettersGet401.pipe(HttpApiSchema.status(401)),
         NewslettersGet403.pipe(HttpApiSchema.status(403)),
         NewslettersGet404.pipe(HttpApiSchema.status(404)),
@@ -338,6 +349,7 @@ export class NewslettersGroup extends HttpApiGroup.make("Newsletters")
       headers: NewslettersRemoveHeaders,
       success: NewslettersRemove200,
       error: [
+        NewslettersRemove400.pipe(HttpApiSchema.status(400)),
         NewslettersRemove401.pipe(HttpApiSchema.status(401)),
         NewslettersRemove403.pipe(HttpApiSchema.status(403)),
         NewslettersRemove404.pipe(HttpApiSchema.status(404)),
@@ -360,6 +372,7 @@ export class NewslettersGroup extends HttpApiGroup.make("Newsletters")
       payload: NewslettersUpdateRequestJson,
       success: NewslettersUpdate200,
       error: [
+        NewslettersUpdate400.pipe(HttpApiSchema.status(400)),
         NewslettersUpdate401.pipe(HttpApiSchema.status(401)),
         NewslettersUpdate403.pipe(HttpApiSchema.status(403)),
         NewslettersUpdate404.pipe(HttpApiSchema.status(404)),

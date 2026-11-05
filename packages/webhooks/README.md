@@ -1,6 +1,6 @@
 # `@samva/webhooks`
 
-Samva is the email API for your app: transactional and campaign sending, inbound mail, and webhooks behind one API.
+Samva is the email and WhatsApp API for your app: transactional and campaign sending, inbound replies threaded into conversations, programmable mailboxes, and signed webhooks. Small businesses use the same platform to answer their customers in Samva Mail.
 
 Verify signed Samva webhook deliveries in Node.js, Bun, Cloudflare Workers, and other Web
 Crypto-compatible runtimes.
