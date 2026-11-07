@@ -37,7 +37,6 @@ export const WEBHOOK_SIGNATURE_HEADER = "webhook-signature";
 export const DEFAULT_TOLERANCE_SECONDS = 300;
 
 const SECRET_PREFIX = "whsec_";
-const ASYMMETRIC_ALGORITHM = { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" } as const;
 const MINIMUM_SECRET_BYTES = 24;
 const MAXIMUM_SECRET_BYTES = 64;
 const GENERATED_SECRET_BYTES = 32;
@@ -94,12 +93,6 @@ export interface VerifyWebhookInput {
   readonly nowMilliseconds: number;
 }
 
-/**
- * Signature scheme version inside a `webhook-signature` entry: `v1` is HMAC-SHA256 with the
- * endpoint's shared secret; `v2` is RSASSA-PKCS1-v1_5 with SHA-256, checked against a public key.
- */
-export type WebhookSignatureVersion = "v1" | "v2";
-
 const toBytes = (body: string | Uint8Array): Uint8Array =>
   typeof body === "string" ? encoder.encode(body) : body;
 
@@ -154,20 +147,6 @@ const importHmacKey = async (secret: string): Promise<CryptoKey> => {
   }
 };
 
-const importVerificationKey = async (publicKey: string): Promise<CryptoKey | undefined> => {
-  try {
-    return await crypto.subtle.importKey(
-      "spki",
-      toCryptoBytes(base64ToBytes(publicKey.trim())),
-      ASYMMETRIC_ALGORITHM,
-      false,
-      ["verify"],
-    );
-  } catch {
-    return undefined;
-  }
-};
-
 const signedBytes = (id: string, timestamp: string, body: Uint8Array): Uint8Array => {
   const prefix = encoder.encode(`${id}.${timestamp}.`);
   const material = new Uint8Array(prefix.byteLength + body.byteLength);
@@ -194,18 +173,6 @@ const hmac = async (
   }
 };
 
-const asymmetricMatch = async (
-  key: CryptoKey,
-  candidate: Uint8Array,
-  content: Uint8Array<ArrayBuffer>,
-): Promise<boolean> => {
-  try {
-    return await crypto.subtle.verify(ASYMMETRIC_ALGORITHM, key, toCryptoBytes(candidate), content);
-  } catch {
-    return false;
-  }
-};
-
 const timingSafeEqual = (left: Uint8Array, right: Uint8Array): boolean => {
   if (left.byteLength !== right.byteLength) return false;
   let difference = 0;
@@ -215,15 +182,12 @@ const timingSafeEqual = (left: Uint8Array, right: Uint8Array): boolean => {
   return difference === 0;
 };
 
-const signatureCandidates = (
-  header: string,
-  expected: WebhookSignatureVersion,
-): ReadonlyArray<Uint8Array> =>
+const signatureCandidates = (header: string): ReadonlyArray<Uint8Array> =>
   header
     .split(" ")
     .map((candidate) => candidate.split(",", 2))
     .flatMap(([version, encoded]) => {
-      if (version !== expected || encoded === undefined) return [];
+      if (version !== "v1" || encoded === undefined) return [];
       try {
         return [base64ToBytes(encoded)];
       } catch {
@@ -260,23 +224,6 @@ export const generateWebhookSecret = (): string => {
 };
 
 /**
- * Builds the bytes every signature version covers: `<id>.<timestamp>.<body>`. Use it to verify a
- * signature with your own crypto code; {@link verifyWebhookAt} and
- * {@link verifyWebhookAtWithPublicKeys} build it for you.
- */
-export const webhookSignedContent = (input: {
-  readonly id: string;
-  readonly timestamp: string;
-  readonly body: string | Uint8Array;
-}): Uint8Array => signedBytes(input.id, input.timestamp, toBytes(input.body));
-
-/** Formats raw signature bytes as one `<version>,<base64>` entry of the `webhook-signature` header. */
-export const encodeWebhookSignature = (
-  version: WebhookSignatureVersion,
-  signature: Uint8Array,
-): string => `${version},${bytesToBase64(signature)}`;
-
-/**
  * Computes the `v1` HMAC-SHA256 signature Samva sends, formatted as one `webhook-signature`
  * entry. Use it to produce signed test deliveries for your handler.
  *
@@ -292,7 +239,7 @@ export const signWebhook = async (input: {
 }): Promise<string> => {
   const timestamp = String(input.timestamp);
   const signature = await hmac(input.secret, input.id, timestamp, toBytes(input.body));
-  return encodeWebhookSignature("v1", signature);
+  return `v1,${bytesToBase64(signature)}`;
 };
 
 const requireHeader = (header: WebhookHeaderName, value: string | null | undefined): string => {
@@ -355,51 +302,10 @@ export const verifyWebhookAt = async (input: VerifyWebhookInput): Promise<Verifi
 
   const body = toBytes(input.body);
   const expected = await hmac(input.secret, id, timestamp, body);
-  const verified = signatureCandidates(signature, "v1").some((candidate) =>
+  const verified = signatureCandidates(signature).some((candidate) =>
     timingSafeEqual(expected, candidate),
   );
   if (!verified) {
-    throw new WebhookSignatureError({ detail: "Webhook signature verification failed" });
-  }
-
-  return { id, event: parseEvent(body) };
-};
-
-/**
- * Verifies a `v2` (RSASSA-PKCS1-v1_5, SHA-256) delivery against one or more public keys, each a
- * Base64-encoded SPKI DER key. Pass several keys during a key rotation; the delivery verifies when
- * any `v2` signature entry matches any key.
- *
- * Header, timestamp, and envelope checks match {@link verifyWebhookAt}. Keys that fail to import
- * are skipped. Rejects with {@link WebhookSignatureError} when `publicKeys` is empty or nothing
- * matches, and {@link WebhookCryptoError} when none of the keys imports.
- */
-export const verifyWebhookAtWithPublicKeys = async (
-  input: Omit<VerifyWebhookInput, "secret"> & {
-    readonly publicKeys: ReadonlyArray<string>;
-  },
-): Promise<VerifiedWebhook> => {
-  const { id, timestamp, signature } = freshHeaders(input);
-  if (input.publicKeys.length === 0) {
-    throw new WebhookSignatureError({ detail: "No webhook verification key is available" });
-  }
-
-  const keys = (await Promise.all(input.publicKeys.map(importVerificationKey))).filter(
-    (key) => key !== undefined,
-  );
-  if (keys.length === 0) {
-    throw new WebhookCryptoError({
-      detail: "Unable to import any webhook verification key: keys must be Base64 SPKI DER",
-    });
-  }
-
-  const body = toBytes(input.body);
-  const content = toCryptoBytes(signedBytes(id, timestamp, body));
-  const candidates = signatureCandidates(signature, "v2");
-  const matches = await Promise.all(
-    keys.flatMap((key) => candidates.map((candidate) => asymmetricMatch(key, candidate, content))),
-  );
-  if (!matches.includes(true)) {
     throw new WebhookSignatureError({ detail: "Webhook signature verification failed" });
   }
 

@@ -1,3 +1,9 @@
+## @samva/webhooks@0.37.0
+
+### Use HMAC to verify Samva webhooks
+
+**Breaking:** The `@samva/webhooks/protocol` entrypoint no longer exports `verifyWebhookAtWithPublicKeys`, `WebhookSignatureVersion`, `webhookSignedContent`, or `encodeWebhookSignature`. The RSA `v2` scheme does not match Standard Webhooks and Samva never sends it. Use `verify` or `verifyRequest` with your endpoint signing secret to verify Samva deliveries. HMAC `v1` signing and verification are unchanged.
+
 ## @samva/webhooks@0.36.0
 
 ### Decision rules for mailbox actions and agents

@@ -67,8 +67,8 @@ export class WebhookTimestampError extends WebhookVerificationError<"WebhookTime
 }
 
 /**
- * No signature in the `webhook-signature` header matches the delivery, or no verification key was
- * supplied. Treat the request as forged and reject it. When genuine deliveries fail, the usual
+ * No signature in the `webhook-signature` header matches the delivery. Treat the request as forged
+ * and reject it. When genuine deliveries fail, the usual
  * causes are the wrong endpoint secret or a body that was parsed and re-serialized before
  * verification instead of passed through as the exact bytes received.
  */
@@ -89,9 +89,9 @@ export class MalformedWebhookPayloadError extends WebhookVerificationError<"Malf
 }
 
 /**
- * The runtime's Web Crypto implementation could not import a key or compute a signature, none of
- * the supplied public keys could be imported, or the Effect entrypoint could not read the request
- * body. Points at the runtime or its configuration rather than at the delivery.
+ * The runtime's Web Crypto implementation could not import a key or compute a signature, or the
+ * Effect entrypoint could not read the request body. Points at the runtime or its configuration
+ * rather than at the delivery.
  */
 export class WebhookCryptoError extends WebhookVerificationError<"WebhookCryptoError"> {
   constructor(options: WebhookVerificationFailureOptions) {
