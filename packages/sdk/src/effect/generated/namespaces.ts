@@ -6,6 +6,7 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
+  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -273,8 +274,9 @@ export type NamespacesAssignResource400 = MalformedRequestError;
 export const NamespacesAssignResource400 = MalformedRequestError;
 export type NamespacesAssignResource401 = UnauthorizedError;
 export const NamespacesAssignResource401 = UnauthorizedError;
-export type NamespacesAssignResource403 = ForbiddenError;
-export const NamespacesAssignResource403 = ForbiddenError;
+export type NamespacesAssignResource403 = FlagDisabledError | ForbiddenError;
+export const NamespacesAssignResource403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type NamespacesAssignResource404 = ResourceNotFoundError;
 export const NamespacesAssignResource404 = ResourceNotFoundError;
 export type NamespacesAssignResource409 = ConflictError;
@@ -298,8 +300,9 @@ export type NamespacesRemoveResource400 = MalformedRequestError;
 export const NamespacesRemoveResource400 = MalformedRequestError;
 export type NamespacesRemoveResource401 = UnauthorizedError;
 export const NamespacesRemoveResource401 = UnauthorizedError;
-export type NamespacesRemoveResource403 = ForbiddenError;
-export const NamespacesRemoveResource403 = ForbiddenError;
+export type NamespacesRemoveResource403 = FlagDisabledError | ForbiddenError;
+export const NamespacesRemoveResource403 = /* @__PURE__ */ (() =>
+  Schema.Union([FlagDisabledError, ForbiddenError]))();
 export type NamespacesRemoveResource404 = ResourceNotFoundError;
 export const NamespacesRemoveResource404 = ResourceNotFoundError;
 export type NamespacesRemoveResource409 = ConflictError;
@@ -413,7 +416,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       .annotate(OpenApi.Summary, "Delete a namespace")
       .annotate(
         OpenApi.Description,
-        "Deletes an empty namespace. A namespace that still holds anything conflicts, and the error counts what remains: mailboxes, API keys, webhook endpoints filtered to it, domains, senders, contacts, or template projects. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes, keys, and webhook endpoints cannot move and are deleted. Messages keep the namespace they ran in.",
+        "Deletes an empty namespace. A namespace that still holds anything conflicts, and the error names and counts each resource kind that remains. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes, keys, and webhook endpoints cannot move and are deleted. Messages keep the namespace they ran in.",
       ),
     HttpApiEndpoint.patch("namespacesUpdate", "/v1/namespaces/:id", {
       params: NamespacesUpdatePathParams,

@@ -24,6 +24,7 @@ export {
   ValidationError,
   WhatsAppServiceWindowClosedError,
   TemplateSourceError,
+  TemplateInUseError,
   DeliveryUnavailableError,
 } from "./generated/shared";
 

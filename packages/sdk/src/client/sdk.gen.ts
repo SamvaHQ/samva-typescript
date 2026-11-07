@@ -35,6 +35,8 @@ import type {
   AgentsRemoveResponses,
   AgentsReplaceDraftErrors,
   AgentsReplaceDraftResponses,
+  AgentsRerunTestsErrors,
+  AgentsRerunTestsResponses,
   AgentsUpdateErrors,
   AgentsUpdateResponses,
   AnalyticsExportDataErrors,
@@ -51,7 +53,6 @@ import type {
   AnalyticsGetTopContactsResponses,
   ApiKeyAccess,
   ApiKeyId,
-  ApiKeyMailboxAccessUpdate,
   ApiKeysCreateErrors,
   ApiKeysCreateResponses,
   ApiKeysGetActivityErrors,
@@ -478,8 +479,6 @@ import type {
   MailboxesCreateLabelResponses,
   MailboxesCreateNoteErrors,
   MailboxesCreateNoteResponses,
-  MailboxesCreatePolicyErrors,
-  MailboxesCreatePolicyResponses,
   MailboxesCreateResponses,
   MailboxesDeleteDraftErrors,
   MailboxesDeleteDraftResponses,
@@ -487,8 +486,6 @@ import type {
   MailboxesDeleteLabelResponses,
   MailboxesDeleteNoteErrors,
   MailboxesDeleteNoteResponses,
-  MailboxesDeletePolicyErrors,
-  MailboxesDeletePolicyResponses,
   MailboxesDenyActionErrors,
   MailboxesDenyActionResponses,
   MailboxesDiscardMessageErrors,
@@ -510,8 +507,6 @@ import type {
   MailboxesGetMessageResponses,
   MailboxesGetNeedsYouErrors,
   MailboxesGetNeedsYouResponses,
-  MailboxesGetPolicyErrors,
-  MailboxesGetPolicyResponses,
   MailboxesGetResponses,
   MailboxesGetThreadContentErrors,
   MailboxesGetThreadContentResponses,
@@ -534,8 +529,6 @@ import type {
   MailboxesListOrganizationDraftsResponses,
   MailboxesListOrganizationThreadsErrors,
   MailboxesListOrganizationThreadsResponses,
-  MailboxesListPoliciesErrors,
-  MailboxesListPoliciesResponses,
   MailboxesListQuarantineErrors,
   MailboxesListQuarantineResponses,
   MailboxesListResponses,
@@ -580,8 +573,6 @@ import type {
   MailboxesUpdateLabelResponses,
   MailboxesUpdateNoteErrors,
   MailboxesUpdateNoteResponses,
-  MailboxesUpdatePolicyErrors,
-  MailboxesUpdatePolicyResponses,
   MailboxesUpdateResponses,
   MailboxesUpdateThreadErrors,
   MailboxesUpdateThreadResponses,
@@ -592,9 +583,6 @@ import type {
   MailboxMetadataPatch,
   MailboxMetadataWritable,
   MailboxNoteId,
-  MailboxPolicyId,
-  MailboxPolicyOutcomeKind,
-  MailboxSendMode,
   MailboxThreadFolder,
   MailboxThreadId,
   MailboxThreadPriority,
@@ -722,6 +710,16 @@ import type {
   OrganizationsUpdateErrors,
   OrganizationsUpdateResponses,
   PhoneRegion,
+  PoliciesDeletePolicyErrors,
+  PoliciesDeletePolicyResponses,
+  PoliciesGetPolicyErrors,
+  PoliciesGetPolicyResponses,
+  PoliciesSetPolicyErrors,
+  PoliciesSetPolicyResponses,
+  PolicyConfiguration,
+  PolicyReviewRound,
+  PolicyRule,
+  PolicyVersion,
   RenderLocale,
   RenderTimeZone,
   ReplyMailboxChatPayload,
@@ -765,8 +763,12 @@ import type {
   TemplatesCreateFromWebsiteErrors,
   TemplatesCreateFromWebsiteResponses,
   TemplatesCreateResponses,
+  TemplatesDeleteErrors,
   TemplatesDeleteFamilyErrors,
   TemplatesDeleteFamilyResponses,
+  TemplatesDeleteProjectErrors,
+  TemplatesDeleteProjectResponses,
+  TemplatesDeleteResponses,
   TemplatesDetachFamilyMemberErrors,
   TemplatesDetachFamilyMemberResponses,
   TemplatesDiffWorkspaceErrors,
@@ -797,8 +799,6 @@ import type {
   TemplatesPublishResponses,
   TemplatesPutWorkspaceAssetErrors,
   TemplatesPutWorkspaceAssetResponses,
-  TemplatesRemoveErrors,
-  TemplatesRemoveResponses,
   TemplatesRemoveWorkspaceResourceErrors,
   TemplatesRemoveWorkspaceResourceResponses,
   TemplatesRenameFamilyErrors,
@@ -1373,6 +1373,7 @@ export class ScheduledMessages {
     parameters?: {
       limit?: number | null | undefined;
       cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
       status?:
         | "pending"
         | "dispatching"
@@ -1391,6 +1392,7 @@ export class ScheduledMessages {
           args: [
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "status" },
           ],
         },
@@ -1422,6 +1424,7 @@ export class ScheduledMessages {
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
+      namespaceId?: NamespaceId | null | undefined;
       send: DispatchSendMessagePayload;
       scheduledFor: string;
       timezone?: IanaTimezone | null | undefined;
@@ -1434,6 +1437,7 @@ export class ScheduledMessages {
       [
         {
           args: [
+            { in: "body", key: "namespaceId" },
             { in: "body", key: "send" },
             { in: "body", key: "scheduledFor" },
             { in: "body", key: "timezone" },
@@ -5128,6 +5132,7 @@ export class Conversations {
     parameters?: {
       limit?: number | null | undefined;
       cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
       status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | undefined;
       channel?: "sms" | "whatsapp" | "email" | undefined;
       contactId?: ContactId | undefined;
@@ -5144,6 +5149,7 @@ export class Conversations {
           args: [
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "status" },
             { in: "query", key: "channel" },
             { in: "query", key: "contactId" },
@@ -5176,6 +5182,7 @@ export class Conversations {
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
+      namespaceId?: NamespaceId | null | undefined;
       title?: string | null | undefined;
       description?: string | null | undefined;
       externalId?: string | null | undefined;
@@ -5202,6 +5209,7 @@ export class Conversations {
       [
         {
           args: [
+            { in: "body", key: "namespaceId" },
             { in: "body", key: "title" },
             { in: "body", key: "description" },
             { in: "body", key: "externalId" },
@@ -7516,14 +7524,61 @@ export class Journeys2 {
 
 export class Agents {
   /**
+   * Compare saved-test decisions
+   *
+   * Runs saved tests against a supplied draft and the current immutable published definition, returning changed action decisions. No test or agent is modified and nothing is sent. Large comparisons can time out; run saved tests individually or shorten their conversations before retrying.
+   */
+  public static rerunTests<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: AgentId;
+      name: AgentName;
+      definition: AgentDefinition;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AgentsRerunTestsResponses, AgentsRerunTestsErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "name" },
+            { in: "body", key: "definition" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "agentsRerunTests", options, (headers) =>
+      (options?.client ?? client).post<
+        AgentsRerunTestsResponses,
+        AgentsRerunTestsErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/agents/{id}/tests/rerun",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+        headers: { "Content-Type": "application/json", ...headers },
+      }),
+    );
+  }
+
+  /**
    * List agents
    *
-   * Returns the agents the caller can reach, newest first, without their drafts. Pass nextCursor back as cursor for the next page.
+   * Returns the agents the caller can reach, newest first, without their drafts, optionally filtered by `namespaceId`. Pass nextCursor back as cursor for the next page.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
       cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsListResponses, AgentsListErrors, ThrowOnError> {
@@ -7534,6 +7589,7 @@ export class Agents {
           args: [
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
           ],
         },
       ],
@@ -7552,7 +7608,7 @@ export class Agents {
   /**
    * Create an agent
    *
-   * Creates an agent with a draft and returns it with status 201. The agent answers nothing until its draft is published. A new agent starts in supervised mode, so each reply waits for a person to approve it. The namespace is set at creation and cannot change.
+   * Creates an agent with a draft and returns it with status 201. The agent answers nothing until its draft is published. The default policy requires a person to approve replies and final actions. The namespace is set at creation and cannot change.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -7750,7 +7806,7 @@ export class Agents {
   /**
    * Publish an agent
    *
-   * Publishes the draft as the next immutable version. Each conversation moves to it from its next agent reply; a reply already running finishes on the version it started on. The request names the revision it read; a stale revision returns 409. Publishing a draft identical to the newest version changes nothing and answers published false. An endpoint answers for one agent at a time: publishing a draft whose endpoint another agent answers on returns 409. In supervised mode each reply waits for a person to approve it.
+   * Publishes the draft as the next immutable version. Each conversation moves to it from its next agent reply; a reply already running finishes on the version it started on. The request names the revision it read; a stale revision returns 409. Publishing a draft identical to the newest version changes nothing and answers published false. An endpoint answers for one agent at a time: publishing a draft whose endpoint another agent answers on returns 409. The published policy governs review of each proposed action.
    */
   public static publish<ThrowOnError extends boolean = false>(
     parameters: {
@@ -10016,6 +10072,7 @@ export class Analytics {
    */
   public static getStats<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       after?: string | undefined;
       before?: string | undefined;
       groupBy?: "day" | "week" | "month" | undefined;
@@ -10028,6 +10085,7 @@ export class Analytics {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
             { in: "query", key: "groupBy" },
@@ -10058,6 +10116,7 @@ export class Analytics {
    */
   public static getChannelStats<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       after?: string | undefined;
       before?: string | undefined;
     },
@@ -10072,6 +10131,7 @@ export class Analytics {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
           ],
@@ -10104,6 +10164,7 @@ export class Analytics {
    */
   public static getTopContacts<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       after?: string | undefined;
       before?: string | undefined;
       limit?: number | null | undefined;
@@ -10116,6 +10177,7 @@ export class Analytics {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
             { in: "query", key: "limit" },
@@ -10150,6 +10212,7 @@ export class Analytics {
    */
   public static getHourlyDistribution<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       after?: string | undefined;
       before?: string | undefined;
     },
@@ -10164,6 +10227,7 @@ export class Analytics {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
           ],
@@ -10196,6 +10260,7 @@ export class Analytics {
    */
   public static getDeliveryMetrics<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       after?: string | undefined;
       before?: string | undefined;
       channel?: "sms" | "whatsapp" | "email" | undefined;
@@ -10211,6 +10276,7 @@ export class Analytics {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
             { in: "query", key: "channel" },
@@ -10244,6 +10310,7 @@ export class Analytics {
    */
   public static exportData<ThrowOnError extends boolean = false>(
     parameters: {
+      namespaceId?: NamespaceId | null | undefined;
       after: string;
       before: string;
       format?: "csv" | "json" | null | undefined;
@@ -10256,6 +10323,7 @@ export class Analytics {
       [
         {
           args: [
+            { in: "body", key: "namespaceId" },
             { in: "body", key: "after" },
             { in: "body", key: "before" },
             { in: "body", key: "format" },
@@ -10370,7 +10438,6 @@ export class Templates {
         | "alert"
         | null
         | undefined;
-      isActive?: boolean | null | undefined;
       namespaceId?: NamespaceId | null | undefined;
       shared?: boolean | null | undefined;
     },
@@ -10388,7 +10455,6 @@ export class Templates {
             { in: "body", key: "useBrand" },
             { in: "body", key: "description" },
             { in: "body", key: "category" },
-            { in: "body", key: "isActive" },
             { in: "body", key: "namespaceId" },
             { in: "body", key: "shared" },
           ],
@@ -10748,19 +10814,19 @@ export class Templates {
   /**
    * Delete a template
    *
-   * Deletes a template from the organization and returns a success flag.
+   * Permanently deletes a template and its publications, input contracts, variants and preview rasters, freeing its slug. Refuses with 409 and reference kind/id pairs while in use. Sent-message history keeps its snapshots. The project and its Git files remain. External object cleanup retries durably.
    */
-  public static remove<ThrowOnError extends boolean = false>(
+  public static delete<ThrowOnError extends boolean = false>(
     parameters: {
       id: TemplateId;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<TemplatesRemoveResponses, TemplatesRemoveErrors, ThrowOnError> {
+  ): RequestResult<TemplatesDeleteResponses, TemplatesDeleteErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "templatesRemove", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "templatesDelete", options, (headers) =>
       (options?.client ?? client).delete<
-        TemplatesRemoveResponses,
-        TemplatesRemoveErrors,
+        TemplatesDeleteResponses,
+        TemplatesDeleteErrors,
         ThrowOnError
       >({
         security: [{ name: "x-api-key", type: "apiKey" }],
@@ -10828,7 +10894,6 @@ export class Templates {
          * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
          */
         trackingDefault?: TemplateTrackingDefault | null | undefined;
-        isActive?: boolean | null | undefined;
         /**
          * Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.
          */
@@ -10981,6 +11046,37 @@ export class Templates {
         },
         headers: { "Content-Type": "application/json", ...headers },
       }),
+    );
+  }
+
+  /**
+   * Permanently delete a template project
+   *
+   * Permanently deletes the project and every template in it. Refuses with 409 and reference kind/id pairs while any entry or the project is in use. Repository, workspace, conversations, draft assets, publications and previews are removed through durable cleanup. Sent-message history keeps its snapshots. Newsletter issue projects can only be removed through their topic.
+   */
+  public static deleteProject<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TemplateProjectId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TemplatesDeleteProjectResponses, TemplatesDeleteProjectErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesDeleteProject",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          TemplatesDeleteProjectResponses,
+          TemplatesDeleteProjectErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/projects/{id}",
+          ...options,
+          ...params,
+          headers,
+        }),
     );
   }
 
@@ -12142,12 +12238,13 @@ export class Webhooks {
   /**
    * List webhooks
    *
-   * Returns the organization's webhook endpoints, oldest first, with each endpoint's delivery counts, optionally filtered by a search term matched against name and URL, and by status. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns the organization's webhook endpoints, oldest first, with each endpoint's delivery counts, optionally filtered by namespace (`namespaceId`), a search term matched against name and URL, and by status. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
       cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
       search?: string | undefined;
       status?: "active" | "disabled" | undefined;
     },
@@ -12160,6 +12257,7 @@ export class Webhooks {
           args: [
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "search" },
             { in: "query", key: "status" },
           ],
@@ -12212,6 +12310,8 @@ export class Webhooks {
         | "webhook.test"
         | "domain.updated"
         | "domain.warming.updated"
+        | "email.sending.paused"
+        | "email.sending.resumed"
         | "template.registration.updated"
         | "flow.registration.updated"
         | "whatsapp.number.connected"
@@ -12363,6 +12463,8 @@ export class Webhooks {
             | "webhook.test"
             | "domain.updated"
             | "domain.warming.updated"
+            | "email.sending.paused"
+            | "email.sending.resumed"
             | "template.registration.updated"
             | "flow.registration.updated"
             | "whatsapp.number.connected"
@@ -13070,12 +13172,13 @@ export class ApiKeys {
   /**
    * List API keys
    *
-   * Returns the organization's API keys, newest first, filterable by status and a search term matched against name and description. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns the organization's API keys, newest first, filterable by namespace (`namespaceId`), status and a search term matched against name and description. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
       limit?: number | null | undefined;
       cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
       status?: "active" | "revoked" | undefined;
       search?: string | undefined;
     },
@@ -13088,6 +13191,7 @@ export class ApiKeys {
           args: [
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "status" },
             { in: "query", key: "search" },
           ],
@@ -13182,7 +13286,6 @@ export class ApiKeys {
       id: ApiKeyId;
       name?: string | null | undefined;
       description?: string | null | undefined;
-      mailboxes?: ApiKeyMailboxAccessUpdate | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysUpdateResponses, ApiKeysUpdateErrors, ThrowOnError> {
@@ -13194,7 +13297,6 @@ export class ApiKeys {
             { in: "path", key: "id" },
             { in: "body", key: "name" },
             { in: "body", key: "description" },
-            { in: "body", key: "mailboxes" },
           ],
         },
       ],
@@ -13423,7 +13525,7 @@ export class Mailboxes {
   /**
    * List mailboxes
    *
-   * Returns summaries of the mailboxes the caller can read, newest first, filterable by creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read a mailbox's endpoints and metadata with `GET /v1/mailboxes/{id}`.
+   * Returns summaries of the mailboxes the caller can read, newest first, filterable by namespace (`namespaceId`) and creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read a mailbox's endpoints and metadata with `GET /v1/mailboxes/{id}`.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -13431,6 +13533,7 @@ export class Mailboxes {
       cursor?: string | undefined;
       after?: string | undefined;
       before?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListResponses, MailboxesListErrors, ThrowOnError> {
@@ -13443,6 +13546,7 @@ export class Mailboxes {
             { in: "query", key: "cursor" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
+            { in: "query", key: "namespaceId" },
           ],
         },
       ],
@@ -13461,7 +13565,7 @@ export class Mailboxes {
   /**
    * Create a mailbox
    *
-   * Creates a mailbox with one endpoint and returns it with status 201; the caller gets an admin grant on it. An email endpoint's address must be under the organization's Samva-hosted mail domain or a verified domain with receiving enabled, and the mailbox sends from it. A phone endpoint's address is a number the organization connected on that channel, in E.164 form. The slug defaults to the address's local part, or a phone number's digits. Pass `slug` when that is taken or not a valid slug. The mailbox receives mail from now on; mail that arrived earlier is not added to it. Conflicts if the address or slug is already in use. Returns 402 when the organization is at its plan's mailbox allowance or at its mailbox storage allowance; incoming mail is still received past the storage allowance.
+   * Creates a mailbox with one endpoint and returns it with status 201; the caller gets an admin grant on it. An email endpoint's address must be under the organization's Samva-hosted mail domain or a verified domain with receiving enabled, and the mailbox sends from it once its sendingStatus is ready. Hosted addresses return pending while sending setup completes. A phone endpoint's address is a number the organization connected on that channel, in E.164 form. The slug defaults to the address's local part, or a phone number's digits. Pass `slug` when that is taken or not a valid slug. The mailbox receives mail from now on; mail that arrived earlier is not added to it. Pass Idempotency-Key to retry safely: the same key and body return the original mailbox in its current state; a changed body returns 409. Conflicts if the address or slug is already in use. Returns 402 when the organization is at its plan's mailbox allowance or at its mailbox storage allowance; incoming mail is still received past the storage allowance.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -13805,7 +13909,7 @@ export class Mailboxes {
   /**
    * Get mailbox activity
    *
-   * Counts the actions proposed and events recorded on a mailbox between `after` and `before` (omit both for all time), and the sends waiting for approval now. List the actions and events themselves with `GET /v1/mailboxes/{id}/actions` and `GET /v1/mailboxes/{id}/events`.
+   * Counts the actions proposed and events recorded on a mailbox between `after` and `before` (omit both for all time), and the actions waiting for approval now. List the actions and events themselves with `GET /v1/mailboxes/{id}/actions` and `GET /v1/mailboxes/{id}/events`.
    */
   public static getAgentActivity<ThrowOnError extends boolean = false>(
     parameters: {
@@ -13853,7 +13957,7 @@ export class Mailboxes {
   /**
    * List mailbox grants
    *
-   * Returns who can use the mailbox, what each grant allows, and whether its sends wait for approval, newest first. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns who can use the mailbox, what each grant allows, newest first. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static listGrants<ThrowOnError extends boolean = false>(
     parameters: {
@@ -13900,7 +14004,6 @@ export class Mailboxes {
       id: MailboxId;
       userId: UserId;
       role: MailboxGrantRole;
-      sendMode?: MailboxSendMode | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesCreateGrantResponses, MailboxesCreateGrantErrors, ThrowOnError> {
@@ -13912,7 +14015,6 @@ export class Mailboxes {
             { in: "path", key: "id" },
             { in: "body", key: "userId" },
             { in: "body", key: "role" },
-            { in: "body", key: "sendMode" },
           ],
         },
       ],
@@ -13987,14 +14089,13 @@ export class Mailboxes {
   /**
    * Update a mailbox grant
    *
-   * Changes a member's role, send mode, or both on a mailbox and returns the updated grant. A field left out keeps its value; naming neither is a validation error. Taking admin from the last grant that can configure the mailbox conflicts, as revoking it does. The change applies to the member's next request on every surface.
+   * Changes a member's role on a mailbox and returns the updated grant. A field left out keeps its value; naming neither is a validation error. Taking admin from the last grant that can configure the mailbox conflicts, as revoking it does. The change applies to the member's next request on every surface.
    */
   public static updateGrant<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
       grantId: MailboxGrantId;
       role?: MailboxGrantRole | null | undefined;
-      sendMode?: MailboxSendMode | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesUpdateGrantResponses, MailboxesUpdateGrantErrors, ThrowOnError> {
@@ -14006,7 +14107,6 @@ export class Mailboxes {
             { in: "path", key: "id" },
             { in: "path", key: "grantId" },
             { in: "body", key: "role" },
-            { in: "body", key: "sendMode" },
           ],
         },
       ],
@@ -14023,227 +14123,6 @@ export class Mailboxes {
         >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/mailboxes/{id}/grants/{grantId}",
-          ...options,
-          ...params,
-          body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
-        }),
-    );
-  }
-
-  /**
-   * List mailbox policies
-   *
-   * Returns every send policy on a mailbox, oldest first. A mailbox holds at most 20 policies, so the list is never paged. Each enabled policy holds (`requireApproval`) or refuses (`deny`) every send from the mailbox; `deny` wins when both apply.
-   */
-  public static listPolicies<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: MailboxId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesListPoliciesResponses, MailboxesListPoliciesErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "mailboxesListPolicies",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          MailboxesListPoliciesResponses,
-          MailboxesListPoliciesErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/policies",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Create a mailbox policy
-   *
-   * Adds a send policy to a mailbox and returns it with status 201. It applies to every send proposed after it is created, whoever proposes it. A mailbox that already holds 20 policies conflicts.
-   */
-  public static createPolicy<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: MailboxId;
-      name: string;
-      outcome: MailboxPolicyOutcomeKind;
-      reason?: string | null | undefined;
-      enabled?: boolean | null | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesCreatePolicyResponses, MailboxesCreatePolicyErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "body", key: "name" },
-            { in: "body", key: "outcome" },
-            { in: "body", key: "reason" },
-            { in: "body", key: "enabled" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "mailboxesCreatePolicy",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          MailboxesCreatePolicyResponses,
-          MailboxesCreatePolicyErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/policies",
-          ...options,
-          ...params,
-          body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
-        }),
-    );
-  }
-
-  /**
-   * Delete a mailbox policy
-   *
-   * Deletes a send policy. Sends it already holds stay held until a person approves or denies them.
-   */
-  public static deletePolicy<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: MailboxId;
-      policyId: MailboxPolicyId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesDeletePolicyResponses, MailboxesDeletePolicyErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "path", key: "policyId" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "mailboxesDeletePolicy",
-      options,
-      (headers) =>
-        (options?.client ?? client).delete<
-          MailboxesDeletePolicyResponses,
-          MailboxesDeletePolicyErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/policies/{policyId}",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Get a mailbox policy
-   *
-   * Returns one send policy.
-   */
-  public static getPolicy<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: MailboxId;
-      policyId: MailboxPolicyId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesGetPolicyResponses, MailboxesGetPolicyErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "path", key: "policyId" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(options?.client ?? client, "mailboxesGetPolicy", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesGetPolicyResponses,
-        MailboxesGetPolicyErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/policies/{policyId}",
-        ...options,
-        ...params,
-        headers,
-      }),
-    );
-  }
-
-  /**
-   * Update a mailbox policy
-   *
-   * Updates the fields you name and keeps the rest. Set `enabled` to `false` to stop a policy applying without deleting it.
-   */
-  public static updatePolicy<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: MailboxId;
-      policyId: MailboxPolicyId;
-      name?: string | null | undefined;
-      outcome?: MailboxPolicyOutcomeKind | null | undefined;
-      reason?: string | null | undefined;
-      enabled?: boolean | null | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesUpdatePolicyResponses, MailboxesUpdatePolicyErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "path", key: "policyId" },
-            { in: "body", key: "name" },
-            { in: "body", key: "outcome" },
-            { in: "body", key: "reason" },
-            { in: "body", key: "enabled" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "mailboxesUpdatePolicy",
-      options,
-      (headers) =>
-        (options?.client ?? client).patch<
-          MailboxesUpdatePolicyResponses,
-          MailboxesUpdatePolicyErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/policies/{policyId}",
           ...options,
           ...params,
           body: params.body ?? {},
@@ -14480,7 +14359,7 @@ export class Mailboxes {
   /**
    * List mailbox decisions awaiting you
    *
-   * Returns held sends this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.
+   * Returns held actions this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.
    */
   public static getNeedsYou<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -14574,7 +14453,7 @@ export class Mailboxes {
   /**
    * List threads across your mailboxes
    *
-   * Lists only threads in mailboxes the caller can read, newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes the caller's Done and shared closed threads; state=done selects the caller's Done plus closed shared threads, without duplicates. Other filters and cursor pagination match the per-mailbox list.
+   * Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes the caller's Done and shared closed threads; state=done selects the caller's Done plus closed shared threads, without duplicates. Other filters and cursor pagination match the per-mailbox list.
    */
   public static listOrganizationThreads<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -14644,7 +14523,7 @@ export class Mailboxes {
   /**
    * List threads in a mailbox
    *
-   * Returns thread summaries, most recent activity first. `after` and `before` filter by last activity, so an agent polling for new mail passes the last time it looked. `q` is a full-text search over subjects, senders, and message text; `folder`, `label`, `unread`, and `starred` narrow the list. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. A thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once.
+   * Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once.
    */
   public static listThreads<ThrowOnError extends boolean = false>(
     parameters: {
@@ -15962,7 +15841,7 @@ export class Mailboxes {
   /**
    * List mailbox actions
    *
-   * Returns the actions proposed on a mailbox, newest first, filterable by `threadId`, `state` (`approvalRequired` lists the sends waiting for a person), and creation time (`after`, `before`). Filters apply together within the mailbox. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns the actions proposed on a mailbox, newest first, filterable by `threadId`, `state` (`approvalRequired` lists the actions waiting for a person), and creation time (`after`, `before`). Filters apply together within the mailbox. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static listActions<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16151,12 +16030,21 @@ export class Mailboxes {
   /**
    * Approve a mailbox action
    *
-   * Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer. Non-send approvals execute synchronously and return 200 with their own execution states. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.
+   * Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.
    */
   public static approveAction<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
       actionId: MailboxActionId;
+      reviewRound: PolicyReviewRound;
+      always?: boolean | null | undefined;
+      edits?:
+        | {
+            text?: string | null | undefined;
+            html?: string | null | undefined;
+          }
+        | null
+        | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesApproveActionResponses, MailboxesApproveActionErrors, ThrowOnError> {
@@ -16167,6 +16055,9 @@ export class Mailboxes {
           args: [
             { in: "path", key: "id" },
             { in: "path", key: "actionId" },
+            { in: "body", key: "reviewRound" },
+            { in: "body", key: "always" },
+            { in: "body", key: "edits" },
           ],
         },
       ],
@@ -16185,7 +16076,13 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/actions/{actionId}/approve",
           ...options,
           ...params,
-          headers,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
         }),
     );
   }
@@ -16199,6 +16096,7 @@ export class Mailboxes {
     parameters: {
       id: MailboxId;
       actionId: MailboxActionId;
+      reviewRound: PolicyReviewRound;
       reason: string;
     },
     options?: Options<never, ThrowOnError>,
@@ -16210,6 +16108,7 @@ export class Mailboxes {
           args: [
             { in: "path", key: "id" },
             { in: "path", key: "actionId" },
+            { in: "body", key: "reviewRound" },
             { in: "body", key: "reason" },
           ],
         },
@@ -16283,6 +16182,146 @@ export class Mailboxes {
 
 export class Mailboxes2 {
   static mailboxes = Mailboxes;
+}
+
+export class Policies {
+  /**
+   * Clear decision rules
+   *
+   * Clears this scope's rules and instructions only when ifVersion matches, and returns the next version. The stored version is retained. Other scopes and subject defaults continue to apply.
+   */
+  public static deletePolicy<ThrowOnError extends boolean = false>(
+    parameters: {
+      kind: "organization" | "mailbox" | "apiKey" | "agent";
+      id: string;
+      ifVersion: number;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PoliciesDeletePolicyResponses, PoliciesDeletePolicyErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "kind" },
+            { in: "path", key: "id" },
+            { in: "query", key: "ifVersion" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "policiesDeletePolicy",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          PoliciesDeletePolicyResponses,
+          PoliciesDeletePolicyErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/policies/{kind}/{id}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get decision rules
+   *
+   * Returns the rules and instructions for an organization, mailbox, API key, or agent in the current organization. An agent scope holds the rules added by approving its actions with `always`; they apply on top of the agent's published rules. An unset policy has version 0 and no rules or presets.
+   */
+  public static getPolicy<ThrowOnError extends boolean = false>(
+    parameters: {
+      kind: "organization" | "mailbox" | "apiKey" | "agent";
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PoliciesGetPolicyResponses, PoliciesGetPolicyErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "kind" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "policiesGetPolicy", options, (headers) =>
+      (options?.client ?? client).get<
+        PoliciesGetPolicyResponses,
+        PoliciesGetPolicyErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/policies/{kind}/{id}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Set decision rules
+   *
+   * Replaces this scope's rules and instructions only when ifVersion matches its current version. A stale version returns a conflict. More specific scopes replace defaults; atLeast floors remain binding. Identical rule matches in one scope are rejected.
+   */
+  public static setPolicy<ThrowOnError extends boolean = false>(
+    parameters: {
+      kind: "organization" | "mailbox" | "apiKey" | "agent";
+      id: string;
+      presets: Array<string>;
+      rules: Array<PolicyRule>;
+      instructions?: string | null | undefined;
+      ifVersion: PolicyVersion;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PoliciesSetPolicyResponses, PoliciesSetPolicyErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "kind" },
+            { in: "path", key: "id" },
+            { in: "body", key: "presets" },
+            { in: "body", key: "rules" },
+            { in: "body", key: "instructions" },
+            { in: "body", key: "ifVersion" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "policiesSetPolicy", options, (headers) =>
+      (options?.client ?? client).put<
+        PoliciesSetPolicyResponses,
+        PoliciesSetPolicyErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/policies/{kind}/{id}",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+        headers: { "Content-Type": "application/json", ...headers },
+      }),
+    );
+  }
+}
+
+export class Policies2 {
+  static policies = Policies;
 }
 
 export class Namespaces {
@@ -16371,7 +16410,7 @@ export class Namespaces {
   /**
    * Delete a namespace
    *
-   * Deletes an empty namespace. A namespace that still holds anything conflicts, and the error counts what remains: mailboxes, API keys, webhook endpoints filtered to it, domains, senders, contacts, or template projects. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes, keys, and webhook endpoints cannot move and are deleted. Messages keep the namespace they ran in.
+   * Deletes an empty namespace. A namespace that still holds anything conflicts, and the error names and counts each resource kind that remains. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes, keys, and webhook endpoints cannot move and are deleted. Messages keep the namespace they ran in.
    */
   public static remove<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16883,7 +16922,7 @@ export class ExtensionInstallations {
   /**
    * Install an extension
    *
-   * Installs a published version with a scope, permissions, and a send mode, and returns it with status 201. The installation acts on your grants narrowed to these; a webhook installation's API key and webhook secret are returned once. Only a person can install, not an API key.
+   * Installs a published version with a scope, permissions, and an action policy, and returns it with status 201. The installation acts on your grants narrowed to these; a webhook installation's API key and webhook secret are returned once. Only a person can install, not an API key.
    */
   public static install<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16892,7 +16931,7 @@ export class ExtensionInstallations {
       mailboxIds?: Array<MailboxId> | null | undefined;
       namespaceId?: NamespaceId | null | undefined;
       permissions?: Array<"read" | "update" | "send" | "quarantine.read"> | null | undefined;
-      sendMode?: "send" | "approval" | null | undefined;
+      policy?: PolicyConfiguration | null | undefined;
       webhookUrl?: string | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -16911,7 +16950,7 @@ export class ExtensionInstallations {
             { in: "body", key: "mailboxIds" },
             { in: "body", key: "namespaceId" },
             { in: "body", key: "permissions" },
-            { in: "body", key: "sendMode" },
+            { in: "body", key: "policy" },
             { in: "body", key: "webhookUrl" },
           ],
         },
@@ -16980,7 +17019,7 @@ export class ExtensionInstallations {
   /**
    * Get an installation
    *
-   * Returns one installation with its permissions, scope, send mode, and webhook endpoint.
+   * Returns one installation with its permissions, scope, action policy, and webhook endpoint.
    */
   public static get<ThrowOnError extends boolean = false>(
     parameters: {
@@ -17015,7 +17054,7 @@ export class ExtensionInstallations {
   /**
    * Upgrade or roll back an installation
    *
-   * Changes the pinned version in place. Omit version for the latest publication, or name a version string or id, including an older version to roll back. Preview with dryRun; changing requires acceptPermissions to list exactly the added permission: and event: grants. Only a person can upgrade. Credentials, owner, scope, send mode, and status stay attached to the installation.
+   * Changes the pinned version in place. Omit version for the latest publication, or name a version string or id, including an older version to roll back. Preview with dryRun; changing requires acceptPermissions to list exactly the added permission: and event: grants. Only a person can upgrade. Credentials, owner, scope, policy, and status stay attached to the installation.
    */
   public static upgrade<ThrowOnError extends boolean = false>(
     parameters: {
@@ -17563,6 +17602,8 @@ Object.assign(Journeys.listRuns, { operation: "journeysListRuns" });
 
 Object.assign(Journeys.getRun, { operation: "journeysGetRun" });
 
+Object.assign(Agents.rerunTests, { operation: "agentsRerunTests" });
+
 Object.assign(Agents.list, { operation: "agentsList" });
 
 Object.assign(Agents.create, { operation: "agentsCreate" });
@@ -17717,7 +17758,7 @@ Object.assign(Templates.detachFamilyMember, { operation: "templatesDetachFamilyM
 
 Object.assign(Templates.attachFamilyMember, { operation: "templatesAttachFamilyMember" });
 
-Object.assign(Templates.remove, { operation: "templatesRemove" });
+Object.assign(Templates.delete, { operation: "templatesDelete" });
 
 Object.assign(Templates.getById, { operation: "templatesGetById" });
 
@@ -17726,6 +17767,8 @@ Object.assign(Templates.update, { operation: "templatesUpdate" });
 Object.assign(Templates.createFromWebsite, { operation: "templatesCreateFromWebsite" });
 
 Object.assign(Templates.addEntry, { operation: "templatesAddEntry" });
+
+Object.assign(Templates.deleteProject, { operation: "templatesDeleteProject" });
 
 Object.assign(Templates.patchWorkspace, { operation: "templatesPatchWorkspace" });
 
@@ -17879,16 +17922,6 @@ Object.assign(Mailboxes.revokeGrant, { operation: "mailboxesRevokeGrant" });
 
 Object.assign(Mailboxes.updateGrant, { operation: "mailboxesUpdateGrant" });
 
-Object.assign(Mailboxes.listPolicies, { operation: "mailboxesListPolicies" });
-
-Object.assign(Mailboxes.createPolicy, { operation: "mailboxesCreatePolicy" });
-
-Object.assign(Mailboxes.deletePolicy, { operation: "mailboxesDeletePolicy" });
-
-Object.assign(Mailboxes.getPolicy, { operation: "mailboxesGetPolicy" });
-
-Object.assign(Mailboxes.updatePolicy, { operation: "mailboxesUpdatePolicy" });
-
 Object.assign(Mailboxes.listFolders, { operation: "mailboxesListFolders" });
 
 Object.assign(Mailboxes.listLabels, { operation: "mailboxesListLabels" });
@@ -17974,6 +18007,12 @@ Object.assign(Mailboxes.approveAction, { operation: "mailboxesApproveAction" });
 Object.assign(Mailboxes.denyAction, { operation: "mailboxesDenyAction" });
 
 Object.assign(Mailboxes.listEvents, { operation: "mailboxesListEvents" });
+
+Object.assign(Policies.deletePolicy, { operation: "policiesDeletePolicy" });
+
+Object.assign(Policies.getPolicy, { operation: "policiesGetPolicy" });
+
+Object.assign(Policies.setPolicy, { operation: "policiesSetPolicy" });
 
 Object.assign(Namespaces.list, { operation: "namespacesList" });
 

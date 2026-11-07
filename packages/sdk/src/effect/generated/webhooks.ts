@@ -210,6 +210,8 @@ export type WebhookEndpoint = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -267,6 +269,8 @@ export const WebhookEndpoint = /* @__PURE__ */ (() =>
         Schema.Literal("webhook.test"),
         Schema.Literal("domain.updated"),
         Schema.Literal("domain.warming.updated"),
+        Schema.Literal("email.sending.paused"),
+        Schema.Literal("email.sending.resumed"),
         Schema.Literal("template.registration.updated"),
         Schema.Literal("flow.registration.updated"),
         Schema.Literal("whatsapp.number.connected"),
@@ -328,6 +332,8 @@ export type WebhookEndpointListItem = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -386,6 +392,8 @@ export const WebhookEndpointListItem = /* @__PURE__ */ (() =>
         Schema.Literal("webhook.test"),
         Schema.Literal("domain.updated"),
         Schema.Literal("domain.warming.updated"),
+        Schema.Literal("email.sending.paused"),
+        Schema.Literal("email.sending.resumed"),
         Schema.Literal("template.registration.updated"),
         Schema.Literal("flow.registration.updated"),
         Schema.Literal("whatsapp.number.connected"),
@@ -638,6 +646,7 @@ export const WebhookEndpointPage = /* @__PURE__ */ (() =>
 export type WebhooksListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
+  readonly namespaceId?: NamespaceId;
   readonly search?: string;
   readonly status?: "active" | "disabled";
 };
@@ -657,6 +666,7 @@ export const WebhooksListQuery = /* @__PURE__ */ (() =>
       ]),
     ),
     cursor: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(NamespaceId),
     search: Schema.optionalKey(Schema.String),
     status: Schema.optionalKey(
       Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
@@ -705,6 +715,8 @@ export type WebhooksCreateRequestJson = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -765,6 +777,8 @@ export const WebhooksCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Literal("webhook.test"),
         Schema.Literal("domain.updated"),
         Schema.Literal("domain.warming.updated"),
+        Schema.Literal("email.sending.paused"),
+        Schema.Literal("email.sending.resumed"),
         Schema.Literal("template.registration.updated"),
         Schema.Literal("flow.registration.updated"),
         Schema.Literal("whatsapp.number.connected"),
@@ -907,6 +921,8 @@ export type WebhooksUpdateRequestJson = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -976,6 +992,8 @@ export const WebhooksUpdateRequestJson = /* @__PURE__ */ (() =>
             Schema.Literal("webhook.test"),
             Schema.Literal("domain.updated"),
             Schema.Literal("domain.warming.updated"),
+            Schema.Literal("email.sending.paused"),
+            Schema.Literal("email.sending.resumed"),
             Schema.Literal("template.registration.updated"),
             Schema.Literal("flow.registration.updated"),
             Schema.Literal("whatsapp.number.connected"),
@@ -1234,7 +1252,7 @@ export class WebhooksGroup extends HttpApiGroup.make("Webhooks")
       .annotate(OpenApi.Summary, "List webhooks")
       .annotate(
         OpenApi.Description,
-        "Returns the organization's webhook endpoints, oldest first, with each endpoint's delivery counts, optionally filtered by a search term matched against name and URL, and by status. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
+        "Returns the organization's webhook endpoints, oldest first, with each endpoint's delivery counts, optionally filtered by namespace (`namespaceId`), a search term matched against name and URL, and by status. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
       ),
     HttpApiEndpoint.post("webhooksCreate", "/v1/webhooks", {
       payload: WebhooksCreateRequestJson,

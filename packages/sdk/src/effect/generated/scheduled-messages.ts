@@ -28,6 +28,7 @@ import {
   MalformedRequestError,
   MessageId,
   MessageMetadata,
+  NamespaceId,
   RenderLocale,
   RenderTimeZone,
   ReplyToAddresses,
@@ -281,6 +282,7 @@ export const DispatchSendMessagePayload = /* @__PURE__ */ (() =>
   ]).annotate({ identifier: "DispatchSendMessagePayload" }))();
 export type ScheduledMessage = {
   readonly id: ScheduledMessageId;
+  readonly namespaceId: NamespaceId | null;
   readonly status: "pending" | "dispatching" | "paused" | "dispatched" | "cancelled" | "failed";
   readonly scheduledFor: string;
   readonly timezone: string;
@@ -299,6 +301,7 @@ export type ScheduledMessage = {
 export const ScheduledMessage = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: ScheduledMessageId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     status: Schema.Union([
       Schema.Literal("pending"),
       Schema.Literal("dispatching"),
@@ -333,6 +336,7 @@ export const ScheduledMessagePage = /* @__PURE__ */ (() =>
 export type ScheduledMessagesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
+  readonly namespaceId?: NamespaceId;
   readonly status?: "pending" | "dispatching" | "paused" | "dispatched" | "cancelled" | "failed";
 };
 export const ScheduledMessagesListQuery = /* @__PURE__ */ (() =>
@@ -351,6 +355,7 @@ export const ScheduledMessagesListQuery = /* @__PURE__ */ (() =>
       ]),
     ),
     cursor: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(NamespaceId),
     status: Schema.optionalKey(
       Schema.Union([
         Schema.Literal("pending"),
@@ -394,6 +399,7 @@ export const ScheduledMessagesCreateHeaders = /* @__PURE__ */ (() =>
     ),
   }))();
 export type ScheduledMessagesCreateRequestJson = {
+  readonly namespaceId?: NamespaceId | null;
   readonly send: DispatchSendMessagePayload;
   readonly scheduledFor: __SamvaRuntimeAbsoluteInstant;
   readonly timezone?: IanaTimezone | null;
@@ -401,6 +407,7 @@ export type ScheduledMessagesCreateRequestJson = {
 };
 export const ScheduledMessagesCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     send: DispatchSendMessagePayload,
     scheduledFor: __SamvaRuntimeAbsoluteInstant,
     timezone: Schema.optionalKey(Schema.Union([IanaTimezone, Schema.Null])),
@@ -412,9 +419,11 @@ export type ScheduledMessagesCreate400 = MalformedRequestError;
 export const ScheduledMessagesCreate400 = MalformedRequestError;
 export type ScheduledMessagesCreate401 = UnauthorizedError;
 export const ScheduledMessagesCreate401 = UnauthorizedError;
-export type ScheduledMessagesCreate403 = FlagDisabledError | ForbiddenError;
+export type ScheduledMessagesCreate403 = ForbiddenError | FlagDisabledError;
 export const ScheduledMessagesCreate403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type ScheduledMessagesCreate404 = ResourceNotFoundError;
+export const ScheduledMessagesCreate404 = ResourceNotFoundError;
 export type ScheduledMessagesCreate409 = ConflictError;
 export const ScheduledMessagesCreate409 = ConflictError;
 export type ScheduledMessagesCreate422 = ValidationError;
@@ -536,6 +545,7 @@ export class ScheduledMessagesGroup extends HttpApiGroup.make("Scheduled Message
         ScheduledMessagesCreate400.pipe(HttpApiSchema.status(400)),
         ScheduledMessagesCreate401.pipe(HttpApiSchema.status(401)),
         ScheduledMessagesCreate403.pipe(HttpApiSchema.status(403)),
+        ScheduledMessagesCreate404.pipe(HttpApiSchema.status(404)),
         ScheduledMessagesCreate409.pipe(HttpApiSchema.status(409)),
         ScheduledMessagesCreate422.pipe(HttpApiSchema.status(422)),
         ScheduledMessagesCreate500,

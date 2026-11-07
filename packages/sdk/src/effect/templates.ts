@@ -21,7 +21,9 @@ export const createFamilyFromTemplate = /* @__PURE__ */ make("templatesCreateFam
 export const attachFamilyMember = /* @__PURE__ */ make("templatesAttachFamilyMember");
 export const detachFamilyMember = /* @__PURE__ */ make("templatesDetachFamilyMember");
 export const getById = /* @__PURE__ */ make("templatesGetById");
-export const remove = /* @__PURE__ */ make("templatesRemove");
+const deleteTemplate = /* @__PURE__ */ make("templatesDelete");
+export { deleteTemplate as delete };
+export const deleteProject = /* @__PURE__ */ make("templatesDeleteProject");
 export const update = /* @__PURE__ */ make("templatesUpdate");
 export const openWorkspace = /* @__PURE__ */ make("templatesOpenWorkspace");
 export const getGitRepository = /* @__PURE__ */ make("templatesGetGitRepository");

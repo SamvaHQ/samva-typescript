@@ -97,40 +97,15 @@ type WithPagination<Method> = Method extends (
     : Method
   : Method;
 
-const MODULE_NAMES = {
-  agents: "Agents",
-  analytics: "Analytics",
-  apiKeys: "ApiKeys",
-  attachments: "Attachments",
-  brands: "Brands",
-  campaigns: "Campaigns",
-  contactGroups: "ContactGroups",
-  contacts: "Contacts",
-  conversations: "Conversations",
-  customFields: "CustomFields",
-  email: "Email",
-  extensions: "Extensions",
-  feedback: "Feedback",
-  mailboxes: "Mailboxes",
-  media: "Media",
-  messages: "Messages",
-  namespaces: "Namespaces",
-  operations: "Operations",
-  organizations: "Organizations",
-  scheduledMessages: "ScheduledMessages",
-  templates: "Templates",
-  topics: "Topics",
-  webhooks: "Webhooks",
-  whoami: "Whoami",
-} as const;
-
 const traceName = (operationName: SdkOperation): string => {
-  for (const [prefix, moduleName] of Object.entries(MODULE_NAMES)) {
-    if (!operationName.startsWith(prefix)) continue;
-    const method = operationName.slice(prefix.length);
-    return `${moduleName}.${method[0]!.toLowerCase()}${method.slice(1)}`;
-  }
-  return `Samva.${operationName}`;
+  const moduleName = SamvaOperations[operationName].group
+    .split(" ")
+    .map((word) => word[0]!.toUpperCase() + word.slice(1).toLowerCase())
+    .join("");
+  const prefix = moduleName[0]!.toLowerCase() + moduleName.slice(1);
+  if (!operationName.startsWith(prefix)) return `Samva.${operationName}`;
+  const method = operationName.slice(prefix.length);
+  return `${moduleName}.${method[0]!.toLowerCase()}${method.slice(1)}`;
 };
 
 export const stripUndefined = <Value>(input: Value): Value => {

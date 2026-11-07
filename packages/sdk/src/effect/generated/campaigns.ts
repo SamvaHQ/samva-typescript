@@ -845,6 +845,8 @@ export const CampaignsCreate402 = PaymentRequiredError;
 export type CampaignsCreate403 = FlagDisabledError | ForbiddenError;
 export const CampaignsCreate403 = /* @__PURE__ */ (() =>
   Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type CampaignsCreate404 = ResourceNotFoundError;
+export const CampaignsCreate404 = ResourceNotFoundError;
 export type CampaignsCreate422 = ValidationError;
 export const CampaignsCreate422 = ValidationError;
 export type CampaignsCreate500 = InternalError;
@@ -1359,6 +1361,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
         CampaignsCreate401.pipe(HttpApiSchema.status(401)),
         CampaignsCreate402.pipe(HttpApiSchema.status(402)),
         CampaignsCreate403.pipe(HttpApiSchema.status(403)),
+        CampaignsCreate404.pipe(HttpApiSchema.status(404)),
         CampaignsCreate422.pipe(HttpApiSchema.status(422)),
         CampaignsCreate500,
         CampaignsCreate502.pipe(HttpApiSchema.status(502)),

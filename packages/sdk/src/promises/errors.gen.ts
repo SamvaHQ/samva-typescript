@@ -26,6 +26,7 @@ export type SamvaApiErrorTag =
   | "ResourceNotFoundError"
   | "SenderNotReadyError"
   | "ServiceUnavailableError"
+  | "TemplateInUseError"
   | "TemplateSourceError"
   | "UnauthorizedError"
   | "ValidationError"
@@ -528,6 +529,25 @@ export class ServiceUnavailableError extends SamvaApiError<"ServiceUnavailableEr
   }
 }
 
+type TemplateInUseErrorPayload = {
+  readonly _tag: "TemplateInUseError";
+  readonly message: string;
+  readonly references: Array<{ readonly kind: string; readonly id: string }>;
+};
+
+export class TemplateInUseError extends SamvaApiError<"TemplateInUseError"> {
+  readonly _tag = "TemplateInUseError" as const;
+  declare readonly "references": Array<{ readonly kind: string; readonly id: string }>;
+
+  constructor(
+    payload: Omit<TemplateInUseErrorPayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("TemplateInUseError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 type TemplateSourceErrorPayload = {
   readonly _tag: "TemplateSourceError";
   readonly diagnostics: Array<{
@@ -669,6 +689,7 @@ export type AnySamvaApiError =
   | ResourceNotFoundError
   | SenderNotReadyError
   | ServiceUnavailableError
+  | TemplateInUseError
   | TemplateSourceError
   | UnauthorizedError
   | ValidationError
@@ -699,6 +720,7 @@ const constructors = {
   ResourceNotFoundError: ResourceNotFoundError,
   SenderNotReadyError: SenderNotReadyError,
   ServiceUnavailableError: ServiceUnavailableError,
+  TemplateInUseError: TemplateInUseError,
   TemplateSourceError: TemplateSourceError,
   UnauthorizedError: UnauthorizedError,
   ValidationError: ValidationError,
@@ -1113,27 +1135,129 @@ const payloadSchemas = {
               {
                 type: "object",
                 properties: {
-                  outcome: { type: "string", enum: ["allow", "requireApproval", "deny"] },
-                  reason: { anyOf: [{ type: "string" }, { type: "null" }] },
-                  policyId: {
+                  id: {
+                    type: "string",
+                    pattern: "^pdec_[0-9a-hjkmnp-tv-z]{16,24}$",
+                    "x-samva-brand": "PolicyDecisionId",
+                  },
+                  reviewRound: { type: "integer", maximum: 9007199254740991, exclusiveMinimum: 0 },
+                  requirement: { type: "string", enum: ["run", "model", "person", "never"] },
+                  decider: { type: "string", enum: ["rule", "model", "person", "agent"] },
+                  outcome: { type: "string", enum: ["allow", "hold", "refuse"] },
+                  reason: { type: "string", minLength: 1 },
+                  scopes: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        kind: {
+                          type: "string",
+                          enum: ["organization", "mailbox", "agent", "apiKey"],
+                        },
+                        id: { type: "string", minLength: 1 },
+                      },
+                      required: ["kind", "id"],
+                      additionalProperties: false,
+                    },
+                  },
+                  rule: {
                     anyOf: [
                       {
-                        type: "string",
-                        pattern: "^mbxpol_[0-9a-hjkmnp-tv-z]{16,24}$",
-                        "x-samva-brand": "MailboxPolicyId",
+                        type: "object",
+                        properties: {
+                          scope: {
+                            type: "object",
+                            properties: {
+                              kind: {
+                                type: "string",
+                                enum: ["organization", "mailbox", "agent", "apiKey"],
+                              },
+                              id: { type: "string", minLength: 1 },
+                            },
+                            required: ["kind", "id"],
+                            additionalProperties: false,
+                          },
+                          index: { type: "integer", minimum: 0, maximum: 9007199254740991 },
+                        },
+                        required: ["scope", "index"],
+                        additionalProperties: false,
                       },
                       { type: "null" },
                     ],
                   },
-                  source: {
+                  guard: { anyOf: [{ type: "string", minLength: 1 }, { type: "null" }] },
+                  guardReason: { anyOf: [{ type: "string", minLength: 1 }, { type: "null" }] },
+                  resolution: {
                     anyOf: [
-                      { type: "string", enum: ["grant", "installation", "policy"] },
+                      {
+                        type: "object",
+                        properties: {
+                          by: {
+                            type: "string",
+                            pattern: "^user_[0-9a-hjkmnp-tv-z]{16,24}$",
+                            "x-samva-brand": "UserId",
+                          },
+                          at: { type: "string" },
+                          as: {
+                            type: "string",
+                            enum: ["approved", "edited", "denied", "alwaysAllowed"],
+                          },
+                          diff: {
+                            anyOf: [
+                              {
+                                type: "object",
+                                properties: {
+                                  text: {
+                                    anyOf: [
+                                      {
+                                        type: "object",
+                                        properties: {
+                                          before: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                          after: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                        },
+                                        required: ["before", "after"],
+                                        additionalProperties: false,
+                                      },
+                                      { type: "null" },
+                                    ],
+                                  },
+                                  html: {
+                                    anyOf: [
+                                      {
+                                        type: "object",
+                                        properties: {
+                                          before: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                          after: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                        },
+                                        required: ["before", "after"],
+                                        additionalProperties: false,
+                                      },
+                                      { type: "null" },
+                                    ],
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              { type: "null" },
+                            ],
+                          },
+                        },
+                        required: ["by", "at", "as"],
+                        additionalProperties: false,
+                      },
                       { type: "null" },
                     ],
                   },
-                  decidedAt: { type: "string" },
                 },
-                required: ["outcome", "reason", "policyId", "source", "decidedAt"],
+                required: [
+                  "id",
+                  "reviewRound",
+                  "requirement",
+                  "decider",
+                  "outcome",
+                  "reason",
+                  "scopes",
+                ],
                 additionalProperties: false,
               },
               { type: "null" },
@@ -1419,27 +1543,129 @@ const payloadSchemas = {
               {
                 type: "object",
                 properties: {
-                  outcome: { type: "string", enum: ["allow", "requireApproval", "deny"] },
-                  reason: { anyOf: [{ type: "string" }, { type: "null" }] },
-                  policyId: {
+                  id: {
+                    type: "string",
+                    pattern: "^pdec_[0-9a-hjkmnp-tv-z]{16,24}$",
+                    "x-samva-brand": "PolicyDecisionId",
+                  },
+                  reviewRound: { type: "integer", maximum: 9007199254740991, exclusiveMinimum: 0 },
+                  requirement: { type: "string", enum: ["run", "model", "person", "never"] },
+                  decider: { type: "string", enum: ["rule", "model", "person", "agent"] },
+                  outcome: { type: "string", enum: ["allow", "hold", "refuse"] },
+                  reason: { type: "string", minLength: 1 },
+                  scopes: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        kind: {
+                          type: "string",
+                          enum: ["organization", "mailbox", "agent", "apiKey"],
+                        },
+                        id: { type: "string", minLength: 1 },
+                      },
+                      required: ["kind", "id"],
+                      additionalProperties: false,
+                    },
+                  },
+                  rule: {
                     anyOf: [
                       {
-                        type: "string",
-                        pattern: "^mbxpol_[0-9a-hjkmnp-tv-z]{16,24}$",
-                        "x-samva-brand": "MailboxPolicyId",
+                        type: "object",
+                        properties: {
+                          scope: {
+                            type: "object",
+                            properties: {
+                              kind: {
+                                type: "string",
+                                enum: ["organization", "mailbox", "agent", "apiKey"],
+                              },
+                              id: { type: "string", minLength: 1 },
+                            },
+                            required: ["kind", "id"],
+                            additionalProperties: false,
+                          },
+                          index: { type: "integer", minimum: 0, maximum: 9007199254740991 },
+                        },
+                        required: ["scope", "index"],
+                        additionalProperties: false,
                       },
                       { type: "null" },
                     ],
                   },
-                  source: {
+                  guard: { anyOf: [{ type: "string", minLength: 1 }, { type: "null" }] },
+                  guardReason: { anyOf: [{ type: "string", minLength: 1 }, { type: "null" }] },
+                  resolution: {
                     anyOf: [
-                      { type: "string", enum: ["grant", "installation", "policy"] },
+                      {
+                        type: "object",
+                        properties: {
+                          by: {
+                            type: "string",
+                            pattern: "^user_[0-9a-hjkmnp-tv-z]{16,24}$",
+                            "x-samva-brand": "UserId",
+                          },
+                          at: { type: "string" },
+                          as: {
+                            type: "string",
+                            enum: ["approved", "edited", "denied", "alwaysAllowed"],
+                          },
+                          diff: {
+                            anyOf: [
+                              {
+                                type: "object",
+                                properties: {
+                                  text: {
+                                    anyOf: [
+                                      {
+                                        type: "object",
+                                        properties: {
+                                          before: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                          after: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                        },
+                                        required: ["before", "after"],
+                                        additionalProperties: false,
+                                      },
+                                      { type: "null" },
+                                    ],
+                                  },
+                                  html: {
+                                    anyOf: [
+                                      {
+                                        type: "object",
+                                        properties: {
+                                          before: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                          after: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                        },
+                                        required: ["before", "after"],
+                                        additionalProperties: false,
+                                      },
+                                      { type: "null" },
+                                    ],
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              { type: "null" },
+                            ],
+                          },
+                        },
+                        required: ["by", "at", "as"],
+                        additionalProperties: false,
+                      },
                       { type: "null" },
                     ],
                   },
-                  decidedAt: { type: "string" },
                 },
-                required: ["outcome", "reason", "policyId", "source", "decidedAt"],
+                required: [
+                  "id",
+                  "reviewRound",
+                  "requirement",
+                  "decider",
+                  "outcome",
+                  "reason",
+                  "scopes",
+                ],
                 additionalProperties: false,
               },
               { type: "null" },
@@ -1595,6 +1821,26 @@ const payloadSchemas = {
     additionalProperties: false,
     "x-category": ["transient"],
     "x-retryable": true,
+  },
+  TemplateInUseError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["TemplateInUseError"] },
+      message: { type: "string" },
+      references: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { kind: { type: "string" }, id: { type: "string" } },
+          required: ["kind", "id"],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ["_tag", "message", "references"],
+    additionalProperties: false,
+    "x-category": ["conflict"],
+    "x-retryable": false,
   },
   TemplateSourceError: {
     type: "object",

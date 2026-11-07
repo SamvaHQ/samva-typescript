@@ -37,7 +37,11 @@ const fixture = (input: unknown, definitions: Readonly<Record<string, unknown>>)
     }
     case "number":
     case "integer":
-      return typeof schema.minimum === "number" ? schema.minimum : 0;
+      return typeof schema.minimum === "number"
+        ? schema.minimum
+        : typeof schema.exclusiveMinimum === "number"
+          ? schema.exclusiveMinimum + 1
+          : 0;
     case "boolean":
       return true;
     case "null":

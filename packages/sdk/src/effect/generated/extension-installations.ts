@@ -1,6 +1,5 @@
 // Auto-generated from OpenAPI; do not edit.
 
-import type * as EffectBrand from "effect/Brand";
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 import * as Schema from "effect/Schema";
 
@@ -8,6 +7,7 @@ import {
   ApiKeySecurityMiddleware,
   ConflictError,
   ExtensionId,
+  ExtensionInstallationId,
   ExtensionVersionId,
   ExtensionVersionRef,
   ForbiddenError,
@@ -17,6 +17,7 @@ import {
   MalformedRequestError,
   NamespaceId,
   OrganizationId,
+  PolicyConfiguration,
   ResourceNotFoundError,
   SuccessResponse,
   UnauthorizedError,
@@ -26,14 +27,6 @@ import {
   __SamvaRuntimeSensitiveString,
 } from "./shared";
 
-export type ExtensionInstallationId = string & EffectBrand.Brand<"ExtensionInstallationId">;
-export const ExtensionInstallationId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^exti_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^exti_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "ExtensionInstallationId",
-    }),
-  ).pipe(Schema.brand("ExtensionInstallationId")))();
 export type ExtensionRunSummary = {
   readonly id: string;
   readonly eventId: string;
@@ -247,6 +240,38 @@ export const ExtensionInstallationSummary = /* @__PURE__ */ (() =>
     status: Schema.Union([Schema.Literal("active"), Schema.Literal("disabled")]),
     createdAt: Schema.String,
   }).annotate({ identifier: "ExtensionInstallationSummary" }))();
+export type ExtensionVersionChange = {
+  readonly id: string;
+  readonly organizationId: OrganizationId;
+  readonly installationId: ExtensionInstallationId;
+  readonly extensionId: ExtensionId;
+  readonly fromVersion: ExtensionVersionRef;
+  readonly toVersion: ExtensionVersionRef;
+  readonly permissionDiff: ExtensionPermissionDiff;
+  readonly changedBy: UserId;
+  readonly changedAt: string;
+};
+export const ExtensionVersionChange = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    organizationId: OrganizationId,
+    installationId: ExtensionInstallationId,
+    extensionId: ExtensionId,
+    fromVersion: ExtensionVersionRef,
+    toVersion: ExtensionVersionRef,
+    permissionDiff: ExtensionPermissionDiff,
+    changedBy: UserId,
+    changedAt: Schema.String,
+  }).annotate({ identifier: "ExtensionVersionChange" }))();
+export type ExtensionInstallationPage = {
+  readonly items: ReadonlyArray<ExtensionInstallationSummary>;
+  readonly nextCursor: string | null;
+};
+export const ExtensionInstallationPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(ExtensionInstallationSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "ExtensionInstallationPage" }))();
 export type ExtensionInstallation = {
   readonly id: ExtensionInstallationId;
   readonly extensionId: ExtensionId;
@@ -266,7 +291,7 @@ export type ExtensionInstallation = {
     | "mailbox.message.discarded"
   >;
   readonly permissions: ReadonlyArray<"read" | "update" | "send" | "quarantine.read">;
-  readonly sendMode: "send" | "approval";
+  readonly policy: PolicyConfiguration;
   readonly scope: {
     readonly mailboxIds: ReadonlyArray<MailboxId> | null;
     readonly namespaceId: NamespaceId | null;
@@ -304,7 +329,7 @@ export const ExtensionInstallation = /* @__PURE__ */ (() =>
         Schema.Literal("quarantine.read"),
       ]),
     ),
-    sendMode: Schema.Union([Schema.Literal("send"), Schema.Literal("approval")]),
+    policy: PolicyConfiguration,
     scope: Schema.Struct({
       mailboxIds: Schema.Union([Schema.Array(MailboxId), Schema.Null]),
       namespaceId: Schema.Union([NamespaceId, Schema.Null]),
@@ -316,38 +341,6 @@ export const ExtensionInstallation = /* @__PURE__ */ (() =>
     updatedAt: Schema.String,
     disabledAt: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "ExtensionInstallation" }))();
-export type ExtensionVersionChange = {
-  readonly id: string;
-  readonly organizationId: OrganizationId;
-  readonly installationId: ExtensionInstallationId;
-  readonly extensionId: ExtensionId;
-  readonly fromVersion: ExtensionVersionRef;
-  readonly toVersion: ExtensionVersionRef;
-  readonly permissionDiff: ExtensionPermissionDiff;
-  readonly changedBy: UserId;
-  readonly changedAt: string;
-};
-export const ExtensionVersionChange = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: Schema.String,
-    organizationId: OrganizationId,
-    installationId: ExtensionInstallationId,
-    extensionId: ExtensionId,
-    fromVersion: ExtensionVersionRef,
-    toVersion: ExtensionVersionRef,
-    permissionDiff: ExtensionPermissionDiff,
-    changedBy: UserId,
-    changedAt: Schema.String,
-  }).annotate({ identifier: "ExtensionVersionChange" }))();
-export type ExtensionInstallationPage = {
-  readonly items: ReadonlyArray<ExtensionInstallationSummary>;
-  readonly nextCursor: string | null;
-};
-export const ExtensionInstallationPage = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    items: Schema.Array(ExtensionInstallationSummary),
-    nextCursor: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "ExtensionInstallationPage" }))();
 export type InstallExtensionResponse = {
   readonly installation: ExtensionInstallation;
   readonly credentials: {
@@ -430,7 +423,7 @@ export type ExtensionInstallationsInstallRequestJson = {
   readonly mailboxIds?: ReadonlyArray<MailboxId> | null;
   readonly namespaceId?: NamespaceId | null;
   readonly permissions?: ReadonlyArray<"read" | "update" | "send" | "quarantine.read"> | null;
-  readonly sendMode?: "send" | "approval" | null;
+  readonly policy?: PolicyConfiguration | null;
   readonly webhookUrl?: string | null;
 };
 export const ExtensionInstallationsInstallRequestJson = /* @__PURE__ */ (() =>
@@ -471,12 +464,7 @@ export const ExtensionInstallationsInstallRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    sendMode: Schema.optionalKey(
-      Schema.Union([
-        Schema.Union([Schema.Literal("send"), Schema.Literal("approval")]),
-        Schema.Null,
-      ]),
-    ),
+    policy: Schema.optionalKey(Schema.Union([PolicyConfiguration, Schema.Null])),
     webhookUrl: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
 export type ExtensionInstallationsInstall201 = InstallExtensionResponse;
@@ -747,7 +735,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       .annotate(OpenApi.Summary, "Install an extension")
       .annotate(
         OpenApi.Description,
-        "Installs a published version with a scope, permissions, and a send mode, and returns it with status 201. The installation acts on your grants narrowed to these; a webhook installation's API key and webhook secret are returned once. Only a person can install, not an API key.",
+        "Installs a published version with a scope, permissions, and an action policy, and returns it with status 201. The installation acts on your grants narrowed to these; a webhook installation's API key and webhook secret are returned once. Only a person can install, not an API key.",
       ),
     HttpApiEndpoint.get("extensionInstallationsGet", "/v1/extension-installations/:id", {
       params: ExtensionInstallationsGetPathParams,
@@ -767,7 +755,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       .annotate(OpenApi.Summary, "Get an installation")
       .annotate(
         OpenApi.Description,
-        "Returns one installation with its permissions, scope, send mode, and webhook endpoint.",
+        "Returns one installation with its permissions, scope, action policy, and webhook endpoint.",
       ),
     HttpApiEndpoint.delete("extensionInstallationsUninstall", "/v1/extension-installations/:id", {
       params: ExtensionInstallationsUninstallPathParams,
@@ -904,7 +892,7 @@ export class ExtensionInstallationsGroup extends HttpApiGroup.make("Extension in
       .annotate(OpenApi.Summary, "Upgrade or roll back an installation")
       .annotate(
         OpenApi.Description,
-        "Changes the pinned version in place. Omit version for the latest publication, or name a version string or id, including an older version to roll back. Preview with dryRun; changing requires acceptPermissions to list exactly the added permission: and event: grants. Only a person can upgrade. Credentials, owner, scope, send mode, and status stay attached to the installation.",
+        "Changes the pinned version in place. Omit version for the latest publication, or name a version string or id, including an older version to roll back. Preview with dryRun; changing requires acceptPermissions to list exactly the added permission: and event: grants. Only a person can upgrade. Credentials, owner, scope, policy, and status stay attached to the installation.",
       ),
   )
   .annotate(

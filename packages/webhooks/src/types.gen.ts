@@ -921,6 +921,28 @@ export type DomainWarmingUpdatedEvent = {
   } & { readonly [x: string]: JsonValue };
 } & { readonly [x: string]: JsonValue };
 export type DomainWarmingUpdatedPayload = DomainWarmingUpdatedEvent["data"];
+export type EmailSendingPausedEvent = {
+  readonly type: "email.sending.paused";
+  readonly timestamp: string;
+  readonly data: {
+    readonly organizationId: string;
+    readonly namespaceId: string | null;
+    readonly channel: "email";
+    readonly occurredAt: string;
+  } & { readonly [x: string]: JsonValue };
+} & { readonly [x: string]: JsonValue };
+export type EmailSendingPausedPayload = EmailSendingPausedEvent["data"];
+export type EmailSendingResumedEvent = {
+  readonly type: "email.sending.resumed";
+  readonly timestamp: string;
+  readonly data: {
+    readonly organizationId: string;
+    readonly namespaceId: string | null;
+    readonly channel: "email";
+    readonly occurredAt: string;
+  } & { readonly [x: string]: JsonValue };
+} & { readonly [x: string]: JsonValue };
+export type EmailSendingResumedPayload = EmailSendingResumedEvent["data"];
 export type TemplateRegistrationUpdatedEvent = {
   readonly type: "template.registration.updated";
   readonly timestamp: string;
@@ -1142,14 +1164,55 @@ export type MailboxActionPendingApprovalEvent = {
         | "changeThreadState"
         | "call"
         | "extensionRequest"
-        | "toolCall";
+        | "toolCall"
+        | "handoff";
+      readonly reviewRound: number;
       readonly state?: "approvalRequired";
-      readonly decision?: {
-        readonly outcome: "allow" | "requireApproval" | "deny";
-        readonly reason: string | null;
-        readonly policyId: string | null;
-        readonly source: "grant" | "installation" | "policy" | null;
-        readonly decidedAt: string;
+      readonly decision: {
+        readonly id: string;
+        readonly reviewRound: number;
+        readonly requirement: "run" | "model" | "person" | "never";
+        readonly decider: "rule" | "model" | "person" | "agent";
+        readonly outcome: "allow" | "hold" | "refuse";
+        readonly reason: string;
+        readonly scopes: ReadonlyArray<
+          {
+            readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+            readonly id: string;
+          } & { readonly [x: string]: JsonValue }
+        >;
+        readonly rule?:
+          | ({
+              readonly scope: {
+                readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+                readonly id: string;
+              } & { readonly [x: string]: JsonValue };
+              readonly index: number;
+            } & { readonly [x: string]: JsonValue })
+          | null;
+        readonly guard?: string | null;
+        readonly guardReason?: string | null;
+        readonly resolution?:
+          | ({
+              readonly by: string;
+              readonly at: string;
+              readonly as: "approved" | "edited" | "denied" | "alwaysAllowed";
+              readonly diff?:
+                | ({
+                    readonly text?:
+                      | ({ readonly before: string | null; readonly after: string | null } & {
+                          readonly [x: string]: JsonValue;
+                        })
+                      | null;
+                    readonly html?:
+                      | ({ readonly before: string | null; readonly after: string | null } & {
+                          readonly [x: string]: JsonValue;
+                        })
+                      | null;
+                  } & { readonly [x: string]: JsonValue })
+                | null;
+            } & { readonly [x: string]: JsonValue })
+          | null;
       } & { readonly [x: string]: JsonValue };
       readonly threadId: string | null;
       readonly reason: string | null;
@@ -1201,7 +1264,9 @@ export type MailboxActionResolvedEvent = {
         | "changeThreadState"
         | "call"
         | "extensionRequest"
-        | "toolCall";
+        | "toolCall"
+        | "handoff";
+      readonly reviewRound: number;
       readonly threadId: string | null;
       readonly proposedBy: {
         readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
@@ -1459,6 +1524,8 @@ export type SamvaWebhookEvent =
   | WebhookTestEvent
   | DomainUpdatedEvent
   | DomainWarmingUpdatedEvent
+  | EmailSendingPausedEvent
+  | EmailSendingResumedEvent
   | TemplateRegistrationUpdatedEvent
   | FlowRegistrationUpdatedEvent
   | WhatsappNumberConnectedEvent

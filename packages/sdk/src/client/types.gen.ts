@@ -120,7 +120,7 @@ export type ExtensionInstallation = {
     | "mailbox.message.discarded"
   >;
   permissions: Array<"read" | "update" | "send" | "quarantine.read">;
-  sendMode: "send" | "approval";
+  policy: PolicyConfiguration;
   scope: {
     mailboxIds: Array<MailboxId> | null;
     namespaceId: NamespaceId | null;
@@ -138,6 +138,57 @@ export type WebhookEndpointId = string;
 export type NamespaceId = string;
 
 export type MailboxId = string;
+
+export type PolicyRule =
+  | {
+      match: PolicyRuleMatch;
+      note?: string | null | undefined;
+      decide: PolicyRequirement;
+      atLeast?: never | null | undefined;
+    }
+  | {
+      match: PolicyRuleMatch;
+      note?: string | null | undefined;
+      decide?: never | null | undefined;
+      atLeast: PolicyRequirement;
+    };
+
+export type PolicyRequirement = "run" | "model" | "person" | "never";
+
+export type PolicyRuleMatch = {
+  kind?: "send" | "reply" | "toolCall" | "handoff" | null | undefined;
+  effect?: PolicyEffect | null | undefined;
+  channel?: "sms" | "whatsapp" | "email" | null | undefined;
+  integration?: string | null | undefined;
+  tool?: string | null | undefined;
+  subject?: "agent" | "apiKey" | "member" | "extension" | PolicySubject | null | undefined;
+};
+
+export type PolicySubject =
+  | {
+      kind: "agent";
+      id: AgentId;
+    }
+  | {
+      kind: "apiKey";
+      id: ApiKeyId;
+    }
+  | {
+      kind: "member";
+      userId: UserId;
+    }
+  | {
+      kind: "extension";
+      id: ExtensionInstallationId;
+    };
+
+export type UserId = string;
+
+export type ApiKeyId = string;
+
+export type AgentId = string;
+
+export type PolicyEffect = "read" | "write" | "final";
 
 export type ExtensionVersionRef = {
   id: ExtensionVersionId;
@@ -168,8 +219,6 @@ export type ExtensionVersionChange = {
   changedBy: UserId;
   changedAt: string;
 };
-
-export type UserId = string;
 
 export type ExtensionPermissionDiff = {
   added: Array<
@@ -241,7 +290,7 @@ export type InstallExtensionPayload = {
   mailboxIds?: Array<MailboxId> | null | undefined;
   namespaceId?: NamespaceId | null | undefined;
   permissions?: Array<"read" | "update" | "send" | "quarantine.read"> | null | undefined;
-  sendMode?: "send" | "approval" | null | undefined;
+  policy?: PolicyConfiguration | null | undefined;
   webhookUrl?: string | null | undefined;
 };
 
@@ -356,6 +405,12 @@ export type NamespaceUsage = {
   totalMessages: number;
 };
 
+export type FlagDisabledError = {
+  _tag: "FlagDisabledError";
+  flag: string;
+  message: string;
+};
+
 export type NamespaceResource = {
   type: NamespaceResourceType;
   id: string;
@@ -424,6 +479,22 @@ export type NamespaceSummary = {
   id: NamespaceId;
   name: string;
   createdAt: string;
+};
+
+export type PolicySnapshot = {
+  presets: Array<string>;
+  rules: Array<PolicyRule>;
+  instructions?: string | null | undefined;
+  version: PolicyVersion;
+};
+
+export type PolicyVersion = number;
+
+export type PolicyReplacement = {
+  presets: Array<string>;
+  rules: Array<PolicyRule>;
+  instructions?: string | null | undefined;
+  ifVersion: PolicyVersion;
 };
 
 export type MailboxEventPage = {
@@ -507,14 +578,62 @@ export type MailboxSendReceipt = {
 };
 
 export type MailboxActionDecision = {
-  outcome: "allow" | "requireApproval" | "deny";
-  reason: string | null;
-  policyId: MailboxPolicyId | null;
-  source: "grant" | "installation" | "policy" | null;
-  decidedAt: string;
+  id: PolicyDecisionId;
+  reviewRound: PolicyReviewRound;
+  requirement: PolicyRequirement;
+  decider: PolicyDecider;
+  outcome: "allow" | "hold" | "refuse";
+  reason: string;
+  scopes: Array<{
+    kind: "organization" | "mailbox" | "agent" | "apiKey";
+    id: string;
+  }>;
+  rule?:
+    | {
+        scope: {
+          kind: "organization" | "mailbox" | "agent" | "apiKey";
+          id: string;
+        };
+        index: number;
+      }
+    | null
+    | undefined;
+  guard?: string | null | undefined;
+  guardReason?: string | null | undefined;
+  resolution?:
+    | {
+        by: UserId;
+        at: string;
+        as: "approved" | "edited" | "denied" | "alwaysAllowed";
+        diff?:
+          | {
+              text?:
+                | {
+                    before: string | null;
+                    after: string | null;
+                  }
+                | null
+                | undefined;
+              html?:
+                | {
+                    before: string | null;
+                    after: string | null;
+                  }
+                | null
+                | undefined;
+            }
+          | null
+          | undefined;
+      }
+    | null
+    | undefined;
 };
 
-export type MailboxPolicyId = string;
+export type PolicyDecider = "rule" | "model" | "person" | "agent";
+
+export type PolicyReviewRound = number;
+
+export type PolicyDecisionId = string;
 
 export type MailboxSendOutcome = {
   code: string;
@@ -633,7 +752,8 @@ export type MailboxNonSendAction = {
     | "changeThreadState"
     | "call"
     | "extensionRequest"
-    | "toolCall";
+    | "toolCall"
+    | "handoff";
   state:
     | "proposed"
     | "allowed"
@@ -796,6 +916,7 @@ export type EmailAttachment = {
 export type MediaId = string;
 
 export type DenyMailboxActionPayload = {
+  reviewRound: PolicyReviewRound;
   reason: string;
 };
 
@@ -859,13 +980,19 @@ export type MailboxSendRefusedError = {
   receipt: MailboxSendReceipt;
 };
 
-export type FlagDisabledError = {
-  _tag: "FlagDisabledError";
-  flag: string;
-  message: string;
-};
-
 export type MailboxPendingAction = MailboxSendAction | MailboxNonSendAction;
+
+export type ApproveMailboxActionPayload = {
+  reviewRound: PolicyReviewRound;
+  always?: boolean | null | undefined;
+  edits?:
+    | {
+        text?: string | null | undefined;
+        html?: string | null | undefined;
+      }
+    | null
+    | undefined;
+};
 
 export type MailboxPendingSendReceipt = {
   actionId: MailboxActionId;
@@ -1463,7 +1590,7 @@ export type MailboxNeedsYou = {
    * All items this caller may decide, independent of the current page.
    */
   counts: {
-    heldSends: number;
+    heldActions: number;
     quarantinedMessages: number;
     total: number;
   };
@@ -1471,7 +1598,21 @@ export type MailboxNeedsYou = {
 
 export type MailboxNeedsYouItem =
   | {
-      type: "heldSend";
+      type: "heldAction";
+      actionType:
+        | "sendMessage"
+        | "reply"
+        | "updateDraft"
+        | "createNote"
+        | "assignThread"
+        | "changeThreadState"
+        | "call"
+        | "extensionRequest"
+        | "toolCall"
+        | "handoff";
+      decision: PolicyDecision;
+      tool: MailboxToolCall | null;
+      intent: MailboxSendSnapshot | null;
       id: MailboxActionId;
       mailbox: MailboxThreadMailbox;
       threadId: MailboxThreadId | null;
@@ -1507,6 +1648,103 @@ export type MailboxNeedsYouItem =
       heldAt: string;
     };
 
+export type PolicyDecision = {
+  requirement: PolicyRequirement;
+  decider: PolicyDecider;
+  outcome: "allow" | "hold" | "refuse";
+  reason: string;
+  scopes: Array<{
+    kind: "organization" | "mailbox" | "agent" | "apiKey";
+    id: string;
+  }>;
+  rule?:
+    | {
+        scope: {
+          kind: "organization" | "mailbox" | "agent" | "apiKey";
+          id: string;
+        };
+        index: number;
+      }
+    | null
+    | undefined;
+  guard?: string | null | undefined;
+  guardReason?: string | null | undefined;
+  id: PolicyDecisionId;
+  reviewRound: PolicyReviewRound;
+  subject: PolicySubject;
+  action: PolicyAction;
+  judge?:
+    | {
+        model: string;
+        instructionVersion?: string | null | undefined;
+        instructionHash?: string | null | undefined;
+        ms: number;
+        usage: JsonObject;
+      }
+    | null
+    | undefined;
+  resolution?:
+    | {
+        by: UserId;
+        at: string;
+        as: "approved" | "edited" | "denied" | "alwaysAllowed";
+        diff?:
+          | {
+              text?:
+                | {
+                    before: string | null;
+                    after: string | null;
+                  }
+                | null
+                | undefined;
+              html?:
+                | {
+                    before: string | null;
+                    after: string | null;
+                  }
+                | null
+                | undefined;
+            }
+          | null
+          | undefined;
+      }
+    | null
+    | undefined;
+};
+
+export type PolicyAction =
+  | {
+      effect: PolicyEffect;
+      resource: {
+        mailboxId: MailboxId;
+        channel?: "sms" | "whatsapp" | "email" | null | undefined;
+        integration?: string | null | undefined;
+        integrationId?: IntegrationId | null | undefined;
+        tool?: string | null | undefined;
+      };
+      facts: JsonObject;
+      kind: "send" | "reply" | "toolCall";
+      args: JsonValue;
+    }
+  | {
+      effect: PolicyEffect;
+      resource: {
+        mailboxId: MailboxId;
+        channel?: "sms" | "whatsapp" | "email" | null | undefined;
+        integration?: string | null | undefined;
+        integrationId?: IntegrationId | null | undefined;
+        tool?: string | null | undefined;
+      };
+      facts: JsonObject;
+      kind: "handoff";
+      args: {
+        reason: string;
+        draft?: JsonValue | null | undefined;
+      };
+    };
+
+export type IntegrationId = string;
+
 export type MailboxLabel = {
   id: MailboxLabelId;
   slug: string;
@@ -1541,36 +1779,6 @@ export type MailboxFolderCount = {
   unreadCount: number;
 };
 
-export type MailboxPolicy = {
-  id: MailboxPolicyId;
-  name: string;
-  outcome: MailboxPolicyOutcomeKind;
-  reason: string | null;
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type MailboxPolicyOutcomeKind = "requireApproval" | "deny";
-
-export type UpdateMailboxPolicyPayload = {
-  name?: string | null | undefined;
-  outcome?: MailboxPolicyOutcomeKind | null | undefined;
-  reason?: string | null | undefined;
-  enabled?: boolean | null | undefined;
-};
-
-export type CreateMailboxPolicyPayload = {
-  name: string;
-  outcome: MailboxPolicyOutcomeKind;
-  reason?: string | null | undefined;
-  enabled?: boolean | null | undefined;
-};
-
-export type MailboxPolicyList = {
-  items: Array<MailboxPolicy>;
-};
-
 export type MailboxGrantId = string;
 
 export type MailboxGrant = {
@@ -1594,18 +1802,11 @@ export type MailboxGrant = {
     | "quarantine:read"
     | "quarantine:release"
   >;
-  sendMode: MailboxSendMode;
   createdAt: string;
 };
 
-/**
- * How the grantee's sends execute: `send` runs them within account limits; `approval` holds each one until a different member approves it.
- */
-export type MailboxSendMode = "send" | "approval";
-
 export type UpdateMailboxGrantPayload = {
   role?: MailboxGrantRole | null | undefined;
-  sendMode?: MailboxSendMode | null | undefined;
 };
 
 export type MailboxGrantRole = "admin" | "collaborator" | "viewer";
@@ -1613,7 +1814,6 @@ export type MailboxGrantRole = "admin" | "collaborator" | "viewer";
 export type CreateMailboxGrantPayload = {
   userId: UserId;
   role: MailboxGrantRole;
-  sendMode?: MailboxSendMode | null | undefined;
 };
 
 export type MailboxGrantPage = {
@@ -1633,7 +1833,8 @@ export type MailboxAgentActivity = {
         | "changeThreadState"
         | "call"
         | "extensionRequest"
-        | "toolCall";
+        | "toolCall"
+        | "handoff";
       count: number;
     }>;
     byState: Array<{
@@ -1687,6 +1888,7 @@ export type Mailbox = {
   name: string;
   status: MailboxStatus;
   primaryAddress: string | null;
+  sendingStatus: "pending" | "ready" | "failed" | null;
   createdAt: string;
   description: string | null;
   metadata: MailboxMetadata;
@@ -1722,6 +1924,10 @@ export type MailboxEmailEndpoint = {
   channel: "email";
   source: "samvaHosted" | "verifiedDomain";
   domainId: string | null;
+  /**
+   * Sending readiness. Pending means sending setup is incomplete. Send only when ready. If setup fails, contact support to recover the sending address.
+   */
+  sendingStatus: "pending" | "ready" | "failed";
 };
 
 export type MailboxMetadata = {
@@ -1781,6 +1987,7 @@ export type MailboxSummary = {
   name: string;
   status: MailboxStatus;
   primaryAddress: string | null;
+  sendingStatus: "pending" | "ready" | "failed" | null;
   createdAt: string;
 };
 
@@ -1835,10 +2042,6 @@ export type ApiKeyMailboxAccess = {
    * The mailboxes the key may act on. Omit to reach every mailbox the owner can.
    */
   mailboxIds?: [MailboxId, ...Array<MailboxId>] | null | undefined;
-  /**
-   * Defaults to `send`. With `approval`, each send waits until a person other than the key approves it.
-   */
-  sendMode?: MailboxSendMode | null | undefined;
 };
 
 export type ApiKeyResourceAccess = {
@@ -1899,8 +2102,6 @@ export type ApiKeyActivityPage = {
   nextCursor: string | null;
 };
 
-export type ApiKeyId = string;
-
 export type ApiKeyWithSecret = {
   id: string;
   name: string;
@@ -1935,10 +2136,6 @@ export type ApiKey = {
   isActive: boolean;
   access: ApiKeyAccess;
   owner: ApiKeyOwner | null;
-};
-
-export type ApiKeyMailboxAccessUpdate = {
-  sendMode: MailboxSendMode;
 };
 
 export type ApiKeyPage = {
@@ -2147,6 +2344,8 @@ export type WebhookEndpoint = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -2203,6 +2402,8 @@ export type UpdateWebhookPayload = {
         | "webhook.test"
         | "domain.updated"
         | "domain.warming.updated"
+        | "email.sending.paused"
+        | "email.sending.resumed"
         | "template.registration.updated"
         | "flow.registration.updated"
         | "whatsapp.number.connected"
@@ -2267,6 +2468,8 @@ export type WebhookEndpointListItem = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -2331,6 +2534,8 @@ export type CreateWebhookPayload = {
     | "webhook.test"
     | "domain.updated"
     | "domain.warming.updated"
+    | "email.sending.paused"
+    | "email.sending.resumed"
     | "template.registration.updated"
     | "flow.registration.updated"
     | "whatsapp.number.connected"
@@ -2476,6 +2681,15 @@ export type TemplateSourceError = {
   revision?: string | null | undefined;
 };
 
+export type TemplateInUseError = {
+  _tag: "TemplateInUseError";
+  message: string;
+  references: Array<{
+    kind: string;
+    id: string;
+  }>;
+};
+
 export type TemplateProjectId = string;
 
 export type TemplateInputContractId = string;
@@ -2541,7 +2755,6 @@ export type Template = {
   shared: boolean;
   entryPath: string;
   status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  isActive: boolean;
   publishedAt: string | null;
   brand: TemplatePublicationBrand | null;
   fromDefault: TemplateFromDefault | null;
@@ -2694,7 +2907,6 @@ export type UpdateTemplatePayload = {
      * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
      */
     trackingDefault?: TemplateTrackingDefault | null | undefined;
-    isActive?: boolean | null | undefined;
     /**
      * Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.
      */
@@ -2763,7 +2975,6 @@ export type CreateTemplatePayload = {
     | "alert"
     | null
     | undefined;
-  isActive?: boolean | null | undefined;
   /**
    * The namespace the new template project belongs to; the project and every entry added to it share it. Omit for organization level. A namespace-scoped key always creates in its own namespace.
    */
@@ -2788,7 +2999,6 @@ export type TemplateFamilyMember = {
   slug: string;
   channel: "sms" | "whatsapp" | "email";
   status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -2823,7 +3033,6 @@ export type TemplateSummary = {
   shared: boolean;
   entryPath: string;
   status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  isActive: boolean;
   publishedAt: string | null;
   brand: TemplatePublicationBrand | null;
   fromDefault: TemplateFromDefault | null;
@@ -3290,13 +3499,7 @@ export type AgentReasoning = "auto" | "low" | "medium" | "high";
 
 export type AgentModelChoice = AgentModel | CatalogModelId;
 
-export type AgentMode = "live" | "supervised";
-
-export type IntegrationId = string;
-
 export type KnowledgeSourceId = string;
-
-export type AgentId = string;
 
 export type AgentVersionPage = {
   items: Array<AgentVersionSummary>;
@@ -3352,7 +3555,7 @@ export type AgentDefinition = {
   knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
   endpointIds: Array<MailboxEndpointId>;
   integrations: Array<AgentIntegrationGrant>;
-  mode: AgentMode;
+  policy: PolicyConfiguration;
   model: AgentModelChoice;
   reasoning: AgentReasoning;
   workingHours: WorkingHours | null;
@@ -3370,10 +3573,15 @@ export type WorkingHoursRange = {
   closes: ClockTime;
 };
 
+export type PolicyConfiguration = {
+  presets: Array<string>;
+  rules: Array<PolicyRule>;
+  instructions?: string | null | undefined;
+};
+
 export type AgentIntegrationGrant = {
   integrationId: IntegrationId;
   tools: AgentToolScope;
-  requireApproval: Array<string>;
 };
 
 export type AgentToolScope =
@@ -3412,7 +3620,7 @@ export type CreateAgentPayload = {
    */
   namespaceId?: NamespaceId | null | undefined;
   /**
-   * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model at auto reasoning.
+   * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, the default action policy, and the standard model at auto reasoning.
    */
   definition?: AgentDefinition | null | undefined;
 };
@@ -3467,6 +3675,30 @@ export type AgentListItem = {
   monthlySpendCapDollars: number | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type AgentTestRerun = {
+  items: Array<{
+    testId: AgentTestId;
+    publishedDecisions: Array<AgentTestDecision> | null;
+    draftDecisions: Array<AgentTestDecision>;
+    changedDecisions: Array<AgentTestDecision>;
+  }>;
+};
+
+export type AgentTestDecision = {
+  actionIndex: number;
+  kind: "send" | "reply" | "toolCall" | "handoff";
+  tool?: string | null | undefined;
+  outcome: "allow" | "hold" | "refuse";
+  text?: string | null | undefined;
+};
+
+export type AgentTestId = string;
+
+export type RunAgentTestPayload = {
+  name: AgentName;
+  definition: AgentDefinition;
 };
 
 export type JourneyRunDetail = {
@@ -4202,6 +4434,7 @@ export type ContactListMembership = {
 
 export type Conversation = {
   id: ConversationId;
+  namespaceId: NamespaceId | null;
   title: string | null;
   externalId: string | null;
   status: "active" | "waiting" | "resolved" | "escalated" | "archived";
@@ -4351,6 +4584,7 @@ export type ConversationPage = {
 
 export type ConversationSummary = {
   id: ConversationId;
+  namespaceId: NamespaceId | null;
   title: string | null;
   externalId: string | null;
   status: "active" | "waiting" | "resolved" | "escalated" | "archived";
@@ -5599,6 +5833,7 @@ export type CampaignPreview = {
 
 export type ScheduledMessage = {
   id: ScheduledMessageId;
+  namespaceId: NamespaceId | null;
   status: "pending" | "dispatching" | "paused" | "dispatched" | "cancelled" | "failed";
   scheduledFor: string;
   timezone: string;
@@ -7672,6 +7907,7 @@ export type ScheduledMessagesListData = {
   query?: {
     limit?: number | null | undefined;
     cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
     status?:
       | "pending"
       | "dispatching"
@@ -7726,6 +7962,7 @@ export type ScheduledMessagesListResponse =
 
 export type ScheduledMessagesCreateData = {
   body: {
+    namespaceId?: NamespaceId | null | undefined;
     send: DispatchSendMessagePayload;
     scheduledFor: string;
     timezone?: IanaTimezone | null | undefined;
@@ -7749,9 +7986,13 @@ export type ScheduledMessagesCreateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
   /**
    * ConflictError
    */
@@ -8191,6 +8432,10 @@ export type CampaignsCreateErrors = {
    * FlagDisabledError | ForbiddenError
    */
   403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
   /**
    * ValidationError
    */
@@ -12992,6 +13237,7 @@ export type ConversationsListData = {
   query?: {
     limit?: number | null | undefined;
     cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
     status?: "active" | "waiting" | "resolved" | "escalated" | "archived" | undefined;
     channel?: "sms" | "whatsapp" | "email" | undefined;
     contactId?: ContactId | undefined;
@@ -13043,6 +13289,7 @@ export type ConversationsListResponse =
 
 export type ConversationsCreateData = {
   body: {
+    namespaceId?: NamespaceId | null | undefined;
     title?: string | null | undefined;
     description?: string | null | undefined;
     externalId?: string | null | undefined;
@@ -13080,6 +13327,14 @@ export type ConversationsCreateErrors = {
    * ForbiddenError
    */
   403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
   /**
    * ValidationError
    */
@@ -13201,6 +13456,10 @@ export type ConversationsUpdateErrors = {
    * ResourceNotFoundError
    */
   404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
   /**
    * ValidationError
    */
@@ -16162,12 +16421,67 @@ export type JourneysGetRunResponses = {
 
 export type JourneysGetRunResponse = JourneysGetRunResponses[keyof JourneysGetRunResponses];
 
+export type AgentsRerunTestsData = {
+  body: {
+    name: AgentName;
+    definition: AgentDefinition;
+  };
+  path: {
+    id: AgentId;
+  };
+  query?: never;
+  url: "/v1/agents/{id}/tests/rerun";
+};
+
+export type AgentsRerunTestsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AgentsRerunTestsError = AgentsRerunTestsErrors[keyof AgentsRerunTestsErrors];
+
+export type AgentsRerunTestsResponses = {
+  /**
+   * AgentTestRerun
+   */
+  200: AgentTestRerun;
+};
+
+export type AgentsRerunTestsResponse = AgentsRerunTestsResponses[keyof AgentsRerunTestsResponses];
+
 export type AgentsListData = {
   body?: never;
   path?: never;
   query?: {
     limit?: number | null | undefined;
     cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/agents";
 };
@@ -16218,7 +16532,7 @@ export type AgentsCreateData = {
      */
     namespaceId?: NamespaceId | null | undefined;
     /**
-     * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, in supervised mode on the standard model at auto reasoning.
+     * The first draft. Defaults to an agent with no instructions, knowledge, or endpoints, the default action policy, and the standard model at auto reasoning.
      */
     definition?: AgentDefinition | null | undefined;
   };
@@ -20552,6 +20866,7 @@ export type AnalyticsGetStatsData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     after?: string | undefined;
     before?: string | undefined;
     groupBy?: "day" | "week" | "month" | undefined;
@@ -20610,6 +20925,7 @@ export type AnalyticsGetChannelStatsData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     after?: string | undefined;
     before?: string | undefined;
   };
@@ -20685,6 +21001,7 @@ export type AnalyticsGetTopContactsData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     after?: string | undefined;
     before?: string | undefined;
     limit?: number | null | undefined;
@@ -20743,6 +21060,7 @@ export type AnalyticsGetHourlyDistributionData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     after?: string | undefined;
     before?: string | undefined;
   };
@@ -20796,6 +21114,7 @@ export type AnalyticsGetDeliveryMetricsData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     after?: string | undefined;
     before?: string | undefined;
     channel?: "sms" | "whatsapp" | "email" | undefined;
@@ -20850,6 +21169,7 @@ export type AnalyticsGetDeliveryMetricsResponse =
 
 export type AnalyticsExportDataData = {
   body: {
+    namespaceId?: NamespaceId | null | undefined;
     after: string;
     before: string;
     format?: "csv" | "json" | null | undefined;
@@ -20990,7 +21310,6 @@ export type TemplatesCreateData = {
       | "alert"
       | null
       | undefined;
-    isActive?: boolean | null | undefined;
     /**
      * The namespace the new template project belongs to; the project and every entry added to it share it. Omit for organization level. A namespace-scoped key always creates in its own namespace.
      */
@@ -21026,9 +21345,9 @@ export type TemplatesCreateErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -21492,7 +21811,7 @@ export type TemplatesAttachFamilyMemberResponses = {
 export type TemplatesAttachFamilyMemberResponse =
   TemplatesAttachFamilyMemberResponses[keyof TemplatesAttachFamilyMemberResponses];
 
-export type TemplatesRemoveData = {
+export type TemplatesDeleteData = {
   body?: never;
   path: {
     id: TemplateId;
@@ -21501,7 +21820,7 @@ export type TemplatesRemoveData = {
   url: "/v1/templates/{id}";
 };
 
-export type TemplatesRemoveErrors = {
+export type TemplatesDeleteErrors = {
   /**
    * MalformedRequestError
    */
@@ -21519,6 +21838,10 @@ export type TemplatesRemoveErrors = {
    */
   404: ResourceNotFoundError;
   /**
+   * TemplateInUseError
+   */
+  409: TemplateInUseError;
+  /**
    * ValidationError
    */
   422: ValidationError;
@@ -21532,16 +21855,16 @@ export type TemplatesRemoveErrors = {
   504: GatewayTimeoutError;
 };
 
-export type TemplatesRemoveError = TemplatesRemoveErrors[keyof TemplatesRemoveErrors];
+export type TemplatesDeleteError = TemplatesDeleteErrors[keyof TemplatesDeleteErrors];
 
-export type TemplatesRemoveResponses = {
+export type TemplatesDeleteResponses = {
   /**
    * SuccessResponse
    */
   200: SuccessResponse;
 };
 
-export type TemplatesRemoveResponse = TemplatesRemoveResponses[keyof TemplatesRemoveResponses];
+export type TemplatesDeleteResponse = TemplatesDeleteResponses[keyof TemplatesDeleteResponses];
 
 export type TemplatesGetByIdData = {
   body?: never;
@@ -21617,7 +21940,6 @@ export type TemplatesUpdateData = {
        * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
        */
       trackingDefault?: TemplateTrackingDefault | null | undefined;
-      isActive?: boolean | null | undefined;
       /**
        * Share the template's project with every namespace, or stop sharing it. Applies to every entry in the project. Only an organization-level project is shared.
        */
@@ -21715,9 +22037,9 @@ export type TemplatesCreateFromWebsiteErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -21820,6 +22142,63 @@ export type TemplatesAddEntryResponses = {
 export type TemplatesAddEntryResponse =
   TemplatesAddEntryResponses[keyof TemplatesAddEntryResponses];
 
+export type TemplatesDeleteProjectData = {
+  body?: never;
+  path: {
+    id: TemplateProjectId;
+  };
+  query?: never;
+  url: "/v1/templates/projects/{id}";
+};
+
+export type TemplatesDeleteProjectErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * TemplateInUseError
+   */
+  409: TemplateInUseError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplatesDeleteProjectError =
+  TemplatesDeleteProjectErrors[keyof TemplatesDeleteProjectErrors];
+
+export type TemplatesDeleteProjectResponses = {
+  /**
+   * SuccessResponse
+   */
+  200: SuccessResponse;
+};
+
+export type TemplatesDeleteProjectResponse =
+  TemplatesDeleteProjectResponses[keyof TemplatesDeleteProjectResponses];
+
 export type TemplatesPatchWorkspaceData = {
   body: {
     expectedRevision: string;
@@ -21856,9 +22235,9 @@ export type TemplatesPatchWorkspaceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22002,9 +22381,9 @@ export type TemplatesOpenWorkspaceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22150,9 +22529,9 @@ export type TemplatesDiffWorkspaceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22234,9 +22613,9 @@ export type TemplatesPutWorkspaceAssetErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22392,9 +22771,9 @@ export type TemplatesResolveWorkspaceConflictErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22545,9 +22924,9 @@ export type TemplatesSaveWorkspaceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22682,9 +23061,9 @@ export type TemplatesRestoreWorkspaceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22836,9 +23215,9 @@ export type TemplatesWorkspaceHistoryErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -22913,9 +23292,9 @@ export type TemplatesCheckWorkspaceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -23079,9 +23458,9 @@ export type TemplatesRenderWorkspaceFixtureErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -23333,9 +23712,9 @@ export type TemplatesPublishErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -23891,9 +24270,9 @@ export type TemplatesGetGitRepositoryErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -23957,9 +24336,9 @@ export type TemplatesIssueGitCredentialErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -24037,9 +24416,9 @@ export type TemplatesAttachWorkspaceResourceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -24184,9 +24563,9 @@ export type TemplatesRemoveWorkspaceResourceErrors = {
    */
   404: ResourceNotFoundError;
   /**
-   * ConflictError
+   * ConflictError | TemplateInUseError
    */
-  409: ConflictError;
+  409: ConflictError | TemplateInUseError;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -24623,6 +25002,7 @@ export type WebhooksListData = {
   query?: {
     limit?: number | null | undefined;
     cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
     search?: string | undefined;
     status?: "active" | "disabled" | undefined;
   };
@@ -24697,6 +25077,8 @@ export type WebhooksCreateData = {
       | "webhook.test"
       | "domain.updated"
       | "domain.warming.updated"
+      | "email.sending.paused"
+      | "email.sending.resumed"
       | "template.registration.updated"
       | "flow.registration.updated"
       | "whatsapp.number.connected"
@@ -24922,6 +25304,8 @@ export type WebhooksUpdateData = {
           | "webhook.test"
           | "domain.updated"
           | "domain.warming.updated"
+          | "email.sending.paused"
+          | "email.sending.resumed"
           | "template.registration.updated"
           | "flow.registration.updated"
           | "whatsapp.number.connected"
@@ -26022,6 +26406,7 @@ export type ApiKeysListData = {
   query?: {
     limit?: number | null | undefined;
     cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
     status?: "active" | "revoked" | undefined;
     search?: string | undefined;
   };
@@ -26190,10 +26575,6 @@ export type ApiKeysUpdateData = {
   body: {
     name?: string | null | undefined;
     description?: string | null | undefined;
-    /**
-     * Changes the mailbox send mode of a key that holds mailbox access. Only a person can change it; the change applies to the key's next request.
-     */
-    mailboxes?: ApiKeyMailboxAccessUpdate | null | undefined;
   };
   path: {
     id: ApiKeyId;
@@ -26572,6 +26953,7 @@ export type MailboxesListData = {
     cursor?: string | undefined;
     after?: string | undefined;
     before?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/mailboxes";
 };
@@ -26621,6 +27003,12 @@ export type MailboxesCreateData = {
     name: string;
     slug?: string | null | undefined;
     metadata?: MailboxMetadataWritable | null | undefined;
+  };
+  headers?: {
+    /**
+     * Optional key that makes mailbox creation idempotent for the calling key or member. The same key and body return the original mailbox in its current state. A different body with the same key returns 409. Keep the key after a lost response; it remains bound for the mailbox's lifetime.
+     */
+    "idempotency-key"?: string | undefined;
   };
   path?: never;
   query?: never;
@@ -27230,7 +27618,6 @@ export type MailboxesCreateGrantData = {
   body: {
     userId: UserId;
     role: MailboxGrantRole;
-    sendMode?: MailboxSendMode | null | undefined;
   };
   path: {
     id: MailboxId;
@@ -27348,7 +27735,6 @@ export type MailboxesRevokeGrantResponse =
 export type MailboxesUpdateGrantData = {
   body: {
     role?: MailboxGrantRole | null | undefined;
-    sendMode?: MailboxSendMode | null | undefined;
   };
   path: {
     id: MailboxId;
@@ -27405,287 +27791,6 @@ export type MailboxesUpdateGrantResponses = {
 
 export type MailboxesUpdateGrantResponse =
   MailboxesUpdateGrantResponses[keyof MailboxesUpdateGrantResponses];
-
-export type MailboxesListPoliciesData = {
-  body?: never;
-  path: {
-    id: MailboxId;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/policies";
-};
-
-export type MailboxesListPoliciesErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesListPoliciesError =
-  MailboxesListPoliciesErrors[keyof MailboxesListPoliciesErrors];
-
-export type MailboxesListPoliciesResponses = {
-  /**
-   * MailboxPolicyList
-   */
-  200: MailboxPolicyList;
-};
-
-export type MailboxesListPoliciesResponse =
-  MailboxesListPoliciesResponses[keyof MailboxesListPoliciesResponses];
-
-export type MailboxesCreatePolicyData = {
-  body: {
-    name: string;
-    outcome: MailboxPolicyOutcomeKind;
-    reason?: string | null | undefined;
-    enabled?: boolean | null | undefined;
-  };
-  path: {
-    id: MailboxId;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/policies";
-};
-
-export type MailboxesCreatePolicyErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesCreatePolicyError =
-  MailboxesCreatePolicyErrors[keyof MailboxesCreatePolicyErrors];
-
-export type MailboxesCreatePolicyResponses = {
-  /**
-   * Success
-   */
-  201: MailboxPolicy;
-};
-
-export type MailboxesCreatePolicyResponse =
-  MailboxesCreatePolicyResponses[keyof MailboxesCreatePolicyResponses];
-
-export type MailboxesDeletePolicyData = {
-  body?: never;
-  path: {
-    id: MailboxId;
-    policyId: MailboxPolicyId;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/policies/{policyId}";
-};
-
-export type MailboxesDeletePolicyErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesDeletePolicyError =
-  MailboxesDeletePolicyErrors[keyof MailboxesDeletePolicyErrors];
-
-export type MailboxesDeletePolicyResponses = {
-  /**
-   * SuccessResponse
-   */
-  200: SuccessResponse;
-};
-
-export type MailboxesDeletePolicyResponse =
-  MailboxesDeletePolicyResponses[keyof MailboxesDeletePolicyResponses];
-
-export type MailboxesGetPolicyData = {
-  body?: never;
-  path: {
-    id: MailboxId;
-    policyId: MailboxPolicyId;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/policies/{policyId}";
-};
-
-export type MailboxesGetPolicyErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesGetPolicyError = MailboxesGetPolicyErrors[keyof MailboxesGetPolicyErrors];
-
-export type MailboxesGetPolicyResponses = {
-  /**
-   * MailboxPolicy
-   */
-  200: MailboxPolicy;
-};
-
-export type MailboxesGetPolicyResponse =
-  MailboxesGetPolicyResponses[keyof MailboxesGetPolicyResponses];
-
-export type MailboxesUpdatePolicyData = {
-  body: {
-    name?: string | null | undefined;
-    outcome?: MailboxPolicyOutcomeKind | null | undefined;
-    reason?: string | null | undefined;
-    enabled?: boolean | null | undefined;
-  };
-  path: {
-    id: MailboxId;
-    policyId: MailboxPolicyId;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/policies/{policyId}";
-};
-
-export type MailboxesUpdatePolicyErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesUpdatePolicyError =
-  MailboxesUpdatePolicyErrors[keyof MailboxesUpdatePolicyErrors];
-
-export type MailboxesUpdatePolicyResponses = {
-  /**
-   * MailboxPolicy
-   */
-  200: MailboxPolicy;
-};
-
-export type MailboxesUpdatePolicyResponse =
-  MailboxesUpdatePolicyResponses[keyof MailboxesUpdatePolicyResponses];
 
 export type MailboxesListFoldersData = {
   body?: never;
@@ -28079,6 +28184,9 @@ export type MailboxesListOrganizationThreadsData = {
     cursor?: string | undefined;
     after?: string | undefined;
     before?: string | undefined;
+    /**
+     * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.
+     */
     q?: string | undefined;
     state?: "active" | "done" | undefined;
     folder?: MailboxThreadFolder | undefined;
@@ -28147,6 +28255,9 @@ export type MailboxesListThreadsData = {
     cursor?: string | undefined;
     after?: string | undefined;
     before?: string | undefined;
+    /**
+     * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.
+     */
     q?: string | undefined;
     state?: "active" | "done" | undefined;
     folder?: MailboxThreadFolder | undefined;
@@ -30156,7 +30267,17 @@ export type MailboxesRetryActionResponse =
   MailboxesRetryActionResponses[keyof MailboxesRetryActionResponses];
 
 export type MailboxesApproveActionData = {
-  body?: never;
+  body: {
+    reviewRound: PolicyReviewRound;
+    always?: boolean | null | undefined;
+    edits?:
+      | {
+          text?: string | null | undefined;
+          html?: string | null | undefined;
+        }
+      | null
+      | undefined;
+  };
   path: {
     id: MailboxId;
     actionId: MailboxActionId;
@@ -30235,6 +30356,7 @@ export type MailboxesApproveActionResponse =
 
 export type MailboxesDenyActionData = {
   body: {
+    reviewRound: PolicyReviewRound;
     reason: string;
   };
   path: {
@@ -30348,6 +30470,185 @@ export type MailboxesListEventsResponses = {
 
 export type MailboxesListEventsResponse =
   MailboxesListEventsResponses[keyof MailboxesListEventsResponses];
+
+export type PoliciesDeletePolicyData = {
+  body?: never;
+  path: {
+    kind: "organization" | "mailbox" | "apiKey" | "agent";
+    id: string;
+  };
+  query: {
+    ifVersion: number;
+  };
+  url: "/v1/policies/{kind}/{id}";
+};
+
+export type PoliciesDeletePolicyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type PoliciesDeletePolicyError =
+  PoliciesDeletePolicyErrors[keyof PoliciesDeletePolicyErrors];
+
+export type PoliciesDeletePolicyResponses = {
+  /**
+   * PolicySnapshot
+   */
+  200: PolicySnapshot;
+};
+
+export type PoliciesDeletePolicyResponse =
+  PoliciesDeletePolicyResponses[keyof PoliciesDeletePolicyResponses];
+
+export type PoliciesGetPolicyData = {
+  body?: never;
+  path: {
+    kind: "organization" | "mailbox" | "apiKey" | "agent";
+    id: string;
+  };
+  query?: never;
+  url: "/v1/policies/{kind}/{id}";
+};
+
+export type PoliciesGetPolicyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type PoliciesGetPolicyError = PoliciesGetPolicyErrors[keyof PoliciesGetPolicyErrors];
+
+export type PoliciesGetPolicyResponses = {
+  /**
+   * PolicySnapshot
+   */
+  200: PolicySnapshot;
+};
+
+export type PoliciesGetPolicyResponse =
+  PoliciesGetPolicyResponses[keyof PoliciesGetPolicyResponses];
+
+export type PoliciesSetPolicyData = {
+  body: {
+    presets: Array<string>;
+    rules: Array<PolicyRule>;
+    instructions?: string | null | undefined;
+    ifVersion: PolicyVersion;
+  };
+  path: {
+    kind: "organization" | "mailbox" | "apiKey" | "agent";
+    id: string;
+  };
+  query?: never;
+  url: "/v1/policies/{kind}/{id}";
+};
+
+export type PoliciesSetPolicyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type PoliciesSetPolicyError = PoliciesSetPolicyErrors[keyof PoliciesSetPolicyErrors];
+
+export type PoliciesSetPolicyResponses = {
+  /**
+   * PolicySnapshot
+   */
+  200: PolicySnapshot;
+};
+
+export type PoliciesSetPolicyResponse =
+  PoliciesSetPolicyResponses[keyof PoliciesSetPolicyResponses];
 
 export type NamespacesListData = {
   body?: never;
@@ -30645,9 +30946,9 @@ export type NamespacesAssignResourceErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError
+   * FlagDisabledError | ForbiddenError
    */
-  403: ForbiddenError;
+  403: FlagDisabledError | ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -30704,9 +31005,9 @@ export type NamespacesRemoveResourceErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError
+   * FlagDisabledError | ForbiddenError
    */
-  403: ForbiddenError;
+  403: FlagDisabledError | ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -31160,7 +31461,7 @@ export type ExtensionInstallationsInstallData = {
     mailboxIds?: Array<MailboxId> | null | undefined;
     namespaceId?: NamespaceId | null | undefined;
     permissions?: Array<"read" | "update" | "send" | "quarantine.read"> | null | undefined;
-    sendMode?: "send" | "approval" | null | undefined;
+    policy?: PolicyConfiguration | null | undefined;
     webhookUrl?: string | null | undefined;
   };
   path?: never;

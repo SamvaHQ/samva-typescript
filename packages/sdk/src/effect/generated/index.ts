@@ -28,6 +28,7 @@ import { NewsletterIssuesGroup } from "./newsletter-issues";
 import { NewslettersGroup } from "./newsletters";
 import { OperationsGroup } from "./operations";
 import { OrganizationsGroup } from "./organizations";
+import { PoliciesGroup } from "./policies";
 import { ScheduledMessagesGroup } from "./scheduled-messages";
 import { SubscriptionsGroup } from "./subscriptions";
 import { TemplatesGroup } from "./templates";
@@ -92,6 +93,8 @@ export * from "./operations";
 
 export * from "./organizations";
 
+export * from "./policies";
+
 export * from "./subscriptions";
 
 export * from "./templates";
@@ -140,6 +143,7 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     NewsletterIssuesGroup,
     OperationsGroup,
     OrganizationsGroup,
+    PoliciesGroup,
     SubscriptionsGroup,
     TemplatesGroup,
     TopicsGroup,

@@ -369,7 +369,7 @@ describe("typed webhook payload boundary", () => {
     expectTypeOf<MailboxMessageSentPayload["acceptedAt"]>().toEqualTypeOf<string | undefined>();
   });
 
-  it("accepts older pending approval bodies while validating lifecycle fields when present", async () => {
+  it("requires the observed review round while validating pending lifecycle fields", async () => {
     const candidate = {
       type: "mailbox.action.pending_approval",
       timestamp,
@@ -379,6 +379,16 @@ describe("typed webhook payload boundary", () => {
         action: {
           id: "mbxact_0000000000000000",
           type: "sendMessage",
+          reviewRound: 1,
+          decision: {
+            id: "pdec_0000000000000000",
+            reviewRound: 1,
+            requirement: "person",
+            decider: "person",
+            outcome: "hold",
+            reason: "Approval required",
+            scopes: [{ kind: "mailbox", id: "mbx_0000000000000000" }],
+          },
           threadId: null,
           reason: null,
           proposedBy: { kind: "apiKey", id: "key_example", source: "externalApi" },
@@ -391,6 +401,12 @@ describe("typed webhook payload boundary", () => {
     const { event } = await verify(options);
     expect(event).toEqual(candidate);
     expect(Schema.decodeUnknownSync(SamvaWebhookEventSchema)(event)).toEqual(candidate);
+    const { reviewRound: _round, ...unversionedAction } = candidate.data.action;
+    const unversioned = await delivery({
+      ...candidate,
+      data: { ...candidate.data, action: unversionedAction },
+    });
+    await expect(verify(unversioned.options)).rejects.toBeInstanceOf(MalformedWebhookPayloadError);
     const invalid = await delivery({
       ...candidate,
       data: { ...candidate.data, action: { ...candidate.data.action, state: "queued" } },
@@ -399,9 +415,10 @@ describe("typed webhook payload boundary", () => {
     expectTypeOf<MailboxActionPendingApprovalPayload["action"]["state"]>().toEqualTypeOf<
       "approvalRequired" | undefined
     >();
-    expectTypeOf<MailboxActionPendingApprovalPayload["action"]["decision"]>().toExtend<
-      object | undefined
-    >();
+    expectTypeOf<MailboxActionPendingApprovalPayload["action"]["decision"]>().toExtend<object>();
+    expectTypeOf<
+      MailboxActionPendingApprovalPayload["action"]["reviewRound"]
+    >().toEqualTypeOf<number>();
   });
 
   it("verifies a resolved approval and rejects an outcome without a producer", async () => {
@@ -414,6 +431,7 @@ describe("typed webhook payload boundary", () => {
         action: {
           id: "mbxact_0000000000000000",
           type: "reply",
+          reviewRound: 1,
           threadId: null,
           proposedBy: { kind: "apiKey", id: "key_example", source: "externalApi" },
           createdAt: timestamp,

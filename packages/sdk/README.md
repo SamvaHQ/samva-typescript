@@ -215,6 +215,7 @@ The Promise client exposes:
 - `namespaces`
 - `operations`
 - `organizations`
+- `policies`
 - `raw`
 - `scheduledMessages`
 - `subscriptions`

@@ -71,11 +71,13 @@ describe("mailbox send receipt refusal identity", () => {
       problem: { code, message: error.message, error },
       retryEligible: false,
       decision: {
+        id: "pdec_1234567890123456",
+        reviewRound: 1,
+        requirement: "run",
+        decider: "rule",
         outcome: "allow",
-        source: "grant",
-        reason: null,
-        policyId: null,
-        decidedAt: at,
+        reason: "Allowed by policy",
+        scopes: [{ kind: "mailbox", id: input.id }],
       },
       createdAt: at,
       updatedAt: at,
@@ -100,7 +102,7 @@ describe("mailbox send receipt refusal identity", () => {
       expect(calls).toBe(1);
     });
 
-    it.effect(`Effect decodes ${code} and retains review and approval sources`, () => {
+    it.effect(`Effect decodes ${code} and retains review errors and policy attribution`, () => {
       let calls = 0;
       return Effect.gen(function* () {
         const result = yield* Mailboxes.sendMessage(input);

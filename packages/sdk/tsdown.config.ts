@@ -28,6 +28,7 @@ export default defineConfig({
     "src/effect/feedback.ts",
     "src/effect/journeys.ts",
     "src/effect/mailboxes.ts",
+    "src/effect/policies.ts",
     "src/effect/media.ts",
     "src/effect/messages.ts",
     "src/effect/namespaces.ts",

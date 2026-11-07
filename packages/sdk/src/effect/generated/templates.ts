@@ -23,6 +23,7 @@ import {
   SuccessResponse,
   TemplateFromDefault,
   TemplateId,
+  TemplateInUseError,
   TemplateInputContractId,
   TemplateProjectId,
   TemplatePublicationId,
@@ -188,7 +189,6 @@ export type TemplateFamilyMember = {
   readonly slug: string;
   readonly channel: "sms" | "whatsapp" | "email";
   readonly status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  readonly isActive: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -210,7 +210,6 @@ export const TemplateFamilyMember = /* @__PURE__ */ (() =>
       Schema.Literal("rejected"),
       Schema.Literal("archived"),
     ]),
-    isActive: Schema.Boolean,
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "TemplateFamilyMember" }))();
@@ -224,7 +223,6 @@ export type TemplateSummary = {
   readonly shared: boolean;
   readonly entryPath: string;
   readonly status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  readonly isActive: boolean;
   readonly publishedAt: string | null;
   readonly brand: TemplatePublicationBrand | null;
   readonly fromDefault: TemplateFromDefault | null;
@@ -277,7 +275,6 @@ export const TemplateSummary = /* @__PURE__ */ (() =>
       Schema.Literal("rejected"),
       Schema.Literal("archived"),
     ]),
-    isActive: Schema.Boolean,
     publishedAt: Schema.Union([Schema.String, Schema.Null]),
     brand: Schema.Union([TemplatePublicationBrand, Schema.Null]),
     fromDefault: Schema.Union([TemplateFromDefault, Schema.Null]),
@@ -365,7 +362,6 @@ export type Template = {
   readonly shared: boolean;
   readonly entryPath: string;
   readonly status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  readonly isActive: boolean;
   readonly publishedAt: string | null;
   readonly brand: TemplatePublicationBrand | null;
   readonly fromDefault: TemplateFromDefault | null;
@@ -451,7 +447,6 @@ export const Template = /* @__PURE__ */ (() =>
       Schema.Literal("rejected"),
       Schema.Literal("archived"),
     ]),
-    isActive: Schema.Boolean,
     publishedAt: Schema.Union([Schema.String, Schema.Null]),
     brand: Schema.Union([TemplatePublicationBrand, Schema.Null]),
     fromDefault: Schema.Union([TemplateFromDefault, Schema.Null]),
@@ -681,7 +676,6 @@ export type TemplatesCreateRequestJson = {
     | "reminder"
     | "alert"
     | null;
-  readonly isActive?: boolean | null;
   readonly namespaceId?: NamespaceId | null;
   readonly shared?: boolean | null;
 };
@@ -764,7 +758,6 @@ export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     namespaceId: Schema.optionalKey(
       Schema.Union([NamespaceId, Schema.Null]).annotate({
         description:
@@ -788,8 +781,9 @@ export type TemplatesCreate403 = ForbiddenError;
 export const TemplatesCreate403 = ForbiddenError;
 export type TemplatesCreate404 = ResourceNotFoundError;
 export const TemplatesCreate404 = ResourceNotFoundError;
-export type TemplatesCreate409 = ConflictError;
-export const TemplatesCreate409 = ConflictError;
+export type TemplatesCreate409 = ConflictError | TemplateInUseError;
+export const TemplatesCreate409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesCreate422 = TemplateSourceError | ValidationError;
 export const TemplatesCreate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -818,25 +812,27 @@ export type TemplatesGetById500 = InternalError;
 export const TemplatesGetById500 = InternalError;
 export type TemplatesGetById504 = GatewayTimeoutError;
 export const TemplatesGetById504 = GatewayTimeoutError;
-export type TemplatesRemovePathParams = { readonly id: TemplateId };
-export const TemplatesRemovePathParams = /* @__PURE__ */ (() =>
+export type TemplatesDeletePathParams = { readonly id: TemplateId };
+export const TemplatesDeletePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
-export type TemplatesRemove200 = SuccessResponse;
-export const TemplatesRemove200 = SuccessResponse;
-export type TemplatesRemove400 = MalformedRequestError;
-export const TemplatesRemove400 = MalformedRequestError;
-export type TemplatesRemove401 = UnauthorizedError;
-export const TemplatesRemove401 = UnauthorizedError;
-export type TemplatesRemove403 = ForbiddenError;
-export const TemplatesRemove403 = ForbiddenError;
-export type TemplatesRemove404 = ResourceNotFoundError;
-export const TemplatesRemove404 = ResourceNotFoundError;
-export type TemplatesRemove422 = ValidationError;
-export const TemplatesRemove422 = ValidationError;
-export type TemplatesRemove500 = InternalError;
-export const TemplatesRemove500 = InternalError;
-export type TemplatesRemove504 = GatewayTimeoutError;
-export const TemplatesRemove504 = GatewayTimeoutError;
+export type TemplatesDelete200 = SuccessResponse;
+export const TemplatesDelete200 = SuccessResponse;
+export type TemplatesDelete400 = MalformedRequestError;
+export const TemplatesDelete400 = MalformedRequestError;
+export type TemplatesDelete401 = UnauthorizedError;
+export const TemplatesDelete401 = UnauthorizedError;
+export type TemplatesDelete403 = ForbiddenError;
+export const TemplatesDelete403 = ForbiddenError;
+export type TemplatesDelete404 = ResourceNotFoundError;
+export const TemplatesDelete404 = ResourceNotFoundError;
+export type TemplatesDelete409 = TemplateInUseError;
+export const TemplatesDelete409 = TemplateInUseError;
+export type TemplatesDelete422 = ValidationError;
+export const TemplatesDelete422 = ValidationError;
+export type TemplatesDelete500 = InternalError;
+export const TemplatesDelete500 = InternalError;
+export type TemplatesDelete504 = GatewayTimeoutError;
+export const TemplatesDelete504 = GatewayTimeoutError;
 export type TemplatesUpdatePathParams = { readonly id: TemplateId };
 export const TemplatesUpdatePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
@@ -858,7 +854,6 @@ export type TemplatesUpdateRequestJson = {
     readonly fromDefault?: TemplateFromDefault | null;
     readonly replyToDefault?: ReadonlyArray<string> | null;
     readonly trackingDefault?: TemplateTrackingDefault | null;
-    readonly isActive?: boolean | null;
     readonly shared?: boolean | null;
   };
 };
@@ -927,7 +922,6 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
             "Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.",
         }),
       ),
-      isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
       shared: Schema.optionalKey(
         Schema.Union([Schema.Boolean, Schema.Null]).annotate({
           description:
@@ -1687,8 +1681,9 @@ export type TemplatesPublish403 = ForbiddenError;
 export const TemplatesPublish403 = ForbiddenError;
 export type TemplatesPublish404 = ResourceNotFoundError;
 export const TemplatesPublish404 = ResourceNotFoundError;
-export type TemplatesPublish409 = ConflictError;
-export const TemplatesPublish409 = ConflictError;
+export type TemplatesPublish409 = ConflictError | TemplateInUseError;
+export const TemplatesPublish409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesPublish422 = TemplateSourceError | ValidationError;
 export const TemplatesPublish422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -2385,8 +2380,9 @@ export type TemplatesGetGitRepository403 = ForbiddenError;
 export const TemplatesGetGitRepository403 = ForbiddenError;
 export type TemplatesGetGitRepository404 = ResourceNotFoundError;
 export const TemplatesGetGitRepository404 = ResourceNotFoundError;
-export type TemplatesGetGitRepository409 = ConflictError;
-export const TemplatesGetGitRepository409 = ConflictError;
+export type TemplatesGetGitRepository409 = ConflictError | TemplateInUseError;
+export const TemplatesGetGitRepository409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesGetGitRepository422 = TemplateSourceError | ValidationError;
 export const TemplatesGetGitRepository422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -2435,8 +2431,9 @@ export type TemplatesIssueGitCredential403 = ForbiddenError;
 export const TemplatesIssueGitCredential403 = ForbiddenError;
 export type TemplatesIssueGitCredential404 = ResourceNotFoundError;
 export const TemplatesIssueGitCredential404 = ResourceNotFoundError;
-export type TemplatesIssueGitCredential409 = ConflictError;
-export const TemplatesIssueGitCredential409 = ConflictError;
+export type TemplatesIssueGitCredential409 = ConflictError | TemplateInUseError;
+export const TemplatesIssueGitCredential409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesIssueGitCredential422 = TemplateSourceError | ValidationError;
 export const TemplatesIssueGitCredential422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -2880,8 +2877,9 @@ export type TemplatesOpenWorkspace403 = ForbiddenError;
 export const TemplatesOpenWorkspace403 = ForbiddenError;
 export type TemplatesOpenWorkspace404 = ResourceNotFoundError;
 export const TemplatesOpenWorkspace404 = ResourceNotFoundError;
-export type TemplatesOpenWorkspace409 = ConflictError;
-export const TemplatesOpenWorkspace409 = ConflictError;
+export type TemplatesOpenWorkspace409 = ConflictError | TemplateInUseError;
+export const TemplatesOpenWorkspace409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesOpenWorkspace422 = TemplateSourceError | ValidationError;
 export const TemplatesOpenWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -3376,8 +3374,9 @@ export type TemplatesPatchWorkspace403 = ForbiddenError;
 export const TemplatesPatchWorkspace403 = ForbiddenError;
 export type TemplatesPatchWorkspace404 = ResourceNotFoundError;
 export const TemplatesPatchWorkspace404 = ResourceNotFoundError;
-export type TemplatesPatchWorkspace409 = ConflictError;
-export const TemplatesPatchWorkspace409 = ConflictError;
+export type TemplatesPatchWorkspace409 = ConflictError | TemplateInUseError;
+export const TemplatesPatchWorkspace409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesPatchWorkspace422 = TemplateSourceError | ValidationError;
 export const TemplatesPatchWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -3856,8 +3855,9 @@ export type TemplatesPutWorkspaceAsset403 = ForbiddenError;
 export const TemplatesPutWorkspaceAsset403 = ForbiddenError;
 export type TemplatesPutWorkspaceAsset404 = ResourceNotFoundError;
 export const TemplatesPutWorkspaceAsset404 = ResourceNotFoundError;
-export type TemplatesPutWorkspaceAsset409 = ConflictError;
-export const TemplatesPutWorkspaceAsset409 = ConflictError;
+export type TemplatesPutWorkspaceAsset409 = ConflictError | TemplateInUseError;
+export const TemplatesPutWorkspaceAsset409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesPutWorkspaceAsset422 = TemplateSourceError | ValidationError;
 export const TemplatesPutWorkspaceAsset422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -4298,8 +4298,9 @@ export type TemplatesCheckWorkspace403 = ForbiddenError;
 export const TemplatesCheckWorkspace403 = ForbiddenError;
 export type TemplatesCheckWorkspace404 = ResourceNotFoundError;
 export const TemplatesCheckWorkspace404 = ResourceNotFoundError;
-export type TemplatesCheckWorkspace409 = ConflictError;
-export const TemplatesCheckWorkspace409 = ConflictError;
+export type TemplatesCheckWorkspace409 = ConflictError | TemplateInUseError;
+export const TemplatesCheckWorkspace409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesCheckWorkspace422 = TemplateSourceError | ValidationError;
 export const TemplatesCheckWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -4780,8 +4781,9 @@ export type TemplatesResolveWorkspaceConflict403 = ForbiddenError;
 export const TemplatesResolveWorkspaceConflict403 = ForbiddenError;
 export type TemplatesResolveWorkspaceConflict404 = ResourceNotFoundError;
 export const TemplatesResolveWorkspaceConflict404 = ResourceNotFoundError;
-export type TemplatesResolveWorkspaceConflict409 = ConflictError;
-export const TemplatesResolveWorkspaceConflict409 = ConflictError;
+export type TemplatesResolveWorkspaceConflict409 = ConflictError | TemplateInUseError;
+export const TemplatesResolveWorkspaceConflict409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesResolveWorkspaceConflict422 = TemplateSourceError | ValidationError;
 export const TemplatesResolveWorkspaceConflict422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -4892,8 +4894,9 @@ export type TemplatesDiffWorkspace403 = ForbiddenError;
 export const TemplatesDiffWorkspace403 = ForbiddenError;
 export type TemplatesDiffWorkspace404 = ResourceNotFoundError;
 export const TemplatesDiffWorkspace404 = ResourceNotFoundError;
-export type TemplatesDiffWorkspace409 = ConflictError;
-export const TemplatesDiffWorkspace409 = ConflictError;
+export type TemplatesDiffWorkspace409 = ConflictError | TemplateInUseError;
+export const TemplatesDiffWorkspace409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesDiffWorkspace422 = TemplateSourceError | ValidationError;
 export const TemplatesDiffWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -5690,8 +5693,9 @@ export type TemplatesRenderWorkspaceFixture403 = ForbiddenError;
 export const TemplatesRenderWorkspaceFixture403 = ForbiddenError;
 export type TemplatesRenderWorkspaceFixture404 = ResourceNotFoundError;
 export const TemplatesRenderWorkspaceFixture404 = ResourceNotFoundError;
-export type TemplatesRenderWorkspaceFixture409 = ConflictError;
-export const TemplatesRenderWorkspaceFixture409 = ConflictError;
+export type TemplatesRenderWorkspaceFixture409 = ConflictError | TemplateInUseError;
+export const TemplatesRenderWorkspaceFixture409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesRenderWorkspaceFixture422 = TemplateSourceError | ValidationError;
 export const TemplatesRenderWorkspaceFixture422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -5788,8 +5792,9 @@ export type TemplatesWorkspaceHistory403 = ForbiddenError;
 export const TemplatesWorkspaceHistory403 = ForbiddenError;
 export type TemplatesWorkspaceHistory404 = ResourceNotFoundError;
 export const TemplatesWorkspaceHistory404 = ResourceNotFoundError;
-export type TemplatesWorkspaceHistory409 = ConflictError;
-export const TemplatesWorkspaceHistory409 = ConflictError;
+export type TemplatesWorkspaceHistory409 = ConflictError | TemplateInUseError;
+export const TemplatesWorkspaceHistory409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesWorkspaceHistory422 = TemplateSourceError | ValidationError;
 export const TemplatesWorkspaceHistory422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -6314,8 +6319,9 @@ export type TemplatesAttachWorkspaceResource403 = ForbiddenError;
 export const TemplatesAttachWorkspaceResource403 = ForbiddenError;
 export type TemplatesAttachWorkspaceResource404 = ResourceNotFoundError;
 export const TemplatesAttachWorkspaceResource404 = ResourceNotFoundError;
-export type TemplatesAttachWorkspaceResource409 = ConflictError;
-export const TemplatesAttachWorkspaceResource409 = ConflictError;
+export type TemplatesAttachWorkspaceResource409 = ConflictError | TemplateInUseError;
+export const TemplatesAttachWorkspaceResource409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesAttachWorkspaceResource422 = TemplateSourceError | ValidationError;
 export const TemplatesAttachWorkspaceResource422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -6777,8 +6783,9 @@ export type TemplatesRemoveWorkspaceResource403 = ForbiddenError;
 export const TemplatesRemoveWorkspaceResource403 = ForbiddenError;
 export type TemplatesRemoveWorkspaceResource404 = ResourceNotFoundError;
 export const TemplatesRemoveWorkspaceResource404 = ResourceNotFoundError;
-export type TemplatesRemoveWorkspaceResource409 = ConflictError;
-export const TemplatesRemoveWorkspaceResource409 = ConflictError;
+export type TemplatesRemoveWorkspaceResource409 = ConflictError | TemplateInUseError;
+export const TemplatesRemoveWorkspaceResource409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesRemoveWorkspaceResource422 = TemplateSourceError | ValidationError;
 export const TemplatesRemoveWorkspaceResource422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -7279,8 +7286,9 @@ export type TemplatesRestoreWorkspace403 = ForbiddenError;
 export const TemplatesRestoreWorkspace403 = ForbiddenError;
 export type TemplatesRestoreWorkspace404 = ResourceNotFoundError;
 export const TemplatesRestoreWorkspace404 = ResourceNotFoundError;
-export type TemplatesRestoreWorkspace409 = ConflictError;
-export const TemplatesRestoreWorkspace409 = ConflictError;
+export type TemplatesRestoreWorkspace409 = ConflictError | TemplateInUseError;
+export const TemplatesRestoreWorkspace409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesRestoreWorkspace422 = TemplateSourceError | ValidationError;
 export const TemplatesRestoreWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -7625,8 +7633,9 @@ export type TemplatesSaveWorkspace403 = ForbiddenError;
 export const TemplatesSaveWorkspace403 = ForbiddenError;
 export type TemplatesSaveWorkspace404 = ResourceNotFoundError;
 export const TemplatesSaveWorkspace404 = ResourceNotFoundError;
-export type TemplatesSaveWorkspace409 = ConflictError;
-export const TemplatesSaveWorkspace409 = ConflictError;
+export type TemplatesSaveWorkspace409 = ConflictError | TemplateInUseError;
+export const TemplatesSaveWorkspace409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesSaveWorkspace422 = TemplateSourceError | ValidationError;
 export const TemplatesSaveWorkspace422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -7898,8 +7907,9 @@ export type TemplatesCreateFromWebsite403 = ForbiddenError;
 export const TemplatesCreateFromWebsite403 = ForbiddenError;
 export type TemplatesCreateFromWebsite404 = ResourceNotFoundError;
 export const TemplatesCreateFromWebsite404 = ResourceNotFoundError;
-export type TemplatesCreateFromWebsite409 = ConflictError;
-export const TemplatesCreateFromWebsite409 = ConflictError;
+export type TemplatesCreateFromWebsite409 = ConflictError | TemplateInUseError;
+export const TemplatesCreateFromWebsite409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
 export type TemplatesCreateFromWebsite422 = TemplateSourceError | ValidationError;
 export const TemplatesCreateFromWebsite422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -7909,6 +7919,27 @@ export type TemplatesCreateFromWebsite503 = ServiceUnavailableError;
 export const TemplatesCreateFromWebsite503 = ServiceUnavailableError;
 export type TemplatesCreateFromWebsite504 = GatewayTimeoutError;
 export const TemplatesCreateFromWebsite504 = GatewayTimeoutError;
+export type TemplatesDeleteProjectPathParams = { readonly id: TemplateProjectId };
+export const TemplatesDeleteProjectPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: TemplateProjectId }))();
+export type TemplatesDeleteProject200 = SuccessResponse;
+export const TemplatesDeleteProject200 = SuccessResponse;
+export type TemplatesDeleteProject400 = MalformedRequestError;
+export const TemplatesDeleteProject400 = MalformedRequestError;
+export type TemplatesDeleteProject401 = UnauthorizedError;
+export const TemplatesDeleteProject401 = UnauthorizedError;
+export type TemplatesDeleteProject403 = ForbiddenError;
+export const TemplatesDeleteProject403 = ForbiddenError;
+export type TemplatesDeleteProject404 = ResourceNotFoundError;
+export const TemplatesDeleteProject404 = ResourceNotFoundError;
+export type TemplatesDeleteProject409 = TemplateInUseError;
+export const TemplatesDeleteProject409 = TemplateInUseError;
+export type TemplatesDeleteProject422 = ValidationError;
+export const TemplatesDeleteProject422 = ValidationError;
+export type TemplatesDeleteProject500 = InternalError;
+export const TemplatesDeleteProject500 = InternalError;
+export type TemplatesDeleteProject504 = GatewayTimeoutError;
+export const TemplatesDeleteProject504 = GatewayTimeoutError;
 export type TemplatesAddEntryPathParams = { readonly id: TemplateProjectId };
 export const TemplatesAddEntryPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateProjectId }))();
@@ -8061,25 +8092,26 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         OpenApi.Description,
         "Returns the template with its project entry path, delivery defaults, compiled channel content, current publication, and the input schema that publication validates against. Open live project files through the workspace API.",
       ),
-    HttpApiEndpoint.delete("templatesRemove", "/v1/templates/:id", {
-      params: TemplatesRemovePathParams,
-      success: TemplatesRemove200,
+    HttpApiEndpoint.delete("templatesDelete", "/v1/templates/:id", {
+      params: TemplatesDeletePathParams,
+      success: TemplatesDelete200,
       error: [
-        TemplatesRemove400.pipe(HttpApiSchema.status(400)),
-        TemplatesRemove401.pipe(HttpApiSchema.status(401)),
-        TemplatesRemove403.pipe(HttpApiSchema.status(403)),
-        TemplatesRemove404.pipe(HttpApiSchema.status(404)),
-        TemplatesRemove422.pipe(HttpApiSchema.status(422)),
-        TemplatesRemove500,
-        TemplatesRemove504.pipe(HttpApiSchema.status(504)),
+        TemplatesDelete400.pipe(HttpApiSchema.status(400)),
+        TemplatesDelete401.pipe(HttpApiSchema.status(401)),
+        TemplatesDelete403.pipe(HttpApiSchema.status(403)),
+        TemplatesDelete404.pipe(HttpApiSchema.status(404)),
+        TemplatesDelete409.pipe(HttpApiSchema.status(409)),
+        TemplatesDelete422.pipe(HttpApiSchema.status(422)),
+        TemplatesDelete500,
+        TemplatesDelete504.pipe(HttpApiSchema.status(504)),
       ],
     })
       .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "templates.remove")
+      .annotate(OpenApi.Identifier, "templates.delete")
       .annotate(OpenApi.Summary, "Delete a template")
       .annotate(
         OpenApi.Description,
-        "Deletes a template from the organization and returns a success flag.",
+        "Permanently deletes a template and its publications, input contracts, variants and preview rasters, freeing its slug. Refuses with 409 and reference kind/id pairs while in use. Sent-message history keeps its snapshots. The project and its Git files remain. External object cleanup retries durably.",
       ),
     HttpApiEndpoint.patch("templatesUpdate", "/v1/templates/:id", {
       params: TemplatesUpdatePathParams,
@@ -8765,6 +8797,27 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(
         OpenApi.Description,
         "Checks that the website is a public page Samva can read, creates an email template project from Samva's canonical TSX starter, and returns the template with status 201 and the request that makes the template assistant match the site. The assistant runs when the request is sent in the editor; it rebuilds the project's theme and blocks from the site and proposes a brand that applies only after the customer approves it. A 422 names why the site cannot be matched: not a web address, not public, no answer, a missing page, refused automated visits, or not a web page.",
+      ),
+    HttpApiEndpoint.delete("templatesDeleteProject", "/v1/templates/projects/:id", {
+      params: TemplatesDeleteProjectPathParams,
+      success: TemplatesDeleteProject200,
+      error: [
+        TemplatesDeleteProject400.pipe(HttpApiSchema.status(400)),
+        TemplatesDeleteProject401.pipe(HttpApiSchema.status(401)),
+        TemplatesDeleteProject403.pipe(HttpApiSchema.status(403)),
+        TemplatesDeleteProject404.pipe(HttpApiSchema.status(404)),
+        TemplatesDeleteProject409.pipe(HttpApiSchema.status(409)),
+        TemplatesDeleteProject422.pipe(HttpApiSchema.status(422)),
+        TemplatesDeleteProject500,
+        TemplatesDeleteProject504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "templates.deleteProject")
+      .annotate(OpenApi.Summary, "Permanently delete a template project")
+      .annotate(
+        OpenApi.Description,
+        "Permanently deletes the project and every template in it. Refuses with 409 and reference kind/id pairs while any entry or the project is in use. Repository, workspace, conversations, draft assets, publications and previews are removed through durable cleanup. Sent-message history keeps its snapshots. Newsletter issue projects can only be removed through their topic.",
       ),
     HttpApiEndpoint.post("templatesAddEntry", "/v1/templates/projects/:id/entries", {
       params: TemplatesAddEntryPathParams,

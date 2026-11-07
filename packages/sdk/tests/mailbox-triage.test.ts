@@ -7,7 +7,7 @@ import * as Mailboxes from "../src/effect/mailboxes";
 import { createClient } from "../src/promises";
 
 const mailboxIds = ["mbx_7q2xk9mvt4znw8rh", "mbx_8q2xk9mvt4znw8rh"];
-const counts = { heldSends: 2, quarantinedMessages: 1, total: 3 };
+const counts = { heldActions: 2, quarantinedMessages: 1, total: 3 };
 
 const transport = () => {
   const requests: URL[] = [];

@@ -10,17 +10,20 @@ import {
   GatewayTimeoutError,
   InternalError,
   MalformedRequestError,
+  NamespaceId,
   UnauthorizedError,
   ValidationError,
   __SamvaRuntimeAbsoluteInstant,
 } from "./shared";
 
 export type AnalyticsGetChannelStatsQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly after?: __SamvaRuntimeAbsoluteInstant;
   readonly before?: __SamvaRuntimeAbsoluteInstant;
 };
 export const AnalyticsGetChannelStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
   }))();
@@ -193,12 +196,14 @@ export const AnalyticsGetChannelStats500 = InternalError;
 export type AnalyticsGetChannelStats504 = GatewayTimeoutError;
 export const AnalyticsGetChannelStats504 = GatewayTimeoutError;
 export type AnalyticsGetDeliveryMetricsQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly after?: __SamvaRuntimeAbsoluteInstant;
   readonly before?: __SamvaRuntimeAbsoluteInstant;
   readonly channel?: "sms" | "whatsapp" | "email";
 };
 export const AnalyticsGetDeliveryMetricsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     channel: Schema.optionalKey(
@@ -234,6 +239,7 @@ export const AnalyticsGetDeliveryMetrics500 = InternalError;
 export type AnalyticsGetDeliveryMetrics504 = GatewayTimeoutError;
 export const AnalyticsGetDeliveryMetrics504 = GatewayTimeoutError;
 export type AnalyticsExportDataRequestJson = {
+  readonly namespaceId?: NamespaceId | null;
   readonly after: __SamvaRuntimeAbsoluteInstant;
   readonly before: __SamvaRuntimeAbsoluteInstant;
   readonly format?: "csv" | "json" | null;
@@ -241,6 +247,7 @@ export type AnalyticsExportDataRequestJson = {
 };
 export const AnalyticsExportDataRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     after: __SamvaRuntimeAbsoluteInstant,
     before: __SamvaRuntimeAbsoluteInstant,
     format: Schema.optionalKey(
@@ -280,11 +287,13 @@ export const AnalyticsExportData500 = InternalError;
 export type AnalyticsExportData504 = GatewayTimeoutError;
 export const AnalyticsExportData504 = GatewayTimeoutError;
 export type AnalyticsGetHourlyDistributionQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly after?: __SamvaRuntimeAbsoluteInstant;
   readonly before?: __SamvaRuntimeAbsoluteInstant;
 };
 export const AnalyticsGetHourlyDistributionQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
   }))();
@@ -323,6 +332,7 @@ export const AnalyticsGetHourlyDistribution500 = InternalError;
 export type AnalyticsGetHourlyDistribution504 = GatewayTimeoutError;
 export const AnalyticsGetHourlyDistribution504 = GatewayTimeoutError;
 export type AnalyticsGetStatsQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly after?: __SamvaRuntimeAbsoluteInstant;
   readonly before?: __SamvaRuntimeAbsoluteInstant;
   readonly groupBy?: "day" | "week" | "month";
@@ -330,6 +340,7 @@ export type AnalyticsGetStatsQuery = {
 };
 export const AnalyticsGetStatsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     groupBy: Schema.optionalKey(
@@ -402,6 +413,7 @@ export const AnalyticsGetStats500 = InternalError;
 export type AnalyticsGetStats504 = GatewayTimeoutError;
 export const AnalyticsGetStats504 = GatewayTimeoutError;
 export type AnalyticsGetTopContactsQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly after?: __SamvaRuntimeAbsoluteInstant;
   readonly before?: __SamvaRuntimeAbsoluteInstant;
   readonly limit?: number | null;
@@ -409,6 +421,7 @@ export type AnalyticsGetTopContactsQuery = {
 };
 export const AnalyticsGetTopContactsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     after: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     before: Schema.optionalKey(__SamvaRuntimeAbsoluteInstant),
     limit: Schema.optionalKey(
@@ -587,5 +600,5 @@ export class AnalyticsGroup extends HttpApiGroup.make("Analytics")
   )
   .annotate(
     OpenApi.Description,
-    "Messaging analytics, channel stats, and data export. Every date range is half-open — `after` inclusive, `before` exclusive — and may span at most 366 days. Both bounds are absolute ISO-8601 instants carrying `Z` or a numeric offset; a bare calendar date is rejected, because reading it as UTC midnight would shift every bucket for an organization outside UTC. `AnalyticsQueryError` refuses a longer span and a `before` sent without an `after`, which bounds nothing. Omitting both bounds reports the organization's whole history. Calendar buckets follow the organization's timezone.",
+    "Messaging analytics, channel stats, and data export. Namespace keys read only their own traffic; organization callers can narrow results with namespaceId. Every date range is half-open — `after` inclusive, `before` exclusive — and may span at most 366 days. Both bounds are absolute ISO-8601 instants carrying `Z` or a numeric offset; a bare calendar date is rejected, because reading it as UTC midnight would shift every bucket for an organization outside UTC. `AnalyticsQueryError` refuses a longer span and a `before` sent without an `after`, which bounds nothing. Omitting both bounds reports the organization's whole history. Calendar buckets follow the organization's timezone.",
   ) {}

@@ -40,6 +40,7 @@ export * as Messages from "./messages";
 export * as Namespaces from "./namespaces";
 export * as Operations from "./operations";
 export * as Organizations from "./organizations";
+export * as Policies from "./policies";
 export * as NewsletterDomains from "./newsletter-domains";
 export * as Retry from "./retry";
 export * as ScheduledMessages from "./scheduled-messages";

@@ -1,7 +1,5 @@
 import type { SamvaClient } from "../promises/client";
 
-type SendResult = Awaited<ReturnType<SamvaClient["mailboxes"]["reply"]>>;
-
 export type ExtensionManifest = {
   readonly name: string;
   readonly displayName: string;
@@ -42,6 +40,40 @@ export type ActionResolution = {
   readonly resolvedAt: string;
   /** The denial reason; null for an approval or a cancellation. */
   readonly reason: string | null;
+};
+/** Why a mailbox action was allowed, held, or refused. */
+export type ActionDecision = {
+  readonly id: string;
+  readonly reviewRound: number;
+  readonly requirement: "run" | "model" | "person" | "never";
+  readonly decider: "rule" | "model" | "person" | "agent";
+  readonly outcome: "allow" | "hold" | "refuse";
+  readonly reason: string;
+  readonly scopes: readonly PolicyScope[];
+  readonly rule?: { readonly scope: PolicyScope; readonly index: number } | undefined;
+  readonly guard?: string | undefined;
+  readonly guardReason?: string | undefined;
+  readonly resolution?:
+    | {
+        readonly by: string;
+        readonly at: string;
+        readonly as: "approved" | "edited" | "denied" | "alwaysAllowed";
+        readonly diff?:
+          | {
+              readonly text?:
+                | { readonly before: string | null; readonly after: string | null }
+                | undefined;
+              readonly html?:
+                | { readonly before: string | null; readonly after: string | null }
+                | undefined;
+            }
+          | undefined;
+      }
+    | undefined;
+};
+type PolicyScope = {
+  readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+  readonly id: string;
 };
 export type CampaignAttribution = { readonly campaignId: string; readonly runId: string };
 
@@ -96,7 +128,8 @@ export type EventData = {
   "mailbox.action.pending_approval": MailboxEventScope & {
     readonly action: {
       readonly state?: "approvalRequired";
-      readonly decision?: Readonly<NonNullable<SendResult["decision"]>>;
+      readonly decision: ActionDecision;
+      readonly reviewRound: number;
       readonly id: string;
       readonly type:
         | "sendMessage"
@@ -107,7 +140,8 @@ export type EventData = {
         | "changeThreadState"
         | "call"
         | "extensionRequest"
-        | "toolCall";
+        | "toolCall"
+        | "handoff";
       readonly threadId: string | null;
       readonly reason: string | null;
       readonly proposedBy: WebhookActor;
@@ -129,6 +163,7 @@ export type EventData = {
   "mailbox.action.resolved": MailboxEventScope & {
     readonly action: {
       readonly id: string;
+      readonly reviewRound: number;
       readonly type: EventData["mailbox.action.pending_approval"]["action"]["type"];
       readonly threadId: string | null;
       readonly proposedBy: WebhookActor;

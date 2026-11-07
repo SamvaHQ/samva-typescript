@@ -11,8 +11,8 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
-  MailboxSendMode,
   MalformedRequestError,
+  NamespaceId,
   PaymentRequiredError,
   RateLimitedError,
   ResourceNotFoundError,
@@ -68,11 +68,6 @@ export const ApiKeyActivityPage = /* @__PURE__ */ (() =>
     ),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "ApiKeyActivityPage" }))();
-export type ApiKeyMailboxAccessUpdate = { readonly sendMode: MailboxSendMode };
-export const ApiKeyMailboxAccessUpdate = /* @__PURE__ */ (() =>
-  Schema.Struct({ sendMode: MailboxSendMode }).annotate({
-    identifier: "ApiKeyMailboxAccessUpdate",
-  }))();
 export type ApiKey = {
   readonly id: string;
   readonly name: string;
@@ -143,6 +138,7 @@ export const ApiKeyPage = /* @__PURE__ */ (() =>
 export type ApiKeysListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
+  readonly namespaceId?: NamespaceId;
   readonly status?: "active" | "revoked";
   readonly search?: string;
 };
@@ -162,6 +158,7 @@ export const ApiKeysListQuery = /* @__PURE__ */ (() =>
       ]),
     ),
     cursor: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(NamespaceId),
     status: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("revoked")])),
     search: Schema.optionalKey(Schema.String),
   }))();
@@ -248,7 +245,6 @@ export const ApiKeysUpdatePathParams = /* @__PURE__ */ (() => Schema.Struct({ id
 export type ApiKeysUpdateRequestJson = {
   readonly name?: string | null;
   readonly description?: string | null;
-  readonly mailboxes?: ApiKeyMailboxAccessUpdate | null;
 };
 export const ApiKeysUpdateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -269,12 +265,6 @@ export const ApiKeysUpdateRequestJson = /* @__PURE__ */ (() =>
       ]),
     ),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    mailboxes: Schema.optionalKey(
-      Schema.Union([ApiKeyMailboxAccessUpdate, Schema.Null]).annotate({
-        description:
-          "Changes the mailbox send mode of a key that holds mailbox access. Only a person can change it; the change applies to the key's next request.",
-      }),
-    ),
   }))();
 export type ApiKeysUpdate200 = ApiKey;
 export const ApiKeysUpdate200 = ApiKey;
@@ -467,7 +457,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       .annotate(OpenApi.Summary, "List API keys")
       .annotate(
         OpenApi.Description,
-        "Returns the organization's API keys, newest first, filterable by status and a search term matched against name and description. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
+        "Returns the organization's API keys, newest first, filterable by namespace (`namespaceId`), status and a search term matched against name and description. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
       ),
     HttpApiEndpoint.post("apiKeysCreate", "/v1/api-keys", {
       payload: ApiKeysCreateRequestJson,

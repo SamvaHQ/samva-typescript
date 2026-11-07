@@ -14,3 +14,5 @@ export const publish = /* @__PURE__ */ make("agentsPublish");
 export const continueOnStandard = /* @__PURE__ */ make("agentsContinueOnStandard");
 export const listVersions = /* @__PURE__ */ make("agentsListVersions");
 export const getVersion = /* @__PURE__ */ make("agentsGetVersion");
+
+export const rerunTests = /* @__PURE__ */ make("agentsRerunTests");

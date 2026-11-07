@@ -5,6 +5,7 @@ import * as Schema from "effect/Schema";
 
 import {
   ApiKeySecurityMiddleware,
+  ConflictError,
   ContactId,
   ConversationId,
   ForbiddenError,
@@ -15,6 +16,7 @@ import {
   MailboxId,
   MalformedRequestError,
   MessagePage,
+  NamespaceId,
   ResourceNotFoundError,
   UnauthorizedError,
   ValidationError,
@@ -25,6 +27,7 @@ export const UnknownRecord = /* @__PURE__ */ (() =>
   Schema.Record(Schema.String, JsonValue).annotate({ identifier: "UnknownRecord" }))();
 export type ConversationSummary = {
   readonly id: ConversationId;
+  readonly namespaceId: NamespaceId | null;
   readonly title: string | null;
   readonly externalId: string | null;
   readonly status: "active" | "waiting" | "resolved" | "escalated" | "archived";
@@ -41,6 +44,7 @@ export type ConversationSummary = {
 export const ConversationSummary = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: ConversationId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     title: Schema.Union([Schema.String, Schema.Null]),
     externalId: Schema.Union([Schema.String, Schema.Null]),
     status: Schema.Union([
@@ -159,6 +163,7 @@ export const ConversationPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "ConversationPage" }))();
 export type Conversation = {
   readonly id: ConversationId;
+  readonly namespaceId: NamespaceId | null;
   readonly title: string | null;
   readonly externalId: string | null;
   readonly status: "active" | "waiting" | "resolved" | "escalated" | "archived";
@@ -198,6 +203,7 @@ export type Conversation = {
 export const Conversation = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: ConversationId,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     title: Schema.Union([Schema.String, Schema.Null]),
     externalId: Schema.Union([Schema.String, Schema.Null]),
     status: Schema.Union([
@@ -281,6 +287,7 @@ export const Conversation = /* @__PURE__ */ (() =>
 export type ConversationsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
+  readonly namespaceId?: NamespaceId;
   readonly status?: "active" | "waiting" | "resolved" | "escalated" | "archived";
   readonly channel?: "sms" | "whatsapp" | "email";
   readonly contactId?: ContactId;
@@ -304,6 +311,7 @@ export const ConversationsListQuery = /* @__PURE__ */ (() =>
       ]),
     ),
     cursor: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(NamespaceId),
     status: Schema.optionalKey(
       Schema.Union([
         Schema.Literal("active"),
@@ -336,6 +344,7 @@ export const ConversationsList500 = InternalError;
 export type ConversationsList504 = GatewayTimeoutError;
 export const ConversationsList504 = GatewayTimeoutError;
 export type ConversationsCreateRequestJson = {
+  readonly namespaceId?: NamespaceId | null;
   readonly title?: string | null;
   readonly description?: string | null;
   readonly externalId?: string | null;
@@ -357,6 +366,7 @@ export type ConversationsCreateRequestJson = {
 };
 export const ConversationsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     title: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     externalId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
@@ -435,6 +445,10 @@ export type ConversationsCreate401 = UnauthorizedError;
 export const ConversationsCreate401 = UnauthorizedError;
 export type ConversationsCreate403 = ForbiddenError;
 export const ConversationsCreate403 = ForbiddenError;
+export type ConversationsCreate404 = ResourceNotFoundError;
+export const ConversationsCreate404 = ResourceNotFoundError;
+export type ConversationsCreate409 = ConflictError;
+export const ConversationsCreate409 = ConflictError;
 export type ConversationsCreate422 = ValidationError;
 export const ConversationsCreate422 = ValidationError;
 export type ConversationsCreate500 = InternalError;
@@ -558,6 +572,8 @@ export type ConversationsUpdate403 = ForbiddenError;
 export const ConversationsUpdate403 = ForbiddenError;
 export type ConversationsUpdate404 = ResourceNotFoundError;
 export const ConversationsUpdate404 = ResourceNotFoundError;
+export type ConversationsUpdate409 = ConflictError;
+export const ConversationsUpdate409 = ConflictError;
 export type ConversationsUpdate422 = ValidationError;
 export const ConversationsUpdate422 = ValidationError;
 export type ConversationsUpdate500 = InternalError;
@@ -861,6 +877,8 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
         ConversationsCreate400.pipe(HttpApiSchema.status(400)),
         ConversationsCreate401.pipe(HttpApiSchema.status(401)),
         ConversationsCreate403.pipe(HttpApiSchema.status(403)),
+        ConversationsCreate404.pipe(HttpApiSchema.status(404)),
+        ConversationsCreate409.pipe(HttpApiSchema.status(409)),
         ConversationsCreate422.pipe(HttpApiSchema.status(422)),
         ConversationsCreate500,
         ConversationsCreate504.pipe(HttpApiSchema.status(504)),
@@ -902,6 +920,7 @@ export class ConversationsGroup extends HttpApiGroup.make("Conversations")
         ConversationsUpdate401.pipe(HttpApiSchema.status(401)),
         ConversationsUpdate403.pipe(HttpApiSchema.status(403)),
         ConversationsUpdate404.pipe(HttpApiSchema.status(404)),
+        ConversationsUpdate409.pipe(HttpApiSchema.status(409)),
         ConversationsUpdate422.pipe(HttpApiSchema.status(422)),
         ConversationsUpdate500,
         ConversationsUpdate504.pipe(HttpApiSchema.status(504)),

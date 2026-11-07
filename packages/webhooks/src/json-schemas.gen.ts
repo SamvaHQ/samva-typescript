@@ -1956,6 +1956,56 @@ export const WebhookEventJsonSchemas: Readonly<
     required: ["type", "timestamp", "data"],
     additionalProperties: true,
   },
+  "email.sending.paused": {
+    type: "object",
+    properties: {
+      type: { type: "string", enum: ["email.sending.paused"] },
+      timestamp: { type: "string" },
+      data: {
+        type: "object",
+        properties: {
+          organizationId: { type: "string", pattern: "^org_[0-9a-hjkmnp-tv-z]{16,24}$" },
+          namespaceId: {
+            anyOf: [
+              { type: "string", pattern: "^ns_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
+            ],
+          },
+          channel: { type: "string", enum: ["email"] },
+          occurredAt: { type: "string" },
+        },
+        required: ["organizationId", "namespaceId", "channel", "occurredAt"],
+        additionalProperties: true,
+      },
+    },
+    required: ["type", "timestamp", "data"],
+    additionalProperties: true,
+  },
+  "email.sending.resumed": {
+    type: "object",
+    properties: {
+      type: { type: "string", enum: ["email.sending.resumed"] },
+      timestamp: { type: "string" },
+      data: {
+        type: "object",
+        properties: {
+          organizationId: { type: "string", pattern: "^org_[0-9a-hjkmnp-tv-z]{16,24}$" },
+          namespaceId: {
+            anyOf: [
+              { type: "string", pattern: "^ns_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
+            ],
+          },
+          channel: { type: "string", enum: ["email"] },
+          occurredAt: { type: "string" },
+        },
+        required: ["organizationId", "namespaceId", "channel", "occurredAt"],
+        additionalProperties: true,
+      },
+    },
+    required: ["type", "timestamp", "data"],
+    additionalProperties: true,
+  },
   "template.registration.updated": {
     type: "object",
     properties: {
@@ -2472,8 +2522,10 @@ export const WebhookEventJsonSchemas: Readonly<
                   "call",
                   "extensionRequest",
                   "toolCall",
+                  "handoff",
                 ],
               },
+              reviewRound: { type: "integer", maximum: 9007199254740991, exclusiveMinimum: 0 },
               state: {
                 type: "string",
                 enum: ["approvalRequired"],
@@ -2482,25 +2534,122 @@ export const WebhookEventJsonSchemas: Readonly<
               decision: {
                 type: "object",
                 properties: {
-                  outcome: { type: "string", enum: ["allow", "requireApproval", "deny"] },
-                  reason: { anyOf: [{ type: "string" }, { type: "null" }] },
-                  policyId: {
+                  id: { type: "string", pattern: "^pdec_[0-9a-hjkmnp-tv-z]{16,24}$" },
+                  reviewRound: { type: "integer", maximum: 9007199254740991, exclusiveMinimum: 0 },
+                  requirement: { type: "string", enum: ["run", "model", "person", "never"] },
+                  decider: { type: "string", enum: ["rule", "model", "person", "agent"] },
+                  outcome: { type: "string", enum: ["allow", "hold", "refuse"] },
+                  reason: { type: "string", minLength: 1 },
+                  scopes: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        kind: {
+                          type: "string",
+                          enum: ["organization", "mailbox", "agent", "apiKey"],
+                        },
+                        id: { type: "string", minLength: 1 },
+                      },
+                      required: ["kind", "id"],
+                      additionalProperties: true,
+                    },
+                  },
+                  rule: {
                     anyOf: [
-                      { type: "string", pattern: "^mbxpol_[0-9a-hjkmnp-tv-z]{16,24}$" },
+                      {
+                        type: "object",
+                        properties: {
+                          scope: {
+                            type: "object",
+                            properties: {
+                              kind: {
+                                type: "string",
+                                enum: ["organization", "mailbox", "agent", "apiKey"],
+                              },
+                              id: { type: "string", minLength: 1 },
+                            },
+                            required: ["kind", "id"],
+                            additionalProperties: true,
+                          },
+                          index: { type: "integer", minimum: 0, maximum: 9007199254740991 },
+                        },
+                        required: ["scope", "index"],
+                        additionalProperties: true,
+                      },
                       { type: "null" },
                     ],
                   },
-                  source: {
+                  guard: { anyOf: [{ type: "string", minLength: 1 }, { type: "null" }] },
+                  guardReason: { anyOf: [{ type: "string", minLength: 1 }, { type: "null" }] },
+                  resolution: {
                     anyOf: [
-                      { type: "string", enum: ["grant", "installation", "policy"] },
+                      {
+                        type: "object",
+                        properties: {
+                          by: { type: "string", pattern: "^user_[0-9a-hjkmnp-tv-z]{16,24}$" },
+                          at: { type: "string" },
+                          as: {
+                            type: "string",
+                            enum: ["approved", "edited", "denied", "alwaysAllowed"],
+                          },
+                          diff: {
+                            anyOf: [
+                              {
+                                type: "object",
+                                properties: {
+                                  text: {
+                                    anyOf: [
+                                      {
+                                        type: "object",
+                                        properties: {
+                                          before: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                          after: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                        },
+                                        required: ["before", "after"],
+                                        additionalProperties: true,
+                                      },
+                                      { type: "null" },
+                                    ],
+                                  },
+                                  html: {
+                                    anyOf: [
+                                      {
+                                        type: "object",
+                                        properties: {
+                                          before: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                          after: { anyOf: [{ type: "string" }, { type: "null" }] },
+                                        },
+                                        required: ["before", "after"],
+                                        additionalProperties: true,
+                                      },
+                                      { type: "null" },
+                                    ],
+                                  },
+                                },
+                                additionalProperties: true,
+                              },
+                              { type: "null" },
+                            ],
+                          },
+                        },
+                        required: ["by", "at", "as"],
+                        additionalProperties: true,
+                      },
                       { type: "null" },
                     ],
                   },
-                  decidedAt: { type: "string" },
                 },
-                required: ["outcome", "reason", "policyId", "source", "decidedAt"],
+                required: [
+                  "id",
+                  "reviewRound",
+                  "requirement",
+                  "decider",
+                  "outcome",
+                  "reason",
+                  "scopes",
+                ],
                 additionalProperties: true,
-                description: "Deliveries recorded before this field existed omit it.",
               },
               threadId: {
                 anyOf: [
@@ -2535,7 +2684,16 @@ export const WebhookEventJsonSchemas: Readonly<
               },
               createdAt: { type: "string" },
             },
-            required: ["id", "type", "threadId", "reason", "proposedBy", "createdAt"],
+            required: [
+              "id",
+              "type",
+              "reviewRound",
+              "decision",
+              "threadId",
+              "reason",
+              "proposedBy",
+              "createdAt",
+            ],
             additionalProperties: true,
           },
           draft: {
@@ -2610,8 +2768,10 @@ export const WebhookEventJsonSchemas: Readonly<
                   "call",
                   "extensionRequest",
                   "toolCall",
+                  "handoff",
                 ],
               },
+              reviewRound: { type: "integer", maximum: 9007199254740991, exclusiveMinimum: 0 },
               threadId: {
                 anyOf: [
                   { type: "string", pattern: "^thread_[0-9a-hjkmnp-tv-z]{16,24}$" },
@@ -2644,7 +2804,7 @@ export const WebhookEventJsonSchemas: Readonly<
               },
               createdAt: { type: "string" },
             },
-            required: ["id", "type", "threadId", "proposedBy", "createdAt"],
+            required: ["id", "type", "reviewRound", "threadId", "proposedBy", "createdAt"],
             additionalProperties: true,
           },
           resolution: {

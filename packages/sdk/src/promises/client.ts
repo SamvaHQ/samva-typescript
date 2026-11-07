@@ -58,6 +58,7 @@ import {
   Namespaces as namespaces,
   Operations as operations,
   Organizations as organizations,
+  Policies as policies,
   ScheduledMessages as scheduledMessages,
   Subscriptions as subscriptions,
   Templates as templates,
@@ -537,6 +538,7 @@ export interface SamvaRawClient {
   readonly operations: typeof operations;
   readonly apiKeys: typeof apiKeys;
   readonly organizations: typeof organizations;
+  readonly policies: typeof policies;
   readonly attachments: typeof attachments;
   readonly contactGroups: typeof contactGroups;
   readonly customFields: typeof customFields;
@@ -581,6 +583,7 @@ export interface SamvaClient {
   readonly operations: DirectService<typeof operations>;
   readonly apiKeys: DirectService<typeof apiKeys>;
   readonly organizations: DirectService<typeof organizations>;
+  readonly policies: DirectService<typeof policies>;
   readonly attachments: DirectService<typeof attachments>;
   readonly contactGroups: DirectService<typeof contactGroups>;
   readonly customFields: DirectService<typeof customFields>;
@@ -667,6 +670,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     operations: createBoundService(operations, clientInstance),
     apiKeys: createBoundService(apiKeys, clientInstance),
     organizations: createBoundService(organizations, clientInstance),
+    policies: createBoundService(policies, clientInstance),
     attachments: createBoundService(attachments, clientInstance),
     contactGroups: createBoundService(contactGroups, clientInstance),
     customFields: createBoundService(customFields, clientInstance),
@@ -714,6 +718,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     operations: createDirectService(raw.operations),
     apiKeys: createDirectService(raw.apiKeys),
     organizations: createDirectService(raw.organizations),
+    policies: createDirectService(raw.policies),
     attachments: createDirectService(raw.attachments),
     contactGroups: createDirectService(raw.contactGroups),
     customFields: createDirectService(raw.customFields),

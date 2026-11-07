@@ -81,12 +81,15 @@ const fixtures: EventData = {
     ...common,
     action: {
       state: "approvalRequired",
+      reviewRound: 1,
       decision: {
-        outcome: "requireApproval",
+        id: "pdec_0000000000000000",
+        reviewRound: 1,
+        requirement: "person",
+        decider: "person",
+        outcome: "hold",
         reason: "Approval required",
-        policyId: null,
-        source: "installation",
-        decidedAt: timestamp,
+        scopes: [{ kind: "mailbox", id: common.mailboxId }],
       },
       id: "mbxact_0000000000000000",
       type: "sendMessage",
@@ -102,6 +105,7 @@ const fixtures: EventData = {
     action: {
       id: "mbxact_0000000000000000",
       type: "sendMessage",
+      reviewRound: 1,
       threadId: message.threadId,
       proposedBy: actor,
       createdAt: timestamp,

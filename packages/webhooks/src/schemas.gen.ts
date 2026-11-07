@@ -9,7 +9,9 @@ export const MessageSentEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -87,7 +89,9 @@ export const MessageDeliveredEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -165,7 +169,9 @@ export const MessageReadEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -243,7 +249,9 @@ export const MessageFailedEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -321,7 +329,9 @@ export const MessageBouncedEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -399,7 +409,9 @@ export const MessageComplainedEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -477,7 +489,9 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
         mailboxId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -529,12 +543,16 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
             Schema.StructWithRest(
               Schema.Struct({
                 campaignId: Schema.String.check(
-                  Schema.isPattern(new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                  Schema.isPattern(
+                    new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                  ).annotate({
                     expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
                   }),
                 ),
                 runId: Schema.String.check(
-                  Schema.isPattern(new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                  Schema.isPattern(
+                    new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                  ).annotate({
                     expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
                   }),
                 ),
@@ -789,7 +807,10 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                   type: Schema.Literal("image"),
                                   mediaId: Schema.String.check(
                                     Schema.isPattern(
-                                      new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                                      new globalThis.RegExp(
+                                        "^media_[0-9a-hjkmnp-tv-z]{16,24}$",
+                                        "u",
+                                      ),
                                     ).annotate({
                                       expected:
                                         "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -826,7 +847,10 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                   type: Schema.Literal("video"),
                                   mediaId: Schema.String.check(
                                     Schema.isPattern(
-                                      new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                                      new globalThis.RegExp(
+                                        "^media_[0-9a-hjkmnp-tv-z]{16,24}$",
+                                        "u",
+                                      ),
                                     ).annotate({
                                       expected:
                                         "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -885,7 +909,10 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                   ),
                                   mediaId: Schema.String.check(
                                     Schema.isPattern(
-                                      new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                                      new globalThis.RegExp(
+                                        "^media_[0-9a-hjkmnp-tv-z]{16,24}$",
+                                        "u",
+                                      ),
                                     ).annotate({
                                       expected:
                                         "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1171,7 +1198,10 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                   type: Schema.Literal("image"),
                                   mediaId: Schema.String.check(
                                     Schema.isPattern(
-                                      new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                                      new globalThis.RegExp(
+                                        "^media_[0-9a-hjkmnp-tv-z]{16,24}$",
+                                        "u",
+                                      ),
                                     ).annotate({
                                       expected:
                                         "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1208,7 +1238,10 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                   type: Schema.Literal("video"),
                                   mediaId: Schema.String.check(
                                     Schema.isPattern(
-                                      new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                                      new globalThis.RegExp(
+                                        "^media_[0-9a-hjkmnp-tv-z]{16,24}$",
+                                        "u",
+                                      ),
                                     ).annotate({
                                       expected:
                                         "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1267,7 +1300,10 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                   ),
                                   mediaId: Schema.String.check(
                                     Schema.isPattern(
-                                      new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                                      new globalThis.RegExp(
+                                        "^media_[0-9a-hjkmnp-tv-z]{16,24}$",
+                                        "u",
+                                      ),
                                     ).annotate({
                                       expected:
                                         "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1375,7 +1411,7 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                         ),
                         flowId: Schema.String.check(
                           Schema.isPattern(
-                            new RegExp("^waflow_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                            new globalThis.RegExp("^waflow_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                           ).annotate({
                             expected:
                               "a string matching the RegExp ^waflow_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1404,7 +1440,9 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                         action: Schema.optionalKey(Schema.Literals(["navigate", "data_exchange"])),
                         screen: Schema.optionalKey(
                           Schema.String.check(
-                            Schema.isPattern(new RegExp("^[A-Za-z_]{1,100}$", "u")).annotate({
+                            Schema.isPattern(
+                              new globalThis.RegExp("^[A-Za-z_]{1,100}$", "u"),
+                            ).annotate({
                               expected: "a string matching the RegExp ^[A-Za-z_]{1,100}$",
                             }),
                           ),
@@ -1419,7 +1457,7 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                         ),
                         flowVersionId: Schema.String.check(
                           Schema.isPattern(
-                            new RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                            new globalThis.RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                           ).annotate({
                             expected:
                               "a string matching the RegExp ^wafver_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1462,7 +1500,7 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                           type: Schema.Literals(["image", "video", "audio", "document", "sticker"]),
                           mediaId: Schema.String.check(
                             Schema.isPattern(
-                              new RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                              new globalThis.RegExp("^media_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                             ).annotate({
                               expected:
                                 "a string matching the RegExp ^media_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1507,7 +1545,7 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                       messageId: Schema.Union([
                         Schema.String.check(
                           Schema.isPattern(
-                            new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                            new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                           ).annotate({
                             expected:
                               "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1725,7 +1763,7 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                       messageId: Schema.Union([
                         Schema.String.check(
                           Schema.isPattern(
-                            new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                            new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                           ).annotate({
                             expected:
                               "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
@@ -1787,20 +1825,22 @@ export const MessageOpenedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         messageId: Schema.String.check(
-          Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         channel: Schema.Literal("email"),
         deliveryId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         recipient: Schema.String,
         occurredAt: Schema.String,
@@ -1838,7 +1878,9 @@ export const MessageOpenedEventSchema = Schema.StructWithRest(
         campaignId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -1848,7 +1890,9 @@ export const MessageOpenedEventSchema = Schema.StructWithRest(
         campaignRunId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -1882,20 +1926,22 @@ export const MessageClickedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         messageId: Schema.String.check(
-          Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         channel: Schema.Literal("email"),
         deliveryId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         recipient: Schema.String,
         occurredAt: Schema.String,
@@ -1935,7 +1981,9 @@ export const MessageClickedEventSchema = Schema.StructWithRest(
         campaignId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -1945,7 +1993,9 @@ export const MessageClickedEventSchema = Schema.StructWithRest(
         campaignRunId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -1979,7 +2029,9 @@ export const ContactCreatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2034,7 +2086,9 @@ export const ContactUpdatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2089,7 +2143,9 @@ export const ContactDeletedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2144,18 +2200,22 @@ export const ContactSubscribedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         topicId: Schema.String.check(
-          Schema.isPattern(new RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2170,7 +2230,9 @@ export const ContactSubscribedEventSchema = Schema.StructWithRest(
         messageId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2180,7 +2242,9 @@ export const ContactSubscribedEventSchema = Schema.StructWithRest(
         campaignId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2190,7 +2254,9 @@ export const ContactSubscribedEventSchema = Schema.StructWithRest(
         campaignRunId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2225,18 +2291,22 @@ export const ContactUnsubscribedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         topicId: Schema.String.check(
-          Schema.isPattern(new RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2251,7 +2321,9 @@ export const ContactUnsubscribedEventSchema = Schema.StructWithRest(
         messageId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2261,7 +2333,9 @@ export const ContactUnsubscribedEventSchema = Schema.StructWithRest(
         campaignId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2271,7 +2345,9 @@ export const ContactUnsubscribedEventSchema = Schema.StructWithRest(
         campaignRunId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2306,18 +2382,22 @@ export const ContactResubscribedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         topicId: Schema.String.check(
-          Schema.isPattern(new RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2332,7 +2412,9 @@ export const ContactResubscribedEventSchema = Schema.StructWithRest(
         messageId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2342,7 +2424,9 @@ export const ContactResubscribedEventSchema = Schema.StructWithRest(
         campaignId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2352,7 +2436,9 @@ export const ContactResubscribedEventSchema = Schema.StructWithRest(
         campaignRunId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2387,19 +2473,23 @@ export const ContactConsentChangedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         contactId: Schema.String.check(
-          Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         identity: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^cident_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^cident_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^cident_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2447,12 +2537,14 @@ export const ConversationCreatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         conversationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^conv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^conv_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^conv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^conv_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2463,7 +2555,9 @@ export const ConversationCreatedEventSchema = Schema.StructWithRest(
         primaryContactId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2500,12 +2594,14 @@ export const ConversationUpdatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         conversationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^conv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^conv_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^conv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^conv_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2516,7 +2612,9 @@ export const ConversationUpdatedEventSchema = Schema.StructWithRest(
         primaryContactId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2553,12 +2651,14 @@ export const ConversationArchivedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         conversationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^conv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^conv_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^conv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^conv_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2569,7 +2669,9 @@ export const ConversationArchivedEventSchema = Schema.StructWithRest(
         primaryContactId: Schema.optionalKey(
           Schema.Union([
             Schema.String.check(
-              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -2606,12 +2708,12 @@ export const WebhookCreatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         webhookId: Schema.String.check(
-          Schema.isPattern(new RegExp("^wep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^wep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^wep_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2649,12 +2751,12 @@ export const WebhookUpdatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         webhookId: Schema.String.check(
-          Schema.isPattern(new RegExp("^wep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^wep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^wep_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2692,12 +2794,12 @@ export const WebhookDeletedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         webhookId: Schema.String.check(
-          Schema.isPattern(new RegExp("^wep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^wep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^wep_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2755,12 +2857,12 @@ export const DomainUpdatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         domainId: Schema.String.check(
-          Schema.isPattern(new RegExp("^dom_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^dom_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^dom_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -2869,9 +2971,11 @@ export const DomainUpdatedEventSchema = Schema.StructWithRest(
         ]),
         operationId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^op_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^op_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^op_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^op_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
@@ -2981,6 +3085,92 @@ export const DomainWarmingUpdatedEventSchema = Schema.StructWithRest(
     ),
   ],
 );
+export const EmailSendingPausedEventSchema = Schema.StructWithRest(
+  Schema.Struct({
+    type: Schema.Literal("email.sending.paused"),
+    timestamp: Schema.String,
+    data: Schema.StructWithRest(
+      Schema.Struct({
+        organizationId: Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+            expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
+          }),
+        ),
+        namespaceId: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
+          ),
+          Schema.Null,
+        ]),
+        channel: Schema.Literal("email"),
+        occurredAt: Schema.String,
+      }),
+      [
+        Schema.Record(
+          Schema.String,
+          Schema.Json.annotate({
+            expected: "JSON value",
+          }),
+        ),
+      ],
+    ),
+  }),
+  [
+    Schema.Record(
+      Schema.String,
+      Schema.Json.annotate({
+        expected: "JSON value",
+      }),
+    ),
+  ],
+);
+export const EmailSendingResumedEventSchema = Schema.StructWithRest(
+  Schema.Struct({
+    type: Schema.Literal("email.sending.resumed"),
+    timestamp: Schema.String,
+    data: Schema.StructWithRest(
+      Schema.Struct({
+        organizationId: Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+            expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
+          }),
+        ),
+        namespaceId: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
+          ),
+          Schema.Null,
+        ]),
+        channel: Schema.Literal("email"),
+        occurredAt: Schema.String,
+      }),
+      [
+        Schema.Record(
+          Schema.String,
+          Schema.Json.annotate({
+            expected: "JSON value",
+          }),
+        ),
+      ],
+    ),
+  }),
+  [
+    Schema.Record(
+      Schema.String,
+      Schema.Json.annotate({
+        expected: "JSON value",
+      }),
+    ),
+  ],
+);
 export const TemplateRegistrationUpdatedEventSchema = Schema.StructWithRest(
   Schema.Struct({
     type: Schema.Literal("template.registration.updated"),
@@ -2988,19 +3178,25 @@ export const TemplateRegistrationUpdatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         id: Schema.String.check(
-          Schema.isPattern(new RegExp("^treg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^treg_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^treg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^treg_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         templateId: Schema.String.check(
-          Schema.isPattern(new RegExp("^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         publicationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^tpub_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^tpub_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^tpub_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^tpub_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         target: Schema.Union([
           Schema.StructWithRest(
@@ -3071,7 +3267,7 @@ export const TemplateRegistrationUpdatedEventSchema = Schema.StructWithRest(
         createdAt: Schema.String,
         updatedAt: Schema.String,
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -3110,17 +3306,23 @@ export const FlowRegistrationUpdatedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         id: Schema.String.check(
-          Schema.isPattern(new RegExp("^wafreg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^wafreg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^wafreg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         flowId: Schema.String.check(
-          Schema.isPattern(new RegExp("^waflow_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^waflow_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^waflow_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         versionId: Schema.String.check(
-          Schema.isPattern(new RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^wafver_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -3200,7 +3402,7 @@ export const FlowRegistrationUpdatedEventSchema = Schema.StructWithRest(
         createdAt: Schema.String,
         updatedAt: Schema.String,
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -3235,22 +3437,26 @@ export const WhatsappNumberConnectedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         businessAccountId: Schema.String.check(
-          Schema.isPattern(new RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^waba_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^waba_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         phoneNumber: Schema.String,
         phoneNumberId: Schema.String,
@@ -3262,7 +3468,9 @@ export const WhatsappNumberConnectedEventSchema = Schema.StructWithRest(
           Schema.StructWithRest(
             Schema.Struct({
               id: Schema.String.check(
-                Schema.isPattern(new RegExp("^wasl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                Schema.isPattern(
+                  new globalThis.RegExp("^wasl_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                ).annotate({
                   expected: "a string matching the RegExp ^wasl_[0-9a-hjkmnp-tv-z]{16,24}$",
                 }),
               ),
@@ -3311,22 +3519,26 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         message: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -3336,14 +3548,14 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
                   Schema.Struct({
                     campaignId: Schema.String.check(
                       Schema.isPattern(
-                        new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                        new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                       ).annotate({
                         expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
                       }),
                     ),
                     runId: Schema.String.check(
                       Schema.isPattern(
-                        new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                        new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                       ).annotate({
                         expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
                       }),
@@ -3368,7 +3580,9 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
               }),
             ),
             threadId: Schema.String.check(
-              Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -3395,7 +3609,9 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
               Schema.StructWithRest(
                 Schema.Struct({
                   id: Schema.String.check(
-                    Schema.isPattern(new RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                    Schema.isPattern(
+                      new globalThis.RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                    ).annotate({
                       expected: "a string matching the RegExp ^att_[0-9a-hjkmnp-tv-z]{16,24}$",
                     }),
                   ),
@@ -3427,14 +3643,18 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
         thread: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
             endpointId: Schema.optionalKey(
               Schema.Union([
                 Schema.String.check(
-                  Schema.isPattern(new RegExp("^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                  Schema.isPattern(
+                    new globalThis.RegExp("^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                  ).annotate({
                     expected: "a string matching the RegExp ^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$",
                   }),
                 ),
@@ -3483,20 +3703,24 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         actionId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -3539,7 +3763,9 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
         message: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -3549,14 +3775,14 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
                   Schema.Struct({
                     campaignId: Schema.String.check(
                       Schema.isPattern(
-                        new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                        new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                       ).annotate({
                         expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
                       }),
                     ),
                     runId: Schema.String.check(
                       Schema.isPattern(
-                        new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                        new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                       ).annotate({
                         expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
                       }),
@@ -3581,7 +3807,9 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
               }),
             ),
             threadId: Schema.String.check(
-              Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -3608,7 +3836,9 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
               Schema.StructWithRest(
                 Schema.Struct({
                   id: Schema.String.check(
-                    Schema.isPattern(new RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                    Schema.isPattern(
+                      new globalThis.RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                    ).annotate({
                       expected: "a string matching the RegExp ^att_[0-9a-hjkmnp-tv-z]{16,24}$",
                     }),
                   ),
@@ -3664,22 +3894,26 @@ export const MailboxActionPendingApprovalEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         action: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -3693,48 +3927,229 @@ export const MailboxActionPendingApprovalEventSchema = Schema.StructWithRest(
               "call",
               "extensionRequest",
               "toolCall",
+              "handoff",
             ]),
+            reviewRound: Schema.Int.check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ).check(
+              Schema.isGreaterThan(0).annotate({
+                expected: "a value greater than 0",
+              }),
+            ),
             state: Schema.optionalKey(
               Schema.Literal("approvalRequired").annotate({
                 description: "Deliveries recorded before this field existed omit it.",
               }),
             ),
-            decision: Schema.optionalKey(
-              Schema.StructWithRest(
-                Schema.Struct({
-                  outcome: Schema.Literals(["allow", "requireApproval", "deny"]),
-                  reason: Schema.Union([Schema.String, Schema.Null]),
-                  policyId: Schema.Union([
+            decision: Schema.StructWithRest(
+              Schema.Struct({
+                id: Schema.String.check(
+                  Schema.isPattern(
+                    new globalThis.RegExp("^pdec_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                  ).annotate({
+                    expected: "a string matching the RegExp ^pdec_[0-9a-hjkmnp-tv-z]{16,24}$",
+                  }),
+                ),
+                reviewRound: Schema.Int.check(
+                  Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                    expected: "a value less than or equal to 9007199254740991",
+                  }),
+                ).check(
+                  Schema.isGreaterThan(0).annotate({
+                    expected: "a value greater than 0",
+                  }),
+                ),
+                requirement: Schema.Literals(["run", "model", "person", "never"]),
+                decider: Schema.Literals(["rule", "model", "person", "agent"]),
+                outcome: Schema.Literals(["allow", "hold", "refuse"]),
+                reason: Schema.String.check(
+                  Schema.isMinLength(1).annotate({
+                    expected: "a value with a length of at least 1",
+                  }),
+                ),
+                scopes: Schema.Array(
+                  Schema.StructWithRest(
+                    Schema.Struct({
+                      kind: Schema.Literals(["organization", "mailbox", "agent", "apiKey"]),
+                      id: Schema.String.check(
+                        Schema.isMinLength(1).annotate({
+                          expected: "a value with a length of at least 1",
+                        }),
+                      ),
+                    }),
+                    [
+                      Schema.Record(
+                        Schema.String,
+                        Schema.Json.annotate({
+                          expected: "JSON value",
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+                rule: Schema.optionalKey(
+                  Schema.Union([
+                    Schema.StructWithRest(
+                      Schema.Struct({
+                        scope: Schema.StructWithRest(
+                          Schema.Struct({
+                            kind: Schema.Literals(["organization", "mailbox", "agent", "apiKey"]),
+                            id: Schema.String.check(
+                              Schema.isMinLength(1).annotate({
+                                expected: "a value with a length of at least 1",
+                              }),
+                            ),
+                          }),
+                          [
+                            Schema.Record(
+                              Schema.String,
+                              Schema.Json.annotate({
+                                expected: "JSON value",
+                              }),
+                            ),
+                          ],
+                        ),
+                        index: Schema.Int.check(
+                          Schema.isGreaterThanOrEqualTo(0).annotate({
+                            expected: "a value greater than or equal to 0",
+                          }),
+                        ).check(
+                          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                            expected: "a value less than or equal to 9007199254740991",
+                          }),
+                        ),
+                      }),
+                      [
+                        Schema.Record(
+                          Schema.String,
+                          Schema.Json.annotate({
+                            expected: "JSON value",
+                          }),
+                        ),
+                      ],
+                    ),
+                    Schema.Null,
+                  ]),
+                ),
+                guard: Schema.optionalKey(
+                  Schema.Union([
                     Schema.String.check(
-                      Schema.isPattern(
-                        new RegExp("^mbxpol_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-                      ).annotate({
-                        expected: "a string matching the RegExp ^mbxpol_[0-9a-hjkmnp-tv-z]{16,24}$",
+                      Schema.isMinLength(1).annotate({
+                        expected: "a value with a length of at least 1",
                       }),
                     ),
                     Schema.Null,
                   ]),
-                  source: Schema.Union([
-                    Schema.Literals(["grant", "installation", "policy"]),
+                ),
+                guardReason: Schema.optionalKey(
+                  Schema.Union([
+                    Schema.String.check(
+                      Schema.isMinLength(1).annotate({
+                        expected: "a value with a length of at least 1",
+                      }),
+                    ),
                     Schema.Null,
                   ]),
-                  decidedAt: Schema.String,
-                }),
-                [
-                  Schema.Record(
-                    Schema.String,
-                    Schema.Json.annotate({
-                      expected: "JSON value",
-                    }),
-                  ),
-                ],
-              ).annotate({
-                description: "Deliveries recorded before this field existed omit it.",
+                ),
+                resolution: Schema.optionalKey(
+                  Schema.Union([
+                    Schema.StructWithRest(
+                      Schema.Struct({
+                        by: Schema.String.check(
+                          Schema.isPattern(
+                            new globalThis.RegExp("^user_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                          ).annotate({
+                            expected:
+                              "a string matching the RegExp ^user_[0-9a-hjkmnp-tv-z]{16,24}$",
+                          }),
+                        ),
+                        at: Schema.String,
+                        as: Schema.Literals(["approved", "edited", "denied", "alwaysAllowed"]),
+                        diff: Schema.optionalKey(
+                          Schema.Union([
+                            Schema.StructWithRest(
+                              Schema.Struct({
+                                text: Schema.optionalKey(
+                                  Schema.Union([
+                                    Schema.StructWithRest(
+                                      Schema.Struct({
+                                        before: Schema.Union([Schema.String, Schema.Null]),
+                                        after: Schema.Union([Schema.String, Schema.Null]),
+                                      }),
+                                      [
+                                        Schema.Record(
+                                          Schema.String,
+                                          Schema.Json.annotate({
+                                            expected: "JSON value",
+                                          }),
+                                        ),
+                                      ],
+                                    ),
+                                    Schema.Null,
+                                  ]),
+                                ),
+                                html: Schema.optionalKey(
+                                  Schema.Union([
+                                    Schema.StructWithRest(
+                                      Schema.Struct({
+                                        before: Schema.Union([Schema.String, Schema.Null]),
+                                        after: Schema.Union([Schema.String, Schema.Null]),
+                                      }),
+                                      [
+                                        Schema.Record(
+                                          Schema.String,
+                                          Schema.Json.annotate({
+                                            expected: "JSON value",
+                                          }),
+                                        ),
+                                      ],
+                                    ),
+                                    Schema.Null,
+                                  ]),
+                                ),
+                              }),
+                              [
+                                Schema.Record(
+                                  Schema.String,
+                                  Schema.Json.annotate({
+                                    expected: "JSON value",
+                                  }),
+                                ),
+                              ],
+                            ),
+                            Schema.Null,
+                          ]),
+                        ),
+                      }),
+                      [
+                        Schema.Record(
+                          Schema.String,
+                          Schema.Json.annotate({
+                            expected: "JSON value",
+                          }),
+                        ),
+                      ],
+                    ),
+                    Schema.Null,
+                  ]),
+                ),
               }),
+              [
+                Schema.Record(
+                  Schema.String,
+                  Schema.Json.annotate({
+                    expected: "JSON value",
+                  }),
+                ),
+              ],
             ),
             threadId: Schema.Union([
               Schema.String.check(
-                Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                Schema.isPattern(
+                  new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                ).annotate({
                   expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
                 }),
               ),
@@ -3816,7 +4231,7 @@ export const MailboxActionPendingApprovalEventSchema = Schema.StructWithRest(
                   }),
                 ),
                 argumentsHash: Schema.String.check(
-                  Schema.isPattern(new RegExp("^[0-9a-f]{64}$", "u")).annotate({
+                  Schema.isPattern(new globalThis.RegExp("^[0-9a-f]{64}$", "u")).annotate({
                     expected: "a string matching the RegExp ^[0-9a-f]{64}$",
                   }),
                 ),
@@ -3869,22 +4284,26 @@ export const MailboxActionResolvedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         action: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -3898,10 +4317,22 @@ export const MailboxActionResolvedEventSchema = Schema.StructWithRest(
               "call",
               "extensionRequest",
               "toolCall",
+              "handoff",
             ]),
+            reviewRound: Schema.Int.check(
+              Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+                expected: "a value less than or equal to 9007199254740991",
+              }),
+            ).check(
+              Schema.isGreaterThan(0).annotate({
+                expected: "a value greater than 0",
+              }),
+            ),
             threadId: Schema.Union([
               Schema.String.check(
-                Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                Schema.isPattern(
+                  new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                ).annotate({
                   expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
                 }),
               ),
@@ -4026,15 +4457,17 @@ export const MailboxMessageQuarantinedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
@@ -4052,7 +4485,9 @@ export const MailboxMessageQuarantinedEventSchema = Schema.StructWithRest(
         message: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -4109,15 +4544,17 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
@@ -4163,7 +4600,9 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
         message: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -4173,14 +4612,14 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
                   Schema.Struct({
                     campaignId: Schema.String.check(
                       Schema.isPattern(
-                        new RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                        new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                       ).annotate({
                         expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
                       }),
                     ),
                     runId: Schema.String.check(
                       Schema.isPattern(
-                        new RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                        new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
                       ).annotate({
                         expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
                       }),
@@ -4205,7 +4644,9 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
               }),
             ),
             threadId: Schema.String.check(
-              Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -4232,7 +4673,9 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
               Schema.StructWithRest(
                 Schema.Struct({
                   id: Schema.String.check(
-                    Schema.isPattern(new RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                    Schema.isPattern(
+                      new globalThis.RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                    ).annotate({
                       expected: "a string matching the RegExp ^att_[0-9a-hjkmnp-tv-z]{16,24}$",
                     }),
                   ),
@@ -4264,14 +4707,18 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
         thread: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
             endpointId: Schema.optionalKey(
               Schema.Union([
                 Schema.String.check(
-                  Schema.isPattern(new RegExp("^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+                  Schema.isPattern(
+                    new globalThis.RegExp("^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+                  ).annotate({
                     expected: "a string matching the RegExp ^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$",
                   }),
                 ),
@@ -4320,15 +4767,17 @@ export const MailboxMessageDiscardedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
@@ -4375,7 +4824,9 @@ export const MailboxMessageDiscardedEventSchema = Schema.StructWithRest(
         message: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -4432,32 +4883,38 @@ export const MailboxMessageDeliveredEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         threadId: Schema.String.check(
-          Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         actionId: Schema.String.annotate({
           description: "The mailbox send action that sent the message.",
         }).check(
-          Schema.isPattern(new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         messageId: Schema.String.check(
-          Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -4496,32 +4953,38 @@ export const MailboxMessageReadEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         threadId: Schema.String.check(
-          Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         actionId: Schema.String.annotate({
           description: "The mailbox send action that sent the message.",
         }).check(
-          Schema.isPattern(new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         messageId: Schema.String.check(
-          Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -4560,32 +5023,38 @@ export const MailboxMessageFailedEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         mailboxId: Schema.String.check(
-          Schema.isPattern(new RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         namespaceId: Schema.Union([
           Schema.String.check(
-            Schema.isPattern(new RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-              expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-            }),
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
           ),
           Schema.Null,
         ]),
         threadId: Schema.String.check(
-          Schema.isPattern(new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         actionId: Schema.String.annotate({
           description: "The mailbox send action that sent the message.",
         }).check(
-          Schema.isPattern(new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(
+            new globalThis.RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
             expected: "a string matching the RegExp ^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         messageId: Schema.String.check(
-          Schema.isPattern(new RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
@@ -4638,14 +5107,16 @@ export const JourneyWebhookEventSchema = Schema.StructWithRest(
     data: Schema.StructWithRest(
       Schema.Struct({
         organizationId: Schema.String.check(
-          Schema.isPattern(new RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+          Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
             expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         journeyId: Schema.String.check(
-          Schema.isPattern(new RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         journeyVersion: Schema.Int.check(
           Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
@@ -4657,15 +5128,19 @@ export const JourneyWebhookEventSchema = Schema.StructWithRest(
           }),
         ),
         runId: Schema.String.check(
-          Schema.isPattern(new RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^jrun_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
+          Schema.isPattern(new globalThis.RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^jrun_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
         ),
         nodeId: Schema.String,
         contact: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
-              Schema.isPattern(new RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+              Schema.isPattern(
+                new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+              ).annotate({
                 expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
               }),
             ),
@@ -4733,6 +5208,8 @@ export const SamvaWebhookEventSchema = Schema.Union([
   WebhookTestEventSchema,
   DomainUpdatedEventSchema,
   DomainWarmingUpdatedEventSchema,
+  EmailSendingPausedEventSchema,
+  EmailSendingResumedEventSchema,
   TemplateRegistrationUpdatedEventSchema,
   FlowRegistrationUpdatedEventSchema,
   WhatsappNumberConnectedEventSchema,

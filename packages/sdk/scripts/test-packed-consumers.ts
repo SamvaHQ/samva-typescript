@@ -123,12 +123,14 @@ import { defineExtension } from "samva/mailbox";
 import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
 import { createWebhookHandler } from "samva/mailbox/webhook";
 
+const policyConfiguration = { presets: [], rules: [] };
 let requestPath: string | undefined;
 let clientAttribution: string | null | undefined;
 const fetch: typeof globalThis.fetch = async (input: URL | RequestInfo) => {
   const request = input as Request;
   requestPath = new URL(request.url).pathname;
   clientAttribution = request.headers.get("x-samva-client");
+  if (requestPath.startsWith("/v1/policies/")) return Response.json({ ...policyConfiguration, version: 1 });
   if (requestPath.endsWith("/issues")) return Response.json({ projectId: null, revision: null, items: [] });
   if (requestPath.includes("/domains")) return Response.json({ _tag: "FlagDisabledError", flag: "newsletters", message: "Publication is unavailable" }, { status: 403 });
   return new Response(JSON.stringify({ contact: { id: "contact_test" }, created: true }), {
@@ -149,6 +151,11 @@ if (
 const raw = await client.raw.contacts.findOrCreate({ lookup: { type: "email", value: "ada@example.com" } });
 if (raw.data?.contact.id !== "contact_test" || raw.response?.status !== 201) {
   await Promise.reject(new Error("Promise packed raw-envelope proof failed"));
+}
+
+const policy = await client.policies.setPolicy({ kind: "mailbox", id: "mbx_1234567890abcdef", ifVersion: 0, ...policyConfiguration });
+if (requestPath !== "/v1/policies/mailbox/mbx_1234567890abcdef" || policy.rules.length !== 0 || policy.version !== 1) {
+  throw new Error("Packed Promise decision policy proof failed");
 }
 
 const issues = await client.newsletters.issues.list({ id: "nl_1234567890abcdef" });
@@ -305,6 +312,16 @@ import * as Templates from "samva/effect/templates";
 import * as NewsletterIssues from "samva/effect/newsletter-issues";
 import * as NewsletterDomains from "samva/effect/newsletter-domains";
 import * as Webhooks from "samva/effect/webhooks";
+import * as Policies from "samva/effect/policies";
+
+const policyFetch: typeof globalThis.fetch = async () => Response.json({ presets: [], rules: [], version: 1 });
+const policy = await Effect.runPromise(Policies.setPolicy({ kind: "mailbox", id: "mbx_1234567890abcdef", ifVersion: 0, presets: [], rules: [] }).pipe(
+  Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
+  Effect.provide(Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, policyFetch))),
+));
+if (policy.rules.length !== 0 || policy.version !== 1 || EffectSdk.Policies.setPolicy !== Policies.setPolicy) {
+  throw new Error("Packed Effect decision policy proof failed");
+}
 
 const issueFetch: typeof globalThis.fetch = async () => Response.json({ projectId: null, revision: null, items: [] });
 const issues = await Effect.runPromise(NewsletterIssues.list({ id: "nl_1234567890abcdef" }).pipe(

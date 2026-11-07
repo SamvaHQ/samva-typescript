@@ -30,6 +30,23 @@ send another email. `uncertain` requires reconciliation. Only a permitted person
 acceptance or retry an eligible original action without extending its deadline. Approval is also
 asynchronous. See https://samva.dev/docs/mailboxes/approvals for the receipt contract.
 
+Use `client.policies` or `Policies` from `samva/effect/policies` to read, replace, or clear an
+organization, mailbox, or API key's decision rules. Policy writes require a person's OAuth session
+(`authToken` and `orgSlug`), not an API key. Each rule sets `decide` (a default) or `atLeast`
+(a binding floor). Scope policy reads return a flat snapshot with `version`, initially `0` when
+unset. Replacement requires the observed `ifVersion`; `deletePolicy({ kind, id, ifVersion })`
+clears the configuration. Both return the next snapshot, and clear keeps the counter. On
+`ConflictError` (`409`), reload and review before editing again; never automatically retry stale
+full configuration with a newer version. Agent definitions and extension installations carry
+their own `policy`.
+Read an action with `mailboxes.getAction` or read its decision in `mailboxes.getNeedsYou` before
+reviewing it. Both `approveAction` and `denyAction` require the observed decision's positive
+`reviewRound`. A stale round returns `409`; refresh the action and review its new decision before
+deciding again. Never default the round or silently substitute the latest value.
+`mailboxes.approveAction({ id, actionId, reviewRound: action.decision.reviewRound, edits: { text } })`
+approves replacement message text with that review identity. Needs you includes held tool calls
+and reports `counts.heldActions`.
+
 Use `client.topics` (Promise) or `Topics` from `samva/effect/topics` (Effect) for topic management
 and per-channel subscription preferences. `setSubscriptions` writes explicit `subscribed` or
 `unsubscribed` status; `checkSubscription` resolves effective status including topic defaults.
