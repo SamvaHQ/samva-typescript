@@ -3220,6 +3220,10 @@ export type TopicFormCreatePayload = {
 
 export type TopicSetSubscriptionsResult = {
   updated: number;
+  /**
+   * Email contacts left unsubscribed because they explicitly unsubscribed from this topic. Only the recipient can resubscribe them, through the preference page or double opt-in.
+   */
+  kept: number;
 };
 
 export type TopicSetSubscriptionsPayload = {

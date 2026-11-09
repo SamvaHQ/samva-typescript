@@ -8943,7 +8943,7 @@ export class Topics {
   /**
    * Set topic subscriptions
    *
-   * Upserts explicit subscribed or unsubscribed status for one channel. Each contact is named by ID, email, or phone. New addresses create contacts in the topic's namespace. Repeating the same status is idempotent.
+   * Upserts explicit subscribed or unsubscribed status for one channel. Each contact is named by ID, email, or phone. New addresses create contacts in the topic's namespace. Repeating the same status is idempotent. On email, setting subscribed never overrides a contact's explicit unsubscribe: those contacts are counted in kept, and only the recipient can resubscribe them.
    */
   public static setSubscriptions<ThrowOnError extends boolean = false>(
     parameters: {

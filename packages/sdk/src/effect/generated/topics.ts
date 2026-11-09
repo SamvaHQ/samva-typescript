@@ -104,10 +104,25 @@ export const TopicSubscriptionCounts = /* @__PURE__ */ (() =>
         ),
     }),
   }).annotate({ identifier: "TopicSubscriptionCounts" }))();
-export type TopicSetSubscriptionsResult = { readonly updated: number };
+export type TopicSetSubscriptionsResult = { readonly updated: number; readonly kept: number };
 export const TopicSetSubscriptionsResult = /* @__PURE__ */ (() =>
   Schema.Struct({
     updated: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    kept: Schema.Finite.annotate({
+      description:
+        "Email contacts left unsubscribed because they explicitly unsubscribed from this topic. Only the recipient can resubscribe them, through the preference page or double opt-in.",
+    })
+      .check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isGreaterThanOrEqualTo(0).annotate({
           expected: "a value greater than or equal to 0",
@@ -706,7 +721,7 @@ export class TopicsGroup extends HttpApiGroup.make("Topics")
       .annotate(OpenApi.Summary, "Set topic subscriptions")
       .annotate(
         OpenApi.Description,
-        "Upserts explicit subscribed or unsubscribed status for one channel. Each contact is named by ID, email, or phone. New addresses create contacts in the topic's namespace. Repeating the same status is idempotent.",
+        "Upserts explicit subscribed or unsubscribed status for one channel. Each contact is named by ID, email, or phone. New addresses create contacts in the topic's namespace. Repeating the same status is idempotent. On email, setting subscribed never overrides a contact's explicit unsubscribe: those contacts are counted in kept, and only the recipient can resubscribe them.",
       ),
     HttpApiEndpoint.get("topicsCheckSubscription", "/v1/topics/check", {
       query: TopicsCheckSubscriptionQuery,
