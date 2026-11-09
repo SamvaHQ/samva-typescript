@@ -19,6 +19,7 @@ import type {
   AgentsContinueOnStandardResponses,
   AgentsCreateErrors,
   AgentsCreateResponses,
+  AgentSetupJob,
   AgentsGetErrors,
   AgentsGetResponses,
   AgentsGetVersionErrors,
@@ -273,7 +274,7 @@ import type {
   EmailCompleteDomainConnectResponses,
   EmailCompleteDomainWarmingErrors,
   EmailCompleteDomainWarmingResponses,
-  EmailContentWritable,
+  EmailContent,
   EmailCountSuppressionsErrors,
   EmailCountSuppressionsResponses,
   EmailCreateDomainWarmingPlanErrors,
@@ -742,7 +743,7 @@ import type {
   SubscriptionsSubscribeResponses,
   SuppressionId,
   TemplateFamilyId,
-  TemplateFromDefault,
+  TemplateFromDefaultInput,
   TemplateId,
   TemplateInputContractId,
   TemplateProjectId,
@@ -966,7 +967,7 @@ export class Messages {
   /**
    * Send a message
    *
-   * Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.
+   * Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.
    */
   public static send<ThrowOnError extends boolean = false>(
     parameters: EmailSendMessagePayload | SmsSendMessagePayload | WhatsAppSendMessagePayload,
@@ -1151,7 +1152,7 @@ export class Messages {
       cc?: EmailCcRecipients | undefined;
       bcc?: EmailBccRecipients | undefined;
       from?: EmailSender | undefined;
-      email: EmailContentWritable;
+      email: EmailContent;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesValidateEmailResponses, MessagesValidateEmailErrors, ThrowOnError> {
@@ -1420,7 +1421,7 @@ export class ScheduledMessages {
   /**
    * Schedule a message
    *
-   * Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. Optional timezone is validated IANA display metadata only and never changes the execution instant.
+   * Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. The send payload is the same channel union the immediate send accepts, with each channel's content checked at schedule time so a send that could never render fails now rather than hours later: email and WhatsApp schedules are available. Optional timezone is validated IANA display metadata only and never changes the execution instant.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -6414,7 +6415,7 @@ export class Contacts {
   /**
    * Preview a list migration
    *
-   * The complete encoded JSON request must not exceed 3000000 bytes. Reads multiple declared export files without changing contacts. Restrictive evidence wins per address. Returns estimated counts and at most 100 diagnostics; processing rechecks current restrictions. Filenames never establish permission. Missing required columns refuse the file; unknown status values are conflicts and never subscribe a reader.
+   * The complete encoded JSON request must not exceed 3000000 bytes. Reads multiple export files without changing contacts. Readers are assumed opted in where permission evidence is absent or blank. Explicit restrictive evidence wins per address. Returns estimated counts and at most 100 diagnostics; processing rechecks current restrictions. Filenames never establish permission. Missing email columns refuse the file; unrecognized nonblank status values are conflicts and never subscribe a reader.
    */
   public static planImport<ThrowOnError extends boolean = false>(
     parameters: {
@@ -6425,34 +6426,30 @@ export class Contacts {
         {
           name: string;
           csv: string;
-          evidence:
+          evidence?:
             | {
                 kind: "status_column";
               }
             | {
                 kind: "export_scope";
                 scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-              };
-          /**
-           * The operator declares this beehiiv export was filtered to Suppression does not exist.
-           */
-          suppressionFree?: boolean | null | undefined;
+              }
+            | null
+            | undefined;
         },
         ...Array<{
           name: string;
           csv: string;
-          evidence:
+          evidence?:
             | {
                 kind: "status_column";
               }
             | {
                 kind: "export_scope";
                 scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-              };
-          /**
-           * The operator declares this beehiiv export was filtered to Suppression does not exist.
-           */
-          suppressionFree?: boolean | null | undefined;
+              }
+            | null
+            | undefined;
         }>,
       ];
     },
@@ -6509,34 +6506,30 @@ export class Contacts {
               {
                 name: string;
                 csv: string;
-                evidence:
+                evidence?:
                   | {
                       kind: "status_column";
                     }
                   | {
                       kind: "export_scope";
                       scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-                    };
-                /**
-                 * The operator declares this beehiiv export was filtered to Suppression does not exist.
-                 */
-                suppressionFree?: boolean | null | undefined;
+                    }
+                  | null
+                  | undefined;
               },
               ...Array<{
                 name: string;
                 csv: string;
-                evidence:
+                evidence?:
                   | {
                       kind: "status_column";
                     }
                   | {
                       kind: "export_scope";
                       scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-                    };
-                /**
-                 * The operator declares this beehiiv export was filtered to Suppression does not exist.
-                 */
-                suppressionFree?: boolean | null | undefined;
+                    }
+                  | null
+                  | undefined;
               }>,
             ];
           };
@@ -7613,6 +7606,7 @@ export class Agents {
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
       name: AgentName;
+      setupJob?: AgentSetupJob | null | undefined;
       namespaceId?: NamespaceId | null | undefined;
       definition?: AgentDefinition | null | undefined;
     },
@@ -7624,6 +7618,7 @@ export class Agents {
         {
           args: [
             { in: "body", key: "name" },
+            { in: "body", key: "setupJob" },
             { in: "body", key: "namespaceId" },
             { in: "body", key: "definition" },
           ],
@@ -10888,7 +10883,7 @@ export class Templates {
           | "alert"
           | null
           | undefined;
-        fromDefault?: TemplateFromDefault | null | undefined;
+        fromDefault?: TemplateFromDefaultInput | null | undefined;
         replyToDefault?: Array<string> | null | undefined;
         /**
          * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
@@ -15300,7 +15295,7 @@ export class Mailboxes {
   /**
    * Reply to a message
    *
-   * Replies to the message's Reply-To address, or its sender, in the same thread and from the thread's endpoint. The server sets the recipients, subject, and threading headers. The body's `channel` must match the thread's. On a phone channel the reply goes to the number on the other side of the thread.
+   * Replies to the message's Reply-To address, or its sender, in the same thread and from the thread's endpoint. The server sets the recipients, subject, and threading headers. The body's `channel` must match the thread's. On a phone channel the reply goes to the number on the other side of the thread. On WhatsApp, free-form `text` needs the customer's 24-hour service window to be open, and a closed window is refused (422, `WhatsAppServiceWindowClosedError`) rather than converted; send an approved template with `templateId` instead.
    */
   public static reply<ThrowOnError extends boolean = false>(
     parameters: {

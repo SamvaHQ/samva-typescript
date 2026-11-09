@@ -54,8 +54,7 @@ and per-channel subscription preferences. `setSubscriptions` writes explicit `su
 does not create a confirmed contact or subscription. Campaigns require `audience.topicId`, and
 email content accepts `topicId`.
 
-Newsletter issue authoring is Preview and available only to selected organizations. Use
-`client.newsletters.issues` (Promise) or `NewsletterIssues` from `samva/effect/newsletter-issues` (Effect) to read and
+Use `client.newsletters.issues` (Promise) or `NewsletterIssues` from `samva/effect/newsletter-issues` (Effect) to read and
 edit newsletter-owned Markdown issues, check and render fixtures, and save a commit. After the first create, mutations carry
 `expectedRevision`; Save also carries `expectedHead`. Keep mutation idempotency keys stable on
 retries. Campaigns select saved content with `content.issue: { path, commit }` and

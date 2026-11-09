@@ -21,7 +21,7 @@ import {
   ResourceNotFoundError,
   ServiceUnavailableError,
   SuccessResponse,
-  TemplateFromDefault,
+  TemplateFromDefaultInput,
   TemplateId,
   TemplateInUseError,
   TemplateInputContractId,
@@ -56,6 +56,14 @@ export const TemplatePublicationBrand = /* @__PURE__ */ (() =>
         "Whether the brand has changed since this publication was built. Publishing the same commit again picks up the change.",
     }),
   }).annotate({ identifier: "TemplatePublicationBrand" }))();
+export type TemplateFromDefault = { readonly email: string; readonly name?: string | null };
+export const TemplateFromDefault = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }).annotate({ identifier: "TemplateFromDefault" }))();
 export type TemplateFamilyId = string & EffectBrand.Brand<"TemplateFamilyId">;
 export const TemplateFamilyId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -851,7 +859,7 @@ export type TemplatesUpdateRequestJson = {
       | "reminder"
       | "alert"
       | null;
-    readonly fromDefault?: TemplateFromDefault | null;
+    readonly fromDefault?: TemplateFromDefaultInput | null;
     readonly replyToDefault?: ReadonlyArray<string> | null;
     readonly trackingDefault?: TemplateTrackingDefault | null;
     readonly shared?: boolean | null;
@@ -914,8 +922,25 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
           Schema.Null,
         ]),
       ),
-      fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefault, Schema.Null])),
-      replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+      fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefaultInput, Schema.Null])),
+      replyToDefault: Schema.optionalKey(
+        Schema.Union([
+          Schema.Array(
+            Schema.String.check(
+              Schema.isPattern(
+                new globalThis.RegExp(
+                  "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+              }),
+            ),
+          ),
+          Schema.Null,
+        ]),
+      ),
       trackingDefault: Schema.optionalKey(
         Schema.Union([TemplateTrackingDefault, Schema.Null]).annotate({
           description:

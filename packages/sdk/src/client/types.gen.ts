@@ -2901,7 +2901,7 @@ export type UpdateTemplatePayload = {
       | "alert"
       | null
       | undefined;
-    fromDefault?: TemplateFromDefault | null | undefined;
+    fromDefault?: TemplateFromDefaultInput | null | undefined;
     replyToDefault?: Array<string> | null | undefined;
     /**
      * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
@@ -2912,6 +2912,11 @@ export type UpdateTemplatePayload = {
      */
     shared?: boolean | null | undefined;
   };
+};
+
+export type TemplateFromDefaultInput = {
+  email: string;
+  name?: string | null | undefined;
 };
 
 export type AddTemplateEntryPayload = {
@@ -3444,9 +3449,6 @@ export type SubscribeResult = {
 };
 
 export type SubscribePayload = {
-  /**
-   * The recipient email address; confirmation proves consent for this address.
-   */
   email: string;
   topicId: TopicId;
   /**
@@ -3521,6 +3523,7 @@ export type PublishAgentResponse = {
 export type Agent = {
   id: AgentId;
   name: string;
+  setupJob: AgentSetupJob | null;
   namespaceId: NamespaceId | null;
   revision: string;
   draft: AgentDefinition;
@@ -3539,6 +3542,8 @@ export type AgentSpend = {
   spentDollars: number;
   capReachedAt: string | null;
 };
+
+export type AgentSetupJob = "support" | "store" | "booking";
 
 export type PublishAgentPayload = {
   revision: string;
@@ -3616,6 +3621,10 @@ export type AgentName = string;
 export type CreateAgentPayload = {
   name: AgentName;
   /**
+   * What the agent mostly does: support answers customer questions, store helps shoppers, and booking handles appointments. Omit when no job is stated. Returned as setupJob on the agent; it does not change the supplied definition.
+   */
+  setupJob?: AgentSetupJob | null | undefined;
+  /**
    * The namespace the agent belongs to; it cannot move later. Omit for an organization-level agent. A namespace-scoped key always creates in its own namespace.
    */
   namespaceId?: NamespaceId | null | undefined;
@@ -3667,6 +3676,7 @@ export type AgentPage = {
 export type AgentListItem = {
   id: AgentId;
   name: string;
+  setupJob: AgentSetupJob | null;
   namespaceId: NamespaceId | null;
   publishedVersion: number | null;
   publishedAt: string | null;
@@ -4243,6 +4253,7 @@ export type Contact = {
       importedAt: string;
       summary?:
         | {
+            permissionAssumed?: boolean | null | undefined;
             signupAt: {
               value: string;
               kind: "time" | "text";
@@ -4255,15 +4266,18 @@ export type Contact = {
       evidence: Array<{
         file: string;
         row: number;
-        declared:
+        declared?:
           | {
               kind: "status_column";
             }
           | {
               kind: "export_scope";
               scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-            };
-        suppressionFree: boolean;
+            }
+          | null
+          | undefined;
+        suppressionFree?: boolean | null | undefined;
+        permissionBasis?: "assumed" | "exported" | null | undefined;
         sourceStatus: string | null;
         signupAt: string | null;
         source: string | null;
@@ -4276,6 +4290,7 @@ export type Contact = {
       importedAt: string;
       summary?:
         | {
+            permissionAssumed?: boolean | null | undefined;
             signupAt: {
               value: string;
               kind: "time" | "text";
@@ -4288,21 +4303,25 @@ export type Contact = {
       evidence: Array<{
         file: string;
         row: number;
-        declared:
+        declared?:
           | {
               kind: "status_column";
             }
           | {
               kind: "export_scope";
               scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-            };
-        suppressionFree: boolean;
+            }
+          | null
+          | undefined;
+        suppressionFree?: boolean | null | undefined;
+        permissionBasis?: "assumed" | "exported" | null | undefined;
         sourceStatus: string | null;
         signupAt: string | null;
         source: string | null;
       }>;
     };
   } | null;
+  addedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -5365,6 +5384,7 @@ export type CampaignRecipientPage = {
     failureReason: string | null;
     skippedReason:
       | "unsubscribed"
+      | "not_added"
       | "blocked"
       | "suppressed"
       | "opted_out"
@@ -5430,6 +5450,7 @@ export type CampaignRun = {
 export type CampaignRunSkippedReason = {
   reason:
     | "unsubscribed"
+    | "not_added"
     | "blocked"
     | "suppressed"
     | "opted_out"
@@ -5582,7 +5603,7 @@ export type CampaignEmailContent = {
   subject?: string | null | undefined;
   html?: string | null | undefined;
   text?: string | null | undefined;
-  attachments?: EmailAttachments | undefined;
+  attachments?: StoredEmailAttachments | undefined;
   publicationId?: TemplatePublicationId | undefined;
   inputContractId?: TemplateInputContractId | undefined;
   templateId?: TemplateId | null | undefined;
@@ -5591,7 +5612,7 @@ export type CampaignEmailContent = {
   locale?: RenderLocale | undefined;
   timeZone?: RenderTimeZone | undefined;
   inReplyToMessageId?: MessageId | null | undefined;
-  replyTo?: ReplyToAddresses | undefined;
+  replyTo?: StoredReplyToAddresses | undefined;
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
@@ -5634,13 +5655,13 @@ export type EmailTrackingOverrideV1 = {
   clicks?: boolean | undefined;
 };
 
-export type ReplyToAddresses = Array<string> | null;
+export type StoredReplyToAddresses = Array<string> | null;
 
 export type TemplateData = JsonObject | null;
 
 export type TemplateDataWritable = JsonObjectWritable | null;
 
-export type EmailAttachments = Array<EmailAttachment> | null;
+export type StoredEmailAttachments = Array<EmailAttachment> | null;
 
 export type CampaignRunReport = {
   campaignId: CampaignId;
@@ -5662,6 +5683,7 @@ export type CampaignRunReport = {
 export type CampaignRunReportSkippedReason = {
   reason:
     | "unsubscribed"
+    | "not_added"
     | "blocked"
     | "suppressed"
     | "opted_out"
@@ -5791,6 +5813,10 @@ export type CampaignEmailInput = {
   headers?: EmailCustomHeadersWritable | null | undefined;
   preheader?: string | null | undefined;
 };
+
+export type ReplyToAddresses = Array<string> | null;
+
+export type EmailAttachments = Array<EmailAttachment> | null;
 
 export type CampaignPage = {
   items: Array<CampaignListItem>;
@@ -6173,14 +6199,14 @@ export type StoredEmailSendMessage = {
       }
     | null
     | undefined;
-  email: EmailContent;
+  email: StoredEmailContent;
 };
 
-export type EmailContent = {
+export type StoredEmailContent = {
   subject?: string | null | undefined;
   html?: string | null | undefined;
   text?: string | null | undefined;
-  attachments?: EmailAttachments | undefined;
+  attachments?: StoredEmailAttachments | undefined;
   publicationId?: TemplatePublicationId | undefined;
   inputContractId?: TemplateInputContractId | undefined;
   templateId?: TemplateId | null | undefined;
@@ -6189,7 +6215,7 @@ export type EmailContent = {
   locale?: RenderLocale | undefined;
   timeZone?: RenderTimeZone | undefined;
   inReplyToMessageId?: MessageId | null | undefined;
-  replyTo?: ReplyToAddresses | undefined;
+  replyTo?: StoredReplyToAddresses | undefined;
   /**
    * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
    */
@@ -6197,29 +6223,6 @@ export type EmailContent = {
   tracking?: EmailTrackingOverrideV1 | undefined;
   footer?: EmailFooterOverride | undefined;
   headers?: EmailCustomHeaders | null | undefined;
-};
-
-export type EmailContentWritable = {
-  subject?: string | null | undefined;
-  html?: string | null | undefined;
-  text?: string | null | undefined;
-  attachments?: EmailAttachments | undefined;
-  publicationId?: TemplatePublicationId | undefined;
-  inputContractId?: TemplateInputContractId | undefined;
-  templateId?: TemplateId | null | undefined;
-  templateSlug?: string | null | undefined;
-  templateData?: TemplateDataWritable | undefined;
-  locale?: RenderLocale | undefined;
-  timeZone?: RenderTimeZone | undefined;
-  inReplyToMessageId?: MessageId | null | undefined;
-  replyTo?: ReplyToAddresses | undefined;
-  /**
-   * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
-   */
-  topicId?: TopicId | null | undefined;
-  tracking?: EmailTrackingOverrideV1 | undefined;
-  footer?: EmailFooterOverride | undefined;
-  headers?: EmailCustomHeadersWritable | null | undefined;
 };
 
 export type SavedEmailRecipient =
@@ -6245,7 +6248,7 @@ export type DispatchSendMessagePayload =
   | WhatsAppDispatchSendMessagePayload;
 
 /**
- * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ * Send WhatsApp messages from your connected business account.
  */
 export type WhatsAppDispatchSendMessagePayload = {
   conversationId?: ConversationId | null | undefined;
@@ -6392,7 +6395,30 @@ export type EmailSendMessagePayload = {
   cc?: EmailCcRecipients | undefined;
   bcc?: EmailBccRecipients | undefined;
   from?: EmailSender | undefined;
-  email: EmailContentWritable;
+  email: EmailContent;
+};
+
+export type EmailContent = {
+  subject?: string | null | undefined;
+  html?: string | null | undefined;
+  text?: string | null | undefined;
+  attachments?: EmailAttachments | undefined;
+  publicationId?: TemplatePublicationId | undefined;
+  inputContractId?: TemplateInputContractId | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateSlug?: string | null | undefined;
+  templateData?: TemplateDataWritable | undefined;
+  locale?: RenderLocale | undefined;
+  timeZone?: RenderTimeZone | undefined;
+  inReplyToMessageId?: MessageId | null | undefined;
+  replyTo?: ReplyToAddresses | undefined;
+  /**
+   * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
+   */
+  topicId?: TopicId | null | undefined;
+  tracking?: EmailTrackingOverrideV1 | undefined;
+  footer?: EmailFooterOverride | undefined;
+  headers?: EmailCustomHeadersWritable | null | undefined;
 };
 
 export type MessageReceipt = {
@@ -6432,7 +6458,7 @@ export type SendMessagePayload =
   | WhatsAppSendMessagePayload;
 
 /**
- * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ * Send WhatsApp messages from your connected business account.
  */
 export type WhatsAppSendMessagePayload = {
   conversationId?: ConversationId | null | undefined;
@@ -7569,7 +7595,7 @@ export type MessagesValidateEmailData = {
     cc?: EmailCcRecipients | undefined;
     bcc?: EmailBccRecipients | undefined;
     from?: EmailSender | undefined;
-    email: EmailContentWritable;
+    email: EmailContent;
   };
   path?: never;
   query?: never;
@@ -14783,34 +14809,30 @@ export type ContactsPlanImportData = {
       {
         name: string;
         csv: string;
-        evidence:
+        evidence?:
           | {
               kind: "status_column";
             }
           | {
               kind: "export_scope";
               scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-            };
-        /**
-         * The operator declares this beehiiv export was filtered to Suppression does not exist.
-         */
-        suppressionFree?: boolean | null | undefined;
+            }
+          | null
+          | undefined;
       },
       ...Array<{
         name: string;
         csv: string;
-        evidence:
+        evidence?:
           | {
               kind: "status_column";
             }
           | {
               kind: "export_scope";
               scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-            };
-        /**
-         * The operator declares this beehiiv export was filtered to Suppression does not exist.
-         */
-        suppressionFree?: boolean | null | undefined;
+            }
+          | null
+          | undefined;
       }>,
     ];
   };
@@ -14899,34 +14921,30 @@ export type ContactsStartImportData = {
             {
               name: string;
               csv: string;
-              evidence:
+              evidence?:
                 | {
                     kind: "status_column";
                   }
                 | {
                     kind: "export_scope";
                     scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-                  };
-              /**
-               * The operator declares this beehiiv export was filtered to Suppression does not exist.
-               */
-              suppressionFree?: boolean | null | undefined;
+                  }
+                | null
+                | undefined;
             },
             ...Array<{
               name: string;
               csv: string;
-              evidence:
+              evidence?:
                 | {
                     kind: "status_column";
                   }
                 | {
                     kind: "export_scope";
                     scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-                  };
-              /**
-               * The operator declares this beehiiv export was filtered to Suppression does not exist.
-               */
-              suppressionFree?: boolean | null | undefined;
+                  }
+                | null
+                | undefined;
             }>,
           ];
         };
@@ -16528,6 +16546,10 @@ export type AgentsCreateData = {
   body: {
     name: AgentName;
     /**
+     * What the agent mostly does: support answers customer questions, store helps shoppers, and booking handles appointments. Omit when no job is stated. Returned as setupJob on the agent; it does not change the supplied definition.
+     */
+    setupJob?: AgentSetupJob | null | undefined;
+    /**
      * The namespace the agent belongs to; it cannot move later. Omit for an organization-level agent. A namespace-scoped key always creates in its own namespace.
      */
     namespaceId?: NamespaceId | null | undefined;
@@ -17077,9 +17099,6 @@ export type AgentsGetVersionResponse = AgentsGetVersionResponses[keyof AgentsGet
 
 export type SubscriptionsSubscribeData = {
   body: {
-    /**
-     * The recipient email address; confirmation proves consent for this address.
-     */
     email: string;
     topicId: TopicId;
     /**
@@ -21934,7 +21953,7 @@ export type TemplatesUpdateData = {
         | "alert"
         | null
         | undefined;
-      fromDefault?: TemplateFromDefault | null | undefined;
+      fromDefault?: TemplateFromDefaultInput | null | undefined;
       replyToDefault?: Array<string> | null | undefined;
       /**
        * Engagement tracking for sends of this template: `opens` and `clicks`, each inherited from the domain and organization defaults when omitted. A send request's own `tracking` still wins. Null clears the template's default.
@@ -28921,7 +28940,7 @@ export type MailboxesSendMessageErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -29226,7 +29245,7 @@ export type MailboxesReplyErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -29308,7 +29327,7 @@ export type MailboxesReplyAllErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -29398,7 +29417,7 @@ export type MailboxesForwardErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -29941,7 +29960,7 @@ export type MailboxesSendDraftErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -30146,7 +30165,7 @@ export type MailboxesCancelActionErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -30224,7 +30243,7 @@ export type MailboxesRetryActionErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**
@@ -30312,7 +30331,7 @@ export type MailboxesApproveActionErrors = {
    */
   409: MailboxSendConflictError | ConflictError;
   /**
-   * ValidationError
+   * WhatsAppServiceWindowClosedError | ValidationError
    */
   422: WhatsAppServiceWindowClosedError | ValidationError;
   /**

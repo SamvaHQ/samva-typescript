@@ -5514,7 +5514,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Reply to a message")
       .annotate(
         OpenApi.Description,
-        "Replies to the message's Reply-To address, or its sender, in the same thread and from the thread's endpoint. The server sets the recipients, subject, and threading headers. The body's `channel` must match the thread's. On a phone channel the reply goes to the number on the other side of the thread.",
+        "Replies to the message's Reply-To address, or its sender, in the same thread and from the thread's endpoint. The server sets the recipients, subject, and threading headers. The body's `channel` must match the thread's. On a phone channel the reply goes to the number on the other side of the thread. On WhatsApp, free-form `text` needs the customer's 24-hour service window to be open, and a closed window is refused (422, `WhatsAppServiceWindowClosedError`) rather than converted; send an approved template with `templateId` instead.",
       ),
     HttpApiEndpoint.post("mailboxesReplyAll", "/v1/mailboxes/:id/messages/:messageId/reply-all", {
       params: MailboxesReplyAllPathParams,

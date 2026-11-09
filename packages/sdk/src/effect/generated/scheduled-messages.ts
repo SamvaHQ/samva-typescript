@@ -12,7 +12,6 @@ import {
   EmailAttachments,
   EmailBccRecipients,
   EmailCcRecipients,
-  EmailContent,
   EmailCustomHeaders,
   EmailFooterOverride,
   EmailRecipients,
@@ -37,6 +36,8 @@ import {
   SmsContent,
   SmsDispatchContent,
   SmsRecipients,
+  StoredEmailAttachments,
+  StoredReplyToAddresses,
   TemplateData,
   TemplateId,
   TemplateInputContractId,
@@ -81,6 +82,61 @@ export const SavedPhoneRecipient = /* @__PURE__ */ (() =>
       displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     }),
   ]).annotate({ identifier: "SavedPhoneRecipient" }))();
+export type StoredEmailContent = {
+  readonly subject?: string | null;
+  readonly html?: string | null;
+  readonly text?: string | null;
+  readonly attachments?: StoredEmailAttachments;
+  readonly publicationId?: TemplatePublicationId;
+  readonly inputContractId?: TemplateInputContractId;
+  readonly templateId?: TemplateId | null;
+  readonly templateSlug?: string | null;
+  readonly templateData?: TemplateData;
+  readonly locale?: RenderLocale;
+  readonly timeZone?: RenderTimeZone;
+  readonly inReplyToMessageId?: MessageId | null;
+  readonly replyTo?: StoredReplyToAddresses;
+  readonly topicId?: TopicId | null;
+  readonly tracking?: EmailTrackingOverrideV1;
+  readonly footer?: EmailFooterOverride;
+  readonly headers?: EmailCustomHeaders | null;
+};
+export const StoredEmailContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    attachments: Schema.optionalKey(StoredEmailAttachments),
+    publicationId: Schema.optionalKey(TemplatePublicationId),
+    inputContractId: Schema.optionalKey(TemplateInputContractId),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
+    templateSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(
+            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    templateData: Schema.optionalKey(TemplateData),
+    locale: Schema.optionalKey(RenderLocale),
+    timeZone: Schema.optionalKey(RenderTimeZone),
+    inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
+    replyTo: Schema.optionalKey(StoredReplyToAddresses),
+    topicId: Schema.optionalKey(
+      Schema.Union([TopicId, Schema.Null]).annotate({
+        description:
+          "The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.",
+      }),
+    ),
+    tracking: Schema.optionalKey(EmailTrackingOverrideV1),
+    footer: Schema.optionalKey(EmailFooterOverride),
+    headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
+  }).annotate({ identifier: "StoredEmailContent" }))();
 export type EmailDispatchContent = {
   readonly subject?: string | null;
   readonly html?: string | null;
@@ -102,7 +158,16 @@ export type EmailDispatchContent = {
 };
 export const EmailDispatchContent = /* @__PURE__ */ (() =>
   Schema.Struct({
-    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    subject: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(EmailAttachments),
@@ -180,7 +245,7 @@ export type StoredEmailSendMessage = {
   readonly cc?: ReadonlyArray<SavedEmailRecipient> | null;
   readonly bcc?: ReadonlyArray<SavedEmailRecipient> | null;
   readonly from?: { readonly email: string; readonly name?: string | null } | null;
-  readonly email: EmailContent;
+  readonly email: StoredEmailContent;
 };
 export const StoredEmailSendMessage = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -203,7 +268,7 @@ export const StoredEmailSendMessage = /* @__PURE__ */ (() =>
         Schema.Null,
       ]),
     ),
-    email: EmailContent,
+    email: StoredEmailContent,
   }).annotate({ identifier: "StoredEmailSendMessage" }))();
 export type EmailDispatchSendMessagePayload = {
   readonly conversationId?: ConversationId | null;
@@ -258,8 +323,7 @@ export const WhatsAppDispatchSendMessagePayload = /* @__PURE__ */ (() =>
     to: WhatsAppRecipients,
     whatsapp: WhatsAppContent,
   }).annotate({
-    description:
-      "The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.",
+    description: "Send WhatsApp messages from your connected business account.",
     identifier: "WhatsAppDispatchSendMessagePayload",
   }))();
 export type StoredSendMessagePayload =
@@ -558,7 +622,7 @@ export class ScheduledMessagesGroup extends HttpApiGroup.make("Scheduled Message
       .annotate(OpenApi.Summary, "Schedule a message")
       .annotate(
         OpenApi.Description,
-        "Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. Optional timezone is validated IANA display metadata only and never changes the execution instant.",
+        "Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. The send payload is the same channel union the immediate send accepts, with each channel's content checked at schedule time so a send that could never render fails now rather than hours later: email and WhatsApp schedules are available. Optional timezone is validated IANA display metadata only and never changes the execution instant.",
       ),
     HttpApiEndpoint.get("scheduledMessagesGet", "/v1/messages/scheduled/:id", {
       params: ScheduledMessagesGetPathParams,

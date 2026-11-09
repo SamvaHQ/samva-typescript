@@ -1875,7 +1875,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       .annotate(OpenApi.Summary, "Send a message")
       .annotate(
         OpenApi.Description,
-        "Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.",
+        "Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.",
       ),
     HttpApiEndpoint.get("messagesGet", "/v1/messages/:id", {
       params: MessagesGetPathParams,

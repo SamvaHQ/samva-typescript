@@ -11,6 +11,7 @@ import {
   AgentModelChoice,
   AgentName,
   AgentReasoning,
+  AgentSetupJob,
   ApiKeySecurityMiddleware,
   CatalogModelId,
   ConflictError,
@@ -123,47 +124,6 @@ export const AgentModelAccess = /* @__PURE__ */ (() =>
   Schema.Union([Schema.Literal("included"), Schema.Literal("upgrade")]).annotate({
     identifier: "AgentModelAccess",
   }))();
-export type AgentListItem = {
-  readonly id: AgentId;
-  readonly name: string;
-  readonly namespaceId: NamespaceId | null;
-  readonly publishedVersion: number | null;
-  readonly publishedAt: string | null;
-  readonly pausedAt: string | null;
-  readonly creditsPausedAt?: string | null;
-  readonly monthlySpendCapDollars: number | null;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-};
-export const AgentListItem = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: AgentId,
-    name: Schema.String,
-    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
-    publishedVersion: Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-            expected: "a value greater than or equal to -9007199254740991",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
-    ]),
-    publishedAt: Schema.Union([Schema.String, Schema.Null]),
-    pausedAt: Schema.Union([Schema.String, Schema.Null]),
-    creditsPausedAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    monthlySpendCapDollars: Schema.Union([
-      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-      Schema.Null,
-    ]),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-  }).annotate({ identifier: "AgentListItem" }))();
 export type DeleteAgentResponse = { readonly id: AgentId; readonly deleted: true };
 export const DeleteAgentResponse = /* @__PURE__ */ (() =>
   Schema.Struct({ id: AgentId, deleted: Schema.Literal(true) }).annotate({
@@ -190,6 +150,49 @@ export const AgentVersionSummary = /* @__PURE__ */ (() =>
       ),
     publishedAt: Schema.String,
   }).annotate({ identifier: "AgentVersionSummary" }))();
+export type AgentListItem = {
+  readonly id: AgentId;
+  readonly name: string;
+  readonly setupJob: AgentSetupJob | null;
+  readonly namespaceId: NamespaceId | null;
+  readonly publishedVersion: number | null;
+  readonly publishedAt: string | null;
+  readonly pausedAt: string | null;
+  readonly creditsPausedAt?: string | null;
+  readonly monthlySpendCapDollars: number | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+export const AgentListItem = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: AgentId,
+    name: Schema.String,
+    setupJob: Schema.Union([AgentSetupJob, Schema.Null]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    publishedVersion: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+    publishedAt: Schema.Union([Schema.String, Schema.Null]),
+    pausedAt: Schema.Union([Schema.String, Schema.Null]),
+    creditsPausedAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    monthlySpendCapDollars: Schema.Union([
+      Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+      Schema.Null,
+    ]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "AgentListItem" }))();
 export type AgentModelReasoning = {
   readonly level: AgentReasoning;
   readonly typicalReplyDollars: number;
@@ -242,15 +245,6 @@ export const AgentTestRerun = /* @__PURE__ */ (() =>
       }),
     ),
   }).annotate({ identifier: "AgentTestRerun" }))();
-export type AgentPage = {
-  readonly items: ReadonlyArray<AgentListItem>;
-  readonly nextCursor: string | null;
-};
-export const AgentPage = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    items: Schema.Array(AgentListItem),
-    nextCursor: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "AgentPage" }))();
 export type AgentVersionPage = {
   readonly items: ReadonlyArray<AgentVersionSummary>;
   readonly nextCursor: string | null;
@@ -260,6 +254,15 @@ export const AgentVersionPage = /* @__PURE__ */ (() =>
     items: Schema.Array(AgentVersionSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "AgentVersionPage" }))();
+export type AgentPage = {
+  readonly items: ReadonlyArray<AgentListItem>;
+  readonly nextCursor: string | null;
+};
+export const AgentPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(AgentListItem),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "AgentPage" }))();
 export type AgentModelOption = {
   readonly id: AgentModelChoice;
   readonly name: string;
@@ -307,6 +310,7 @@ export const AgentModelCatalog = /* @__PURE__ */ (() =>
 export type Agent = {
   readonly id: AgentId;
   readonly name: string;
+  readonly setupJob: AgentSetupJob | null;
   readonly namespaceId: NamespaceId | null;
   readonly revision: string;
   readonly draft: AgentDefinition;
@@ -323,6 +327,7 @@ export const Agent = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: AgentId,
     name: Schema.String,
+    setupJob: Schema.Union([AgentSetupJob, Schema.Null]),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     revision: Schema.String,
     draft: AgentDefinition,
@@ -424,12 +429,19 @@ export type AgentsList504 = GatewayTimeoutError;
 export const AgentsList504 = GatewayTimeoutError;
 export type AgentsCreateRequestJson = {
   readonly name: AgentName;
+  readonly setupJob?: AgentSetupJob | null;
   readonly namespaceId?: NamespaceId | null;
   readonly definition?: AgentDefinition | null;
 };
 export const AgentsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: AgentName,
+    setupJob: Schema.optionalKey(
+      Schema.Union([AgentSetupJob, Schema.Null]).annotate({
+        description:
+          "What the agent mostly does: support answers customer questions, store helps shoppers, and booking handles appointments. Omit when no job is stated. Returned as setupJob on the agent; it does not change the supplied definition.",
+      }),
+    ),
     namespaceId: Schema.optionalKey(
       Schema.Union([NamespaceId, Schema.Null]).annotate({
         description:

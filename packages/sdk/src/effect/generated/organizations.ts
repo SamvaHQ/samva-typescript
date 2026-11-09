@@ -186,7 +186,24 @@ export const OrganizationsUpdateRequestJson = /* @__PURE__ */ (() =>
     metadata: Schema.optionalKey(
       Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
     ),
-    replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    replyToDefault: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(
+          Schema.String.check(
+            Schema.isPattern(
+              new globalThis.RegExp(
+                "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+                "u",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            }),
+          ),
+        ),
+        Schema.Null,
+      ]),
+    ),
     emailFooterEnabledDefault: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type OrganizationsUpdate200 = Organization;

@@ -20,7 +20,6 @@ import {
   ConflictError,
   ContactId,
   DeliveryUnavailableError,
-  EmailAttachments,
   EmailCustomHeaders,
   EmailDomainId,
   EmailFooterOverride,
@@ -38,12 +37,13 @@ import {
   RateLimitedError,
   RenderLocale,
   RenderTimeZone,
-  ReplyToAddresses,
   ResourceNotFoundError,
   SenderNotReadyError,
   SendsSeries,
   ServiceUnavailableError,
   SmsContent,
+  StoredEmailAttachments,
+  StoredReplyToAddresses,
   TemplateData,
   TemplateId,
   TemplateInputContractId,
@@ -103,6 +103,7 @@ export const CampaignDefinitionSummary = /* @__PURE__ */ (() =>
 export type CampaignRunSkippedReason = {
   readonly reason:
     | "unsubscribed"
+    | "not_added"
     | "blocked"
     | "suppressed"
     | "opted_out"
@@ -119,6 +120,7 @@ export const CampaignRunSkippedReason = /* @__PURE__ */ (() =>
   Schema.Struct({
     reason: Schema.Union([
       Schema.Literal("unsubscribed"),
+      Schema.Literal("not_added"),
       Schema.Literal("blocked"),
       Schema.Literal("suppressed"),
       Schema.Literal("opted_out"),
@@ -182,6 +184,7 @@ export const CampaignRunReportEngagement = /* @__PURE__ */ (() =>
 export type CampaignRunReportSkippedReason = {
   readonly reason:
     | "unsubscribed"
+    | "not_added"
     | "blocked"
     | "suppressed"
     | "opted_out"
@@ -198,6 +201,7 @@ export const CampaignRunReportSkippedReason = /* @__PURE__ */ (() =>
   Schema.Struct({
     reason: Schema.Union([
       Schema.Literal("unsubscribed"),
+      Schema.Literal("not_added"),
       Schema.Literal("blocked"),
       Schema.Literal("suppressed"),
       Schema.Literal("opted_out"),
@@ -282,6 +286,7 @@ export type CampaignRecipientPage = {
     readonly failureReason: string | null;
     readonly skippedReason:
       | "unsubscribed"
+      | "not_added"
       | "blocked"
       | "suppressed"
       | "opted_out"
@@ -317,6 +322,7 @@ export const CampaignRecipientPage = /* @__PURE__ */ (() =>
         skippedReason: Schema.Union([
           Schema.Union([
             Schema.Literal("unsubscribed"),
+            Schema.Literal("not_added"),
             Schema.Literal("blocked"),
             Schema.Literal("suppressed"),
             Schema.Literal("opted_out"),
@@ -463,7 +469,7 @@ export type CampaignEmailContent = {
   readonly subject?: string | null;
   readonly html?: string | null;
   readonly text?: string | null;
-  readonly attachments?: EmailAttachments;
+  readonly attachments?: StoredEmailAttachments;
   readonly publicationId?: TemplatePublicationId;
   readonly inputContractId?: TemplateInputContractId;
   readonly templateId?: TemplateId | null;
@@ -472,7 +478,7 @@ export type CampaignEmailContent = {
   readonly locale?: RenderLocale;
   readonly timeZone?: RenderTimeZone;
   readonly inReplyToMessageId?: MessageId | null;
-  readonly replyTo?: ReplyToAddresses;
+  readonly replyTo?: StoredReplyToAddresses;
   readonly topicId?: TopicId | null;
   readonly tracking?: EmailTrackingOverrideV1;
   readonly footer?: EmailFooterOverride;
@@ -484,7 +490,7 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    attachments: Schema.optionalKey(EmailAttachments),
+    attachments: Schema.optionalKey(StoredEmailAttachments),
     publicationId: Schema.optionalKey(TemplatePublicationId),
     inputContractId: Schema.optionalKey(TemplateInputContractId),
     templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
@@ -504,7 +510,7 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     locale: Schema.optionalKey(RenderLocale),
     timeZone: Schema.optionalKey(RenderTimeZone),
     inReplyToMessageId: Schema.optionalKey(Schema.Union([MessageId, Schema.Null])),
-    replyTo: Schema.optionalKey(ReplyToAddresses),
+    replyTo: Schema.optionalKey(StoredReplyToAddresses),
     topicId: Schema.optionalKey(
       Schema.Union([TopicId, Schema.Null]).annotate({
         description:

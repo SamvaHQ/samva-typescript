@@ -362,6 +362,7 @@ export type Contact = {
       readonly preset: "beehiiv" | "substack" | "kit" | "mailchimp";
       readonly importedAt: string;
       readonly summary?: {
+        readonly permissionAssumed?: boolean | null;
         readonly signupAt: { readonly value: string; readonly kind: "time" | "text" } | null;
         readonly sources: ReadonlyArray<string>;
         readonly omittedSources: number;
@@ -369,13 +370,15 @@ export type Contact = {
       readonly evidence: ReadonlyArray<{
         readonly file: string;
         readonly row: number;
-        readonly declared:
+        readonly declared?:
           | { readonly kind: "status_column" }
           | {
               readonly kind: "export_scope";
               readonly scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-            };
-        readonly suppressionFree: boolean;
+            }
+          | null;
+        readonly suppressionFree?: boolean | null;
+        readonly permissionBasis?: "assumed" | "exported" | null;
         readonly sourceStatus: string | null;
         readonly signupAt: string | null;
         readonly source: string | null;
@@ -387,6 +390,7 @@ export type Contact = {
       readonly preset: "beehiiv" | "substack" | "kit" | "mailchimp";
       readonly importedAt: string;
       readonly summary?: {
+        readonly permissionAssumed?: boolean | null;
         readonly signupAt: { readonly value: string; readonly kind: "time" | "text" } | null;
         readonly sources: ReadonlyArray<string>;
         readonly omittedSources: number;
@@ -394,19 +398,22 @@ export type Contact = {
       readonly evidence: ReadonlyArray<{
         readonly file: string;
         readonly row: number;
-        readonly declared:
+        readonly declared?:
           | { readonly kind: "status_column" }
           | {
               readonly kind: "export_scope";
               readonly scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-            };
-        readonly suppressionFree: boolean;
+            }
+          | null;
+        readonly suppressionFree?: boolean | null;
+        readonly permissionBasis?: "assumed" | "exported" | null;
         readonly sourceStatus: string | null;
         readonly signupAt: string | null;
         readonly source: string | null;
       }>;
     };
   } | null;
+  readonly addedAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -445,6 +452,7 @@ export const Contact = /* @__PURE__ */ (() =>
           summary: Schema.optionalKey(
             Schema.Union([
               Schema.Struct({
+                permissionAssumed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
                 signupAt: Schema.Union([
                   Schema.Struct({
                     value: Schema.String.check(
@@ -506,19 +514,28 @@ export const Contact = /* @__PURE__ */ (() =>
                     expected: "a value less than or equal to 9007199254740991",
                   }),
                 ),
-              declared: Schema.Union([
-                Schema.Struct({ kind: Schema.Literal("status_column") }),
-                Schema.Struct({
-                  kind: Schema.Literal("export_scope"),
-                  scope: Schema.Union([
-                    Schema.Literal("subscribed"),
-                    Schema.Literal("unsubscribed"),
-                    Schema.Literal("suppressed"),
-                    Schema.Literal("cleaned/bounced"),
-                  ]),
-                }),
-              ]),
-              suppressionFree: Schema.Boolean,
+              declared: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Struct({ kind: Schema.Literal("status_column") }),
+                  Schema.Struct({
+                    kind: Schema.Literal("export_scope"),
+                    scope: Schema.Union([
+                      Schema.Literal("subscribed"),
+                      Schema.Literal("unsubscribed"),
+                      Schema.Literal("suppressed"),
+                      Schema.Literal("cleaned/bounced"),
+                    ]),
+                  }),
+                  Schema.Null,
+                ]),
+              ),
+              suppressionFree: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+              permissionBasis: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Union([Schema.Literal("assumed"), Schema.Literal("exported")]),
+                  Schema.Null,
+                ]),
+              ),
               sourceStatus: Schema.Union([Schema.String, Schema.Null]),
               signupAt: Schema.Union([Schema.String, Schema.Null]),
               source: Schema.Union([Schema.String, Schema.Null]),
@@ -538,6 +555,7 @@ export const Contact = /* @__PURE__ */ (() =>
           summary: Schema.optionalKey(
             Schema.Union([
               Schema.Struct({
+                permissionAssumed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
                 signupAt: Schema.Union([
                   Schema.Struct({
                     value: Schema.String.check(
@@ -599,19 +617,28 @@ export const Contact = /* @__PURE__ */ (() =>
                     expected: "a value less than or equal to 9007199254740991",
                   }),
                 ),
-              declared: Schema.Union([
-                Schema.Struct({ kind: Schema.Literal("status_column") }),
-                Schema.Struct({
-                  kind: Schema.Literal("export_scope"),
-                  scope: Schema.Union([
-                    Schema.Literal("subscribed"),
-                    Schema.Literal("unsubscribed"),
-                    Schema.Literal("suppressed"),
-                    Schema.Literal("cleaned/bounced"),
-                  ]),
-                }),
-              ]),
-              suppressionFree: Schema.Boolean,
+              declared: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Struct({ kind: Schema.Literal("status_column") }),
+                  Schema.Struct({
+                    kind: Schema.Literal("export_scope"),
+                    scope: Schema.Union([
+                      Schema.Literal("subscribed"),
+                      Schema.Literal("unsubscribed"),
+                      Schema.Literal("suppressed"),
+                      Schema.Literal("cleaned/bounced"),
+                    ]),
+                  }),
+                  Schema.Null,
+                ]),
+              ),
+              suppressionFree: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+              permissionBasis: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Union([Schema.Literal("assumed"), Schema.Literal("exported")]),
+                  Schema.Null,
+                ]),
+              ),
               sourceStatus: Schema.Union([Schema.String, Schema.Null]),
               signupAt: Schema.Union([Schema.String, Schema.Null]),
               source: Schema.Union([Schema.String, Schema.Null]),
@@ -621,6 +648,7 @@ export const Contact = /* @__PURE__ */ (() =>
       }),
       Schema.Null,
     ]),
+    addedAt: Schema.Union([Schema.String, Schema.Null]),
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Contact" }))();
@@ -1523,24 +1551,24 @@ export type ContactsStartImportRequestJson =
           {
             readonly name: string;
             readonly csv: string;
-            readonly evidence:
+            readonly evidence?:
               | { readonly kind: "status_column" }
               | {
                   readonly kind: "export_scope";
                   readonly scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-                };
-            readonly suppressionFree?: boolean | null;
+                }
+              | null;
           },
           ...Array<{
             readonly name: string;
             readonly csv: string;
-            readonly evidence:
+            readonly evidence?:
               | { readonly kind: "status_column" }
               | {
                   readonly kind: "export_scope";
                   readonly scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-                };
-            readonly suppressionFree?: boolean | null;
+                }
+              | null;
           }>,
         ];
       };
@@ -1583,23 +1611,20 @@ export const ContactsStartImportRequestJson = /* @__PURE__ */ (() =>
               csv: Schema.String.check(
                 Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
               ),
-              evidence: Schema.Union([
-                Schema.Struct({ kind: Schema.Literal("status_column") }),
-                Schema.Struct({
-                  kind: Schema.Literal("export_scope"),
-                  scope: Schema.Union([
-                    Schema.Literal("subscribed"),
-                    Schema.Literal("unsubscribed"),
-                    Schema.Literal("suppressed"),
-                    Schema.Literal("cleaned/bounced"),
-                  ]),
-                }),
-              ]),
-              suppressionFree: Schema.optionalKey(
-                Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-                  description:
-                    "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-                }),
+              evidence: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Struct({ kind: Schema.Literal("status_column") }),
+                  Schema.Struct({
+                    kind: Schema.Literal("export_scope"),
+                    scope: Schema.Union([
+                      Schema.Literal("subscribed"),
+                      Schema.Literal("unsubscribed"),
+                      Schema.Literal("suppressed"),
+                      Schema.Literal("cleaned/bounced"),
+                    ]),
+                  }),
+                  Schema.Null,
+                ]),
               ),
             }),
           ]),
@@ -1621,23 +1646,20 @@ export const ContactsStartImportRequestJson = /* @__PURE__ */ (() =>
               csv: Schema.String.check(
                 Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
               ),
-              evidence: Schema.Union([
-                Schema.Struct({ kind: Schema.Literal("status_column") }),
-                Schema.Struct({
-                  kind: Schema.Literal("export_scope"),
-                  scope: Schema.Union([
-                    Schema.Literal("subscribed"),
-                    Schema.Literal("unsubscribed"),
-                    Schema.Literal("suppressed"),
-                    Schema.Literal("cleaned/bounced"),
-                  ]),
-                }),
-              ]),
-              suppressionFree: Schema.optionalKey(
-                Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-                  description:
-                    "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-                }),
+              evidence: Schema.optionalKey(
+                Schema.Union([
+                  Schema.Struct({ kind: Schema.Literal("status_column") }),
+                  Schema.Struct({
+                    kind: Schema.Literal("export_scope"),
+                    scope: Schema.Union([
+                      Schema.Literal("subscribed"),
+                      Schema.Literal("unsubscribed"),
+                      Schema.Literal("suppressed"),
+                      Schema.Literal("cleaned/bounced"),
+                    ]),
+                  }),
+                  Schema.Null,
+                ]),
               ),
             }),
           ],
@@ -2094,24 +2116,24 @@ export type ContactsPlanImportRequestJson = {
     {
       readonly name: string;
       readonly csv: string;
-      readonly evidence:
+      readonly evidence?:
         | { readonly kind: "status_column" }
         | {
             readonly kind: "export_scope";
             readonly scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-          };
-      readonly suppressionFree?: boolean | null;
+          }
+        | null;
     },
     ...Array<{
       readonly name: string;
       readonly csv: string;
-      readonly evidence:
+      readonly evidence?:
         | { readonly kind: "status_column" }
         | {
             readonly kind: "export_scope";
             readonly scope: "subscribed" | "unsubscribed" | "suppressed" | "cleaned/bounced";
-          };
-      readonly suppressionFree?: boolean | null;
+          }
+        | null;
     }>,
   ];
 };
@@ -2144,23 +2166,20 @@ export const ContactsPlanImportRequestJson = /* @__PURE__ */ (() =>
           csv: Schema.String.check(
             Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
           ),
-          evidence: Schema.Union([
-            Schema.Struct({ kind: Schema.Literal("status_column") }),
-            Schema.Struct({
-              kind: Schema.Literal("export_scope"),
-              scope: Schema.Union([
-                Schema.Literal("subscribed"),
-                Schema.Literal("unsubscribed"),
-                Schema.Literal("suppressed"),
-                Schema.Literal("cleaned/bounced"),
-              ]),
-            }),
-          ]),
-          suppressionFree: Schema.optionalKey(
-            Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-              description:
-                "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-            }),
+          evidence: Schema.optionalKey(
+            Schema.Union([
+              Schema.Struct({ kind: Schema.Literal("status_column") }),
+              Schema.Struct({
+                kind: Schema.Literal("export_scope"),
+                scope: Schema.Union([
+                  Schema.Literal("subscribed"),
+                  Schema.Literal("unsubscribed"),
+                  Schema.Literal("suppressed"),
+                  Schema.Literal("cleaned/bounced"),
+                ]),
+              }),
+              Schema.Null,
+            ]),
           ),
         }),
       ]),
@@ -2182,23 +2201,20 @@ export const ContactsPlanImportRequestJson = /* @__PURE__ */ (() =>
           csv: Schema.String.check(
             Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
           ),
-          evidence: Schema.Union([
-            Schema.Struct({ kind: Schema.Literal("status_column") }),
-            Schema.Struct({
-              kind: Schema.Literal("export_scope"),
-              scope: Schema.Union([
-                Schema.Literal("subscribed"),
-                Schema.Literal("unsubscribed"),
-                Schema.Literal("suppressed"),
-                Schema.Literal("cleaned/bounced"),
-              ]),
-            }),
-          ]),
-          suppressionFree: Schema.optionalKey(
-            Schema.Union([Schema.Boolean, Schema.Null]).annotate({
-              description:
-                "The operator declares this beehiiv export was filtered to Suppression does not exist.",
-            }),
+          evidence: Schema.optionalKey(
+            Schema.Union([
+              Schema.Struct({ kind: Schema.Literal("status_column") }),
+              Schema.Struct({
+                kind: Schema.Literal("export_scope"),
+                scope: Schema.Union([
+                  Schema.Literal("subscribed"),
+                  Schema.Literal("unsubscribed"),
+                  Schema.Literal("suppressed"),
+                  Schema.Literal("cleaned/bounced"),
+                ]),
+              }),
+              Schema.Null,
+            ]),
           ),
         }),
       ],
@@ -2835,7 +2851,7 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       .annotate(OpenApi.Summary, "Preview a list migration")
       .annotate(
         OpenApi.Description,
-        "The complete encoded JSON request must not exceed 3000000 bytes. Reads multiple declared export files without changing contacts. Restrictive evidence wins per address. Returns estimated counts and at most 100 diagnostics; processing rechecks current restrictions. Filenames never establish permission. Missing required columns refuse the file; unknown status values are conflicts and never subscribe a reader.",
+        "The complete encoded JSON request must not exceed 3000000 bytes. Reads multiple export files without changing contacts. Readers are assumed opted in where permission evidence is absent or blank. Explicit restrictive evidence wins per address. Returns estimated counts and at most 100 diagnostics; processing rechecks current restrictions. Filenames never establish permission. Missing email columns refuse the file; unrecognized nonblank status values are conflicts and never subscribe a reader.",
       ),
   )
   .annotate(

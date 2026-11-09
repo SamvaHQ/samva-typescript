@@ -442,8 +442,14 @@ export const EmailTrackingDefaults = /* @__PURE__ */ (() =>
 export type TrackingRecipientEmail = string;
 export const TrackingRecipientEmail = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
-      expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+    Schema.isPattern(
+      new globalThis.RegExp(
+        "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        "u",
+      ),
+    ).annotate({
+      expected:
+        "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
       identifier: "TrackingRecipientEmail",
     }),
   ))();
@@ -2377,7 +2383,24 @@ export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     openTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     clickTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+    replyTo: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(
+          Schema.String.check(
+            Schema.isPattern(
+              new globalThis.RegExp(
+                "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+                "u",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            }),
+          ),
+        ),
+        Schema.Null,
+      ]),
+    ),
     topicId: Schema.optionalKey(Schema.Union([TopicId, Schema.Null])),
     footerEnabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     brandSlug: Schema.optionalKey(
@@ -3645,7 +3668,17 @@ export type EmailAddSenderRequestJson = {
 };
 export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String,
+    email: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+      }),
+    ),
     domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
     name: Schema.optionalKey(
       Schema.Union([
@@ -3653,13 +3686,36 @@ export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
           Schema.isMaxCodePoints(120).annotate({
             expected: "a string with at most 120 code points",
           }),
-        ).check(
-          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        )
+          .check(
+            Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    replyToEmails: Schema.optionalKey(
+      Schema.Union([
+        Schema.Array(
+          Schema.String.check(
+            Schema.isPattern(
+              new globalThis.RegExp(
+                "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+                "u",
+              ),
+            ).annotate({
+              expected:
+                "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            }),
+          ),
         ),
         Schema.Null,
       ]),
     ),
-    replyToEmails: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
   }))();
 export type EmailAddSender201 = {

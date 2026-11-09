@@ -35,6 +35,13 @@ export const AgentId = /* @__PURE__ */ (() =>
       identifier: "AgentId",
     }),
   ).pipe(Schema.brand("AgentId")))();
+export type AgentSetupJob = "support" | "store" | "booking";
+export const AgentSetupJob = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("support"),
+    Schema.Literal("store"),
+    Schema.Literal("booking"),
+  ]).annotate({ identifier: "AgentSetupJob" }))();
 export class MalformedRequestError extends Schema.TaggedError<MalformedRequestError>()(
   "MalformedRequestError",
   Schema.Struct({
@@ -555,10 +562,10 @@ export const RenderTimeZone = /* @__PURE__ */ (() =>
       identifier: "RenderTimeZone",
     }),
   ).check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })))();
-export type ReplyToAddresses = ReadonlyArray<string> | null;
-export const ReplyToAddresses = /* @__PURE__ */ (() =>
+export type StoredReplyToAddresses = ReadonlyArray<string> | null;
+export const StoredReplyToAddresses = /* @__PURE__ */ (() =>
   Schema.Union([Schema.Array(Schema.String), Schema.Null]).annotate({
-    identifier: "ReplyToAddresses",
+    identifier: "StoredReplyToAddresses",
   }))();
 export type TopicId = string & EffectBrand.Brand<"TopicId">;
 export const TopicId = /* @__PURE__ */ (() =>
@@ -710,12 +717,38 @@ export const SendsSeries = /* @__PURE__ */ (() =>
       "Daily email sends for the last 14 calendar days in the organization's own timezone, oldest first and zero-filled. Always fourteen entries; an entity that has never sent reports fourteen zeroes.",
     identifier: "SendsSeries",
   }))();
+export type ReplyToAddresses = ReadonlyArray<string> | null;
+export const ReplyToAddresses = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Array(
+      Schema.String.check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        }),
+      ),
+    ),
+    Schema.Null,
+  ]).annotate({ identifier: "ReplyToAddresses" }))();
 export type CampaignFromInput = { readonly email: string; readonly name?: string | null } | null;
 export const CampaignFromInput = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({
       email: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        }),
       ),
       name: Schema.optionalKey(
         Schema.Union([
@@ -723,9 +756,17 @@ export const CampaignFromInput = /* @__PURE__ */ (() =>
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
+          )
+            .check(
+              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(120).annotate({
+                expected: "a value with a length of at most 120",
+              }),
+            ),
           Schema.Null,
         ]),
       ),
@@ -1502,7 +1543,15 @@ export const EmailSender = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({
       email: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        }),
       ),
       name: Schema.optionalKey(
         Schema.Union([
@@ -1510,9 +1559,17 @@ export const EmailSender = /* @__PURE__ */ (() =>
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
+          )
+            .check(
+              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(120).annotate({
+                expected: "a value with a length of at most 120",
+              }),
+            ),
           Schema.Null,
         ]),
       ),
@@ -2445,14 +2502,6 @@ export const PolicyVersion = /* @__PURE__ */ (() =>
         identifier: "PolicyVersion",
       }),
     ))();
-export type TemplateFromDefault = { readonly email: string; readonly name?: string | null };
-export const TemplateFromDefault = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    email: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }).annotate({ identifier: "TemplateFromDefault" }))();
 export type TemplateTrackingDefault = {
   readonly opens?: boolean | null;
   readonly clicks?: boolean | null;
@@ -2469,6 +2518,39 @@ export class TemplateInUseError extends Schema.TaggedError<TemplateInUseError>()
     references: Schema.Array(Schema.Struct({ kind: Schema.String, id: Schema.String })),
   }),
 ) {}
+export type TemplateFromDefaultInput = { readonly email: string; readonly name?: string | null };
+export const TemplateFromDefaultInput = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+      }),
+    ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(120).annotate({
+            expected: "a string with at most 120 code points",
+          }),
+        )
+          .check(
+            Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "TemplateFromDefaultInput" }))();
 export type TopicContactByEmail = { readonly email: string };
 export const TopicContactByEmail = /* @__PURE__ */ (() =>
   Schema.Struct({ email: Schema.String }).annotate({ identifier: "TopicContactByEmail" }))();
@@ -4388,32 +4470,47 @@ export type SubscribePayload = {
 };
 export const SubscribePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String.annotate({
-      description: "The recipient email address; confirmation proves consent for this address.",
-    })
-      .check(
-        Schema.isMaxCodePoints(320).annotate({ expected: "a string with at most 320 code points" }),
-      )
-      .check(
-        Schema.isPattern(new globalThis.RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
-          expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-        }),
-      )
-      .check(
-        Schema.isMaxLength(320).annotate({ expected: "a value with a length of at most 320" }),
-      ),
+    email: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+      }),
+    ),
     topicId: TopicId,
     from: Schema.Struct({
-      email: Schema.String,
+      email: Schema.String.check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        }),
+      ),
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
+          )
+            .check(
+              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(120).annotate({
+                expected: "a value with a length of at most 120",
+              }),
+            ),
           Schema.Null,
         ]),
       ),
@@ -4521,8 +4618,14 @@ export const ContactEventReference = /* @__PURE__ */ (() =>
     }),
     Schema.Struct({
       email: Schema.String.check(
-        Schema.isPattern(new globalThis.RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
-          expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
         }),
       ),
       id: Schema.optionalKey(Schema.Never),
@@ -4536,7 +4639,17 @@ export const EmailRecipient = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({ contactId: ContactId }),
     Schema.Struct({
-      email: Schema.String,
+      email: Schema.String.check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        }),
+      ),
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
@@ -5664,7 +5777,7 @@ export type UpdateTemplatePayload = {
       | "reminder"
       | "alert"
       | null;
-    readonly fromDefault?: TemplateFromDefault | null;
+    readonly fromDefault?: TemplateFromDefaultInput | null;
     readonly replyToDefault?: ReadonlyArray<string> | null;
     readonly trackingDefault?: TemplateTrackingDefault | null;
     readonly shared?: boolean | null;
@@ -5727,8 +5840,25 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
           Schema.Null,
         ]),
       ),
-      fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefault, Schema.Null])),
-      replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
+      fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefaultInput, Schema.Null])),
+      replyToDefault: Schema.optionalKey(
+        Schema.Union([
+          Schema.Array(
+            Schema.String.check(
+              Schema.isPattern(
+                new globalThis.RegExp(
+                  "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+                  "u",
+                ),
+              ).annotate({
+                expected:
+                  "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+              }),
+            ),
+          ),
+          Schema.Null,
+        ]),
+      ),
       trackingDefault: Schema.optionalKey(
         Schema.Union([TemplateTrackingDefault, Schema.Null]).annotate({
           description:
@@ -5945,6 +6075,14 @@ export const UpdateBrand = /* @__PURE__ */ (() =>
     assets: Schema.optionalKey(Schema.Union([BrandAssets, Schema.Null])),
     footer: Schema.optionalKey(Schema.Union([BrandFooter, Schema.Null])),
   }).annotate({ identifier: "UpdateBrand" }))();
+export type StoredEmailAttachments = ReadonlyArray<EmailAttachment> | null;
+export const StoredEmailAttachments = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Array(EmailAttachment).check(
+      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+    ),
+    Schema.Null,
+  ]).annotate({ identifier: "StoredEmailAttachments" }))();
 export type EmailAttachments = ReadonlyArray<EmailAttachment> | null;
 export const EmailAttachments = /* @__PURE__ */ (() =>
   Schema.Union([
@@ -6633,7 +6771,16 @@ export type CampaignEmailInput = {
 };
 export const CampaignEmailInput = /* @__PURE__ */ (() =>
   Schema.Struct({
-    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    subject: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(EmailAttachments),
@@ -6689,7 +6836,16 @@ export type EmailContent = {
 };
 export const EmailContent = /* @__PURE__ */ (() =>
   Schema.Struct({
-    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    subject: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(EmailAttachments),
@@ -7300,12 +7456,19 @@ export const JourneyBranchEdge = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "JourneyBranchEdge" }))();
 export type CreateAgentPayload = {
   readonly name: AgentName;
+  readonly setupJob?: AgentSetupJob | null;
   readonly namespaceId?: NamespaceId | null;
   readonly definition?: AgentDefinition | null;
 };
 export const CreateAgentPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: AgentName,
+    setupJob: Schema.optionalKey(
+      Schema.Union([AgentSetupJob, Schema.Null]).annotate({
+        description:
+          "What the agent mostly does: support answers customer questions, store helps shoppers, and booking handles appointments. Omit when no job is stated. Returned as setupJob on the agent; it does not change the supplied definition.",
+      }),
+    ),
     namespaceId: Schema.optionalKey(
       Schema.Union([NamespaceId, Schema.Null]).annotate({
         description:
@@ -7447,8 +7610,7 @@ export const WhatsAppSendMessagePayload = /* @__PURE__ */ (() =>
     to: WhatsAppRecipients,
     whatsapp: WhatsAppContent,
   }).annotate({
-    description:
-      "The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.",
+    description: "Send WhatsApp messages from your connected business account.",
     identifier: "WhatsAppSendMessagePayload",
   }))();
 export type JourneyDefinition = {

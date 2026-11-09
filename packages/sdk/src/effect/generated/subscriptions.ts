@@ -42,32 +42,47 @@ export type SubscriptionsSubscribeRequestJson = {
 };
 export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String.annotate({
-      description: "The recipient email address; confirmation proves consent for this address.",
-    })
-      .check(
-        Schema.isMaxCodePoints(320).annotate({ expected: "a string with at most 320 code points" }),
-      )
-      .check(
-        Schema.isPattern(new globalThis.RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "u")).annotate({
-          expected: "a string matching the RegExp ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-        }),
-      )
-      .check(
-        Schema.isMaxLength(320).annotate({ expected: "a value with a length of at most 320" }),
-      ),
+    email: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+      }),
+    ),
     topicId: TopicId,
     from: Schema.Struct({
-      email: Schema.String,
+      email: Schema.String.check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+        }),
+      ),
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
+          )
+            .check(
+              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
+                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
+              }),
+            )
+            .check(
+              Schema.isMaxLength(120).annotate({
+                expected: "a value with a length of at most 120",
+              }),
+            ),
           Schema.Null,
         ]),
       ),

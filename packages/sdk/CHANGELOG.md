@@ -1,3 +1,58 @@
+## samva@0.38.0
+
+### Describe Samva as email and WhatsApp for AI agents
+
+The package READMEs now say that AI agents get their own addresses and WhatsApp numbers on the same
+platform. No code changes.
+
+### Opt-Out Campaign Audiences
+
+**Breaking:** Opt-out campaigns and newsletter issues require an added contact, a subscription to
+any topic, or explicit opt-in on the campaign's channel. For a contact that lacks that evidence,
+import it, confirm its signup, subscribe it, or manually add it to a static contact group.
+
+The SDK exposes the nullable, read-only `Contact.addedAt` field and the `not_added` campaign skip
+reason. CLI campaign reports include `not_added` in skipped-recipient counts. Named sends and
+journey emails keep their existing recipient rules.
+
+### WhatsApp sends are available
+
+The `messages.send` description and the `WhatsAppSendMessagePayload` type now describe WhatsApp as available
+rather than answering 403 until launch. WhatsApp sends go through the same `POST /v1/messages`
+endpoint as email, from your connected WhatsApp Business account. No types or signatures change.
+
+### Email addresses and sender names
+
+**Breaking:** send bare email addresses with ASCII dot-atom local parts. Quoted local parts and
+non-ASCII local parts are refused with field guidance. Unicode domains such as `bücher.de` are
+converted to punycode automatically.
+
+Sender display names containing quotes, backslashes, or Unicode are encoded for delivery.
+Attachment download filenames preserve Unicode and punctuation. Email subjects, sender names,
+and attachment filenames must not contain control characters.
+
+### Assume opt-in when importing platform lists
+
+**Breaking:** remove `suppressionFree` from import requests and omit the CLI's `--suppression-free`
+flag. File evidence is optional: use `--file readers.csv`, or keep `EVIDENCE=PATH` to declare an
+export's scope, such as `--file unsubscribed=left.csv`.
+
+Imports from beehiiv, Mailchimp, Substack, and Kit assume readers opted in to the destination topic
+when permission evidence is missing or blank. Include any unsubscribe, suppression, or bounce
+exports to preserve their restrictions. Unrecognized nonblank statuses remain conflicts, and an
+import never restores an existing Samva unsubscribe, suppression, or bounce. Contact import
+provenance records when permission was assumed.
+
+### Agent setup jobs
+
+**Breaking:** rename `preset` to `setupJob` in agent draft requests and replace `blank` with
+`support`. The job values are `support`, `store`, and `booking`.
+
+Create requests also accept `setupJob`, and agent records return the stored value or `null` when
+no job was provided.
+
+Use `samva agents create "Shop assistant" --setup-job store` to create an agent from the CLI.
+
 ## samva@0.37.0
 
 ### Use HMAC to verify Samva webhooks
