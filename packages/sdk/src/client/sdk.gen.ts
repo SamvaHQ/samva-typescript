@@ -3866,10 +3866,11 @@ export class Email {
   /**
    * List suppressed addresses
    *
-   * Returns the addresses this organization will not send to, newest first, optionally filtered by suppression type, active or expired state, and an address substring. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns suppressed addresses, newest first, optionally filtered by suppression type, active or expired state, and an address substring. A namespace-scoped key lists only its namespace; an organization-wide caller lists every scope, or exactly one namespace with `namespaceId`. Each entry includes its `namespaceId`; null identifies organization-wide protection across every namespace. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static listSuppressions<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       type?: "bounce" | "complaint" | "unsubscribe" | "manual" | undefined;
       status?: "active" | "expired" | undefined;
       search?: string | undefined;
@@ -3883,6 +3884,7 @@ export class Email {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "type" },
             { in: "query", key: "status" },
             { in: "query", key: "search" },
@@ -3914,11 +3916,18 @@ export class Email {
   /**
    * Count suppressed addresses
    *
-   * Returns how many addresses this organization will not send to now, by suppression type. Expired suppressions are not counted.
+   * Returns active suppression counts by type. A namespace-scoped key counts only its namespace; an organization-wide caller counts every scope, or exactly one namespace with `namespaceId`. Expired suppressions are not counted.
    */
   public static countSuppressions<ThrowOnError extends boolean = false>(
+    parameters?: {
+      namespaceId?: NamespaceId | undefined;
+    },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailCountSuppressionsResponses, EmailCountSuppressionsErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "query", key: "namespaceId" }] }],
+    );
     return requestWithPolicy(
       options?.client ?? client,
       "emailCountSuppressions",
@@ -3932,6 +3941,7 @@ export class Email {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/email/suppressions/counts",
           ...options,
+          ...params,
           headers,
         }),
     );
@@ -3940,7 +3950,7 @@ export class Email {
   /**
    * Remove a suppressed address
    *
-   * Deletes a suppression so this organization can send to the address again. If the deletion cannot complete, it fails rather than reporting success, and it is safe to retry. Deliverability caveat: a bounce or complaint suppression records a real delivery failure, and sending to the address again risks the reputation damage the suppression prevented.
+   * Deletes one suppression in its own scope after clearing its saved provider owners. Other applicable suppressions remain enforced. A namespace-scoped key can remove only its namespace's entries; other scopes answer as not found. If new feedback changes the entry during removal, it returns 409 and retains the entry for a fresh read before retrying. Provider failures retain the local entry. Deliverability caveat: a bounce or complaint suppression records a real delivery failure, and sending to the address again risks the reputation damage the suppression prevented.
    */
   public static removeSuppression<ThrowOnError extends boolean = false>(
     parameters: {
@@ -6492,7 +6502,7 @@ export class Contacts {
   /**
    * Start or resume a list migration
    *
-   * The complete encoded JSON request, including new-start metadata, must not exceed 3000000 bytes. Admits a durable import using the preview hash and an Idempotency-Key header, or resumes the same persisted input at its committed cursor. The header is required for mode:new and optional for mode:resume. Only mode:new supports idempotent replay. Resume uses expectedGeneration and must not be automatically retried; read getImportJob after an ambiguous response. Imports never restore an existing unsubscribe, suppression or bounce. Namespace-scoped credentials cannot create organization-wide suppressions; those rows are conflicts and create no contact. New active contacts are billable and normal contact events apply.
+   * The complete encoded JSON request, including new-start metadata, must not exceed 3000000 bytes. Admits a durable import using the preview hash and an Idempotency-Key header, or resumes the same persisted input at its committed cursor. The header is required for mode:new and optional for mode:resume. Only mode:new supports idempotent replay. Resume uses expectedGeneration and must not be automatically retried; read getImportJob after an ambiguous response. Imports never restore an existing unsubscribe, suppression or bounce. Imported suppressions use the contact's namespace. Namespace-scoped credentials import contacts and restrictions only into their own namespace; organization-level suppressions protect every namespace. New active contacts are billable and normal contact events apply.
    */
   public static startImport<ThrowOnError extends boolean = false>(
     parameters:

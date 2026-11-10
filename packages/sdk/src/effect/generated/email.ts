@@ -1359,6 +1359,7 @@ export const EmailSenderPage = /* @__PURE__ */ (() =>
 export type SuppressionEntry = {
   readonly id: SuppressionId;
   readonly email: string;
+  readonly namespaceId: NamespaceId | null;
   readonly type: "bounce" | "complaint" | "unsubscribe" | "manual";
   readonly bounceType: string | null;
   readonly bounceSubType: string | null;
@@ -1372,6 +1373,10 @@ export const SuppressionEntry = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: SuppressionId,
     email: Schema.String,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+      description:
+        "The namespace this suppression protects; null protects sending across the organization",
+    }),
     type: Schema.Union([
       Schema.Literal("bounce"),
       Schema.Literal("complaint"),
@@ -3984,6 +3989,7 @@ export const EmailGetStats500 = InternalError;
 export type EmailGetStats504 = GatewayTimeoutError;
 export const EmailGetStats504 = GatewayTimeoutError;
 export type EmailListSuppressionsQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly type?: "bounce" | "complaint" | "unsubscribe" | "manual";
   readonly status?: "active" | "expired";
   readonly search?: string;
@@ -3992,6 +3998,7 @@ export type EmailListSuppressionsQuery = {
 };
 export const EmailListSuppressionsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     type: Schema.optionalKey(
       Schema.Union([
         Schema.Literal("bounce"),
@@ -4050,6 +4057,8 @@ export type EmailRemoveSuppression403 = ForbiddenError;
 export const EmailRemoveSuppression403 = ForbiddenError;
 export type EmailRemoveSuppression404 = ResourceNotFoundError;
 export const EmailRemoveSuppression404 = ResourceNotFoundError;
+export type EmailRemoveSuppression409 = ConflictError;
+export const EmailRemoveSuppression409 = ConflictError;
 export type EmailRemoveSuppression422 = ValidationError;
 export const EmailRemoveSuppression422 = ValidationError;
 export type EmailRemoveSuppression500 = InternalError;
@@ -4058,6 +4067,9 @@ export type EmailRemoveSuppression502 = EmailChannelError;
 export const EmailRemoveSuppression502 = EmailChannelError;
 export type EmailRemoveSuppression504 = GatewayTimeoutError;
 export const EmailRemoveSuppression504 = GatewayTimeoutError;
+export type EmailCountSuppressionsQuery = { readonly namespaceId?: NamespaceId };
+export const EmailCountSuppressionsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({ namespaceId: Schema.optionalKey(NamespaceId) }))();
 export type EmailCountSuppressions200 = SuppressionCounts;
 export const EmailCountSuppressions200 = SuppressionCounts;
 export type EmailCountSuppressions400 = MalformedRequestError;
@@ -5335,7 +5347,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "List suppressed addresses")
       .annotate(
         OpenApi.Description,
-        "Returns the addresses this organization will not send to, newest first, optionally filtered by suppression type, active or expired state, and an address substring. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
+        "Returns suppressed addresses, newest first, optionally filtered by suppression type, active or expired state, and an address substring. A namespace-scoped key lists only its namespace; an organization-wide caller lists every scope, or exactly one namespace with `namespaceId`. Each entry includes its `namespaceId`; null identifies organization-wide protection across every namespace. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
       ),
     HttpApiEndpoint.delete("emailRemoveSuppression", "/v1/email/suppressions/:id", {
       params: EmailRemoveSuppressionPathParams,
@@ -5345,6 +5357,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         EmailRemoveSuppression401.pipe(HttpApiSchema.status(401)),
         EmailRemoveSuppression403.pipe(HttpApiSchema.status(403)),
         EmailRemoveSuppression404.pipe(HttpApiSchema.status(404)),
+        EmailRemoveSuppression409.pipe(HttpApiSchema.status(409)),
         EmailRemoveSuppression422.pipe(HttpApiSchema.status(422)),
         EmailRemoveSuppression500,
         EmailRemoveSuppression502.pipe(HttpApiSchema.status(502)),
@@ -5356,9 +5369,10 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Remove a suppressed address")
       .annotate(
         OpenApi.Description,
-        "Deletes a suppression so this organization can send to the address again. If the deletion cannot complete, it fails rather than reporting success, and it is safe to retry. Deliverability caveat: a bounce or complaint suppression records a real delivery failure, and sending to the address again risks the reputation damage the suppression prevented.",
+        "Deletes one suppression in its own scope after clearing its saved provider owners. Other applicable suppressions remain enforced. A namespace-scoped key can remove only its namespace's entries; other scopes answer as not found. If new feedback changes the entry during removal, it returns 409 and retains the entry for a fresh read before retrying. Provider failures retain the local entry. Deliverability caveat: a bounce or complaint suppression records a real delivery failure, and sending to the address again risks the reputation damage the suppression prevented.",
       ),
     HttpApiEndpoint.get("emailCountSuppressions", "/v1/email/suppressions/counts", {
+      query: EmailCountSuppressionsQuery,
       success: EmailCountSuppressions200,
       error: [
         EmailCountSuppressions400.pipe(HttpApiSchema.status(400)),
@@ -5374,7 +5388,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Count suppressed addresses")
       .annotate(
         OpenApi.Description,
-        "Returns how many addresses this organization will not send to now, by suppression type. Expired suppressions are not counted.",
+        "Returns active suppression counts by type. A namespace-scoped key counts only its namespace; an organization-wide caller counts every scope, or exactly one namespace with `namespaceId`. Expired suppressions are not counted.",
       ),
     HttpApiEndpoint.get("emailGetTrackingDefaults", "/v1/email/tracking/defaults", {
       success: EmailGetTrackingDefaults200,

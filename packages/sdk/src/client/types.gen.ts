@@ -1043,6 +1043,7 @@ export type MailboxChatDraft = {
   subject: string | null;
   createdAt: string;
   updatedAt: string;
+  revision: number;
   text: string | null;
 };
 
@@ -1059,6 +1060,7 @@ export type MailboxEmailDraft = {
   subject: string | null;
   createdAt: string;
   updatedAt: string;
+  revision: number;
   endpointId: MailboxEndpointId | null;
   cc: Array<string>;
   bcc: Array<string>;
@@ -4946,6 +4948,10 @@ export type SuppressionPage = {
 export type SuppressionEntry = {
   id: SuppressionId;
   email: string;
+  /**
+   * The namespace this suppression protects; null protects sending across the organization
+   */
+  namespaceId: NamespaceId | null;
   type: "bounce" | "complaint" | "unsubscribe" | "manual";
   bounceType: string | null;
   bounceSubType: string | null;
@@ -11551,6 +11557,7 @@ export type EmailListSuppressionsData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     type?: "bounce" | "complaint" | "unsubscribe" | "manual" | undefined;
     status?: "active" | "expired" | undefined;
     search?: string | undefined;
@@ -11603,7 +11610,9 @@ export type EmailListSuppressionsResponse =
 export type EmailCountSuppressionsData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    namespaceId?: NamespaceId | undefined;
+  };
   url: "/v1/email/suppressions/counts";
 };
 
@@ -11673,6 +11682,10 @@ export type EmailRemoveSuppressionErrors = {
    * ResourceNotFoundError
    */
   404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
   /**
    * ValidationError
    */

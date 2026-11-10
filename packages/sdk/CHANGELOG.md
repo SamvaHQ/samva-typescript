@@ -1,3 +1,31 @@
+## samva@0.41.0
+
+### Manage suppressions within a namespace
+
+Email suppression entries include `namespaceId`. Namespace suppressions apply only within that
+namespace; organization-level suppressions (`namespaceId: null`) protect every namespace.
+`email.listSuppressions` and `email.countSuppressions` accept `namespaceId` to select exactly one
+namespace. Organization credentials read all scopes without a filter; namespace credentials list,
+count, and remove only their own entries. Imported restrictions follow the contact's namespace.
+
+Use `samva suppressions list` with optional `--namespace`, `--type`, `--status`, and `--search`
+filters. Review an entry before removing it with `samva suppressions remove <id> --yes`; use
+`--dry-run` to preview removal. Removing one entry leaves other applicable suppressions intact.
+
+### Namespace-scoped OAuth connections
+
+**Breaking:** upload staged attachments again with the namespace credential before completing or
+sending them. Namespace credentials no longer reach uploads without recorded namespace ownership.
+
+Choose an optional namespace after the organization when connecting an OAuth or MCP client. The
+connection and its refreshed tokens remain confined to that namespace. Existing organization-wide
+connections keep their scope.
+
+### Mailbox drafts report their revision
+
+Full email and chat draft responses include `revision`, the number of the draft's stored content.
+Read it before editing a draft to tell whether the content changed since you last loaded it.
+
 ## samva@0.40.0
 
 ### Topic IDs start with `tpc_`

@@ -855,6 +855,7 @@ export type MailboxChatDraft = {
   readonly subject: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly revision: number;
   readonly text: string | null;
 };
 export const MailboxChatDraft = /* @__PURE__ */ (() =>
@@ -869,6 +870,17 @@ export const MailboxChatDraft = /* @__PURE__ */ (() =>
     subject: Schema.Union([Schema.String, Schema.Null]),
     createdAt: Schema.String,
     updatedAt: Schema.String,
+    revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
     text: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxChatDraft" }))();
 export type MailboxEvent = {
@@ -1608,6 +1620,7 @@ export type MailboxEmailDraft = {
   readonly subject: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly revision: number;
   readonly endpointId: MailboxEndpointId | null;
   readonly cc: ReadonlyArray<string>;
   readonly bcc: ReadonlyArray<string>;
@@ -1628,6 +1641,17 @@ export const MailboxEmailDraft = /* @__PURE__ */ (() =>
     subject: Schema.Union([Schema.String, Schema.Null]),
     createdAt: Schema.String,
     updatedAt: Schema.String,
+    revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
     endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
     cc: Schema.Array(Schema.String),
     bcc: Schema.Array(Schema.String),

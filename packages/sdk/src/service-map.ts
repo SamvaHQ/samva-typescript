@@ -549,7 +549,7 @@ export const SDK_OPERATION_CALLS = {
   emailUpdateCatchAllConfig: { kind: "payload" },
   emailGetCatchAllStats: { kind: "params" },
   emailListSuppressions: { kind: "params" },
-  emailCountSuppressions: { kind: "none" },
+  emailCountSuppressions: { kind: "params" },
   emailRemoveSuppression: idPath,
   emailListBlocks: { kind: "params" },
   emailAddBlock: { kind: "payload" },
