@@ -2438,6 +2438,35 @@ export const NamespaceMetadata = /* @__PURE__ */ (() =>
       "Your own labels for the namespace, such as the id of your customer it serves. Samva stores them and never reads them.",
     identifier: "NamespaceMetadata",
   }))();
+export type NamespacePortalLinkMetadata = { readonly [x: string]: string };
+export const NamespacePortalLinkMetadata = /* @__PURE__ */ (() =>
+  Schema.Record(
+    Schema.String,
+    Schema.String.check(
+      Schema.isMaxCodePoints(512).annotate({ expected: "a string with at most 512 code points" }),
+    ).check(Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" })),
+  ).check(
+    Schema.isPropertyNames(
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ).check(
+        Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+      ),
+    ).annotate({
+      expected: "an object with property names matching the schema",
+      identifier: "NamespacePortalLinkMetadata",
+    }),
+  ))();
+export type WhatsAppSetupLinkRedirectUrl = string;
+export const WhatsAppSetupLinkRedirectUrl = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isMaxCodePoints(2048).annotate({
+      expected: "a string with at most 2048 code points",
+      identifier: "WhatsAppSetupLinkRedirectUrl",
+    }),
+  ).check(
+    Schema.isMaxLength(2048).annotate({ expected: "a value with a length of at most 2048" }),
+  ))();
 export type NamespaceResourceType =
   | "domain"
   | "sender"
@@ -5644,6 +5673,28 @@ export const CreateNamespacePayload = /* @__PURE__ */ (() =>
       ),
     metadata: Schema.optionalKey(Schema.Union([NamespaceMetadata, Schema.Null])),
   }).annotate({ identifier: "CreateNamespacePayload" }))();
+export type CreateNamespacePortalLinkPayload = {
+  readonly redirectUrl?: WhatsAppSetupLinkRedirectUrl | null;
+  readonly metadata?: NamespacePortalLinkMetadata | null;
+  readonly expiresIn?: number | null;
+};
+export const CreateNamespacePortalLinkPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    redirectUrl: Schema.optionalKey(Schema.Union([WhatsAppSetupLinkRedirectUrl, Schema.Null])),
+    metadata: Schema.optionalKey(Schema.Union([NamespacePortalLinkMetadata, Schema.Null])),
+    expiresIn: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(2592000).annotate({
+              expected: "a value less than or equal to 2592000",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "CreateNamespacePortalLinkPayload" }))();
 export type AssignNamespaceResourcePayload = {
   readonly type: NamespaceResourceType;
   readonly resourceId: string;

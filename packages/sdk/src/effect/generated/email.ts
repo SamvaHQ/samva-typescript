@@ -2372,8 +2372,12 @@ export type EmailRemoveDomain403 = ForbiddenError;
 export const EmailRemoveDomain403 = ForbiddenError;
 export type EmailRemoveDomain404 = ResourceNotFoundError;
 export const EmailRemoveDomain404 = ResourceNotFoundError;
+export type EmailRemoveDomain409 = ConflictError;
+export const EmailRemoveDomain409 = ConflictError;
 export type EmailRemoveDomain422 = ValidationError;
 export const EmailRemoveDomain422 = ValidationError;
+export type EmailRemoveDomain429 = RateLimitedError;
+export const EmailRemoveDomain429 = RateLimitedError;
 export type EmailRemoveDomain500 = InternalError;
 export const EmailRemoveDomain500 = InternalError;
 export type EmailRemoveDomain502 = EmailChannelError | BillingProviderError;
@@ -4441,7 +4445,9 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         EmailRemoveDomain401.pipe(HttpApiSchema.status(401)),
         EmailRemoveDomain403.pipe(HttpApiSchema.status(403)),
         EmailRemoveDomain404.pipe(HttpApiSchema.status(404)),
+        EmailRemoveDomain409.pipe(HttpApiSchema.status(409)),
         EmailRemoveDomain422.pipe(HttpApiSchema.status(422)),
+        EmailRemoveDomain429.pipe(HttpApiSchema.status(429)),
         EmailRemoveDomain500,
         EmailRemoveDomain502.pipe(HttpApiSchema.status(502)),
         EmailRemoveDomain504.pipe(HttpApiSchema.status(504)),

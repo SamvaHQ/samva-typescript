@@ -1,3 +1,35 @@
+## samva@0.43.0
+
+### Hand-off actions carry the agent's reason
+
+Non-send mailbox actions include `handoff`, which holds `reason` for a `handoff` action: why the
+agent handed the conversation to people. It is `null` for every other non-send action; send and
+reply actions do not have the field.
+
+### Give Customers a Hosted Namespace Portal
+
+Create, list, and revoke customer portal links with `namespaces.createPortalLink`,
+`namespaces.listPortalLinks`, and `namespaces.revokePortalLink`, or
+`samva namespaces portal-links create|list|revoke`. Organization-wide callers can give a customer
+access to domain setup, senders, activity, suppressions, usage, and mailbox names and addresses
+without creating a Samva account. Links expire and can be revoked; access remains bounded by the
+creator's current grants. The returned URL contains a credential and is shown only when created.
+
+### Restrict Teammates to One Namespace
+
+Invite a teammate with `organizations.inviteMember` or `samva org invite --namespace` to confine
+their dashboard, Mail, API keys, and OAuth connections to one namespace. Provide their personal
+mailbox address with `mailboxAddress` or `--mailbox-address`; add a usable domain to the namespace
+or share an organization domain before inviting its staff.
+
+Restricted members cannot access organization-wide administration. Their role and mailbox grants
+continue to control the operations they can perform within the namespace.
+
+### Typed conflict and rate-limit errors when removing a domain
+
+`email.removeDomain` declares its `409` conflict and `429` rate-limit responses, so both are typed
+errors in the promise and Effect clients.
+
 ## samva@0.42.0
 
 ### Share a sending domain across namespaces

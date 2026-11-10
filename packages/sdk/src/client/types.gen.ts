@@ -405,6 +405,54 @@ export type NamespaceUsage = {
   totalMessages: number;
 };
 
+export type NamespacePortalLink = {
+  id: NamespacePortalLinkId;
+  organizationId: OrganizationId;
+  namespaceId: NamespaceId;
+  createdBy: UserId;
+  expiresAt: string;
+  revokedAt: string | null;
+  redirectUrl: string | null;
+  metadata: NamespacePortalLinkMetadata;
+  createdAt: string;
+};
+
+export type NamespacePortalLinkMetadata = {
+  [key: string]: string;
+};
+
+export type NamespacePortalLinkMetadataWritable = {
+  [key: string]: string | undefined;
+};
+
+export type NamespacePortalLinkId = string;
+
+export type NamespacePortalLinkPage = {
+  items: Array<NamespacePortalLink>;
+  nextCursor: string | null;
+};
+
+export type CreatedNamespacePortalLink = {
+  id: NamespacePortalLinkId;
+  organizationId: OrganizationId;
+  namespaceId: NamespaceId;
+  createdBy: UserId;
+  expiresAt: string;
+  revokedAt: string | null;
+  redirectUrl: string | null;
+  metadata: NamespacePortalLinkMetadata;
+  createdAt: string;
+  url: string;
+};
+
+export type CreateNamespacePortalLinkPayload = {
+  redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
+  metadata?: NamespacePortalLinkMetadata | null | undefined;
+  expiresIn?: number | null | undefined;
+};
+
+export type WhatsAppSetupLinkRedirectUrl = string;
+
 export type FlagDisabledError = {
   _tag: "FlagDisabledError";
   flag: string;
@@ -768,6 +816,17 @@ export type MailboxNonSendAction = {
    * The tool a `toolCall` runs, with its arguments and their hash; an approval covers exactly this call. Null for every other action type.
    */
   tool: MailboxToolCall | null;
+  /**
+   * The hand-off a `handoff` asks for, with the agent's reason for handing the conversation to people. Null for every other action type.
+   */
+  handoff: MailboxHandoff | null;
+};
+
+export type MailboxHandoff = {
+  /**
+   * Why the conversation needs people, in the agent's words.
+   */
+  reason: string;
 };
 
 export type MailboxToolCall = {
@@ -2233,6 +2292,8 @@ export type Organization = {
 export type PhoneRegion = string;
 
 export type IanaTimezone = string;
+
+export type InvitationId = string;
 
 export type WebhookSigningSecret = {
   secret: string;
@@ -9858,9 +9919,17 @@ export type EmailRemoveDomainErrors = {
    */
   404: ResourceNotFoundError;
   /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
    * ValidationError
    */
   422: ValidationError;
+  /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
   /**
    * InternalError
    */
@@ -25795,6 +25864,81 @@ export type WebhooksGetSecretResponses = {
 export type WebhooksGetSecretResponse =
   WebhooksGetSecretResponses[keyof WebhooksGetSecretResponses];
 
+export type OrganizationsInviteMemberData = {
+  body: {
+    email: string;
+    role: "member" | "admin" | "mail_user";
+    mailboxAddress: string;
+    namespaceId?: NamespaceId | null | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/organizations/members/invitations";
+};
+
+export type OrganizationsInviteMemberErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type OrganizationsInviteMemberError =
+  OrganizationsInviteMemberErrors[keyof OrganizationsInviteMemberErrors];
+
+export type OrganizationsInviteMemberResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: InvitationId;
+    email: string;
+    role: "member" | "admin" | "mail_user";
+    namespaceId: NamespaceId | null;
+    mailboxAddress: string;
+    status: "pending";
+  };
+};
+
+export type OrganizationsInviteMemberResponse =
+  OrganizationsInviteMemberResponses[keyof OrganizationsInviteMemberResponses];
+
 export type OrganizationsCreateData = {
   body: {
     name: string;
@@ -26148,7 +26292,9 @@ export type OrganizationsListPersonalMailboxAssignmentsResponse =
 export type OrganizationsGetPersonalMailboxAddressOptionsData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    namespaceId?: NamespaceId | undefined;
+  };
   url: "/v1/organizations/personal-mailboxes/address-options";
 };
 
@@ -26165,6 +26311,10 @@ export type OrganizationsGetPersonalMailboxAddressOptionsErrors = {
    * ForbiddenError
    */
   403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
   /**
    * ValidationError
    */
@@ -26525,7 +26675,7 @@ export type ApiKeysCreateData = {
     description?: string | null | undefined;
     expiresAt?: string | null | undefined;
     /**
-     * Defaults to full access. A restricted API key creating a key defaults to its own grants and cannot issue full access.
+     * Defaults to full access for an unrestricted member, or namespace grants for a restricted member. A restricted API key creating a key defaults to its own grants and cannot issue full access.
      */
     access?: ApiKeyAccess | null | undefined;
   };
@@ -31110,6 +31260,173 @@ export type NamespacesRemoveResourceResponses = {
 
 export type NamespacesRemoveResourceResponse =
   NamespacesRemoveResourceResponses[keyof NamespacesRemoveResourceResponses];
+
+export type NamespacesListPortalLinksData = {
+  body?: never;
+  path: {
+    id: NamespaceId;
+  };
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
+  };
+  url: "/v1/namespaces/{id}/portal-links";
+};
+
+export type NamespacesListPortalLinksErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NamespacesListPortalLinksError =
+  NamespacesListPortalLinksErrors[keyof NamespacesListPortalLinksErrors];
+
+export type NamespacesListPortalLinksResponses = {
+  /**
+   * NamespacePortalLinkPage
+   */
+  200: NamespacePortalLinkPage;
+};
+
+export type NamespacesListPortalLinksResponse =
+  NamespacesListPortalLinksResponses[keyof NamespacesListPortalLinksResponses];
+
+export type NamespacesCreatePortalLinkData = {
+  body: {
+    redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
+    metadata?: NamespacePortalLinkMetadataWritable | null | undefined;
+    expiresIn?: number | null | undefined;
+  };
+  path: {
+    id: NamespaceId;
+  };
+  query?: never;
+  url: "/v1/namespaces/{id}/portal-links";
+};
+
+export type NamespacesCreatePortalLinkErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NamespacesCreatePortalLinkError =
+  NamespacesCreatePortalLinkErrors[keyof NamespacesCreatePortalLinkErrors];
+
+export type NamespacesCreatePortalLinkResponses = {
+  /**
+   * CreatedNamespacePortalLink
+   */
+  201: CreatedNamespacePortalLink;
+};
+
+export type NamespacesCreatePortalLinkResponse =
+  NamespacesCreatePortalLinkResponses[keyof NamespacesCreatePortalLinkResponses];
+
+export type NamespacesRevokePortalLinkData = {
+  body?: never;
+  path: {
+    id: NamespaceId;
+    linkId: NamespacePortalLinkId;
+  };
+  query?: never;
+  url: "/v1/namespaces/{id}/portal-links/{linkId}";
+};
+
+export type NamespacesRevokePortalLinkErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type NamespacesRevokePortalLinkError =
+  NamespacesRevokePortalLinkErrors[keyof NamespacesRevokePortalLinkErrors];
+
+export type NamespacesRevokePortalLinkResponses = {
+  /**
+   * NamespacePortalLink
+   */
+  200: NamespacePortalLink;
+};
+
+export type NamespacesRevokePortalLinkResponse =
+  NamespacesRevokePortalLinkResponses[keyof NamespacesRevokePortalLinkResponses];
 
 export type NamespacesGetUsageData = {
   body?: never;

@@ -1,5 +1,6 @@
 // Auto-generated from OpenAPI; do not edit.
 
+import type * as EffectBrand from "effect/Brand";
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 import * as Schema from "effect/Schema";
 
@@ -13,13 +14,26 @@ import {
   MalformedRequestError,
   NamespaceId,
   NamespaceMetadata,
+  NamespacePortalLinkMetadata,
   NamespaceResourceType,
+  OrganizationId,
   ResourceNotFoundError,
   SuccessResponse,
   UnauthorizedError,
+  UserId,
   ValidationError,
+  WhatsAppSetupLinkRedirectUrl,
+  __SamvaRuntimeSensitiveString,
 } from "./shared";
 
+export type NamespacePortalLinkId = string & EffectBrand.Brand<"NamespacePortalLinkId">;
+export const NamespacePortalLinkId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^npl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^npl_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "NamespacePortalLinkId",
+    }),
+  ).pipe(Schema.brand("NamespacePortalLinkId")))();
 export type NamespaceSummary = {
   readonly id: NamespaceId;
   readonly name: string;
@@ -63,6 +77,54 @@ export const Namespace = /* @__PURE__ */ (() =>
     metadata: NamespaceMetadata,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Namespace" }))();
+export type NamespacePortalLink = {
+  readonly id: NamespacePortalLinkId;
+  readonly organizationId: OrganizationId;
+  readonly namespaceId: NamespaceId;
+  readonly createdBy: UserId;
+  readonly expiresAt: string;
+  readonly revokedAt: string | null;
+  readonly redirectUrl: string | null;
+  readonly metadata: NamespacePortalLinkMetadata;
+  readonly createdAt: string;
+};
+export const NamespacePortalLink = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: NamespacePortalLinkId,
+    organizationId: OrganizationId,
+    namespaceId: NamespaceId,
+    createdBy: UserId,
+    expiresAt: Schema.String,
+    revokedAt: Schema.Union([Schema.String, Schema.Null]),
+    redirectUrl: Schema.Union([Schema.String, Schema.Null]),
+    metadata: NamespacePortalLinkMetadata,
+    createdAt: Schema.String,
+  }).annotate({ identifier: "NamespacePortalLink" }))();
+export type CreatedNamespacePortalLink = {
+  readonly id: NamespacePortalLinkId;
+  readonly organizationId: OrganizationId;
+  readonly namespaceId: NamespaceId;
+  readonly createdBy: UserId;
+  readonly expiresAt: string;
+  readonly revokedAt: string | null;
+  readonly redirectUrl: string | null;
+  readonly metadata: NamespacePortalLinkMetadata;
+  readonly createdAt: string;
+  readonly url: __SamvaRuntimeSensitiveString;
+};
+export const CreatedNamespacePortalLink = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: NamespacePortalLinkId,
+    organizationId: OrganizationId,
+    namespaceId: NamespaceId,
+    createdBy: UserId,
+    expiresAt: Schema.String,
+    revokedAt: Schema.Union([Schema.String, Schema.Null]),
+    redirectUrl: Schema.Union([Schema.String, Schema.Null]),
+    metadata: NamespacePortalLinkMetadata,
+    createdAt: Schema.String,
+    url: __SamvaRuntimeSensitiveString,
+  }).annotate({ identifier: "CreatedNamespacePortalLink" }))();
 export type NamespaceResource = {
   readonly type: NamespaceResourceType;
   readonly id: string;
@@ -83,6 +145,15 @@ export const NamespacePage = /* @__PURE__ */ (() =>
     items: Schema.Array(NamespaceSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "NamespacePage" }))();
+export type NamespacePortalLinkPage = {
+  readonly items: ReadonlyArray<NamespacePortalLink>;
+  readonly nextCursor: string | null;
+};
+export const NamespacePortalLinkPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(NamespacePortalLink),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "NamespacePortalLinkPage" }))();
 export type NamespacesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
@@ -254,6 +325,109 @@ export type NamespacesUpdate500 = InternalError;
 export const NamespacesUpdate500 = InternalError;
 export type NamespacesUpdate504 = GatewayTimeoutError;
 export const NamespacesUpdate504 = GatewayTimeoutError;
+export type NamespacesListPortalLinksPathParams = { readonly id: NamespaceId };
+export const NamespacesListPortalLinksPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId }))();
+export type NamespacesListPortalLinksQuery = {
+  readonly limit?: number | null;
+  readonly cursor?: string;
+};
+export const NamespacesListPortalLinksQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.String),
+  }))();
+export type NamespacesListPortalLinks200 = NamespacePortalLinkPage;
+export const NamespacesListPortalLinks200 = NamespacePortalLinkPage;
+export type NamespacesListPortalLinks400 = MalformedRequestError;
+export const NamespacesListPortalLinks400 = MalformedRequestError;
+export type NamespacesListPortalLinks401 = UnauthorizedError;
+export const NamespacesListPortalLinks401 = UnauthorizedError;
+export type NamespacesListPortalLinks403 = ForbiddenError;
+export const NamespacesListPortalLinks403 = ForbiddenError;
+export type NamespacesListPortalLinks404 = ResourceNotFoundError;
+export const NamespacesListPortalLinks404 = ResourceNotFoundError;
+export type NamespacesListPortalLinks422 = ValidationError;
+export const NamespacesListPortalLinks422 = ValidationError;
+export type NamespacesListPortalLinks500 = InternalError;
+export const NamespacesListPortalLinks500 = InternalError;
+export type NamespacesListPortalLinks504 = GatewayTimeoutError;
+export const NamespacesListPortalLinks504 = GatewayTimeoutError;
+export type NamespacesCreatePortalLinkPathParams = { readonly id: NamespaceId };
+export const NamespacesCreatePortalLinkPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId }))();
+export type NamespacesCreatePortalLinkRequestJson = {
+  readonly redirectUrl?: WhatsAppSetupLinkRedirectUrl | null;
+  readonly metadata?: NamespacePortalLinkMetadata | null;
+  readonly expiresIn?: number | null;
+};
+export const NamespacesCreatePortalLinkRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    redirectUrl: Schema.optionalKey(Schema.Union([WhatsAppSetupLinkRedirectUrl, Schema.Null])),
+    metadata: Schema.optionalKey(Schema.Union([NamespacePortalLinkMetadata, Schema.Null])),
+    expiresIn: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(2592000).annotate({
+              expected: "a value less than or equal to 2592000",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type NamespacesCreatePortalLink201 = CreatedNamespacePortalLink;
+export const NamespacesCreatePortalLink201 = CreatedNamespacePortalLink;
+export type NamespacesCreatePortalLink400 = MalformedRequestError;
+export const NamespacesCreatePortalLink400 = MalformedRequestError;
+export type NamespacesCreatePortalLink401 = UnauthorizedError;
+export const NamespacesCreatePortalLink401 = UnauthorizedError;
+export type NamespacesCreatePortalLink403 = ForbiddenError;
+export const NamespacesCreatePortalLink403 = ForbiddenError;
+export type NamespacesCreatePortalLink404 = ResourceNotFoundError;
+export const NamespacesCreatePortalLink404 = ResourceNotFoundError;
+export type NamespacesCreatePortalLink422 = ValidationError;
+export const NamespacesCreatePortalLink422 = ValidationError;
+export type NamespacesCreatePortalLink500 = InternalError;
+export const NamespacesCreatePortalLink500 = InternalError;
+export type NamespacesCreatePortalLink504 = GatewayTimeoutError;
+export const NamespacesCreatePortalLink504 = GatewayTimeoutError;
+export type NamespacesRevokePortalLinkPathParams = {
+  readonly id: NamespaceId;
+  readonly linkId: NamespacePortalLinkId;
+};
+export const NamespacesRevokePortalLinkPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: NamespaceId, linkId: NamespacePortalLinkId }))();
+export type NamespacesRevokePortalLink200 = NamespacePortalLink;
+export const NamespacesRevokePortalLink200 = NamespacePortalLink;
+export type NamespacesRevokePortalLink400 = MalformedRequestError;
+export const NamespacesRevokePortalLink400 = MalformedRequestError;
+export type NamespacesRevokePortalLink401 = UnauthorizedError;
+export const NamespacesRevokePortalLink401 = UnauthorizedError;
+export type NamespacesRevokePortalLink403 = ForbiddenError;
+export const NamespacesRevokePortalLink403 = ForbiddenError;
+export type NamespacesRevokePortalLink404 = ResourceNotFoundError;
+export const NamespacesRevokePortalLink404 = ResourceNotFoundError;
+export type NamespacesRevokePortalLink422 = ValidationError;
+export const NamespacesRevokePortalLink422 = ValidationError;
+export type NamespacesRevokePortalLink500 = InternalError;
+export const NamespacesRevokePortalLink500 = InternalError;
+export type NamespacesRevokePortalLink504 = GatewayTimeoutError;
+export const NamespacesRevokePortalLink504 = GatewayTimeoutError;
 export type NamespacesAssignResourcePathParams = { readonly id: NamespaceId };
 export const NamespacesAssignResourcePathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: NamespaceId }))();
@@ -439,6 +613,72 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       .annotate(
         OpenApi.Description,
         "Updates the fields you name and keeps the rest. `metadata` merges into the stored metadata by key, and a `null` value deletes that key.",
+      ),
+    HttpApiEndpoint.get("namespacesListPortalLinks", "/v1/namespaces/:id/portal-links", {
+      params: NamespacesListPortalLinksPathParams,
+      query: NamespacesListPortalLinksQuery,
+      success: NamespacesListPortalLinks200,
+      error: [
+        NamespacesListPortalLinks400.pipe(HttpApiSchema.status(400)),
+        NamespacesListPortalLinks401.pipe(HttpApiSchema.status(401)),
+        NamespacesListPortalLinks403.pipe(HttpApiSchema.status(403)),
+        NamespacesListPortalLinks404.pipe(HttpApiSchema.status(404)),
+        NamespacesListPortalLinks422.pipe(HttpApiSchema.status(422)),
+        NamespacesListPortalLinks500,
+        NamespacesListPortalLinks504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "namespaces.listPortalLinks")
+      .annotate(OpenApi.Summary, "List namespace portal links")
+      .annotate(
+        OpenApi.Description,
+        "Lists links newest first without their tokens. Only organization-wide callers may list links.",
+      ),
+    HttpApiEndpoint.post("namespacesCreatePortalLink", "/v1/namespaces/:id/portal-links", {
+      params: NamespacesCreatePortalLinkPathParams,
+      payload: NamespacesCreatePortalLinkRequestJson,
+      success: NamespacesCreatePortalLink201.pipe(HttpApiSchema.status(201)),
+      error: [
+        NamespacesCreatePortalLink400.pipe(HttpApiSchema.status(400)),
+        NamespacesCreatePortalLink401.pipe(HttpApiSchema.status(401)),
+        NamespacesCreatePortalLink403.pipe(HttpApiSchema.status(403)),
+        NamespacesCreatePortalLink404.pipe(HttpApiSchema.status(404)),
+        NamespacesCreatePortalLink422.pipe(HttpApiSchema.status(422)),
+        NamespacesCreatePortalLink500,
+        NamespacesCreatePortalLink504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "namespaces.createPortalLink")
+      .annotate(OpenApi.Summary, "Create a namespace portal link")
+      .annotate(
+        OpenApi.Description,
+        "Creates a reusable hosted portal link without a Samva account. Only organization-wide callers may mint links. The token appears once in the returned URL fragment; Samva stores only its hash. expiresIn is seconds, defaults to 7 days, and cannot exceed 30 days.",
+      ),
+    HttpApiEndpoint.delete(
+      "namespacesRevokePortalLink",
+      "/v1/namespaces/:id/portal-links/:linkId",
+      {
+        params: NamespacesRevokePortalLinkPathParams,
+        success: NamespacesRevokePortalLink200,
+        error: [
+          NamespacesRevokePortalLink400.pipe(HttpApiSchema.status(400)),
+          NamespacesRevokePortalLink401.pipe(HttpApiSchema.status(401)),
+          NamespacesRevokePortalLink403.pipe(HttpApiSchema.status(403)),
+          NamespacesRevokePortalLink404.pipe(HttpApiSchema.status(404)),
+          NamespacesRevokePortalLink422.pipe(HttpApiSchema.status(422)),
+          NamespacesRevokePortalLink500,
+          NamespacesRevokePortalLink504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "namespaces.revokePortalLink")
+      .annotate(OpenApi.Summary, "Revoke a namespace portal link")
+      .annotate(
+        OpenApi.Description,
+        "Revokes the link and ends sessions using it. Only organization-wide callers may revoke links.",
       ),
     HttpApiEndpoint.post("namespacesAssignResource", "/v1/namespaces/:id/resources", {
       params: NamespacesAssignResourcePathParams,

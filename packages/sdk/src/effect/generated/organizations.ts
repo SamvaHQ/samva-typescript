@@ -1,5 +1,6 @@
 // Auto-generated from OpenAPI; do not edit.
 
+import type * as EffectBrand from "effect/Brand";
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 import * as Schema from "effect/Schema";
 
@@ -14,6 +15,7 @@ import {
   JsonValue,
   MailboxId,
   MalformedRequestError,
+  NamespaceId,
   OperationAccepted,
   PaymentRequiredError,
   ResourceNotFoundError,
@@ -32,6 +34,14 @@ export const PhoneRegion = /* @__PURE__ */ (() =>
       identifier: "PhoneRegion",
     }),
   ))();
+export type InvitationId = string & EffectBrand.Brand<"InvitationId">;
+export const InvitationId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^inv_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^inv_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "InvitationId",
+    }),
+  ).pipe(Schema.brand("InvitationId")))();
 export type Organization = {
   readonly id: string;
   readonly billingAccountId: string;
@@ -333,6 +343,79 @@ export type OrganizationsAssignPersonalMailbox502 = BillingProviderError;
 export const OrganizationsAssignPersonalMailbox502 = BillingProviderError;
 export type OrganizationsAssignPersonalMailbox504 = GatewayTimeoutError;
 export const OrganizationsAssignPersonalMailbox504 = GatewayTimeoutError;
+export type OrganizationsInviteMemberRequestJson = {
+  readonly email: string;
+  readonly role: "member" | "admin" | "mail_user";
+  readonly mailboxAddress: string;
+  readonly namespaceId?: NamespaceId | null;
+};
+export const OrganizationsInviteMemberRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    email: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
+      }),
+    ),
+    role: Schema.Union([
+      Schema.Literal("member"),
+      Schema.Literal("admin"),
+      Schema.Literal("mail_user"),
+    ]),
+    mailboxAddress: Schema.String,
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+  }))();
+export type OrganizationsInviteMember200 = {
+  readonly id: InvitationId;
+  readonly email: string;
+  readonly role: "member" | "admin" | "mail_user";
+  readonly namespaceId: NamespaceId | null;
+  readonly mailboxAddress: string;
+  readonly status: "pending";
+};
+export const OrganizationsInviteMember200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: InvitationId,
+    email: Schema.String,
+    role: Schema.Union([
+      Schema.Literal("member"),
+      Schema.Literal("admin"),
+      Schema.Literal("mail_user"),
+    ]),
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]),
+    mailboxAddress: Schema.String,
+    status: Schema.Literal("pending"),
+  }))();
+export type OrganizationsInviteMember400 = MalformedRequestError;
+export const OrganizationsInviteMember400 = MalformedRequestError;
+export type OrganizationsInviteMember401 = UnauthorizedError;
+export const OrganizationsInviteMember401 = UnauthorizedError;
+export type OrganizationsInviteMember402 = PaymentRequiredError;
+export const OrganizationsInviteMember402 = PaymentRequiredError;
+export type OrganizationsInviteMember403 = ForbiddenError;
+export const OrganizationsInviteMember403 = ForbiddenError;
+export type OrganizationsInviteMember404 = ResourceNotFoundError;
+export const OrganizationsInviteMember404 = ResourceNotFoundError;
+export type OrganizationsInviteMember409 = ConflictError;
+export const OrganizationsInviteMember409 = ConflictError;
+export type OrganizationsInviteMember422 = ValidationError;
+export const OrganizationsInviteMember422 = ValidationError;
+export type OrganizationsInviteMember500 = InternalError;
+export const OrganizationsInviteMember500 = InternalError;
+export type OrganizationsInviteMember502 = BillingProviderError;
+export const OrganizationsInviteMember502 = BillingProviderError;
+export type OrganizationsInviteMember504 = GatewayTimeoutError;
+export const OrganizationsInviteMember504 = GatewayTimeoutError;
+export type OrganizationsGetPersonalMailboxAddressOptionsQuery = {
+  readonly namespaceId?: NamespaceId;
+};
+export const OrganizationsGetPersonalMailboxAddressOptionsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({ namespaceId: Schema.optionalKey(NamespaceId) }))();
 export type OrganizationsGetPersonalMailboxAddressOptions200 = {
   readonly domains: ReadonlyArray<string>;
   readonly defaultDomain: string;
@@ -345,6 +428,8 @@ export type OrganizationsGetPersonalMailboxAddressOptions401 = UnauthorizedError
 export const OrganizationsGetPersonalMailboxAddressOptions401 = UnauthorizedError;
 export type OrganizationsGetPersonalMailboxAddressOptions403 = ForbiddenError;
 export const OrganizationsGetPersonalMailboxAddressOptions403 = ForbiddenError;
+export type OrganizationsGetPersonalMailboxAddressOptions404 = ResourceNotFoundError;
+export const OrganizationsGetPersonalMailboxAddressOptions404 = ResourceNotFoundError;
 export type OrganizationsGetPersonalMailboxAddressOptions422 = ValidationError;
 export const OrganizationsGetPersonalMailboxAddressOptions422 = ValidationError;
 export type OrganizationsGetPersonalMailboxAddressOptions500 = InternalError;
@@ -739,15 +824,40 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
         OpenApi.Description,
         "Assigns a personal address to an existing member. Only organization owners and admins may assign it; the member receives the sole user grant. Returns the mailbox ID without granting the assigner access.",
       ),
+    HttpApiEndpoint.post("organizationsInviteMember", "/v1/organizations/members/invitations", {
+      payload: OrganizationsInviteMemberRequestJson,
+      success: OrganizationsInviteMember200,
+      error: [
+        OrganizationsInviteMember400.pipe(HttpApiSchema.status(400)),
+        OrganizationsInviteMember401.pipe(HttpApiSchema.status(401)),
+        OrganizationsInviteMember402.pipe(HttpApiSchema.status(402)),
+        OrganizationsInviteMember403.pipe(HttpApiSchema.status(403)),
+        OrganizationsInviteMember404.pipe(HttpApiSchema.status(404)),
+        OrganizationsInviteMember409.pipe(HttpApiSchema.status(409)),
+        OrganizationsInviteMember422.pipe(HttpApiSchema.status(422)),
+        OrganizationsInviteMember500,
+        OrganizationsInviteMember502.pipe(HttpApiSchema.status(502)),
+        OrganizationsInviteMember504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "organizations.inviteMember")
+      .annotate(OpenApi.Summary, "Invite an organization member")
+      .annotate(
+        OpenApi.Description,
+        "Invites a member with a personal mailbox address. A namespace confines the member and their credentials to its resources and requires a verified receiving domain in that namespace.",
+      ),
     HttpApiEndpoint.get(
       "organizationsGetPersonalMailboxAddressOptions",
       "/v1/organizations/personal-mailboxes/address-options",
       {
+        query: OrganizationsGetPersonalMailboxAddressOptionsQuery,
         success: OrganizationsGetPersonalMailboxAddressOptions200,
         error: [
           OrganizationsGetPersonalMailboxAddressOptions400.pipe(HttpApiSchema.status(400)),
           OrganizationsGetPersonalMailboxAddressOptions401.pipe(HttpApiSchema.status(401)),
           OrganizationsGetPersonalMailboxAddressOptions403.pipe(HttpApiSchema.status(403)),
+          OrganizationsGetPersonalMailboxAddressOptions404.pipe(HttpApiSchema.status(404)),
           OrganizationsGetPersonalMailboxAddressOptions422.pipe(HttpApiSchema.status(422)),
           OrganizationsGetPersonalMailboxAddressOptions500,
           OrganizationsGetPersonalMailboxAddressOptions504.pipe(HttpApiSchema.status(504)),

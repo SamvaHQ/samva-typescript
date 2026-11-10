@@ -84,6 +84,59 @@ describe("organization facade behavior", () => {
       "/v1/organizations/current/profile",
     ]);
   });
+  it("carries the member namespace through both invitation clients and address options", async () => {
+    const payload = {
+      email: "ada@example.com",
+      role: "member",
+      namespaceId: "ns_7q2xk9mvt4znw8rh",
+      mailboxAddress: "ada@customer.example",
+    } as const;
+    const invitation = { ...payload, id: "inv_7q2xk9mvt4znw8rh", status: "pending" };
+    const calls: Array<{ path: string; body: unknown }> = [];
+    const fetch: typeof globalThis.fetch = async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      const url = new URL(request.url);
+      const text = await request.text();
+      calls.push({ path: `${url.pathname}${url.search}`, body: text ? JSON.parse(text) : null });
+      return new Response(
+        JSON.stringify(
+          url.pathname.endsWith("/invitations")
+            ? invitation
+            : { domains: ["customer.example"], defaultDomain: "customer.example" },
+        ),
+        { headers: { "content-type": "application/json" } },
+      );
+    };
+    const promise = createClient({ authToken: "session-token", orgSlug: "acme", fetch });
+    const layer = Layer.provide(
+      Client.layer({ authToken: "session-token", orgSlug: "acme" }),
+      Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fetch)),
+    );
+    expect(await promise.organizations.inviteMember(payload)).toEqual(invitation);
+    expect(
+      await Effect.runPromise(Organizations.inviteMember(payload).pipe(Effect.provide(layer))),
+    ).toEqual(invitation);
+    await promise.organizations.getPersonalMailboxAddressOptions({
+      namespaceId: payload.namespaceId,
+    });
+    await Effect.runPromise(
+      Organizations.getPersonalMailboxAddressOptions({ namespaceId: payload.namespaceId }).pipe(
+        Effect.provide(layer),
+      ),
+    );
+    expect(calls).toEqual([
+      { path: "/v1/organizations/members/invitations", body: payload },
+      { path: "/v1/organizations/members/invitations", body: payload },
+      {
+        path: `/v1/organizations/personal-mailboxes/address-options?namespaceId=${payload.namespaceId}`,
+        body: null,
+      },
+      {
+        path: `/v1/organizations/personal-mailboxes/address-options?namespaceId=${payload.namespaceId}`,
+        body: null,
+      },
+    ]);
+  });
   it("assigns and reads personal mailbox management through both public clients", async () => {
     const userId = "user_7q2xk9mvt4znw8rh";
     const mailboxId = "mbx_7q2xk9mvt4znw8rh";

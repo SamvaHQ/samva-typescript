@@ -3,6 +3,7 @@ import { forGroup } from "./internal/operation";
 
 const make = /* @__PURE__ */ forGroup(OrganizationsGroup);
 
+export const inviteMember = /* @__PURE__ */ make("organizationsInviteMember");
 export const create = /* @__PURE__ */ make("organizationsCreate");
 export const get = /* @__PURE__ */ make("organizationsGet");
 export const getProfile = /* @__PURE__ */ make("organizationsGetProfile");

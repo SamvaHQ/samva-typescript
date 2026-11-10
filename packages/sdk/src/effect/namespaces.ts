@@ -11,3 +11,7 @@ export const remove = /* @__PURE__ */ make("namespacesRemove");
 export const assignResource = /* @__PURE__ */ make("namespacesAssignResource");
 export const removeResource = /* @__PURE__ */ make("namespacesRemoveResource");
 export const getUsage = /* @__PURE__ */ make("namespacesGetUsage");
+
+export const createPortalLink = /* @__PURE__ */ make("namespacesCreatePortalLink");
+export const listPortalLinks = /* @__PURE__ */ make("namespacesListPortalLinks");
+export const revokePortalLink = /* @__PURE__ */ make("namespacesRevokePortalLink");

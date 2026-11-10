@@ -196,7 +196,7 @@ export const ApiKeysCreateRequestJson = /* @__PURE__ */ (() =>
     access: Schema.optionalKey(
       Schema.Union([ApiKeyAccess, Schema.Null]).annotate({
         description:
-          "Defaults to full access. A restricted API key creating a key defaults to its own grants and cannot issue full access.",
+          "Defaults to full access for an unrestricted member, or namespace grants for a restricted member. A restricted API key creating a key defaults to its own grants and cannot issue full access.",
       }),
     ),
   }))();
@@ -457,7 +457,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       .annotate(OpenApi.Summary, "List API keys")
       .annotate(
         OpenApi.Description,
-        "Returns the organization's API keys, newest first, filterable by namespace (`namespaceId`), status and a search term matched against name and description. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
+        "Returns the organization's API keys, newest first, filterable by namespace (`namespaceId`), status and a search term matched against name and description. Restricted members receive only keys stored in their namespace. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.",
       ),
     HttpApiEndpoint.post("apiKeysCreate", "/v1/api-keys", {
       payload: ApiKeysCreateRequestJson,
@@ -480,7 +480,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       .annotate(OpenApi.Summary, "Create an API key")
       .annotate(
         OpenApi.Description,
-        "Creates a new API key for the organization and returns the created key, including the plaintext secret, with a 201 response.",
+        "Creates a new API key for the organization and returns the created key, including the plaintext secret, with a 201 response. A restricted member can issue keys only in their namespace, capped by its available resources.",
       ),
     HttpApiEndpoint.get("apiKeysGet", "/v1/api-keys/:id", {
       params: ApiKeysGetPathParams,
@@ -500,7 +500,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       .annotate(OpenApi.Summary, "Get an API key")
       .annotate(
         OpenApi.Description,
-        "Returns the API key with the given ID, including its metadata and access.",
+        "Returns the API key with the given ID, including its metadata and access. Restricted members can read only keys stored in their namespace.",
       ),
     HttpApiEndpoint.patch("apiKeysUpdate", "/v1/api-keys/:id", {
       params: ApiKeysUpdatePathParams,
@@ -563,7 +563,7 @@ export class APIKeysGroup extends HttpApiGroup.make("API Keys")
       .annotate(OpenApi.Summary, "Revoke an API key")
       .annotate(
         OpenApi.Description,
-        "Deactivates an API key so it can no longer authenticate requests. Revocation is final: a revoked key never authenticates again. Its record stays listable, so the messages it sent stay attributed to it.",
+        "Deactivates an API key so it can no longer authenticate requests. Restricted members can revoke only keys stored in their namespace. Revocation is final: a revoked key never authenticates again. Its record stays listable, so the messages it sent stay attributed to it.",
       ),
     HttpApiEndpoint.post("apiKeysRotate", "/v1/api-keys/:id/rotate", {
       params: ApiKeysRotatePathParams,

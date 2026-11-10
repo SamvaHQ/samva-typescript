@@ -623,21 +623,29 @@ import type {
   MonthlySpendCapDollars,
   NamespaceId,
   NamespaceMetadataWritable,
+  NamespacePortalLinkId,
+  NamespacePortalLinkMetadataWritable,
   NamespaceResourceType,
   NamespacesAssignResourceErrors,
   NamespacesAssignResourceResponses,
   NamespacesCreateErrors,
+  NamespacesCreatePortalLinkErrors,
+  NamespacesCreatePortalLinkResponses,
   NamespacesCreateResponses,
   NamespacesGetErrors,
   NamespacesGetResponses,
   NamespacesGetUsageErrors,
   NamespacesGetUsageResponses,
   NamespacesListErrors,
+  NamespacesListPortalLinksErrors,
+  NamespacesListPortalLinksResponses,
   NamespacesListResponses,
   NamespacesRemoveErrors,
   NamespacesRemoveResourceErrors,
   NamespacesRemoveResourceResponses,
   NamespacesRemoveResponses,
+  NamespacesRevokePortalLinkErrors,
+  NamespacesRevokePortalLinkResponses,
   NamespacesUpdateErrors,
   NamespacesUpdateResponses,
   NewsletterDomainsAddErrors,
@@ -706,6 +714,8 @@ import type {
   OrganizationsGetTrustTierResponses,
   OrganizationsGetUsageErrors,
   OrganizationsGetUsageResponses,
+  OrganizationsInviteMemberErrors,
+  OrganizationsInviteMemberResponses,
   OrganizationsListPersonalMailboxAssignmentsErrors,
   OrganizationsListPersonalMailboxAssignmentsResponses,
   OrganizationsUpdateErrors,
@@ -876,6 +886,7 @@ import type {
   WebhooksUpdateErrors,
   WebhooksUpdateResponses,
   WhatsAppSendMessagePayload,
+  WhatsAppSetupLinkRedirectUrl,
   WhoamiGetErrors,
   WhoamiGetResponses,
 } from "./types.gen";
@@ -12798,6 +12809,62 @@ export class Webhooks2 {
 
 export class Organizations {
   /**
+   * Invite an organization member
+   *
+   * Invites a member with a personal mailbox address. A namespace confines the member and their credentials to its resources and requires a verified receiving domain in that namespace.
+   */
+  public static inviteMember<ThrowOnError extends boolean = false>(
+    parameters: {
+      email: string;
+      role: "member" | "admin" | "mail_user";
+      mailboxAddress: string;
+      namespaceId?: NamespaceId | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    OrganizationsInviteMemberResponses,
+    OrganizationsInviteMemberErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "email" },
+            { in: "body", key: "role" },
+            { in: "body", key: "mailboxAddress" },
+            { in: "body", key: "namespaceId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsInviteMember",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          OrganizationsInviteMemberResponses,
+          OrganizationsInviteMemberErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/members/invitations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
    * Create an organization
    *
    * Creates a new organization under the current billing account and returns it.
@@ -13029,12 +13096,19 @@ export class Organizations {
    * Returns this organization's verified active receiving domains and a default domain. When none are available, returns the organization's hosted mail domain. Only organization owners and admins may read these options.
    */
   public static getPersonalMailboxAddressOptions<ThrowOnError extends boolean = false>(
+    parameters?: {
+      namespaceId?: NamespaceId | undefined;
+    },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
     OrganizationsGetPersonalMailboxAddressOptionsResponses,
     OrganizationsGetPersonalMailboxAddressOptionsErrors,
     ThrowOnError
   > {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "query", key: "namespaceId" }] }],
+    );
     return requestWithPolicy(
       options?.client ?? client,
       "organizationsGetPersonalMailboxAddressOptions",
@@ -13048,6 +13122,7 @@ export class Organizations {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/organizations/personal-mailboxes/address-options",
           ...options,
+          ...params,
           headers,
         }),
     );
@@ -13200,7 +13275,7 @@ export class ApiKeys {
   /**
    * List API keys
    *
-   * Returns the organization's API keys, newest first, filterable by namespace (`namespaceId`), status and a search term matched against name and description. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
+   * Returns the organization's API keys, newest first, filterable by namespace (`namespaceId`), status and a search term matched against name and description. Restricted members receive only keys stored in their namespace. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -13240,7 +13315,7 @@ export class ApiKeys {
   /**
    * Create an API key
    *
-   * Creates a new API key for the organization and returns the created key, including the plaintext secret, with a 201 response.
+   * Creates a new API key for the organization and returns the created key, including the plaintext secret, with a 201 response. A restricted member can issue keys only in their namespace, capped by its available resources.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -13284,7 +13359,7 @@ export class ApiKeys {
   /**
    * Get an API key
    *
-   * Returns the API key with the given ID, including its metadata and access.
+   * Returns the API key with the given ID, including its metadata and access. Restricted members can read only keys stored in their namespace.
    */
   public static get<ThrowOnError extends boolean = false>(
     parameters: {
@@ -13349,7 +13424,7 @@ export class ApiKeys {
   /**
    * Revoke an API key
    *
-   * Deactivates an API key so it can no longer authenticate requests. Revocation is final: a revoked key never authenticates again. Its record stays listable, so the messages it sent stay attributed to it.
+   * Deactivates an API key so it can no longer authenticate requests. Restricted members can revoke only keys stored in their namespace. Revocation is final: a revoked key never authenticates again. Its record stays listable, so the messages it sent stay attributed to it.
    */
   public static revoke<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16639,6 +16714,156 @@ export class Namespaces {
   }
 
   /**
+   * List namespace portal links
+   *
+   * Lists links newest first without their tokens. Only organization-wide callers may list links.
+   */
+  public static listPortalLinks<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: NamespaceId;
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    NamespacesListPortalLinksResponses,
+    NamespacesListPortalLinksErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesListPortalLinks",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          NamespacesListPortalLinksResponses,
+          NamespacesListPortalLinksErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}/portal-links",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Create a namespace portal link
+   *
+   * Creates a reusable hosted portal link without a Samva account. Only organization-wide callers may mint links. The token appears once in the returned URL fragment; Samva stores only its hash. expiresIn is seconds, defaults to 7 days, and cannot exceed 30 days.
+   */
+  public static createPortalLink<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: NamespaceId;
+      redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
+      metadata?: NamespacePortalLinkMetadataWritable | null | undefined;
+      expiresIn?: number | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    NamespacesCreatePortalLinkResponses,
+    NamespacesCreatePortalLinkErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "redirectUrl" },
+            { in: "body", key: "metadata" },
+            { in: "body", key: "expiresIn" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesCreatePortalLink",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          NamespacesCreatePortalLinkResponses,
+          NamespacesCreatePortalLinkErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}/portal-links",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Revoke a namespace portal link
+   *
+   * Revokes the link and ends sessions using it. Only organization-wide callers may revoke links.
+   */
+  public static revokePortalLink<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: NamespaceId;
+      linkId: NamespacePortalLinkId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    NamespacesRevokePortalLinkResponses,
+    NamespacesRevokePortalLinkErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "linkId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesRevokePortalLink",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          NamespacesRevokePortalLinkResponses,
+          NamespacesRevokePortalLinkErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}/portal-links/{linkId}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
    * Get namespace usage
    *
    * Counts the messages the namespace sent and received in the window that count toward usage, by channel, with the same statuses as `GET /v1/organizations/usage`. A message counts toward the namespace it was sent or received in: that of the sender, mailbox, or key it used. The organization is billed for every namespace; read this to charge your own customer.
@@ -17872,6 +18097,8 @@ Object.assign(Webhooks.regenerateSecret, { operation: "webhooksRegenerateSecret"
 
 Object.assign(Webhooks.getSecret, { operation: "webhooksGetSecret" });
 
+Object.assign(Organizations.inviteMember, { operation: "organizationsInviteMember" });
+
 Object.assign(Organizations.create, { operation: "organizationsCreate" });
 
 Object.assign(Organizations.get, { operation: "organizationsGet" });
@@ -18055,6 +18282,12 @@ Object.assign(Namespaces.update, { operation: "namespacesUpdate" });
 Object.assign(Namespaces.assignResource, { operation: "namespacesAssignResource" });
 
 Object.assign(Namespaces.removeResource, { operation: "namespacesRemoveResource" });
+
+Object.assign(Namespaces.listPortalLinks, { operation: "namespacesListPortalLinks" });
+
+Object.assign(Namespaces.createPortalLink, { operation: "namespacesCreatePortalLink" });
+
+Object.assign(Namespaces.revokePortalLink, { operation: "namespacesRevokePortalLink" });
 
 Object.assign(Namespaces.getUsage, { operation: "namespacesGetUsage" });
 

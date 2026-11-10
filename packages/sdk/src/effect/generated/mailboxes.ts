@@ -171,6 +171,13 @@ export const MailboxToolCall = /* @__PURE__ */ (() =>
     ),
     arguments: Schema.Record(Schema.String, JsonValue),
   }).annotate({ identifier: "MailboxToolCall" }))();
+export type MailboxHandoff = { readonly reason: string };
+export const MailboxHandoff = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    reason: Schema.String.annotate({
+      description: "Why the conversation needs people, in the agent's words.",
+    }),
+  }).annotate({ identifier: "MailboxHandoff" }))();
 export type MailboxAgentActivity = {
   readonly actions: {
     readonly byType: ReadonlyArray<{
@@ -1914,6 +1921,7 @@ export type MailboxNonSendAction = {
     | "executed"
     | "failed";
   readonly tool: MailboxToolCall | null;
+  readonly handoff: MailboxHandoff | null;
 };
 export const MailboxNonSendAction = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -1972,6 +1980,10 @@ export const MailboxNonSendAction = /* @__PURE__ */ (() =>
     tool: Schema.Union([MailboxToolCall, Schema.Null]).annotate({
       description:
         "The tool a `toolCall` runs, with its arguments and their hash; an approval covers exactly this call. Null for every other action type.",
+    }),
+    handoff: Schema.Union([MailboxHandoff, Schema.Null]).annotate({
+      description:
+        "The hand-off a `handoff` asks for, with the agent's reason for handing the conversation to people. Null for every other action type.",
     }),
   }).annotate({ identifier: "MailboxNonSendAction" }))();
 export type MailboxPendingSendReceipt = {
