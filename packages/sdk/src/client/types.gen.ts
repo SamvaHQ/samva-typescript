@@ -5124,9 +5124,10 @@ export type EmailDomainDetailed = {
   }>;
   verifiedAt: string | null;
   /**
-   * The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.
+   * The namespace the domain belongs to, or null at organization level. Namespace callers also reach organization-level domains whose shared flag is true.
    */
   namespaceId: NamespaceId | null;
+  shared: boolean;
   isDefault: boolean;
   deliverability: DeliverabilityFacts;
   createdAt: string;
@@ -5290,9 +5291,10 @@ export type EmailDomainPage = {
     dkimSelector?: string | null | undefined;
     dkimPublicKey?: string | null | undefined;
     /**
-     * The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.
+     * The namespace the domain belongs to, or null at organization level. Namespace callers also reach organization-level domains whose shared flag is true.
      */
     namespaceId: NamespaceId | null;
+    shared: boolean;
     isDefault: boolean;
     deliverability: DeliverabilityFacts;
     series: SendsSeries;
@@ -9528,6 +9530,7 @@ export type EmailListDomainsData = {
     cursor?: string | undefined;
     sendable?: true | null | undefined;
     namespaceId?: NamespaceId | undefined;
+    shared?: boolean | null | undefined;
   };
   url: "/v1/email/domains";
 };
@@ -9581,6 +9584,7 @@ export type EmailAddDomainData = {
       | null
       | undefined;
     namespaceId?: NamespaceId | null | undefined;
+    shared?: boolean | null | undefined;
   };
   path?: never;
   query?: never;
@@ -10343,6 +10347,7 @@ export type EmailSetDefaultDomainResponse =
 
 export type EmailUpdateDomainConfigData = {
   body: {
+    shared?: boolean | null | undefined;
     openTracking?: boolean | null | undefined;
     clickTracking?: boolean | null | undefined;
     replyTo?: Array<string> | null | undefined;
@@ -10375,13 +10380,25 @@ export type EmailUpdateDomainConfigErrors = {
    */
   404: ResourceNotFoundError;
   /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
    * ValidationError
    */
   422: ValidationError;
   /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
    * InternalError
    */
   500: InternalError;
+  /**
+   * EmailChannelError
+   */
+  502: EmailChannelError;
   /**
    * GatewayTimeoutError
    */
@@ -10397,6 +10414,7 @@ export type EmailUpdateDomainConfigResponses = {
    */
   200: {
     id: EmailDomainId;
+    shared: boolean;
     openTracking: boolean | null;
     clickTracking: boolean | null;
     replyTo: Array<string> | null;
@@ -11132,7 +11150,9 @@ export type EmailGetSenderResponses = {
 export type EmailGetSenderResponse = EmailGetSenderResponses[keyof EmailGetSenderResponses];
 
 export type EmailSetDefaultSenderData = {
-  body?: never;
+  body: {
+    namespaceId?: NamespaceId | null | undefined;
+  };
   path: {
     id: EmailSenderId;
   };
@@ -11158,13 +11178,25 @@ export type EmailSetDefaultSenderErrors = {
    */
   404: ResourceNotFoundError;
   /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
    * ValidationError
    */
   422: ValidationError;
   /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
    * InternalError
    */
   500: InternalError;
+  /**
+   * EmailChannelError
+   */
+  502: EmailChannelError;
   /**
    * GatewayTimeoutError
    */

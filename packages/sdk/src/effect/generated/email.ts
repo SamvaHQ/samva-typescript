@@ -753,6 +753,7 @@ export type EmailDomainPage = {
     readonly dkimSelector?: string | null;
     readonly dkimPublicKey?: string | null;
     readonly namespaceId: NamespaceId | null;
+    readonly shared: boolean;
     readonly isDefault: boolean;
     readonly deliverability: DeliverabilityFacts;
     readonly series: SendsSeries;
@@ -783,8 +784,9 @@ export const EmailDomainPage = /* @__PURE__ */ (() =>
         dkimPublicKey: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
           description:
-            "The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.",
+            "The namespace the domain belongs to, or null at organization level. Namespace callers also reach organization-level domains whose shared flag is true.",
         }),
+        shared: Schema.Boolean,
         isDefault: Schema.Boolean,
         deliverability: DeliverabilityFacts,
         series: SendsSeries,
@@ -811,6 +813,7 @@ export type EmailDomainDetailed = {
   }>;
   readonly verifiedAt: string | null;
   readonly namespaceId: NamespaceId | null;
+  readonly shared: boolean;
   readonly isDefault: boolean;
   readonly deliverability: DeliverabilityFacts;
   readonly createdAt: string;
@@ -873,8 +876,9 @@ export const EmailDomainDetailed = /* @__PURE__ */ (() =>
     verifiedAt: Schema.Union([Schema.String, Schema.Null]),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
       description:
-        "The namespace the domain belongs to, or null at organization level. Only that namespace's keys and organization-wide callers reach it.",
+        "The namespace the domain belongs to, or null at organization level. Namespace callers also reach organization-level domains whose shared flag is true.",
     }),
+    shared: Schema.Boolean,
     isDefault: Schema.Boolean,
     deliverability: DeliverabilityFacts,
     createdAt: Schema.String,
@@ -2257,6 +2261,7 @@ export type EmailListDomainsQuery = {
   readonly cursor?: string;
   readonly sendable?: true | null;
   readonly namespaceId?: NamespaceId;
+  readonly shared?: boolean | null;
 };
 export const EmailListDomainsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2276,6 +2281,7 @@ export const EmailListDomainsQuery = /* @__PURE__ */ (() =>
     cursor: Schema.optionalKey(Schema.String),
     sendable: Schema.optionalKey(Schema.Union([Schema.Literal(true), Schema.Null])),
     namespaceId: Schema.optionalKey(NamespaceId),
+    shared: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type EmailListDomains200 = EmailDomainPage;
 export const EmailListDomains200 = EmailDomainPage;
@@ -2295,6 +2301,7 @@ export type EmailAddDomainRequestJson = {
   readonly domain: string;
   readonly connection?: { readonly connectionId: string; readonly zone: string } | null;
   readonly namespaceId?: NamespaceId | null;
+  readonly shared?: boolean | null;
 };
 export const EmailAddDomainRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2306,6 +2313,7 @@ export const EmailAddDomainRequestJson = /* @__PURE__ */ (() =>
       ]),
     ),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
+    shared: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }))();
 export type EmailAddDomain201 = EmailDomainDetailed;
 export const EmailAddDomain201 = EmailDomainDetailed;
@@ -2377,6 +2385,7 @@ export type EmailUpdateDomainConfigPathParams = { readonly id: EmailDomainId };
 export const EmailUpdateDomainConfigPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailUpdateDomainConfigRequestJson = {
+  readonly shared?: boolean | null;
   readonly openTracking?: boolean | null;
   readonly clickTracking?: boolean | null;
   readonly replyTo?: ReadonlyArray<string> | null;
@@ -2386,6 +2395,7 @@ export type EmailUpdateDomainConfigRequestJson = {
 };
 export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
+    shared: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     openTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     clickTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     replyTo: Schema.optionalKey(
@@ -2423,6 +2433,7 @@ export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type EmailUpdateDomainConfig200 = {
   readonly id: EmailDomainId;
+  readonly shared: boolean;
   readonly openTracking: boolean | null;
   readonly clickTracking: boolean | null;
   readonly replyTo: ReadonlyArray<string> | null;
@@ -2433,6 +2444,7 @@ export type EmailUpdateDomainConfig200 = {
 export const EmailUpdateDomainConfig200 = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: EmailDomainId,
+    shared: Schema.Boolean,
     openTracking: Schema.Union([Schema.Boolean, Schema.Null]),
     clickTracking: Schema.Union([Schema.Boolean, Schema.Null]),
     replyTo: Schema.Union([Schema.Array(Schema.String), Schema.Null]),
@@ -2457,10 +2469,16 @@ export type EmailUpdateDomainConfig403 = ForbiddenError;
 export const EmailUpdateDomainConfig403 = ForbiddenError;
 export type EmailUpdateDomainConfig404 = ResourceNotFoundError;
 export const EmailUpdateDomainConfig404 = ResourceNotFoundError;
+export type EmailUpdateDomainConfig409 = ConflictError;
+export const EmailUpdateDomainConfig409 = ConflictError;
 export type EmailUpdateDomainConfig422 = ValidationError;
 export const EmailUpdateDomainConfig422 = ValidationError;
+export type EmailUpdateDomainConfig429 = RateLimitedError;
+export const EmailUpdateDomainConfig429 = RateLimitedError;
 export type EmailUpdateDomainConfig500 = InternalError;
 export const EmailUpdateDomainConfig500 = InternalError;
+export type EmailUpdateDomainConfig502 = EmailChannelError;
+export const EmailUpdateDomainConfig502 = EmailChannelError;
 export type EmailUpdateDomainConfig504 = GatewayTimeoutError;
 export const EmailUpdateDomainConfig504 = GatewayTimeoutError;
 export type EmailGetCustomTrackingPathParams = { readonly id: EmailDomainId };
@@ -3859,6 +3877,9 @@ export const EmailRemoveSender504 = GatewayTimeoutError;
 export type EmailSetDefaultSenderPathParams = { readonly id: EmailSenderId };
 export const EmailSetDefaultSenderPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailSenderId }))();
+export type EmailSetDefaultSenderRequestJson = { readonly namespaceId?: NamespaceId | null };
+export const EmailSetDefaultSenderRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])) }))();
 export type EmailSetDefaultSender200 = SuccessResult;
 export const EmailSetDefaultSender200 = SuccessResult;
 export type EmailSetDefaultSender400 = MalformedRequestError;
@@ -3869,10 +3890,16 @@ export type EmailSetDefaultSender403 = ForbiddenError;
 export const EmailSetDefaultSender403 = ForbiddenError;
 export type EmailSetDefaultSender404 = ResourceNotFoundError;
 export const EmailSetDefaultSender404 = ResourceNotFoundError;
+export type EmailSetDefaultSender409 = ConflictError;
+export const EmailSetDefaultSender409 = ConflictError;
 export type EmailSetDefaultSender422 = ValidationError;
 export const EmailSetDefaultSender422 = ValidationError;
+export type EmailSetDefaultSender429 = RateLimitedError;
+export const EmailSetDefaultSender429 = RateLimitedError;
 export type EmailSetDefaultSender500 = InternalError;
 export const EmailSetDefaultSender500 = InternalError;
+export type EmailSetDefaultSender502 = EmailChannelError;
+export const EmailSetDefaultSender502 = EmailChannelError;
 export type EmailSetDefaultSender504 = GatewayTimeoutError;
 export const EmailSetDefaultSender504 = GatewayTimeoutError;
 export type EmailCheckSenderVerificationPathParams = { readonly id: EmailSenderId };
@@ -4360,7 +4387,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "List sending domains")
       .annotate(
         OpenApi.Description,
-        "Returns the organization's sending domains, newest first. A namespace-scoped key lists only its namespace's domains; an organization-wide caller lists every domain, or one namespace's with `namespaceId`. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. `sendable=true` lists only domains a send can use now: active, and verified, or verified before and degraded since. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours, the window the 5% bounce limit is enforced over) and `series`, the last 14 days of daily email sends attributed to the domain, oldest first.",
+        "Returns the organization's sending domains, newest first. A namespace-scoped caller lists its namespace's domains and shared organization domains; an organization-wide caller lists every domain, or one namespace's with `namespaceId`. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. `sendable=true` lists only domains a send can use now: active, and verified, or verified before and degraded since. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours, the window the 5% bounce limit is enforced over) and `series`, the last 14 days of daily email sends attributed to the domain, oldest first.",
       ),
     HttpApiEndpoint.post("emailAddDomain", "/v1/email/domains", {
       payload: EmailAddDomainRequestJson,
@@ -4433,8 +4460,11 @@ export class EmailGroup extends HttpApiGroup.make("Email")
         EmailUpdateDomainConfig401.pipe(HttpApiSchema.status(401)),
         EmailUpdateDomainConfig403.pipe(HttpApiSchema.status(403)),
         EmailUpdateDomainConfig404.pipe(HttpApiSchema.status(404)),
+        EmailUpdateDomainConfig409.pipe(HttpApiSchema.status(409)),
         EmailUpdateDomainConfig422.pipe(HttpApiSchema.status(422)),
+        EmailUpdateDomainConfig429.pipe(HttpApiSchema.status(429)),
         EmailUpdateDomainConfig500,
+        EmailUpdateDomainConfig502.pipe(HttpApiSchema.status(502)),
         EmailUpdateDomainConfig504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -5208,7 +5238,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "List senders")
       .annotate(
         OpenApi.Description,
-        "Returns senders, newest first. A namespace-scoped key lists only its namespace's senders; an organization-wide caller lists every sender, or one namespace's with `namespaceId`. Optionally filtered by verification status, active state, or default flag. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours) and `series`, the last 14 days of daily email sends from the address, oldest first.",
+        "Returns senders, newest first. A namespace-scoped caller lists its namespace's senders and senders on shared organization domains; an organization-wide caller lists every sender, or one namespace's with `namespaceId`. Optionally filtered by verification status, active state, or default flag. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours) and `series`, the last 14 days of daily email sends from the address, oldest first.",
       ),
     HttpApiEndpoint.post("emailAddSender", "/v1/email/senders", {
       headers: EmailAddSenderHeaders,
@@ -5275,14 +5305,18 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       ),
     HttpApiEndpoint.post("emailSetDefaultSender", "/v1/email/senders/:id/default", {
       params: EmailSetDefaultSenderPathParams,
+      payload: EmailSetDefaultSenderRequestJson,
       success: EmailSetDefaultSender200,
       error: [
         EmailSetDefaultSender400.pipe(HttpApiSchema.status(400)),
         EmailSetDefaultSender401.pipe(HttpApiSchema.status(401)),
         EmailSetDefaultSender403.pipe(HttpApiSchema.status(403)),
         EmailSetDefaultSender404.pipe(HttpApiSchema.status(404)),
+        EmailSetDefaultSender409.pipe(HttpApiSchema.status(409)),
         EmailSetDefaultSender422.pipe(HttpApiSchema.status(422)),
+        EmailSetDefaultSender429.pipe(HttpApiSchema.status(429)),
         EmailSetDefaultSender500,
+        EmailSetDefaultSender502.pipe(HttpApiSchema.status(502)),
         EmailSetDefaultSender504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -5291,7 +5325,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Set the default sender")
       .annotate(
         OpenApi.Description,
-        "Marks a verified, active sender as the default of its scope, atomically clearing the previous default of the same scope: the organization level, or the sender's namespace. Omitted-`from` sends use it when neither the request nor the template names a `from`; with no default, the organization's sole verified sender is used.",
+        "Sets a verified, active sender as the default for the caller's namespace, the explicit namespaceId, or the sender's own scope. A namespace can select its own sender or a sender on a shared organization domain. This changes only the namespace's default; it does not change a shared sender. Omitted-`from` sends use this default when neither the request nor the template names a `from`.",
       ),
     HttpApiEndpoint.get("emailCheckSenderVerification", "/v1/email/senders/:id/verification", {
       params: EmailCheckSenderVerificationPathParams,

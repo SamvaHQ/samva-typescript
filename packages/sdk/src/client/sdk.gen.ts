@@ -2518,7 +2518,7 @@ export class Email {
   /**
    * List sending domains
    *
-   * Returns the organization's sending domains, newest first. A namespace-scoped key lists only its namespace's domains; an organization-wide caller lists every domain, or one namespace's with `namespaceId`. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. `sendable=true` lists only domains a send can use now: active, and verified, or verified before and degraded since. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours, the window the 5% bounce limit is enforced over) and `series`, the last 14 days of daily email sends attributed to the domain, oldest first.
+   * Returns the organization's sending domains, newest first. A namespace-scoped caller lists its namespace's domains and shared organization domains; an organization-wide caller lists every domain, or one namespace's with `namespaceId`. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. `sendable=true` lists only domains a send can use now: active, and verified, or verified before and degraded since. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours, the window the 5% bounce limit is enforced over) and `series`, the last 14 days of daily email sends attributed to the domain, oldest first.
    */
   public static listDomains<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -2526,6 +2526,7 @@ export class Email {
       cursor?: string | undefined;
       sendable?: true | null | undefined;
       namespaceId?: NamespaceId | undefined;
+      shared?: boolean | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailListDomainsResponses, EmailListDomainsErrors, ThrowOnError> {
@@ -2538,6 +2539,7 @@ export class Email {
             { in: "query", key: "cursor" },
             { in: "query", key: "sendable" },
             { in: "query", key: "namespaceId" },
+            { in: "query", key: "shared" },
           ],
         },
       ],
@@ -2573,6 +2575,7 @@ export class Email {
         | null
         | undefined;
       namespaceId?: NamespaceId | null | undefined;
+      shared?: boolean | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailAddDomainResponses, EmailAddDomainErrors, ThrowOnError> {
@@ -2584,6 +2587,7 @@ export class Email {
             { in: "body", key: "domain" },
             { in: "body", key: "connection" },
             { in: "body", key: "namespaceId" },
+            { in: "body", key: "shared" },
           ],
         },
       ],
@@ -3084,6 +3088,7 @@ export class Email {
   public static updateDomainConfig<ThrowOnError extends boolean = false>(
     parameters: {
       id: EmailDomainId;
+      shared?: boolean | null | undefined;
       openTracking?: boolean | null | undefined;
       clickTracking?: boolean | null | undefined;
       replyTo?: Array<string> | null | undefined;
@@ -3099,6 +3104,7 @@ export class Email {
         {
           args: [
             { in: "path", key: "id" },
+            { in: "body", key: "shared" },
             { in: "body", key: "openTracking" },
             { in: "body", key: "clickTracking" },
             { in: "body", key: "replyTo" },
@@ -3418,7 +3424,7 @@ export class Email {
   /**
    * List senders
    *
-   * Returns senders, newest first. A namespace-scoped key lists only its namespace's senders; an organization-wide caller lists every sender, or one namespace's with `namespaceId`. Optionally filtered by verification status, active state, or default flag. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours) and `series`, the last 14 days of daily email sends from the address, oldest first.
+   * Returns senders, newest first. A namespace-scoped caller lists its namespace's senders and senders on shared organization domains; an organization-wide caller lists every sender, or one namespace's with `namespaceId`. Optionally filtered by verification status, active state, or default flag. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Each row carries `deliverability` (bounce and complaint rates over the last 24 hours) and `series`, the last 14 days of daily email sends from the address, oldest first.
    */
   public static listSenders<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3597,15 +3603,26 @@ export class Email {
   /**
    * Set the default sender
    *
-   * Marks a verified, active sender as the default of its scope, atomically clearing the previous default of the same scope: the organization level, or the sender's namespace. Omitted-`from` sends use it when neither the request nor the template names a `from`; with no default, the organization's sole verified sender is used.
+   * Sets a verified, active sender as the default for the caller's namespace, the explicit namespaceId, or the sender's own scope. A namespace can select its own sender or a sender on a shared organization domain. This changes only the namespace's default; it does not change a shared sender. Omitted-`from` sends use this default when neither the request nor the template names a `from`.
    */
   public static setDefaultSender<ThrowOnError extends boolean = false>(
     parameters: {
       id: EmailSenderId;
+      namespaceId?: NamespaceId | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailSetDefaultSenderResponses, EmailSetDefaultSenderErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "namespaceId" },
+          ],
+        },
+      ],
+    );
     return requestWithPolicy(
       options?.client ?? client,
       "emailSetDefaultSender",
@@ -3620,7 +3637,13 @@ export class Email {
           url: "/v1/email/senders/{id}/default",
           ...options,
           ...params,
-          headers,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
         }),
     );
   }

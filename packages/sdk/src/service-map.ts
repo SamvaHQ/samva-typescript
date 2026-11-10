@@ -541,7 +541,7 @@ export const SDK_OPERATION_CALLS = {
   emailAddSender: { kind: "payload" },
   emailCheckSenderVerification: idPath,
   emailRemoveSender: idPath,
-  emailSetDefaultSender: idPath,
+  emailSetDefaultSender: idPathPayload,
   emailGetStats: { kind: "params" },
   emailEnableCatchAll: idPathPayload,
   emailDisableCatchAll: idPath,
