@@ -570,8 +570,8 @@ export const StoredReplyToAddresses = /* @__PURE__ */ (() =>
 export type TopicId = string & EffectBrand.Brand<"TopicId">;
 export const TopicId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
+    Schema.isPattern(new globalThis.RegExp("^tpc_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^tpc_[0-9a-hjkmnp-tv-z]{16,24}$",
       identifier: "TopicId",
     }),
   ).pipe(Schema.brand("TopicId")))();

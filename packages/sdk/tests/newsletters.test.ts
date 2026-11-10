@@ -8,7 +8,7 @@ import { createClient } from "../src/promises";
 const id = "nl_1234567890abcdef";
 const row = {
   id,
-  topicId: "unsub_1234567890abcdef",
+  topicId: "tpc_1234567890abcdef",
   namespaceId: null,
   name: "Weekly",
   description: null,

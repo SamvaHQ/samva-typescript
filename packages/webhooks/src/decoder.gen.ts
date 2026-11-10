@@ -955,7 +955,7 @@ const validate1021 = (value: unknown): boolean =>
 const validate1027 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
-  new RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
+  new RegExp("^tpc_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
 const validate1056 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&

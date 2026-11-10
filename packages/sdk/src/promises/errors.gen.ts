@@ -966,7 +966,7 @@ const payloadSchemas = {
                   anyOf: [
                     {
                       type: "string",
-                      pattern: "^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
+                      pattern: "^tpc_[0-9a-hjkmnp-tv-z]{16,24}$",
                       "x-samva-brand": "TopicId",
                     },
                     { type: "null" },
@@ -1374,7 +1374,7 @@ const payloadSchemas = {
                   anyOf: [
                     {
                       type: "string",
-                      pattern: "^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
+                      pattern: "^tpc_[0-9a-hjkmnp-tv-z]{16,24}$",
                       "x-samva-brand": "TopicId",
                     },
                     { type: "null" },

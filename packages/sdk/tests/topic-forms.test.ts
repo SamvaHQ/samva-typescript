@@ -16,7 +16,7 @@ describe("topic forms client", () => {
       apiKey: "samva_sk_test",
       fetch: async (input) => {
         assert(input instanceof Request);
-        expect(new URL(input.url).pathname).toBe("/v1/topics/unsub_7q2xk9mvt4znw8rh/forms");
+        expect(new URL(input.url).pathname).toBe("/v1/topics/tpc_7q2xk9mvt4znw8rh/forms");
         expect(input.method).toBe("POST");
         expect(input.headers.get("x-api-key")).toBe("samva_sk_test");
         expect(await input.json()).toEqual(payload);
@@ -25,7 +25,7 @@ describe("topic forms client", () => {
             ...payload,
             id: "be85c605-d10d-4a62-86b5-e0df9c92261e",
             publicKey: "a7847b68-7c0e-4e2a-9a43-dba64d6414a0",
-            topicId: "unsub_7q2xk9mvt4znw8rh",
+            topicId: "tpc_7q2xk9mvt4znw8rh",
             linkOrigin: "https://links.example.com",
             createdAt: "2026-10-25T12:00:00.000Z",
             updatedAt: "2026-10-25T12:00:00.000Z",
@@ -34,7 +34,7 @@ describe("topic forms client", () => {
         );
       },
     });
-    const form = await client.topicForms.create({ id: "unsub_7q2xk9mvt4znw8rh", ...payload });
+    const form = await client.topicForms.create({ id: "tpc_7q2xk9mvt4znw8rh", ...payload });
     expect(form.publicKey).toBe("a7847b68-7c0e-4e2a-9a43-dba64d6414a0");
     expect(form.createdAt).toBe("2026-10-25T12:00:00.000Z");
   });

@@ -452,7 +452,7 @@ const campaign = await samva.campaigns.create({
     email: { subject: "What's new", html: "<h1>Updates</h1>" },
   },
   audience: {
-    topicId: "unsub_1234567890abcdef",
+    topicId: "tpc_1234567890abcdef",
     includeTags: ["subscribers"],
     excludeTags: ["bounced"],
   },

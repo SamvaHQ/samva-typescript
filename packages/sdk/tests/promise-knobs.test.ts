@@ -75,7 +75,7 @@ describe("Promise request policy", () => {
       planHash: "a".repeat(64),
       input: {
         preset: "mailchimp",
-        topicId: "unsub_7q2xk9mvt4znw8rh",
+        topicId: "tpc_7q2xk9mvt4znw8rh",
         files: [
           {
             name: "readers.csv",

@@ -319,7 +319,7 @@ promiseClient.campaigns.create({
     metadata: { source: undefined },
   },
   audience: {
-    topicId: "unsub_1234567890abcdef",
+    topicId: "tpc_1234567890abcdef",
     contactIds: ["contact_123"],
     includeTags: undefined,
   },
@@ -335,7 +335,7 @@ export const campaignCreateEffect = Campaigns.create({
     metadata: { source: undefined },
   },
   audience: {
-    topicId: "unsub_1234567890abcdef",
+    topicId: "tpc_1234567890abcdef",
     contactIds: ["contact_123"],
     includeTags: undefined,
   },

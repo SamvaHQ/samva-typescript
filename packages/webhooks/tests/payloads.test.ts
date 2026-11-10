@@ -304,7 +304,7 @@ describe("typed webhook payload boundary", () => {
           organizationId: "org_0000000000000000",
           contactId: "contact_0000000000000000",
           email: "reader@example.com",
-          topicId: "unsub_0000000000000000",
+          topicId: "tpc_0000000000000000",
           topicName: "Newsletter",
           channel: "email",
           consentIp: "192.0.2.1",

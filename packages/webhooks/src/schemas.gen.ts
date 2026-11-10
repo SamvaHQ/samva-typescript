@@ -2213,10 +2213,8 @@ export const ContactSubscribedEventSchema = Schema.StructWithRest(
         ),
         email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         topicId: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
+          Schema.isPattern(new globalThis.RegExp("^tpc_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+            expected: "a string matching the RegExp ^tpc_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         topicName: Schema.String,
@@ -2304,10 +2302,8 @@ export const ContactUnsubscribedEventSchema = Schema.StructWithRest(
         ),
         email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         topicId: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
+          Schema.isPattern(new globalThis.RegExp("^tpc_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+            expected: "a string matching the RegExp ^tpc_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         topicName: Schema.String,
@@ -2395,10 +2391,8 @@ export const ContactResubscribedEventSchema = Schema.StructWithRest(
         ),
         email: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         topicId: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^unsub_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^unsub_[0-9a-hjkmnp-tv-z]{16,24}$",
+          Schema.isPattern(new globalThis.RegExp("^tpc_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+            expected: "a string matching the RegExp ^tpc_[0-9a-hjkmnp-tv-z]{16,24}$",
           }),
         ),
         topicName: Schema.String,

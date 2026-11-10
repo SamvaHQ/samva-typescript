@@ -13,7 +13,7 @@ import {
 describe("contact import SDK facades", () => {
   it("preserves declared evidence, preview hash, and fenced resume on both clients", async () => {
     const id = "cimport_7q2xk9mvt4znw8rh";
-    const topicId = "unsub_7q2xk9mvt4znw8rh";
+    const topicId = "tpc_7q2xk9mvt4znw8rh";
     const input: ContactsPlanImportData["body"] = {
       preset: "mailchimp",
       topicId,

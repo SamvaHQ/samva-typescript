@@ -11,7 +11,7 @@ const hostname = "news.example.com";
 const idempotencyKey = "be85c605-d10d-4a62-86b5-e0df9c92261e";
 const snapshot = {
   organizationId: "org_1234567890abcdef",
-  topicId: "unsub_1234567890abcdef",
+  topicId: "tpc_1234567890abcdef",
   hostname,
   canonicalHostname: "weekly-digest.samva.app",
   phase: "pending",

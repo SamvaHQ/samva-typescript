@@ -37,7 +37,7 @@ const promiseCalls: ReadonlyArray<PromiseLike<unknown>> = [
       channel: "email",
       email: { subject: "Campaign", text: "Body", tracking: { opens: true, clicks: false } },
     },
-    audience: { topicId: "unsub_1234567890abcdef", contactIds: ["contact_123"] },
+    audience: { topicId: "tpc_1234567890abcdef", contactIds: ["contact_123"] },
   }),
 ];
 
@@ -70,7 +70,7 @@ const effectCalls: ReadonlyArray<Effect.Effect<unknown, unknown, Client.Service>
       channel: "email",
       email: { subject: "Campaign", text: "Body", tracking: { opens: true, clicks: false } },
     },
-    audience: { topicId: "unsub_1234567890abcdef", contactIds: ["contact_123"] },
+    audience: { topicId: "tpc_1234567890abcdef", contactIds: ["contact_123"] },
   }),
 ];
 

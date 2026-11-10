@@ -1,6 +1,6 @@
 {
   "name": "@samva/webhooks",
-  "version": "0.39.0",
+  "version": "0.40.0",
   "description": "Runtime-neutral verification for Samva webhook deliveries",
   "keywords": [
     "samva",
@@ -71,7 +71,7 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "effect": "catalog:effect",
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.7",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

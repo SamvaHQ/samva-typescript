@@ -45,7 +45,7 @@ const cells = [
       client.campaigns.create({
         name: "Weekly digest",
         channel: "email",
-        audience: { topicId: "unsub_1234567890abcdef" },
+        audience: { topicId: "tpc_1234567890abcdef" },
         content: {
           channel: "email",
           email: {},
@@ -59,7 +59,7 @@ const cells = [
       Campaigns.create({
         name: "Weekly digest",
         channel: "email",
-        audience: { topicId: "unsub_1234567890abcdef" },
+        audience: { topicId: "tpc_1234567890abcdef" },
         content: {
           channel: "email",
           email: {},
@@ -114,8 +114,8 @@ const cells = [
   },
   {
     name: "topics get",
-    promise: (client) => client.topics.get({ id: "unsub_1234567890abcdef" }),
-    effect: () => Topics.get({ id: "unsub_1234567890abcdef" }),
+    promise: (client) => client.topics.get({ id: "tpc_1234567890abcdef" }),
+    effect: () => Topics.get({ id: "tpc_1234567890abcdef" }),
   },
   {
     name: "topics create",
@@ -124,32 +124,31 @@ const cells = [
   },
   {
     name: "topics update publishing defaults",
-    promise: (client) =>
-      client.topics.update({ id: "unsub_1234567890abcdef", replyMailboxId: null }),
-    effect: () => Topics.update({ id: "unsub_1234567890abcdef", replyMailboxId: null }),
+    promise: (client) => client.topics.update({ id: "tpc_1234567890abcdef", replyMailboxId: null }),
+    effect: () => Topics.update({ id: "tpc_1234567890abcdef", replyMailboxId: null }),
   },
   {
     name: "topics remove",
-    promise: (client) => client.topics.remove({ id: "unsub_1234567890abcdef" }),
-    effect: () => Topics.remove({ id: "unsub_1234567890abcdef" }),
+    promise: (client) => client.topics.remove({ id: "tpc_1234567890abcdef" }),
+    effect: () => Topics.remove({ id: "tpc_1234567890abcdef" }),
   },
   {
     name: "topics set default",
-    promise: (client) => client.topics.setDefault({ id: "unsub_1234567890abcdef" }),
-    effect: () => Topics.setDefault({ id: "unsub_1234567890abcdef" }),
+    promise: (client) => client.topics.setDefault({ id: "tpc_1234567890abcdef" }),
+    effect: () => Topics.setDefault({ id: "tpc_1234567890abcdef" }),
   },
   {
     name: "topics subscription filters",
     promise: (client) =>
       client.topics.listSubscriptions({
-        id: "unsub_1234567890abcdef",
+        id: "tpc_1234567890abcdef",
         limit: 10,
         channel: "email",
         status: "unsubscribed",
       }),
     effect: () =>
       Topics.listSubscriptions({
-        id: "unsub_1234567890abcdef",
+        id: "tpc_1234567890abcdef",
         limit: 10,
         channel: "email",
         status: "unsubscribed",
@@ -159,7 +158,7 @@ const cells = [
     name: "topics set positive subscription status",
     promise: (client) =>
       client.topics.setSubscriptions({
-        id: "unsub_1234567890abcdef",
+        id: "tpc_1234567890abcdef",
         contacts: [{ email: "ada@example.com" }],
         channel: "email",
         status: "subscribed",
@@ -167,7 +166,7 @@ const cells = [
       }),
     effect: () =>
       Topics.setSubscriptions({
-        id: "unsub_1234567890abcdef",
+        id: "tpc_1234567890abcdef",
         contacts: [{ email: "ada@example.com" }],
         channel: "email",
         status: "subscribed",
@@ -180,13 +179,13 @@ const cells = [
       client.topics.checkSubscription({
         email: "ada@example.com",
         channel: "email",
-        topicIds: "unsub_1234567890abcdef",
+        topicIds: "tpc_1234567890abcdef",
       }),
     effect: () =>
       Topics.checkSubscription({
         email: "ada@example.com",
         channel: "email",
-        topicIds: "unsub_1234567890abcdef",
+        topicIds: "tpc_1234567890abcdef",
       }),
   },
   {
@@ -216,7 +215,7 @@ const cells = [
       client.subscriptions.subscribe({
         email: "ada@example.com",
         from: { email: "newsletter@example.com", name: "Example" },
-        topicId: "unsub_7q2xk9mvt4znw8rh",
+        topicId: "tpc_7q2xk9mvt4znw8rh",
         templateSlug: "newsletter-confirmation",
         consentIp: "192.0.2.10",
         consentSource: "newsletter-form",
@@ -225,7 +224,7 @@ const cells = [
       Subscriptions.subscribe({
         email: "ada@example.com",
         from: { email: "newsletter@example.com", name: "Example" },
-        topicId: "unsub_7q2xk9mvt4znw8rh",
+        topicId: "tpc_7q2xk9mvt4znw8rh",
         templateSlug: "newsletter-confirmation",
         consentIp: "192.0.2.10",
         consentSource: "newsletter-form",
@@ -352,7 +351,7 @@ const cells = [
           metadata: undefined,
         },
         audience: {
-          topicId: "unsub_1234567890abcdef",
+          topicId: "tpc_1234567890abcdef",
           contactIds: ["contact_7q2xk9mvt4znw8rh"],
           includeTags: undefined,
         },
@@ -373,7 +372,7 @@ const cells = [
           metadata: undefined,
         },
         audience: {
-          topicId: "unsub_1234567890abcdef",
+          topicId: "tpc_1234567890abcdef",
           contactIds: ["contact_7q2xk9mvt4znw8rh"],
           includeTags: undefined,
         },
@@ -498,7 +497,7 @@ describe("Promise and Effect direct call-shape parity", () => {
         expect(promiseRequest.body).toEqual({
           name: "Weekly digest",
           channel: "email",
-          audience: { topicId: "unsub_1234567890abcdef" },
+          audience: { topicId: "tpc_1234567890abcdef" },
           content: {
             channel: "email",
             email: {},
@@ -520,7 +519,7 @@ describe("Promise and Effect direct call-shape parity", () => {
         expect(promiseRequest.body).toEqual({
           email: "ada@example.com",
           from: { email: "newsletter@example.com", name: "Example" },
-          topicId: "unsub_7q2xk9mvt4znw8rh",
+          topicId: "tpc_7q2xk9mvt4znw8rh",
           templateSlug: "newsletter-confirmation",
           consentIp: "192.0.2.10",
           consentSource: "newsletter-form",

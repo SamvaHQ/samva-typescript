@@ -6,7 +6,7 @@ import * as Client from "../src/effect/client";
 import * as Topics from "../src/effect/topics";
 import { createClient } from "../src/promises";
 
-const id = "unsub_1234567890abcdef";
+const id = "tpc_1234567890abcdef";
 const topic = {
   id,
   namespaceId: null,
