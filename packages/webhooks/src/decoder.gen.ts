@@ -1855,7 +1855,11 @@ const validate1574 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "id") || validate1572(value["id"]));
 const validate1575 = (value: unknown): boolean =>
   typeof value === "string" &&
-  (value === "organization" || value === "mailbox" || value === "agent" || value === "apiKey");
+  (value === "organization" ||
+    value === "integration" ||
+    value === "mailbox" ||
+    value === "agent" ||
+    value === "apiKey");
 const validate1577 = (value: unknown): boolean => validate1578(value) || validate6(value);
 const validate1578 = (value: unknown): boolean =>
   isObject(value) &&

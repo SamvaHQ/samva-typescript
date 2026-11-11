@@ -23,7 +23,7 @@ const link = {
 describe("namespace portal link facades", () => {
   it("keeps path ids out of create payloads and protects the URL on the Effect surface", async () => {
     const requests: Array<{ path: string; method: string; body: unknown }> = [];
-    const url = "https://samva.dev/portal#token=private-token";
+    const url = "https://portal.samva.dev/#token=private-token";
     const fetch: typeof globalThis.fetch = async (input, init) => {
       const request = input instanceof Request ? input : new Request(input, init);
       requests.push({

@@ -1489,7 +1489,7 @@ export class CampaignsGroup extends HttpApiGroup.make("Campaigns")
       .annotate(OpenApi.Summary, "Schedule a campaign run")
       .annotate(
         OpenApi.Description,
-        "Schedules an email campaign run at the absolute ISO-8601 instant in scheduledFor, or immediately when omitted. The optional Idempotency-Key header is scoped to the organization and replays return the original run. An email campaign must carry the brand footer: it is refused with CampaignFooterRequiredError when its footer is off and its template renders no BrandFooter, and with BrandAddressRequiredError when a brand that signs it off has no postal address.",
+        "Schedules an email campaign run at the absolute ISO-8601 instant in scheduledFor, or immediately when omitted. The optional Idempotency-Key header is scoped to the organization and replays return the original run. Scheduling refuses with ValidationError when the sending namespace has no sending setup: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError; retry after setup finishes. An email campaign must carry the brand footer: it is refused with CampaignFooterRequiredError when its footer is off and its template renders no BrandFooter, and with BrandAddressRequiredError when a brand that signs it off has no postal address.",
       ),
     HttpApiEndpoint.get("campaignsGetRun", "/v1/campaigns/:id/runs/:runId", {
       params: CampaignsGetRunPathParams,

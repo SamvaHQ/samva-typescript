@@ -72,7 +72,7 @@ export type ActionDecision = {
     | undefined;
 };
 type PolicyScope = {
-  readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+  readonly kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
   readonly id: string;
 };
 export type CampaignAttribution = { readonly campaignId: string; readonly runId: string };

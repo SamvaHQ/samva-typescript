@@ -1,3 +1,27 @@
+## samva@0.43.1
+
+### Decisions can name an integration scope
+
+A mailbox action's decision can list `integration` among its `scopes`, and a rule reference can
+point at it. Add an `integration` case wherever you switch over a scope's `kind`. Upgrade
+`@samva/webhooks` with the SDK: earlier versions reject a mailbox action event whose decision
+carries the new kind.
+
+An agent's integration tool call that changes something now waits for a person unless the
+organization owner let that tool run without approval on that integration. The decision then names
+the integration's scope and its rule.
+
+### Refuse campaigns without namespace sending setup
+
+Campaign scheduling returns `ValidationError` when the sending namespace has no sending setup.
+Share the sender domain with namespaces or use a sender owned by that namespace before retrying.
+Direct sends return the same refusal, and campaign recipients record it as a failure immediately.
+Setup that is still in progress remains a retryable `ConflictError`.
+
+Sending setup that has stopped after failure returns terminal `ValidationError` with a restart or
+reconciliation remedy. A failed setup attempt that is still retrying stays retryable.
+A reply mailbox's namespace does not select the campaign's sending setup.
+
 ## samva@0.43.0
 
 ### Hand-off actions carry the agent's reason

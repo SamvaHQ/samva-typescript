@@ -5277,12 +5277,12 @@ export type MailboxActionDecision = {
   readonly outcome: "allow" | "hold" | "refuse";
   readonly reason: string;
   readonly scopes: ReadonlyArray<{
-    readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+    readonly kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
     readonly id: string;
   }>;
   readonly rule?: {
     readonly scope: {
-      readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+      readonly kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
       readonly id: string;
     };
     readonly index: number;
@@ -5317,6 +5317,7 @@ export const MailboxActionDecision = /* @__PURE__ */ (() =>
       Schema.Struct({
         kind: Schema.Union([
           Schema.Literal("organization"),
+          Schema.Literal("integration"),
           Schema.Literal("mailbox"),
           Schema.Literal("agent"),
           Schema.Literal("apiKey"),
@@ -5332,6 +5333,7 @@ export const MailboxActionDecision = /* @__PURE__ */ (() =>
           scope: Schema.Struct({
             kind: Schema.Union([
               Schema.Literal("organization"),
+              Schema.Literal("integration"),
               Schema.Literal("mailbox"),
               Schema.Literal("agent"),
               Schema.Literal("apiKey"),

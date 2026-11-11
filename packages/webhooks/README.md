@@ -1,6 +1,6 @@
 # `@samva/webhooks`
 
-Samva is the email and WhatsApp API for your app: transactional and campaign sending, inbound replies threaded into conversations, programmable mailboxes, and signed webhooks. AI agents get their own addresses and WhatsApp numbers on the same platform.
+Samva is email and WhatsApp for AI agents, and the API developers build on. An agent gets its own address and WhatsApp number, and the same platform covers transactional and campaign sending, inbound replies threaded into conversations, programmable mailboxes, and signed webhooks.
 
 Verify signed Samva webhook deliveries in Node.js, Bun, Cloudflare Workers, and other Web
 Crypto-compatible runtimes.

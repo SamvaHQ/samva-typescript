@@ -3966,7 +3966,13 @@ export const MailboxActionPendingApprovalEventSchema = Schema.StructWithRest(
                 scopes: Schema.Array(
                   Schema.StructWithRest(
                     Schema.Struct({
-                      kind: Schema.Literals(["organization", "mailbox", "agent", "apiKey"]),
+                      kind: Schema.Literals([
+                        "organization",
+                        "integration",
+                        "mailbox",
+                        "agent",
+                        "apiKey",
+                      ]),
                       id: Schema.String.check(
                         Schema.isMinLength(1).annotate({
                           expected: "a value with a length of at least 1",
@@ -3989,7 +3995,13 @@ export const MailboxActionPendingApprovalEventSchema = Schema.StructWithRest(
                       Schema.Struct({
                         scope: Schema.StructWithRest(
                           Schema.Struct({
-                            kind: Schema.Literals(["organization", "mailbox", "agent", "apiKey"]),
+                            kind: Schema.Literals([
+                              "organization",
+                              "integration",
+                              "mailbox",
+                              "agent",
+                              "apiKey",
+                            ]),
                             id: Schema.String.check(
                               Schema.isMinLength(1).annotate({
                                 expected: "a value with a length of at least 1",

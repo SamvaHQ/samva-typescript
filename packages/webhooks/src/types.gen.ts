@@ -1177,14 +1177,14 @@ export type MailboxActionPendingApprovalEvent = {
         readonly reason: string;
         readonly scopes: ReadonlyArray<
           {
-            readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+            readonly kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
             readonly id: string;
           } & { readonly [x: string]: JsonValue }
         >;
         readonly rule?:
           | ({
               readonly scope: {
-                readonly kind: "organization" | "mailbox" | "agent" | "apiKey";
+                readonly kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
                 readonly id: string;
               } & { readonly [x: string]: JsonValue };
               readonly index: number;

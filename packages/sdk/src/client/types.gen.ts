@@ -633,13 +633,13 @@ export type MailboxActionDecision = {
   outcome: "allow" | "hold" | "refuse";
   reason: string;
   scopes: Array<{
-    kind: "organization" | "mailbox" | "agent" | "apiKey";
+    kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
     id: string;
   }>;
   rule?:
     | {
         scope: {
-          kind: "organization" | "mailbox" | "agent" | "apiKey";
+          kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
           id: string;
         };
         index: number;
@@ -1715,13 +1715,13 @@ export type PolicyDecision = {
   outcome: "allow" | "hold" | "refuse";
   reason: string;
   scopes: Array<{
-    kind: "organization" | "mailbox" | "agent" | "apiKey";
+    kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
     id: string;
   }>;
   rule?:
     | {
         scope: {
-          kind: "organization" | "mailbox" | "agent" | "apiKey";
+          kind: "organization" | "integration" | "mailbox" | "agent" | "apiKey";
           id: string;
         };
         index: number;

@@ -1,6 +1,6 @@
 # samva
 
-Samva is the email and WhatsApp API for your app: transactional and campaign sending, inbound replies threaded into conversations, programmable mailboxes, and signed webhooks. AI agents get their own addresses and WhatsApp numbers on the same platform.
+Samva is email and WhatsApp for AI agents, and the API developers build on. An agent gets its own address and WhatsApp number, and the same platform covers transactional and campaign sending, inbound replies threaded into conversations, programmable mailboxes, and signed webhooks.
 
 TypeScript SDK for Samva's public customer API.
 
@@ -144,7 +144,7 @@ const samva = createClient({
 ```
 
 - `X-API-Key` is configured automatically from `apiKey`.
-- Organization context is derived from the API key — do not send `x-org-slug`.
+- Organization context is derived from the API key, so do not send `x-org-slug`.
 
 ### OAuth bearer (interactive, multi-org)
 
@@ -256,9 +256,9 @@ error with `Effect.catchTag` does not require importing its constructor.
 
 Both clients retry safe operations by default:
 
-- **What retries** — reads (`GET`/`HEAD`) and requests covered by `x-idempotent` in the OpenAPI document and its optional `x-idempotent-when` condition. Both clients attach one key per logical call and reuse it across retries. Other mutations never retry.
-- **When** — only for `isRetryable` failures: throttling (`429`), transient server errors (including a transient `BillingProviderError`), and request-transport failures. `ValidationError`, `ConflictError`, `NotFound`, auth, and billing-limit `PaymentRequiredError` failures never retry.
-- **How** — jittered exponential backoff, bounded to four attempts total. A `429` honors the server's `retryAfterSeconds` hint (capped at 60s) in place of the computed delay.
+- **What retries**: reads (`GET`/`HEAD`) and requests covered by `x-idempotent` in the OpenAPI document and its optional `x-idempotent-when` condition. Both clients attach one key per logical call and reuse it across retries. Other mutations never retry.
+- **When**: only for `isRetryable` failures: throttling (`429`), transient server errors (including a transient `BillingProviderError`), and request-transport failures. `ValidationError`, `ConflictError`, `NotFound`, auth, and billing-limit `PaymentRequiredError` failures never retry.
+- **How**: jittered exponential backoff, bounded to four attempts total. A `429` honors the server's `retryAfterSeconds` hint (capped at 60s) in place of the computed delay.
 
 `contacts.startImport` retries only `mode: "new"`. Resumes use a generation fence and never retry automatically, even with an explicit key. After an ambiguous resume response, read `contacts.getImportJob` before deciding what to do next.
 
@@ -278,7 +278,7 @@ program.pipe(Effect.provide(Retry.layer({ times: 6, while: isRetryable })));
 
 ### Idempotency keys
 
-Each idempotent operation generates an `Idempotency-Key` per logical call — stable across the built-in retries, distinct across calls — so a retried send never delivers twice. Pass an explicit key for cross-process deduplication (safe to replay the same request from a different machine):
+Each idempotent operation generates an `Idempotency-Key` per logical call, stable across the built-in retries and distinct across calls, so a retried send never delivers twice. Pass an explicit key for cross-process deduplication (safe to replay the same request from a different machine):
 
 ```typescript
 import { createClient } from "samva";
@@ -307,8 +307,8 @@ Effect pagination uses Streams:
 
 Every list answers `{ items, nextCursor }`: pass `nextCursor` back as `cursor` for the next page, and stop when it is null. Every list operation that pages carries two `Stream` companions, so you traverse pages without hand-rolling a cursor loop:
 
-- **`list.items(input?)`** — a `Stream` of individual items across all pages.
-- **`list.pages(input?)`** — a `Stream` of raw page envelopes.
+- **`list.items(input?)`**: a `Stream` of individual items across all pages.
+- **`list.pages(input?)`**: a `Stream` of raw page envelopes.
 
 ```typescript
 import { Effect, Stream } from "effect";
@@ -334,7 +334,7 @@ Effect client configuration accepts `apiKey: string | Redacted<string>` and unwr
 only for authentication. Promise client configuration accepts `apiKey: string` and does not require
 Effect, including in browser bundles.
 
-Secret-bearing response fields — the plaintext API key returned by `apiKeys.create` / `apiKeys.rotate`, and the webhook signing secret from `webhooks.regenerateSecret` — decode to `Redacted<string>` on the Effect surface. The secret never leaks through logs, `String(...)`, or `JSON.stringify`; unwrap it explicitly with `Redacted.value` when you need the plaintext:
+Secret-bearing response fields (the plaintext API key returned by `apiKeys.create` / `apiKeys.rotate`, and the webhook signing secret from `webhooks.regenerateSecret`) decode to `Redacted<string>` on the Effect surface. The secret never leaks through logs, `String(...)`, or `JSON.stringify`; unwrap it explicitly with `Redacted.value` when you need the plaintext:
 
 ```typescript
 import { Effect, Redacted } from "effect";

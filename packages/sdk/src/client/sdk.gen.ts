@@ -978,7 +978,7 @@ export class Messages {
   /**
    * Send a message
    *
-   * Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.
+   * An email send whose namespace has no sending setup returns ValidationError: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError. Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.
    */
   public static send<ThrowOnError extends boolean = false>(
     parameters: EmailSendMessagePayload | SmsSendMessagePayload | WhatsAppSendMessagePayload,
@@ -1432,7 +1432,7 @@ export class ScheduledMessages {
   /**
    * Schedule a message
    *
-   * Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. The send payload is the same channel union the immediate send accepts, with each channel's content checked at schedule time so a send that could never render fails now rather than hours later: email and WhatsApp schedules are available. Optional timezone is validated IANA display metadata only and never changes the execution instant.
+   * Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. The send payload is the same channel union the immediate send accepts, with each channel's content checked at schedule time so a send that could never render fails now rather than hours later: email and WhatsApp schedules are available. Email schedules placed explicitly in a namespace require its sending setup to be ready: ValidationError means share the sender domain with namespaces or use a sender owned by that namespace. Setup that has stopped after failure also returns ValidationError and requires restarting or reconciling the domain's sending setup. ConflictError means setup is still in progress. Optional timezone is validated IANA display metadata only and never changes the execution instant.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -1936,7 +1936,7 @@ export class Campaigns {
   /**
    * Schedule a campaign run
    *
-   * Schedules an email campaign run at the absolute ISO-8601 instant in scheduledFor, or immediately when omitted. The optional Idempotency-Key header is scoped to the organization and replays return the original run. An email campaign must carry the brand footer: it is refused with CampaignFooterRequiredError when its footer is off and its template renders no BrandFooter, and with BrandAddressRequiredError when a brand that signs it off has no postal address.
+   * Schedules an email campaign run at the absolute ISO-8601 instant in scheduledFor, or immediately when omitted. The optional Idempotency-Key header is scoped to the organization and replays return the original run. Scheduling refuses with ValidationError when the sending namespace has no sending setup: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError; retry after setup finishes. An email campaign must carry the brand footer: it is refused with CampaignFooterRequiredError when its footer is off and its template renders no BrandFooter, and with BrandAddressRequiredError when a brand that signs it off has no postal address.
    */
   public static scheduleRun<ThrowOnError extends boolean = false>(
     parameters: {

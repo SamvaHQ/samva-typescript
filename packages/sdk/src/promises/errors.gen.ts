@@ -1152,7 +1152,7 @@ const payloadSchemas = {
                       properties: {
                         kind: {
                           type: "string",
-                          enum: ["organization", "mailbox", "agent", "apiKey"],
+                          enum: ["organization", "integration", "mailbox", "agent", "apiKey"],
                         },
                         id: { type: "string", minLength: 1 },
                       },
@@ -1170,7 +1170,7 @@ const payloadSchemas = {
                             properties: {
                               kind: {
                                 type: "string",
-                                enum: ["organization", "mailbox", "agent", "apiKey"],
+                                enum: ["organization", "integration", "mailbox", "agent", "apiKey"],
                               },
                               id: { type: "string", minLength: 1 },
                             },
@@ -1560,7 +1560,7 @@ const payloadSchemas = {
                       properties: {
                         kind: {
                           type: "string",
-                          enum: ["organization", "mailbox", "agent", "apiKey"],
+                          enum: ["organization", "integration", "mailbox", "agent", "apiKey"],
                         },
                         id: { type: "string", minLength: 1 },
                       },
@@ -1578,7 +1578,7 @@ const payloadSchemas = {
                             properties: {
                               kind: {
                                 type: "string",
-                                enum: ["organization", "mailbox", "agent", "apiKey"],
+                                enum: ["organization", "integration", "mailbox", "agent", "apiKey"],
                               },
                               id: { type: "string", minLength: 1 },
                             },

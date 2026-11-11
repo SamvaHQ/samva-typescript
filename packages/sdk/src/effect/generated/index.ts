@@ -112,7 +112,7 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
   .annotate(OpenApi.Version, "1.0.0")
   .annotate(
     OpenApi.Description,
-    "Samva is the email API for your app. Send transactional email in one typed call. Delivery events and customer replies come back as signed webhooks, and replies thread to the email they answer.",
+    "Samva is the email and WhatsApp API for your app and your agents. Send in one typed call. Delivery events and customer replies come back as signed webhooks, and replies thread to the conversation they answer.",
   )
   .annotate(OpenApi.Servers, [{ url: "https://api.samva.dev" }])
   .add(

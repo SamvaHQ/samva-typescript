@@ -622,7 +622,7 @@ export class ScheduledMessagesGroup extends HttpApiGroup.make("Scheduled Message
       .annotate(OpenApi.Summary, "Schedule a message")
       .annotate(
         OpenApi.Description,
-        "Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. The send payload is the same channel union the immediate send accepts, with each channel's content checked at schedule time so a send that could never render fails now rather than hours later: email and WhatsApp schedules are available. Optional timezone is validated IANA display metadata only and never changes the execution instant.",
+        "Schedules a message for dispatch at the absolute ISO-8601 timestamp supplied in scheduledFor. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. The send payload is the same channel union the immediate send accepts, with each channel's content checked at schedule time so a send that could never render fails now rather than hours later: email and WhatsApp schedules are available. Email schedules placed explicitly in a namespace require its sending setup to be ready: ValidationError means share the sender domain with namespaces or use a sender owned by that namespace. Setup that has stopped after failure also returns ValidationError and requires restarting or reconciling the domain's sending setup. ConflictError means setup is still in progress. Optional timezone is validated IANA display metadata only and never changes the execution instant.",
       ),
     HttpApiEndpoint.get("scheduledMessagesGet", "/v1/messages/scheduled/:id", {
       params: ScheduledMessagesGetPathParams,
