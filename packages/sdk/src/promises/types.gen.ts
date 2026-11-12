@@ -82,6 +82,7 @@ export type {
   MailboxNonSendAction,
   MailboxHandoff,
   MailboxToolCall,
+  MailboxAlwaysAllow,
   MailboxActionResolution,
   MailboxSendAction,
   MailboxSendSnapshot,

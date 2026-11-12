@@ -140,6 +140,22 @@ export const MailboxActionResolution = /* @__PURE__ */ (() =>
     description: "How the action's approval ended.",
     identifier: "MailboxActionResolution",
   }))();
+export type MailboxAlwaysAllow = {
+  readonly by: "owner" | "admin" | "approver";
+  readonly allowed: boolean;
+};
+export const MailboxAlwaysAllow = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    by: Schema.Union([
+      Schema.Literal("owner"),
+      Schema.Literal("admin"),
+      Schema.Literal("approver"),
+    ]).annotate({
+      description:
+        "Who may approve with Always allow. `owner`: only the organization owner, because it lets an integration tool run without approval for every agent. `admin`: an organization owner or admin, because it adds a rule for one hosted agent or API key. `approver`: anyone who may approve the action.",
+    }),
+    allowed: Schema.Boolean.annotate({ description: "Whether the caller is someone `by` names." }),
+  }).annotate({ identifier: "MailboxAlwaysAllow" }))();
 export type TemplateChannelVariantId = string & EffectBrand.Brand<"TemplateChannelVariantId">;
 export const TemplateChannelVariantId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1901,6 +1917,7 @@ export type MailboxNonSendAction = {
   readonly draftId: MailboxDraftId | null;
   readonly decision: MailboxActionDecision | null;
   readonly resolution: MailboxActionResolution | null;
+  readonly alwaysAllow: MailboxAlwaysAllow | null;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly type:
@@ -1955,6 +1972,10 @@ export const MailboxNonSendAction = /* @__PURE__ */ (() =>
     resolution: Schema.Union([MailboxActionResolution, Schema.Null]).annotate({
       description:
         "How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.",
+    }),
+    alwaysAllow: Schema.Union([MailboxAlwaysAllow, Schema.Null]).annotate({
+      description:
+        "Who may approve this held action with Always allow, and whether the caller may. Null for an action that is not held, a hand-off, and a reply held for integration data.",
     }),
     createdAt: Schema.String,
     updatedAt: Schema.String,
@@ -2257,6 +2278,7 @@ export type MailboxSendAction = {
   readonly draftId: MailboxDraftId | null;
   readonly decision: MailboxActionDecision | null;
   readonly resolution: MailboxActionResolution | null;
+  readonly alwaysAllow: MailboxAlwaysAllow | null;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly type: "sendMessage" | "reply";
@@ -2300,6 +2322,10 @@ export const MailboxSendAction = /* @__PURE__ */ (() =>
     resolution: Schema.Union([MailboxActionResolution, Schema.Null]).annotate({
       description:
         "How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.",
+    }),
+    alwaysAllow: Schema.Union([MailboxAlwaysAllow, Schema.Null]).annotate({
+      description:
+        "Who may approve this held action with Always allow, and whether the caller may. Null for an action that is not held, a hand-off, and a reply held for integration data.",
     }),
     createdAt: Schema.String,
     updatedAt: Schema.String,
@@ -2349,6 +2375,7 @@ export type MailboxNeedsYouItem =
         | "externalAgent"
         | "samvaManagedAgent"
         | "system";
+      readonly alwaysAllow: MailboxAlwaysAllow | null;
       readonly createdAt: string;
     }
   | {
@@ -2410,6 +2437,7 @@ export const MailboxNeedsYouItem = /* @__PURE__ */ (() =>
         Schema.Literal("samvaManagedAgent"),
         Schema.Literal("system"),
       ]),
+      alwaysAllow: Schema.Union([MailboxAlwaysAllow, Schema.Null]),
       createdAt: Schema.String,
     }),
     Schema.Struct({
@@ -4841,7 +4869,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Approve a mailbox action")
       .annotate(
         OpenApi.Description,
-        "Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.",
+        "Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin; for a hosted agent's integration tool call it lets that tool run without approval for every agent, which only the organization owner may do. A held action's `alwaysAllow` says who may and whether the caller can. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.",
       ),
     HttpApiEndpoint.post("mailboxesCancelAction", "/v1/mailboxes/:id/actions/:actionId/cancel", {
       params: MailboxesCancelActionPathParams,

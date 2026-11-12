@@ -791,6 +791,10 @@ export type MailboxNonSendAction = {
    * How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.
    */
   resolution: MailboxActionResolution | null;
+  /**
+   * Who may approve this held action with Always allow, and whether the caller may. Null for an action that is not held, a hand-off, and a reply held for integration data.
+   */
+  alwaysAllow: MailboxAlwaysAllow | null;
   createdAt: string;
   updatedAt: string;
   type:
@@ -835,6 +839,17 @@ export type MailboxToolCall = {
   arguments: {
     [key: string]: JsonValue;
   };
+};
+
+export type MailboxAlwaysAllow = {
+  /**
+   * Who may approve with Always allow. `owner`: only the organization owner, because it lets an integration tool run without approval for every agent. `admin`: an organization owner or admin, because it adds a rule for one hosted agent or API key. `approver`: anyone who may approve the action.
+   */
+  by: "owner" | "admin" | "approver";
+  /**
+   * Whether the caller is someone `by` names.
+   */
+  allowed: boolean;
 };
 
 /**
@@ -886,6 +901,10 @@ export type MailboxSendAction = {
    * How a held action's approval ended: who approved, denied, or cancelled it, when, and the denial reason. Null while it waits for approval and for an action that never needed one.
    */
   resolution: MailboxActionResolution | null;
+  /**
+   * Who may approve this held action with Always allow, and whether the caller may. Null for an action that is not held, a hand-off, and a reply held for integration data.
+   */
+  alwaysAllow: MailboxAlwaysAllow | null;
   createdAt: string;
   updatedAt: string;
   type: "sendMessage" | "reply";
@@ -1691,6 +1710,7 @@ export type MailboxNeedsYouItem =
         | "externalAgent"
         | "samvaManagedAgent"
         | "system";
+      alwaysAllow: MailboxAlwaysAllow | null;
       createdAt: string;
     }
   | {

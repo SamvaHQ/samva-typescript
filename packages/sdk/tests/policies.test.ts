@@ -29,6 +29,7 @@ const approvedAction = {
   draftId: null,
   decision: null,
   resolution: null,
+  alwaysAllow: null,
   intent: null,
   createdAt: date,
   updatedAt: date,

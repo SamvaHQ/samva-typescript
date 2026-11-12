@@ -1,3 +1,13 @@
+## samva@0.43.2
+
+### Held actions say who can always allow them
+
+A mailbox action and a Needs you held action carry `alwaysAllow`: who may approve the held action
+with Always allow (`owner`, `admin`, or `approver`) and whether you may. It is `null` for an action
+that is not held, a hand-off, and a reply held for integration data. Read it before offering
+`always: true` on approve: an agent's integration tool call lets that tool run without approval
+for every agent, which only the organization owner may do.
+
 ## samva@0.43.1
 
 ### Decisions can name an integration scope

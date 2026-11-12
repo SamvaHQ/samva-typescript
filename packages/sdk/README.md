@@ -4,6 +4,35 @@ Samva is email and WhatsApp for AI agents, and the API developers build on. An a
 
 TypeScript SDK for Samva's public customer API.
 
+## Give an agent a mailbox
+
+Create a mailbox, send from it, and read what comes back. A hosted `samva.email` address needs no DNS setup.
+
+```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const mailbox = await samva.mailboxes.create({
+  endpoint: { channel: "email", address: "support@acme.samva.email" },
+  name: "Support",
+});
+
+const receipt = await samva.mailboxes.sendMessage({
+  id: mailbox.id,
+  to: ["customer@example.com"],
+  subject: "Your support request",
+  text: "We are looking into your request.",
+});
+console.log(receipt.state);
+```
+
+Replies arrive as signed webhooks or over the mailbox event stream, threaded to the conversation. Give
+the agent a key that reaches only its own mailbox, and set rules that hold a send for a person to
+approve: see [Give an agent an inbox](https://samva.dev/docs/mailboxes). To drive the same mailbox
+from an MCP client instead, connect it to `https://mcp.samva.dev`
+([guide](https://samva.dev/docs/developers/mcp)).
+
 ## Documentation
 
 See [AGENTS.md](./AGENTS.md) for concise guidance when using this package with coding agents.
