@@ -1,3 +1,4 @@
+import type { MailboxQuarantinedMessage } from "../client/types.gen";
 import type { SamvaClient } from "../promises/client";
 
 export type ExtensionManifest = {
@@ -105,14 +106,7 @@ type WebhookThread = {
   readonly preview: string | null;
 };
 type MailboxEventScope = { readonly mailboxId: string; readonly namespaceId: string | null };
-type QuarantineReason =
-  | "spam"
-  | "dmarc"
-  | "virus"
-  | "virus_unscanned"
-  | "phishing"
-  | "fraud"
-  | "prompt_injection";
+type QuarantineReason = MailboxQuarantinedMessage["reason"];
 export type EventData = {
   "mailbox.message.received": MailboxEventScope & {
     readonly message: WebhookMessage;

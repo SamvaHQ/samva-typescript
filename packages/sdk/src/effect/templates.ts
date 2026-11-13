@@ -11,6 +11,8 @@ export {
 export const list = /* @__PURE__ */ make("templatesList");
 export const create = /* @__PURE__ */ make("templatesCreate");
 export const createFromWebsite = /* @__PURE__ */ make("templatesCreateFromWebsite");
+export const suggestStarters = /* @__PURE__ */ make("templatesSuggestStarters");
+export const createFromBrief = /* @__PURE__ */ make("templatesCreateFromBrief");
 export const addEntry = /* @__PURE__ */ make("templatesAddEntry");
 export const listFamilies = /* @__PURE__ */ make("templatesListFamilies");
 export const createFamily = /* @__PURE__ */ make("templatesCreateFamily");

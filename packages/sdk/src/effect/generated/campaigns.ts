@@ -497,10 +497,8 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -551,20 +549,13 @@ export const EmailCampaignContent = /* @__PURE__ */ (() =>
     issue: Schema.optionalKey(
       Schema.Union([
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          path: Schema.String.annotate({
+            description:
+              "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(

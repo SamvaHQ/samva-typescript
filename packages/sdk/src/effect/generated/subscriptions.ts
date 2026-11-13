@@ -42,47 +42,19 @@ export type SubscriptionsSubscribeRequestJson = {
 };
 export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp(
-          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-      }),
-    ),
+    email: Schema.String,
     topicId: TopicId,
     from: Schema.Struct({
-      email: Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
+      email: Schema.String,
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          )
-            .check(
-              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(120).annotate({
-                expected: "a value with a length of at most 120",
-              }),
-            ),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
           Schema.Null,
         ]),
       ),
@@ -92,14 +64,9 @@ export const SubscriptionsSubscribeRequestJson = /* @__PURE__ */ (() =>
     }),
     templateSlug: Schema.optionalKey(
       Schema.Union([
-        Schema.String.annotate({
-          description:
-            "A published email template slug receiving confirmUrl. Omit it to send the default confirmation email.",
-        }).check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Duration, Effect, Fiber, Stream } from "effect";
-import { HttpClient, HttpClientResponse, type HttpClientRequest, UrlParams } from "effect/http";
+import { Duration, Effect, Fiber, Layer, Schema, Stream } from "effect";
+import { FetchHttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
 
 import {
@@ -39,12 +39,14 @@ import {
   Whoami,
 } from "../src/effect";
 import * as Client from "../src/effect/client";
+import * as Api from "../src/effect/generated";
 import {
   type CursorPageEnvelope,
   streamCursorItems,
   streamCursorPages,
 } from "../src/effect/pagination";
 import { SDK_SERVICE_OPERATIONS } from "../src/service-map";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 /**
  * Stream pagination. The paginator core (`streamCursorPages`/`streamCursorItems`)
@@ -128,42 +130,34 @@ describe("cursor paginator core (streamCursorPages / streamCursorItems)", () => 
 // Facade wiring
 // ─────────────────────────────────────────────────────────────────────────────
 
-const jsonResponse = (status: number, body: unknown): Response =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
-
 // Page n of a domains list: its cursor names the next page until the last.
-const domainsPage = (page: number, totalPages: number) => ({
-  items: [
-    {
-      id: `dom_7q2xk9mvt4znw8r${page}`,
-      domain: `example${page}.com`,
-      unknownRecipientMailboxId: null,
-      namespaceId: null,
-      shared: false,
-      phase: "ready",
-      isDefault: false,
-      deliverability: {
-        bounceRate: 0,
-        complaintRate: 0,
-        windowSends: 0,
-        sendingStatus: "enabled",
+const domainsPage = (page: number, totalPages: number): Api.EmailListDomains200 =>
+  Schema.decodeSync(Api.EmailListDomains200)({
+    items: [
+      {
+        id: `dom_7q2xk9mvt4znw8r${page}`,
+        domain: `example${page}.com`,
+        unknownRecipientMailboxId: null,
+        namespaceId: null,
+        shared: false,
+        phase: "ready",
+        isDefault: false,
+        deliverability: {
+          bounceRate: 0,
+          complaintRate: 0,
+          windowSends: 0,
+          sendingStatus: "enabled",
+        },
+        series: Array.from({ length: 14 }, () => 0),
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
       },
-      series: Array.from({ length: 14 }, () => 0),
-      createdAt: "2026-01-01T00:00:00.000Z",
-      updatedAt: "2026-01-01T00:00:00.000Z",
-    },
-  ],
-  nextCursor: page < totalPages ? `page-${page + 1}` : null,
-});
+    ],
+    nextCursor: page < totalPages ? `page-${page + 1}` : null,
+  });
 
-// The HttpApiClient stores encoded query params on `request.urlParams`; they are
-// merged into the URL only by the real fetch transport, so a stub HttpClient must
-// read them here rather than from `request.url`.
-const pageOf = (request: HttpClientRequest.HttpClientRequest): number => {
-  const value = UrlParams.toRecord(request.urlParams).cursor;
-  const cursor = Array.isArray(value) ? value[0] : value;
-  return cursor ? Number(cursor.slice("page-".length)) : 1;
-};
+const pageOf = (cursor: string | undefined): number =>
+  cursor ? Number(cursor.slice("page-".length)) : 1;
 
 const effectModules = {
   agents: Agents,
@@ -264,23 +258,17 @@ describe("facade pagination wiring", () => {
     "streams decoded items across pages through the real client (one request per page)",
     () =>
       Effect.gen(function* () {
-        let requests = 0;
-        const client = Client.layer({ apiKey: "samva_sk_test" });
-
+        const api = fakeSamvaApi(Api.SamvaApi)({
+          Email: {
+            emailListDomains: ({ query }) => Effect.succeed(domainsPage(pageOf(query.cursor), 3)),
+          },
+        });
+        const client = Layer.provide(
+          Client.layer({ apiKey: "samva_sk_test" }),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, api.fetch)),
+        );
         const domains = yield* Stream.runCollect(Email.listDomains.items()).pipe(
           Effect.provide(client),
-          Effect.provideService(
-            HttpClient.HttpClient,
-            HttpClient.make((request) => {
-              requests += 1;
-              return Effect.succeed(
-                HttpClientResponse.fromWeb(
-                  request,
-                  jsonResponse(200, domainsPage(pageOf(request), 3)),
-                ),
-              );
-            }),
-          ),
         );
         expect(domains.map((domain) => domain.domain)).toEqual([
           "example1.com",
@@ -288,43 +276,39 @@ describe("facade pagination wiring", () => {
           "example3.com",
         ]);
         // Lazy full traversal: exactly one request per page, no re-fetching.
-        expect(requests).toBe(3);
+        expect(api.requests).toHaveLength(3);
+        expect(api.requests.map(({ query }) => query.cursor)).toEqual([
+          undefined,
+          "page-2",
+          "page-3",
+        ]);
+        api.assertComplete();
       }),
   );
 
   it.effect("composes with the ambient retry policy: a transient page failure is retried", () =>
     Effect.gen(function* () {
-      let requests = 0;
       let page2Failures = 0;
-      const client = Client.layer({ apiKey: "samva_sk_test" });
-
-      const fiber = yield* Effect.forkChild(
-        Stream.runCollect(Email.listDomains.items()).pipe(
-          Effect.provide(client),
-          Effect.provideService(
-            HttpClient.HttpClient,
-            HttpClient.make((request) => {
-              requests += 1;
-              const page = pageOf(request);
-              // Fail page 2 once with a retryable 500, then serve it.
-              if (page === 2 && page2Failures === 0) {
-                page2Failures += 1;
-                return Effect.succeed(
-                  HttpClientResponse.fromWeb(
-                    request,
-                    jsonResponse(500, {
-                      _tag: "InternalError",
-                      message: "boom",
-                    }),
-                  ),
-                );
-              }
-              return Effect.succeed(
-                HttpClientResponse.fromWeb(request, jsonResponse(200, domainsPage(page, 2))),
+      const api = fakeSamvaApi(Api.SamvaApi)({
+        Email: {
+          emailListDomains: ({ query }) => {
+            const page = pageOf(query.cursor);
+            if (page === 2 && page2Failures === 0) {
+              page2Failures += 1;
+              return Effect.fail(
+                Schema.decodeSync(Api.InternalError)({ _tag: "InternalError", message: "boom" }),
               );
-            }),
-          ),
-        ),
+            }
+            return Effect.succeed(domainsPage(page, 2));
+          },
+        },
+      });
+      const client = Layer.provide(
+        Client.layer({ apiKey: "samva_sk_test" }),
+        Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, api.fetch)),
+      );
+      const fiber = yield* Effect.forkChild(
+        Stream.runCollect(Email.listDomains.items()).pipe(Effect.provide(client)),
         { startImmediately: true },
       );
       // Advance past the backoff so the single page-2 retry fires.
@@ -334,7 +318,13 @@ describe("facade pagination wiring", () => {
       expect(domains.map((domain) => domain.domain)).toEqual(["example1.com", "example2.com"]);
       // page1 (1) + page2 failure+retry (2) = 3 requests; retry lives in the
       // per-page fetch, not around the whole stream.
-      expect(requests).toBe(3);
+      expect(api.requests).toHaveLength(3);
+      expect(api.requests.map(({ query }) => query.cursor)).toEqual([
+        undefined,
+        "page-2",
+        "page-2",
+      ]);
+      api.assertComplete();
     }),
   );
 });

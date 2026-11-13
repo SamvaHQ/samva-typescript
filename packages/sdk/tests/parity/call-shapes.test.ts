@@ -2,17 +2,26 @@ import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/http";
 
+import * as Agents from "../../src/effect/agents";
 import * as Analytics from "../../src/effect/analytics";
 import * as Campaigns from "../../src/effect/campaigns";
 import * as Client from "../../src/effect/client";
 import * as Contacts from "../../src/effect/contacts";
 import * as Email from "../../src/effect/email";
+import { InternalError } from "../../src/effect/generated";
+import * as Journeys from "../../src/effect/journeys";
 import * as Messages from "../../src/effect/messages";
 import * as NewsletterIssues from "../../src/effect/newsletter-issues";
+import * as Newsletters from "../../src/effect/newsletters";
 import * as Organizations from "../../src/effect/organizations";
 import * as Subscriptions from "../../src/effect/subscriptions";
 import * as Topics from "../../src/effect/topics";
-import { createClient as createPromiseClient, type SamvaClient } from "../../src/promises";
+import {
+  createClient as createPromiseClient,
+  type SamvaClient,
+  type AgentDefinition,
+  type JourneyDefinitionWritable,
+} from "../../src/promises";
 
 type CapturedRequest = {
   readonly method: string;
@@ -25,9 +34,161 @@ type CallShapeCell = {
   readonly name: string;
   readonly promise: (client: SamvaClient) => Promise<unknown>;
   readonly effect: () => Effect.Effect<unknown, unknown, Client.Service>;
+  readonly expected?: Omit<CapturedRequest, "idempotencyKey"> & {
+    readonly idempotencyKey?: string;
+  };
 };
 
-const cells = [
+const agentId = "agt_1234567890123456";
+const draft = {
+  name: "Desk",
+  definition: {
+    instructions: "Answer routine questions.",
+    knowledge: "",
+    knowledgeSourceIds: [],
+    endpointIds: [],
+    integrations: [],
+    policy: { presets: [], rules: [] },
+    model: "standard",
+    reasoning: "auto",
+    workingHours: null,
+    takeoverTimeoutMinutes: 30,
+  } satisfies AgentDefinition,
+};
+const journeyId = "jrny_7q2xk9mvt4znw8rh";
+const definition: JourneyDefinitionWritable = {
+  trigger: { type: "contact.created" },
+  rootNodeId: "done",
+  nodes: { done: { type: "exit", config: {}, next: [] } },
+};
+const newsletterId = "nl_1234567890abcdef";
+
+const cells: ReadonlyArray<CallShapeCell> = [
+  {
+    name: "agent rerun sends the draft",
+    promise: (client) => client.agents.rerunTests({ id: agentId, ...draft }),
+    effect: () => Agents.rerunTests({ id: agentId, ...draft }),
+    expected: { method: "POST", path: `/v1/agents/${agentId}/tests/rerun`, body: draft },
+  },
+  {
+    name: "journey draft revision",
+    promise: (client) =>
+      client.journeys.replaceDraft({ id: journeyId, revision: "rev-1", definition }),
+    effect: () => Journeys.replaceDraft({ id: journeyId, revision: "rev-1", definition }),
+    expected: {
+      method: "PUT",
+      path: `/v1/journeys/${journeyId}/draft`,
+      body: { revision: "rev-1", definition },
+    },
+  },
+  {
+    name: "journey publish rev-2",
+    promise: (client) => client.journeys.publish({ id: journeyId, revision: "rev-2" }),
+    effect: () => Journeys.publish({ id: journeyId, revision: "rev-2" }),
+    expected: {
+      method: "POST",
+      path: `/v1/journeys/${journeyId}/publish`,
+      body: { revision: "rev-2" },
+    },
+  },
+  {
+    name: "journey publish rev-3",
+    promise: (client) => client.journeys.publish({ id: journeyId, revision: "rev-3" }),
+    effect: () => Journeys.publish({ id: journeyId, revision: "rev-3" }),
+    expected: {
+      method: "POST",
+      path: `/v1/journeys/${journeyId}/publish`,
+      body: { revision: "rev-3" },
+    },
+  },
+  {
+    name: "journey pause",
+    promise: (client) => client.journeys.pause({ id: journeyId }),
+    effect: () => Journeys.pause({ id: journeyId }),
+    expected: { method: "POST", path: `/v1/journeys/${journeyId}/pause`, body: undefined },
+  },
+  {
+    name: "journey resume",
+    promise: (client) => client.journeys.resume({ id: journeyId }),
+    effect: () => Journeys.resume({ id: journeyId }),
+    expected: { method: "POST", path: `/v1/journeys/${journeyId}/resume`, body: undefined },
+  },
+  {
+    name: "journey archive",
+    promise: (client) => client.journeys.archive({ id: journeyId }),
+    effect: () => Journeys.archive({ id: journeyId }),
+    expected: { method: "POST", path: `/v1/journeys/${journeyId}/archive`, body: undefined },
+  },
+  {
+    name: "journey runs filters",
+    promise: (client) => client.journeys.listRuns({ id: journeyId, status: "active", limit: 25 }),
+    effect: () => Journeys.listRuns({ id: journeyId, status: "active", limit: 25 }),
+    expected: {
+      method: "GET",
+      path: `/v1/journeys/${journeyId}/runs?status=active&limit=25`,
+      body: undefined,
+    },
+  },
+  {
+    name: "newsletter create",
+    promise: (client) =>
+      client.newsletters.create({ name: "Weekly" }, { idempotencyKey: "create" }),
+    effect: () => Newsletters.create({ name: "Weekly" }, { idempotencyKey: "create" }),
+    expected: {
+      method: "POST",
+      path: "/v1/newsletters",
+      body: { name: "Weekly" },
+      idempotencyKey: "create",
+    },
+  },
+  {
+    name: "newsletter update",
+    promise: (client) =>
+      client.newsletters.update(
+        { id: newsletterId, archiveEnabled: true, publicationSlug: "weekly" },
+        { idempotencyKey: "update" },
+      ),
+    effect: () =>
+      Newsletters.update(
+        { id: newsletterId, archiveEnabled: true, publicationSlug: "weekly" },
+        { idempotencyKey: "update" },
+      ),
+    expected: {
+      method: "PATCH",
+      path: `/v1/newsletters/${newsletterId}`,
+      body: { archiveEnabled: true, publicationSlug: "weekly" },
+      idempotencyKey: "update",
+    },
+  },
+  {
+    name: "newsletter remove",
+    promise: (client) =>
+      client.newsletters.remove({ id: newsletterId }, { idempotencyKey: "delete" }),
+    effect: () => Newsletters.remove({ id: newsletterId }, { idempotencyKey: "delete" }),
+    expected: {
+      method: "DELETE",
+      path: `/v1/newsletters/${newsletterId}`,
+      body: undefined,
+      idempotencyKey: "delete",
+    },
+  },
+  {
+    name: "contact timeline filters",
+    promise: (client) =>
+      client.contacts.listEvents({
+        id: "contact_7q2xk9mvt4znw8rh",
+        limit: 25,
+        cursor: "resume-here",
+      }),
+    effect: () =>
+      Contacts.listEvents({ id: "contact_7q2xk9mvt4znw8rh", limit: 25, cursor: "resume-here" }),
+    expected: {
+      method: "GET",
+      path: "/v1/contacts/contact_7q2xk9mvt4znw8rh/events?limit=25&cursor=resume-here",
+      body: undefined,
+    },
+  },
+
   {
     name: "absolute instant query encodes Date input",
     promise: (client) => client.analytics.getStats({ after: "2026-10-01T00:00:00.000Z" }),
@@ -382,16 +543,10 @@ const cells = [
 ] satisfies ReadonlyArray<CallShapeCell>;
 
 const failureResponse = (): Response =>
-  new Response(
-    JSON.stringify({
-      _tag: "InternalError",
-      message: "test failure",
-    }),
-    {
-      status: 500,
-      headers: { "content-type": "application/json" },
-    },
-  );
+  new Response(JSON.stringify(new InternalError({ message: "test failure" })), {
+    status: 500,
+    headers: { "content-type": "application/json" },
+  });
 
 const decodedBody = (body: BodyInit | null | undefined): unknown => {
   if (body === undefined || body === null) return undefined;
@@ -462,6 +617,12 @@ describe("Promise and Effect direct call-shape parity", () => {
         captureEffect(cell),
       ]);
       expect(effectRequest).toEqual(promiseRequest);
+      if (cell.expected !== undefined) {
+        expect(promiseRequest).toEqual({
+          ...cell.expected,
+          idempotencyKey: cell.expected.idempotencyKey ?? null,
+        });
+      }
       if (cell.name === "required body without optional fields") {
         expect(promiseRequest.body).toEqual({});
       }

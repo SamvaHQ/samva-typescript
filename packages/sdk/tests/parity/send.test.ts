@@ -4,6 +4,7 @@ import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../../src/effect/client";
 import * as Email from "../../src/effect/email";
+import { InternalError } from "../../src/effect/generated";
 import * as Messages from "../../src/effect/messages";
 import * as Retry from "../../src/effect/retry";
 import { buildEmailSendPayload } from "../../src/normalize";
@@ -30,7 +31,10 @@ interface Cell {
 // A canned 500 lets the request fail *after* the transport has captured the
 // body — the assertion is about what went on the wire, not the response.
 const cannedResponse = (): Response =>
-  new Response("{}", { status: 500, headers: { "content-type": "application/json" } });
+  new Response(JSON.stringify(new InternalError({ message: "Captured" })), {
+    status: 500,
+    headers: { "content-type": "application/json" },
+  });
 
 // The HttpApiClient transport encodes the body as a Uint8Array. Depending on
 // the runtime it arrives either on `init.body` or on a `Request` first arg, so

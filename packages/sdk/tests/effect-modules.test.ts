@@ -1,18 +1,29 @@
 import { describe, expect, expectTypeOf, it } from "@effect/vitest";
-import { Effect, Schema } from "effect";
-import { HttpClient, HttpClientResponse, type HttpClientRequest } from "effect/http";
+import { Effect, Layer, Schema } from "effect";
+import { FetchHttpClient } from "effect/http";
 
 import PackageJson from "../package.json" with { type: "json" };
 import * as Brands from "../src/effect/brands";
 import * as Campaigns from "../src/effect/campaigns";
 import * as Client from "../src/effect/client";
 import * as Email from "../src/effect/email";
+import {
+  SamvaApi,
+  MessageId,
+  MailboxActionId,
+  MailboxThreadId,
+  MailboxDraftId,
+  RateLimitedError,
+  InternalError,
+} from "../src/effect/generated";
 import type { EmailAddSender201 } from "../src/effect/generated/email";
+import type { MailboxesReply202 } from "../src/effect/generated/mailboxes";
 import type { MessagesSend201 } from "../src/effect/generated/messages";
 import * as Mailboxes from "../src/effect/mailboxes";
 import * as Retry from "../src/effect/retry";
 import * as Templates from "../src/effect/templates";
 import * as Webhooks from "../src/effect/webhooks";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 const input = {
   to: "ada@example.com",
@@ -21,178 +32,159 @@ const input = {
   html: "<p>Hi</p>",
 } as const;
 
-const response = (status: number, body: unknown): Response =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
-
-const stub = (
-  handler: (request: HttpClientRequest.HttpClientRequest) => Response,
-): HttpClient.HttpClient =>
-  HttpClient.make((request) =>
-    Effect.succeed(HttpClientResponse.fromWeb(request, handler(request))),
-  );
-
 type Send = ReturnType<typeof Email.send>;
 
 describe("module-first Effect SDK", () => {
-  it.effect("Email.send uses Client.layer and preserves tagged API errors", () =>
-    Effect.gen(function* () {
-      let apiKey: string | undefined;
-      let clientAttribution: string | undefined;
-
-      const retryAfter = yield* Email.send(input).pipe(
-        Effect.catchTag("RateLimitedError", (error) => Effect.succeed(error.retryAfterSeconds)),
-        Effect.provide([Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_module" })]),
-        Effect.provideService(
-          HttpClient.HttpClient,
-          stub((request) => {
-            apiKey = request.headers["x-api-key"];
-            clientAttribution = request.headers["x-samva-client"];
-            return response(429, {
-              _tag: "RateLimitedError",
+  it.effect("Email.send uses Client.layer and preserves tagged API errors", () => {
+    const fake = fakeSamvaApi(SamvaApi)({
+      Messages: {
+        messagesSend: () =>
+          Effect.fail(
+            new RateLimitedError({
               message: "Send rate limit reached. Retry after 12 seconds.",
               retryAfterSeconds: 7,
-            });
-          }),
-        ),
+            }),
+          ),
+      },
+    });
+    return Effect.gen(function* () {
+      const retryAfter = yield* Email.send(input).pipe(
+        Effect.catchTag("RateLimitedError", (error) => Effect.succeed(error.retryAfterSeconds)),
       );
-
       expect(retryAfter).toBe(7);
-      expect(apiKey).toBe("samva_sk_module");
-      expect(clientAttribution).toBe(`typescript-effect/${PackageJson.version}`);
-    }),
-  );
-
-  it.effect("allows attribution overrides and removals while preserving authentication", () =>
-    Effect.gen(function* () {
-      const seen: Array<HttpClientRequest.HttpClientRequest> = [];
+      expect(fake.requests[0]?.headers.get("x-api-key")).toBe("samva_sk_module");
+      expect(fake.requests[0]?.headers.get("x-samva-client")).toBe(
+        `typescript-effect/${PackageJson.version}`,
+      );
+      fake.assertComplete();
+    }).pipe(
+      Effect.provide(
+        Layer.provide(
+          Layer.mergeAll(Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_module" })),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
+        ),
+      ),
+    );
+  });
+  it.effect("allows attribution overrides and removals while preserving authentication", () => {
+    const receipt: MessagesSend201 = {
+      id: Schema.decodeSync(MessageId)("msg_7q2xk9mvt4znw8rh"),
+      status: "pending",
+      createdAt: "2026-10-08T00:00:00.000Z",
+      waitReason: null,
+      reviewExpectedAt: null,
+      skippedRecipients: [],
+    };
+    const fake = fakeSamvaApi(SamvaApi)({
+      Messages: { messagesSend: () => Effect.succeed(receipt) },
+    });
+    return Effect.gen(function* () {
       const invoke = (headers: Readonly<Record<string, string | undefined>>) =>
         Email.send(input).pipe(
           Effect.provide([
             Retry.layerDisabled,
             Client.layer({ apiKey: "samva_sk_module", headers }),
           ]),
-          Effect.provideService(
-            HttpClient.HttpClient,
-            stub((request) => {
-              seen.push(request);
-              return response(200, { id: "msg_test" });
-            }),
-          ),
         );
-
-      yield* Effect.exit(
-        invoke({ "x-samva-client": "custom-client/1.2.3", "x-api-key": "spoofed" }),
-      );
-      yield* Effect.exit(invoke({ "x-samva-client": undefined, "x-api-key": "spoofed" }));
-
-      expect(seen[0]?.headers["x-samva-client"]).toBe("custom-client/1.2.3");
-      expect(seen[0]?.headers["x-api-key"]).toBe("samva_sk_module");
-      expect(seen[1]?.headers["x-samva-client"]).toBeUndefined();
-      expect(seen[1]?.headers["x-api-key"]).toBe("samva_sk_module");
-    }),
-  );
-
-  it.effect("scopes an OAuth client to its configured organization", () =>
-    Effect.gen(function* () {
-      let authorization: string | undefined;
-      let orgSlug: string | undefined;
-      yield* Email.listDomains().pipe(
-        Effect.provide([
-          Retry.layerDisabled,
-          Client.layer({ authToken: "oauth-token", orgSlug: "acme" }),
-        ]),
-        Effect.provideService(
-          HttpClient.HttpClient,
-          stub((request) => {
-            authorization = request.headers.authorization;
-            orgSlug = request.headers["x-org-slug"];
-            return response(500, {});
-          }),
+      yield* invoke({ "x-samva-client": "custom-client/1.2.3", "x-api-key": "spoofed" });
+      yield* invoke({ "x-samva-client": undefined, "x-api-key": "spoofed" });
+      expect(fake.requests[0]?.headers.get("x-samva-client")).toBe("custom-client/1.2.3");
+      expect(fake.requests[0]?.headers.get("x-api-key")).toBe("samva_sk_module");
+      expect(fake.requests[1]?.headers.get("x-samva-client")).toBeNull();
+      expect(fake.requests[1]?.headers.get("x-api-key")).toBe("samva_sk_module");
+      fake.assertComplete();
+    }).pipe(
+      Effect.provide(
+        Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
+      ),
+    );
+  });
+  it.effect("scopes an OAuth client to its configured organization", () => {
+    const fake = fakeSamvaApi(SamvaApi)({
+      Email: { emailListDomains: () => Effect.succeed({ items: [], nextCursor: null }) },
+    });
+    return Effect.gen(function* () {
+      yield* Email.listDomains();
+      expect(fake.requests[0]?.headers.get("authorization")).toBe("Bearer oauth-token");
+      expect(fake.requests[0]?.headers.get("x-org-slug")).toBe("acme");
+      fake.assertComplete();
+    }).pipe(
+      Effect.provide(
+        Layer.provide(
+          Layer.mergeAll(
+            Retry.layerDisabled,
+            Client.layer({ authToken: "oauth-token", orgSlug: "acme" }),
+          ),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
         ),
-        Effect.exit,
-      );
-      expect(authorization).toBe("Bearer oauth-token");
-      expect(orgSlug).toBe("acme");
-    }),
-  );
-
-  it.effect("generates optional wire keys and accepts overrides only in options", () =>
-    Effect.gen(function* () {
-      const keys: Array<string | undefined> = [];
+      ),
+    );
+  });
+  it.effect("generates optional wire keys and accepts overrides only in options", () => {
+    const receipt: MailboxesReply202 = {
+      actionId: Schema.decodeSync(MailboxActionId)("mbxact_1234567890123456"),
+      messageId: null,
+      threadId: Schema.decodeSync(MailboxThreadId)("thread_1234567890123456"),
+      draftId: Schema.decodeSync(MailboxDraftId)("mdraft_1234567890123456"),
+      state: "approvalRequired",
+      acceptedAt: null,
+      executeUntil: null,
+      retryAt: null,
+      problem: null,
+      retryEligible: false,
+      decision: null,
+      waitReason: null,
+      reviewExpectedAt: null,
+      skippedRecipients: [],
+      createdAt: "2026-10-08T00:00:00.000Z",
+      updatedAt: "2026-10-08T00:00:00.000Z",
+    };
+    const fake = fakeSamvaApi(SamvaApi)({
+      Mailboxes: { mailboxesReply: () => Effect.succeed(receipt) },
+    });
+    return Effect.gen(function* () {
       const reply = (idempotencyKey?: string) =>
         Mailboxes.reply(
-          {
-            id: "mbx_1234567890123456",
-            messageId: "msg_1234567890123456",
-            text: "Thanks",
-          },
+          { id: "mbx_1234567890123456", messageId: "msg_1234567890123456", text: "Thanks" },
           { idempotencyKey },
-        ).pipe(
-          Effect.provide(Client.layer({ apiKey: "samva_sk_module" })),
-          Effect.provideService(
-            HttpClient.HttpClient,
-            stub((request) => {
-              keys.push(request.headers["idempotency-key"]);
-              return response(202, {
-                actionId: "mbxact_1234567890123456",
-                messageId: null,
-                threadId: "thread_1234567890123456",
-                draftId: "mdraft_1234567890123456",
-                state: "approvalRequired",
-                acceptedAt: null,
-                executeUntil: null,
-                retryAt: null,
-                problem: null,
-                retryEligible: false,
-                decision: null,
-                waitReason: null,
-                reviewExpectedAt: null,
-                skippedRecipients: [],
-                createdAt: "2026-10-08T00:00:00.000Z",
-                updatedAt: "2026-10-08T00:00:00.000Z",
-              });
-            }),
-          ),
         );
-
       yield* reply();
       yield* reply("reply-1");
-
-      expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
-      expect(keys[1]).toBe("reply-1");
-    }),
-  );
-
-  it.effect("sends a campaign key in the header with no body key", () =>
-    Effect.gen(function* () {
-      let body: unknown;
-      let key: string | undefined;
-      yield* Effect.exit(
-        Campaigns.scheduleRun(
-          { id: "camp_1234567890abcdefgh" },
-          { idempotencyKey: "launch-august" },
-        ).pipe(
-          Effect.provide([Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_module" })]),
-          Effect.provideService(
-            HttpClient.HttpClient,
-            stub((request) => {
-              key = request.headers["idempotency-key"];
-              body =
-                request.body._tag === "Uint8Array"
-                  ? JSON.parse(new TextDecoder().decode(request.body.body))
-                  : undefined;
-              return response(500, {});
-            }),
-          ),
+      expect(fake.requests[0]?.headers.get("idempotency-key")).toMatch(/^[0-9a-f-]{36}$/);
+      expect(fake.requests[1]?.headers.get("idempotency-key")).toBe("reply-1");
+      fake.assertComplete();
+    }).pipe(
+      Effect.provide(
+        Layer.provide(
+          Client.layer({ apiKey: "samva_sk_module" }),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
         ),
-      );
-      expect(body).toEqual({});
-      expect(key).toBe("launch-august");
-    }),
-  );
+      ),
+    );
+  });
+  it.effect("sends a campaign key in the header with no body key", () => {
+    const fake = fakeSamvaApi(SamvaApi)({
+      Campaigns: {
+        campaignsScheduleRun: () => Effect.fail(new InternalError({ message: "boom" })),
+      },
+    });
+    return Effect.gen(function* () {
+      yield* Campaigns.scheduleRun(
+        { id: "camp_1234567890abcdefgh" },
+        { idempotencyKey: "launch-august" },
+      ).pipe(Effect.exit);
+      expect(fake.requests[0]?.body).toEqual({});
+      expect(fake.requests[0]?.headers.get("idempotency-key")).toBe("launch-august");
+      fake.assertComplete();
+    }).pipe(
+      Effect.provide(
+        Layer.provide(
+          Layer.mergeAll(Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_module" })),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
+        ),
+      ),
+    );
+  });
 
   it("exports direct domain operations with the Client service requirement", () => {
     expect(typeof Email.send).toBe("function");

@@ -253,6 +253,17 @@ export type MessageReceivedEvent = {
     readonly errorMessage?: string | null;
     readonly parts?: number | null;
     readonly carrier?: string | null;
+    readonly disposition: "delivered" | "quarantined" | "isolated";
+    readonly reason:
+      | "spam"
+      | "dmarc"
+      | "virus"
+      | "virus_unscanned"
+      | "verdict_missing"
+      | "phishing"
+      | "fraud"
+      | "prompt_injection"
+      | null;
     readonly campaign?:
       | ({ readonly campaignId: string; readonly runId: string } & {
           readonly [x: string]: JsonValue;
@@ -1314,6 +1325,7 @@ export type MailboxMessageQuarantinedEvent = {
       | "dmarc"
       | "virus"
       | "virus_unscanned"
+      | "verdict_missing"
       | "phishing"
       | "fraud"
       | "prompt_injection";
@@ -1352,6 +1364,7 @@ export type MailboxMessageReleasedEvent = {
       | "dmarc"
       | "virus"
       | "virus_unscanned"
+      | "verdict_missing"
       | "phishing"
       | "fraud"
       | "prompt_injection";
@@ -1415,6 +1428,7 @@ export type MailboxMessageDiscardedEvent = {
       | "dmarc"
       | "virus"
       | "virus_unscanned"
+      | "verdict_missing"
       | "phishing"
       | "fraud"
       | "prompt_injection";

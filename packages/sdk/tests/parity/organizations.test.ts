@@ -1,12 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../../src/effect/client";
+import * as Api from "../../src/effect/generated";
 import * as Organizations from "../../src/effect/organizations";
 import { createClient } from "../../src/promises";
+import { fakeSamvaApi } from "../support/fake-samva-api";
 
-const organization = {
+const organization = Schema.decodeSync(Api.OrganizationsGet200)({
   id: "org_test",
   billingAccountId: "billing_test",
   name: "Test Organization",
@@ -33,15 +35,7 @@ const organization = {
   conversationsUsed: 0,
   teamMembersUsed: 0,
   messagesResetAt: null,
-} as const;
-
-const responseFetch =
-  (status: number, body: unknown): typeof globalThis.fetch =>
-  async () =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { "content-type": "application/json" },
-    });
+});
 
 const runEffectGet = (fetch: typeof globalThis.fetch) =>
   Effect.runPromise(
@@ -57,14 +51,15 @@ const runEffectGet = (fetch: typeof globalThis.fetch) =>
 
 describe("organization facade behavior", () => {
   it("exposes the minimal profile through both public clients", async () => {
-    const profile = { id: "mem_test", name: "Ada", nickname: "Ada (Acme)" };
-    const paths: string[] = [];
-    const fetch = async (input: RequestInfo | URL) => {
-      paths.push(new URL(input instanceof Request ? input.url : input.toString()).pathname);
-      return new Response(JSON.stringify(profile), {
-        headers: { "content-type": "application/json" },
-      });
-    };
+    const profile = Schema.decodeSync(Api.OrganizationsGetProfile200)({
+      id: "mem_test",
+      name: "Ada",
+      nickname: "Ada (Acme)",
+    });
+    const api = fakeSamvaApi(Api.SamvaApi)({
+      Organizations: { organizationsGetProfile: () => Effect.succeed(profile) },
+    });
+    const { fetch } = api;
     const promise = createClient({ apiKey: "samva_sk_test", fetch });
     expect(await promise.organizations.getProfile()).toEqual(profile);
     expect(
@@ -79,10 +74,11 @@ describe("organization facade behavior", () => {
         ),
       ),
     ).toEqual(profile);
-    expect(paths).toEqual([
+    expect(api.requests.map(({ path }) => path)).toEqual([
       "/v1/organizations/current/profile",
       "/v1/organizations/current/profile",
     ]);
+    api.assertComplete();
   });
   it("carries the member namespace through both invitation clients and address options", async () => {
     const payload = {
@@ -91,22 +87,22 @@ describe("organization facade behavior", () => {
       namespaceId: "ns_7q2xk9mvt4znw8rh",
       mailboxAddress: "ada@customer.example",
     } as const;
-    const invitation = { ...payload, id: "inv_7q2xk9mvt4znw8rh", status: "pending" };
-    const calls: Array<{ path: string; body: unknown }> = [];
-    const fetch: typeof globalThis.fetch = async (input, init) => {
-      const request = input instanceof Request ? input : new Request(input, init);
-      const url = new URL(request.url);
-      const text = await request.text();
-      calls.push({ path: `${url.pathname}${url.search}`, body: text ? JSON.parse(text) : null });
-      return new Response(
-        JSON.stringify(
-          url.pathname.endsWith("/invitations")
-            ? invitation
-            : { domains: ["customer.example"], defaultDomain: "customer.example" },
-        ),
-        { headers: { "content-type": "application/json" } },
-      );
-    };
+    const invitation = Schema.decodeSync(Api.OrganizationsInviteMember200)({
+      ...payload,
+      id: "inv_7q2xk9mvt4znw8rh",
+      status: "pending",
+    });
+    const options = Schema.decodeSync(Api.OrganizationsGetPersonalMailboxAddressOptions200)({
+      domains: ["customer.example"],
+      defaultDomain: "customer.example",
+    });
+    const api = fakeSamvaApi(Api.SamvaApi)({
+      Organizations: {
+        organizationsInviteMember: () => Effect.succeed(invitation),
+        organizationsGetPersonalMailboxAddressOptions: () => Effect.succeed(options),
+      },
+    });
+    const { fetch } = api;
     const promise = createClient({ authToken: "session-token", orgSlug: "acme", fetch });
     const layer = Layer.provide(
       Client.layer({ authToken: "session-token", orgSlug: "acme" }),
@@ -124,7 +120,12 @@ describe("organization facade behavior", () => {
         Effect.provide(layer),
       ),
     );
-    expect(calls).toEqual([
+    expect(
+      api.requests.map(({ path, query, body }) => ({
+        path: query.namespaceId ? `${path}?namespaceId=${query.namespaceId}` : path,
+        body: body ?? null,
+      })),
+    ).toEqual([
       { path: "/v1/organizations/members/invitations", body: payload },
       { path: "/v1/organizations/members/invitations", body: payload },
       {
@@ -136,6 +137,7 @@ describe("organization facade behavior", () => {
         body: null,
       },
     ]);
+    api.assertComplete();
   });
   it("assigns and reads personal mailbox management through both public clients", async () => {
     const userId = "user_7q2xk9mvt4znw8rh";
@@ -144,29 +146,22 @@ describe("organization facade behavior", () => {
     const assignmentPath = `/v1/organizations/members/${userId}/personal-mailbox`;
     const assignmentsPath = "/v1/organizations/personal-mailboxes/assignments";
     const optionsPath = "/v1/organizations/personal-mailboxes/address-options";
-    const responses: Readonly<Record<string, unknown>> = {
-      [assignmentPath]: { mailboxId },
-      [assignmentsPath]: { items: [{ userId }] },
-      [optionsPath]: { domains: ["example.com"], defaultDomain: "example.com" },
-    };
-    const requests: Array<{
-      readonly method: string;
-      readonly path: string;
-      readonly body: unknown;
-    }> = [];
-    const fetch: typeof globalThis.fetch = async (input, init) => {
-      const request = input instanceof Request ? input : new Request(input, init);
-      const path = new URL(request.url).pathname;
-      const text = await request.text();
-      requests.push({
-        method: request.method,
-        path,
-        body: text.length === 0 ? undefined : JSON.parse(text),
-      });
-      return new Response(JSON.stringify(responses[path]), {
-        headers: { "content-type": "application/json" },
-      });
-    };
+    const assignment = Schema.decodeSync(Api.OrganizationsAssignPersonalMailbox200)({ mailboxId });
+    const assignments = Schema.decodeSync(Api.OrganizationsListPersonalMailboxAssignments200)({
+      items: [{ userId }],
+    });
+    const options = Schema.decodeSync(Api.OrganizationsGetPersonalMailboxAddressOptions200)({
+      domains: ["example.com"],
+      defaultDomain: "example.com",
+    });
+    const api = fakeSamvaApi(Api.SamvaApi)({
+      Organizations: {
+        organizationsAssignPersonalMailbox: () => Effect.succeed(assignment),
+        organizationsListPersonalMailboxAssignments: () => Effect.succeed(assignments),
+        organizationsGetPersonalMailboxAddressOptions: () => Effect.succeed(options),
+      },
+    });
+    const { fetch } = api;
     const promise = createClient({ apiKey: "samva_sk_test", fetch });
     expect(await promise.organizations.assignPersonalMailbox({ userId, mailboxAddress })).toEqual({
       mailboxId,
@@ -174,9 +169,7 @@ describe("organization facade behavior", () => {
     expect(await promise.organizations.listPersonalMailboxAssignments()).toEqual({
       items: [{ userId }],
     });
-    expect(await promise.organizations.getPersonalMailboxAddressOptions()).toEqual(
-      responses[optionsPath],
-    );
+    expect(await promise.organizations.getPersonalMailboxAddressOptions()).toEqual(options);
     const layer = Layer.provide(
       Client.layer({ apiKey: "samva_sk_test" }),
       Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fetch)),
@@ -195,17 +188,24 @@ describe("organization facade behavior", () => {
       await Effect.runPromise(
         Organizations.getPersonalMailboxAddressOptions().pipe(Effect.provide(layer)),
       ),
-    ).toEqual(responses[optionsPath]);
+    ).toEqual(options);
     const expected = [
       { method: "POST", path: assignmentPath, body: { mailboxAddress } },
       { method: "GET", path: assignmentsPath, body: undefined },
       { method: "GET", path: optionsPath, body: undefined },
     ];
-    expect(requests).toEqual([...expected, ...expected]);
+    expect(api.requests.map(({ method, path, body }) => ({ method, path, body }))).toEqual([
+      ...expected,
+      ...expected,
+    ]);
+    api.assertComplete();
   });
 
   it("decodes success into Effect-native domain values", async () => {
-    const fetch = responseFetch(200, organization);
+    const api = fakeSamvaApi(Api.SamvaApi)({
+      Organizations: { organizationsGet: () => Effect.succeed(organization) },
+    });
+    const { fetch } = api;
     const effectResult = await runEffectGet(fetch);
 
     // Unannotated timestamps remain wire strings on the Effect projection.
@@ -213,14 +213,19 @@ describe("organization facade behavior", () => {
     expect(effectResult.slug).toBe("test-organization");
     expect(effectResult.createdAt).toBe("2026-07-12T00:00:00.000Z");
     expect(effectResult.updatedAt).toBe("2026-07-12T00:00:00.000Z");
+    expect(api.requests).toHaveLength(1);
+    api.assertComplete();
   });
 
   it("fails with the server's real tagged error, catchable by Effect.catchTag", async () => {
-    const unauthorized = {
+    const unauthorized = Schema.decodeSync(Api.UnauthorizedError)({
       _tag: "UnauthorizedError",
       message: "Invalid API key",
-    } as const;
-    const fetch = responseFetch(401, unauthorized);
+    });
+    const api = fakeSamvaApi(Api.SamvaApi)({
+      Organizations: { organizationsGet: () => Effect.fail(unauthorized) },
+    });
+    const { fetch } = api;
 
     // The error carries the server's semantic tag directly — no per-status
     // wrapper (`OrganizationsGet401`) — so `catchTag("UnauthorizedError")`
@@ -236,5 +241,7 @@ describe("organization facade behavior", () => {
     );
 
     expect(handled).toBe("Invalid API key");
+    expect(api.requests).toHaveLength(1);
+    api.assertComplete();
   });
 });

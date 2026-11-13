@@ -1,10 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Redacted } from "effect";
-import { HttpClient, HttpClientResponse } from "effect/http";
+import { Effect, Layer, Redacted } from "effect";
+import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
+import { SamvaApi } from "../src/effect/generated";
 import * as Webhooks from "../src/effect/webhooks";
 import { createClient } from "../src/promises";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 const id = "wep_1234567890abcdef";
 const body = {
@@ -12,37 +14,35 @@ const body = {
   createdAt: "2026-10-18T00:00:00.000Z",
   previousExpiresAt: "2026-10-19T00:00:00.000Z",
 };
-const response = () =>
-  new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json", "cache-control": "no-store" },
+const transport = () =>
+  fakeSamvaApi(SamvaApi)({
+    Webhooks: {
+      webhooksGetSecret: () => Effect.succeed({ ...body, secret: Redacted.make(body.secret) }),
+    },
   });
+const assertRequest = (fake: ReturnType<typeof transport>) => {
+  fake.assertComplete();
+  expect(fake.requests).toHaveLength(1);
+  expect(fake.requests[0]).toMatchObject({ method: "GET", path: `/v1/webhooks/${id}/secret` });
+};
 
 describe("webhook signing secret read", () => {
   it("returns plaintext through the Promise client", async () => {
-    const client = createClient({
-      apiKey: "samva_sk_test",
-      fetch: async (input) => {
-        expect(input).toBeInstanceOf(Request);
-        if (!(input instanceof Request)) throw new Error("Expected Request");
-        expect(input.method).toBe("GET");
-        expect(new URL(input.url).pathname).toBe(`/v1/webhooks/${id}/secret`);
-        return response();
-      },
-    });
+    const fake = transport();
+    const client = createClient({ apiKey: "samva_sk_test", fetch: fake.fetch });
     expect(await client.webhooks.getSecret({ id })).toEqual(body);
+    assertRequest(fake);
   });
 
-  it.effect("redacts the Effect secret while retaining rotation dates", () =>
-    Effect.gen(function* () {
+  it.effect("redacts the Effect secret while retaining rotation dates", () => {
+    const fake = transport();
+    return Effect.gen(function* () {
       const result = yield* Webhooks.getSecret({ id }).pipe(
-        Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
-        Effect.provideService(
-          HttpClient.HttpClient,
-          HttpClient.make((request) => {
-            expect(request.method).toBe("GET");
-            expect(new URL(request.url).pathname).toBe(`/v1/webhooks/${id}/secret`);
-            return Effect.succeed(HttpClientResponse.fromWeb(request, response()));
-          }),
+        Effect.provide(
+          Layer.provide(
+            Client.layer({ apiKey: "samva_sk_test" }),
+            Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
+          ),
         ),
       );
       expect(Redacted.value(result.secret)).toBe(body.secret);
@@ -50,6 +50,7 @@ describe("webhook signing secret read", () => {
       expect(JSON.stringify(result)).not.toContain(body.secret);
       expect(result.createdAt).toBe(body.createdAt);
       expect(result.previousExpiresAt).toBe(body.previousExpiresAt);
-    }),
-  );
+      assertRequest(fake);
+    });
+  });
 });

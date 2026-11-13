@@ -1,43 +1,41 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
+import { SamvaApi, MailboxDraftId } from "../src/effect/generated";
+import type { MailboxEmailDraft } from "../src/effect/generated/mailboxes";
 import * as Mailboxes from "../src/effect/mailboxes";
 import { createClient } from "../src/promises";
+import { fakeSamvaApi, type ApiRequest } from "./support/fake-samva-api";
 
 const mailboxIds = ["mbx_7q2xk9mvt4znw8rh", "mbx_8q2xk9mvt4znw8rh"];
 const counts = { heldActions: 2, quarantinedMessages: 1, total: 3 };
 
-const transport = () => {
-  const requests: URL[] = [];
-  const fetch: typeof globalThis.fetch = async (input, init) => {
-    const request = input instanceof Request ? input : new Request(input, init);
-    const url = new URL(request.url);
-    requests.push(url);
-    return Response.json(
-      url.pathname.endsWith("needs-you")
-        ? { items: [], nextCursor: null, counts }
-        : { items: [], nextCursor: null },
-    );
-  };
-  return { fetch, requests };
-};
+const transport = () =>
+  fakeSamvaApi(SamvaApi)({
+    Mailboxes: {
+      mailboxesListOrganizationThreads: ({ query }) => {
+        expect(query.mailboxId).toEqual(mailboxIds);
+        return Effect.succeed({ items: [], nextCursor: null });
+      },
+      mailboxesGetNeedsYou: () => Effect.succeed({ items: [], nextCursor: null, counts }),
+    },
+  });
 
-const assertRequests = (requests: URL[]) => {
-  expect(requests.map((url) => url.pathname)).toEqual([
+const assertRequests = (requests: ReadonlyArray<ApiRequest>) => {
+  expect(requests.map((request) => request.path)).toEqual([
     "/v1/mailboxes/threads",
     "/v1/mailboxes/needs-you",
   ]);
-  expect(requests[0]?.searchParams.getAll("mailboxId")).toEqual(mailboxIds);
-  expect(requests[0]?.searchParams.get("state")).toBe("active");
-  expect(requests[0]?.searchParams.get("kind")).toBe("shared");
-  expect(requests[1]?.searchParams.get("cursor")).toBe("past-end");
+  expect(requests[0]?.query.state).toBe("active");
+  expect(requests[0]?.query.kind).toBe("shared");
+  expect(requests[1]?.query.cursor).toBe("past-end");
 };
 
 describe("mailbox triage facade transport", () => {
   it("preserves repeated mailbox filters and needs-you counts in the Promise facade", async () => {
-    const { fetch, requests } = transport();
+    const { fetch, requests, assertComplete } = transport();
     const client = createClient({ apiKey: "samva_sk_test", fetch });
     expect(
       await client.mailboxes.listOrganizationThreads({
@@ -50,10 +48,11 @@ describe("mailbox triage facade transport", () => {
       counts,
     );
     assertRequests(requests);
+    assertComplete();
   });
 
   it.effect("preserves the same filters and counts through the Effect facade", () => {
-    const { fetch, requests } = transport();
+    const { fetch, requests, assertComplete } = transport();
     return Effect.gen(function* () {
       expect(
         yield* Mailboxes.listOrganizationThreads({
@@ -66,6 +65,7 @@ describe("mailbox triage facade transport", () => {
         counts,
       );
       assertRequests(requests);
+      assertComplete();
     }).pipe(
       Effect.provide(
         Layer.provide(
@@ -77,8 +77,8 @@ describe("mailbox triage facade transport", () => {
   });
 });
 
-const draft = {
-  id: "mdraft_7q2xk9mvt4znw8rh",
+const draft: MailboxEmailDraft = {
+  id: Schema.decodeSync(MailboxDraftId)("mdraft_7q2xk9mvt4znw8rh"),
   channel: "email",
   threadId: null,
   inReplyToMessageId: null,
@@ -97,29 +97,36 @@ const draft = {
   text: "Saved content",
   attachments: [],
 };
-const draftFetch: typeof globalThis.fetch = async () => Response.json(draft);
+const draftTransport = () =>
+  fakeSamvaApi(SamvaApi)({
+    Mailboxes: { mailboxesGetDraft: () => Effect.succeed(draft) },
+  });
 
 describe("mailbox draft content revision", () => {
   it("preserves the revision through the Promise draft read", async () => {
-    const client = createClient({ apiKey: "samva_sk_test", fetch: draftFetch });
+    const fake = draftTransport();
+    const client = createClient({ apiKey: "samva_sk_test", fetch: fake.fetch });
     expect(
       await client.mailboxes.getDraft({ id: mailboxIds[0]!, draftId: draft.id }),
     ).toMatchObject({ revision: 7, text: "Saved content" });
+    fake.assertComplete();
   });
 
-  it.effect("preserves the revision through the Effect draft read", () =>
-    Effect.gen(function* () {
+  it.effect("preserves the revision through the Effect draft read", () => {
+    const fake = draftTransport();
+    return Effect.gen(function* () {
       expect(yield* Mailboxes.getDraft({ id: mailboxIds[0]!, draftId: draft.id })).toMatchObject({
         revision: 7,
         text: "Saved content",
       });
+      fake.assertComplete();
     }).pipe(
       Effect.provide(
         Layer.provide(
           Client.layer({ apiKey: "samva_sk_test" }),
-          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, draftFetch)),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
         ),
       ),
-    ),
-  );
+    );
+  });
 });

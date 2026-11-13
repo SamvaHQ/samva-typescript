@@ -1,24 +1,24 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
+import { SamvaApi, TopicId } from "../src/effect/generated";
 import * as Topics from "../src/effect/topics";
 import { createClient } from "../src/promises";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 const id = "tpc_1234567890abcdef";
 const topic = {
-  id,
+  id: Schema.decodeSync(TopicId)(id),
   namespaceId: null,
   name: "Newsletter",
   description: null,
-  default: "opt_out",
+  default: "opt_out" as const,
   isDefault: false,
   defaultSenderId: null,
   replyMailboxId: null,
   templateId: null,
-  archiveEnabled: false,
-  publicationSlug: null,
   createdAt: "2026-10-25T00:00:00.000Z",
   updatedAt: "2026-10-25T00:00:00.000Z",
 };
@@ -28,7 +28,6 @@ describe("topic subscription counts", () => {
     { subscribed: 0, unsubscribed: 0 },
     { subscribed: 7, unsubscribed: 2 },
   ])("preserves explicit email counts %j through both clients", async (counts) => {
-    const requests: string[] = [];
     const response = {
       ...topic,
       subscriptions: {
@@ -37,15 +36,13 @@ describe("topic subscription counts", () => {
         whatsapp: { subscribed: 0, unsubscribed: 0 },
       },
     };
-    const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      const request = input instanceof Request ? input : new Request(input, init);
-      const path = new URL(request.url).pathname;
-      requests.push(path);
-      return new Response(
-        JSON.stringify(path === "/v1/topics" ? { items: [response] } : response),
-        { headers: { "content-type": "application/json" } },
-      );
-    };
+    const fake = fakeSamvaApi(SamvaApi)({
+      Topics: {
+        topicsList: () => Effect.succeed({ items: [response] }),
+        topicsGet: () => Effect.succeed(response),
+      },
+    });
+    const { fetch } = fake;
     const promise = createClient({ apiKey: "samva_sk_test", fetch });
     expect((await promise.topics.list()).items[0]?.subscriptions.email).toEqual(counts);
     expect((await promise.topics.get({ id })).subscriptions.email).toEqual(counts);
@@ -64,6 +61,12 @@ describe("topic subscription counts", () => {
     );
     expect(effect.listed.items[0]?.subscriptions.email).toEqual(counts);
     expect(effect.read.subscriptions.email).toEqual(counts);
-    expect(requests).toEqual(["/v1/topics", `/v1/topics/${id}`, "/v1/topics", `/v1/topics/${id}`]);
+    fake.assertComplete();
+    expect(fake.requests.map((request) => request.path)).toEqual([
+      "/v1/topics",
+      `/v1/topics/${id}`,
+      "/v1/topics",
+      `/v1/topics/${id}`,
+    ]);
   });
 });

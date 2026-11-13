@@ -1,9 +1,18 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
 import * as Email from "../src/effect/email";
+import { SamvaApi } from "../src/effect/generated";
+import type { CreatedMedia, Media, MediaComplete200 } from "../src/effect/generated/media";
+import { MessageReceipt } from "../src/effect/generated/messages";
+import {
+  InternalError,
+  MediaId,
+  OrganizationId,
+  ValidationError,
+} from "../src/effect/generated/shared";
 import * as Messages from "../src/effect/messages";
 import * as Retry from "../src/effect/retry";
 import {
@@ -12,19 +21,14 @@ import {
   MediaUploadError,
 } from "../src/inline-attachments";
 import { createClient, type EmailAttachment, SamvaApiError } from "../src/promises";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 const MIB = 1024 * 1024;
-const ORG = "org_0000000000000000";
+const ORG = Schema.decodeSync(OrganizationId)("org_0000000000000000");
 const STORAGE_HOST = "storage.test";
 
 const base64Of = (bytes: number, fill = 65): string =>
   Buffer.from(new Uint8Array(bytes).fill(fill)).toString("base64");
-
-const json = (body: unknown, status: number): Response =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
 
 interface Recorded {
   readonly method: string;
@@ -41,7 +45,7 @@ interface FakeOptions {
   readonly sendFailures?: number;
 }
 
-const media = (id: string, filename: string, contentType: string, sizeBytes: number) => ({
+const media = (id: MediaId, filename: string, contentType: string, sizeBytes: number): Media => ({
   id,
   organizationId: ORG,
   status: "pending",
@@ -64,30 +68,14 @@ const makeFake = (options: FakeOptions = {}) => {
   const created = new Map<string, { filename: string; contentType: string; sizeBytes: number }>();
   let sends = 0;
 
-  const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const request = input instanceof Request ? input : new Request(input, init);
-    const url = new URL(request.url);
-    const body = new Uint8Array(await request.arrayBuffer());
-    requests.push({
-      method: request.method,
-      host: url.host,
-      path: url.pathname,
-      headers: request.headers,
-      body,
-    });
-
-    if (url.host === STORAGE_HOST) return new Response(null, { status: options.putStatus ?? 200 });
-
-    if (request.method === "POST" && url.pathname === "/v1/media") {
-      const payload = JSON.parse(new TextDecoder().decode(body)) as {
-        filename: string;
-        contentType: string;
-        sizeBytes: number;
-      };
-      const id = `media_${String(created.size + 1).padStart(16, "0")}`;
-      created.set(id, payload);
-      return json(
-        {
+  const api = fakeSamvaApi(SamvaApi)({
+    Media: {
+      mediaCreate: ({ payload }) => {
+        const id = Schema.decodeSync(MediaId)(
+          `media_${String(created.size + 1).padStart(16, "0")}`,
+        );
+        created.set(id, payload);
+        return Effect.succeed({
           ...media(id, payload.filename, payload.contentType, payload.sizeBytes),
           upload: {
             url: `https://${STORAGE_HOST}/upload/${id}?signature=abc`,
@@ -95,49 +83,58 @@ const makeFake = (options: FakeOptions = {}) => {
             headers: { "content-type": payload.contentType, "x-amz-meta-purpose": "attachment" },
             expiresAt: "2026-10-09T11:00:00.000Z",
           },
-        },
-        201,
-      );
-    }
-
-    const complete = /^\/v1\/media\/(media_\d+)\/complete$/.exec(url.pathname);
-    if (request.method === "POST" && complete) {
-      const id = complete[1]!;
-      const upload = created.get(id)!;
-      return json(
-        {
+        } satisfies CreatedMedia);
+      },
+      mediaComplete: ({ params }) => {
+        const upload = created.get(params.id);
+        if (!upload) throw new Error(`Media was not created: ${params.id}`);
+        return Effect.succeed({
           media: {
-            ...media(id, upload.filename, upload.contentType, upload.sizeBytes),
+            ...media(params.id, upload.filename, upload.contentType, upload.sizeBytes),
             status: "ready",
           },
-          downloadUrl: `https://${STORAGE_HOST}/download/${id}`,
-        },
-        200,
-      );
-    }
-
-    if (request.method === "POST" && url.pathname === "/v1/messages") {
-      sends += 1;
-      if (sends <= (options.sendFailures ?? 0)) {
-        return json({ _tag: "InternalError", message: "try again" }, 500);
-      }
-      return json(
-        {
-          id: "msg_aaaaaaaaaaaaaaaa",
-          status: "pending",
-          waitReason: null,
-          reviewExpectedAt: null,
-          skippedRecipients: [],
-          createdAt: "2026-10-09T10:00:00.000Z",
-        },
-        201,
-      );
-    }
-
-    return json({ _tag: "ResourceNotFoundError", message: "unexpected" }, 404);
+          downloadUrl: `https://${STORAGE_HOST}/download/${params.id}`,
+        } satisfies MediaComplete200);
+      },
+    },
+    Messages: {
+      messagesSend: () => {
+        sends += 1;
+        if (sends <= (options.sendFailures ?? 0)) {
+          return Effect.fail(new InternalError({ message: "try again" }));
+        }
+        return Effect.succeed(
+          Schema.decodeSync(MessageReceipt)({
+            id: "msg_aaaaaaaaaaaaaaaa",
+            status: "pending",
+            waitReason: null,
+            reviewExpectedAt: null,
+            skippedRecipients: [],
+            createdAt: "2026-10-09T10:00:00.000Z",
+          }),
+        );
+      },
+    },
+  });
+  const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const request = new Request(input, init);
+    const url = new URL(request.url);
+    const body = new Uint8Array(await request.clone().arrayBuffer());
+    requests.push({
+      method: request.method,
+      host: url.host,
+      path: url.pathname,
+      headers: request.headers,
+      body,
+    });
+    if (url.host === STORAGE_HOST) return new Response(null, { status: options.putStatus ?? 200 });
+    return api.fetch(request);
   };
 
-  const calls = () => requests.map((request) => `${request.method} ${request.path}`);
+  const calls = () => {
+    api.assertComplete();
+    return requests.map((request) => `${request.method} ${request.path}`);
+  };
   const sendBodies = () =>
     requests
       .filter((request) => request.method === "POST" && request.path === "/v1/messages")
@@ -147,7 +144,13 @@ const makeFake = (options: FakeOptions = {}) => {
             email: { attachments: Array<Record<string, unknown>> };
           },
       );
-  return { fetch, requests, calls, sendBodies };
+  return {
+    fetch,
+    requests,
+    calls,
+    sendBodies,
+    assertComplete: api.assertComplete,
+  };
 };
 
 type Fake = ReturnType<typeof makeFake>;
@@ -375,12 +378,15 @@ describe.each(Object.keys(promiseSends) as Array<keyof typeof promiseSends>)(
 describe("Promise client upload errors", () => {
   it("throws the API's typed error when media creation is rejected", async () => {
     const fake = makeFake();
+    const rejection = fakeSamvaApi(SamvaApi)({
+      Media: { mediaCreate: () => Effect.fail(new ValidationError({ message: "bad media" })) },
+    });
     const client = createClient({
       apiKey: "samva_sk_test",
       fetch: async (input, init) => {
         const request = input instanceof Request ? input : new Request(input, init);
         if (new URL(request.url).pathname === "/v1/media") {
-          return json({ _tag: "ValidationError", message: "bad media" }, 422);
+          return rejection.fetch(request);
         }
         return fake.fetch(input, init);
       },
@@ -398,6 +404,7 @@ describe("Promise client upload errors", () => {
       );
     expect(error).toBeInstanceOf(SamvaApiError);
     expect(fake.calls()).toEqual([]);
+    rejection.assertComplete();
   });
 });
 

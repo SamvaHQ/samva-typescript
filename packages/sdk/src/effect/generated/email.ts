@@ -441,18 +441,7 @@ export const EmailTrackingDefaults = /* @__PURE__ */ (() =>
   }))();
 export type TrackingRecipientEmail = string;
 export const TrackingRecipientEmail = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(
-      new globalThis.RegExp(
-        "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        "u",
-      ),
-    ).annotate({
-      expected:
-        "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-      identifier: "TrackingRecipientEmail",
-    }),
-  ))();
+  Schema.String.annotate({ identifier: "TrackingRecipientEmail" }))();
 export type EmailDkimRotation = {
   readonly id: string;
   readonly domainId: EmailDomainId;
@@ -1310,6 +1299,7 @@ export type EmailSenderPage = {
     readonly verificationStatus: "pending" | "verified" | "failed";
     readonly verifiedAt: string | null;
     readonly verificationToken: string | null;
+    readonly sendable: boolean;
     readonly providerLifecycle: "provisioning" | "active" | "deleting" | "failed";
     readonly providerFailureCode: string | null;
     readonly isDefault: boolean;
@@ -1342,6 +1332,10 @@ export const EmailSenderPage = /* @__PURE__ */ (() =>
         ]),
         verifiedAt: Schema.Union([Schema.String, Schema.Null]),
         verificationToken: Schema.Union([Schema.String, Schema.Null]),
+        sendable: Schema.Boolean.annotate({
+          description:
+            "Whether a send from this address passes the ownership check every send runs: the sender is verified and active, and the address or its domain is a sending identity this organization owns. Always false for a pending, failed, or inactive sender. A verified sender whose domain is no longer verified here, or whose sending identity setup failed, is not sendable, and sends from it are refused with 403.",
+        }),
         providerLifecycle: Schema.Union([
           Schema.Literal("provisioning"),
           Schema.Literal("active"),
@@ -2402,24 +2396,7 @@ export const EmailUpdateDomainConfigRequestJson = /* @__PURE__ */ (() =>
     shared: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     openTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     clickTracking: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    replyTo: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(
-          Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            }),
-          ),
-        ),
-        Schema.Null,
-      ]),
-    ),
+    replyTo: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     topicId: Schema.optionalKey(Schema.Union([TopicId, Schema.Null])),
     footerEnabled: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     brandSlug: Schema.optionalKey(
@@ -3695,17 +3672,7 @@ export type EmailAddSenderRequestJson = {
 };
 export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp(
-          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-      }),
-    ),
+    email: Schema.String,
     domainId: Schema.optionalKey(Schema.Union([EmailDomainId, Schema.Null])),
     name: Schema.optionalKey(
       Schema.Union([
@@ -3713,36 +3680,13 @@ export const EmailAddSenderRequestJson = /* @__PURE__ */ (() =>
           Schema.isMaxCodePoints(120).annotate({
             expected: "a string with at most 120 code points",
           }),
-        )
-          .check(
-            Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-        Schema.Null,
-      ]),
-    ),
-    replyToEmails: Schema.optionalKey(
-      Schema.Union([
-        Schema.Array(
-          Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            }),
-          ),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
         ),
         Schema.Null,
       ]),
     ),
+    replyToEmails: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
     namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
   }))();
 export type EmailAddSender201 = {
@@ -3802,6 +3746,7 @@ export type EmailGetSender200 = {
   readonly verificationStatus: "pending" | "verified" | "failed";
   readonly verifiedAt: string | null;
   readonly verificationToken: string | null;
+  readonly sendable: boolean;
   readonly providerLifecycle: "provisioning" | "active" | "deleting" | "failed";
   readonly providerFailureCode: string | null;
   readonly isDefault: boolean;
@@ -3830,6 +3775,10 @@ export const EmailGetSender200 = /* @__PURE__ */ (() =>
     ]),
     verifiedAt: Schema.Union([Schema.String, Schema.Null]),
     verificationToken: Schema.Union([Schema.String, Schema.Null]),
+    sendable: Schema.Boolean.annotate({
+      description:
+        "Whether a send from this address passes the ownership check every send runs: the sender is verified and active, and the address or its domain is a sending identity this organization owns. Always false for a pending, failed, or inactive sender. A verified sender whose domain is no longer verified here, or whose sending identity setup failed, is not sendable, and sends from it are refused with 403.",
+    }),
     providerLifecycle: Schema.Union([
       Schema.Literal("provisioning"),
       Schema.Literal("active"),
@@ -5331,7 +5280,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .annotate(OpenApi.Summary, "Set the default sender")
       .annotate(
         OpenApi.Description,
-        "Sets a verified, active sender as the default for the caller's namespace, the explicit namespaceId, or the sender's own scope. A namespace can select its own sender or a sender on a shared organization domain. This changes only the namespace's default; it does not change a shared sender. Omitted-`from` sends use this default when neither the request nor the template names a `from`.",
+        "Sets a sendable sender (see `sendable` on the sender) as the default for the caller's namespace, the explicit namespaceId, or the sender's own scope. A namespace can select its own sender or a sender on a shared organization domain. This changes only the namespace's default; it does not change a shared sender. Omitted-`from` sends use this default when neither the request nor the template names a `from`.",
       ),
     HttpApiEndpoint.get("emailCheckSenderVerification", "/v1/email/senders/:id/verification", {
       params: EmailCheckSenderVerificationPathParams,

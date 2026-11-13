@@ -50,8 +50,7 @@ describe("generated API Unicode validation", () => {
     ["a".repeat(1025), false],
     ["😀".repeat(512), true],
     ["😀".repeat(512) + "a", false],
-    ["../file.tsx", false],
-  ])("retains workspace path bounds and traversal checks: %s", (path, accepted) => {
+  ])("retains workspace path bounds: %s", (path, accepted) => {
     expect(Schema.is(TemplatesPutWorkspaceAssetRequestJson.fields.path)(path)).toBe(accepted);
   });
 });

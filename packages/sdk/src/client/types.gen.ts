@@ -1215,6 +1215,7 @@ export type MailboxQuarantinedMessage = {
     | "dmarc"
     | "virus"
     | "virus_unscanned"
+    | "verdict_missing"
     | "phishing"
     | "fraud"
     | "prompt_injection";
@@ -1722,6 +1723,7 @@ export type MailboxNeedsYouItem =
         | "dmarc"
         | "virus"
         | "virus_unscanned"
+        | "verdict_missing"
         | "phishing"
         | "fraud"
         | "prompt_injection";
@@ -2840,6 +2842,9 @@ export type Template = {
    * Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.
    */
   shared: boolean;
+  /**
+   * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+   */
   entryPath: string;
   status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
   publishedAt: string | null;
@@ -3007,6 +3012,9 @@ export type TemplateFromDefaultInput = {
 };
 
 export type AddTemplateEntryPayload = {
+  /**
+   * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+   */
   entryPath: string;
   name: string;
   slug: string;
@@ -3048,6 +3056,106 @@ export type CreateTemplateFromWebsitePayload = {
    * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
    */
   namespaceId?: NamespaceId | null | undefined;
+};
+
+/**
+ * A template project created from a brief. `startedFrom` is the gallery design the project was created from.
+ */
+export type TemplateFromBrief = {
+  template: Template;
+  startedFrom: TemplateStarterSuggestion;
+  /**
+   * The other designs suggested for the brief, best first.
+   */
+  alternatives: Array<TemplateStarterSuggestion>;
+  recreation: TemplateRecreationMatch | null;
+  /**
+   * The request to send the template assistant in the editor: the brief, then the design the project starts from and what the gallery has of a company email the brief names. The assistant adapts the design to it; nothing runs until it is sent.
+   */
+  ask: string;
+};
+
+/**
+ * The company email the brief named: `exact` when the gallery recreates that kind of email from it, `kind-differs` when it recreates another kind (start from it for the look and adapt the kind), `missing` when the gallery has no recreation of that company.
+ */
+export type TemplateRecreationMatch =
+  | {
+      status: "exact";
+      company: string;
+      galleryTemplateId: string;
+    }
+  | {
+      status: "kind-differs";
+      company: string;
+      galleryTemplateId: string;
+      recreationName: string;
+    }
+  | {
+      status: "missing";
+      company: string;
+    };
+
+export type TemplateStarterSuggestion = {
+  /**
+   * The gallery design to start from. Pass it as `galleryTemplateId` to create a template from it.
+   */
+  galleryTemplateId: string;
+  /**
+   * The design's gallery page, under /templates/.
+   */
+  slug: string;
+  name: string;
+  description: string;
+  /**
+   * The brief this design fits, in one sentence.
+   */
+  intent: string;
+  tags: Array<string>;
+  /**
+   * How the design is built: letter, code, ledger, timeline, grid, poster, and so on.
+   */
+  structure: string;
+  /**
+   * Whether adapting it means replacing pictures: none, graphics built in markup, or image files.
+   */
+  imagery: "none" | "markup" | "pictures";
+  /**
+   * The company whose email this design recreates.
+   */
+  recreates?: string | undefined;
+  /**
+   * Why it was suggested for this brief.
+   */
+  reason: string;
+};
+
+export type CreateTemplateFromBriefPayload = {
+  /**
+   * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+   */
+  brief: string;
+  name?: string | null | undefined;
+  galleryTemplateId?: string | null | undefined;
+  useBrand?: boolean | null | undefined;
+  /**
+   * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
+   */
+  namespaceId?: NamespaceId | null | undefined;
+};
+
+export type TemplateStarterSuggestions = {
+  /**
+   * Best first; a new email for this brief starts from the first.
+   */
+  suggestions: Array<TemplateStarterSuggestion>;
+  recreation: TemplateRecreationMatch | null;
+};
+
+export type SuggestTemplateStartersPayload = {
+  /**
+   * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+   */
+  brief: string;
 };
 
 export type CreateTemplatePayload = {
@@ -3123,6 +3231,9 @@ export type TemplateSummary = {
    * Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.
    */
   shared: boolean;
+  /**
+   * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+   */
   entryPath: string;
   status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
   publishedAt: string | null;
@@ -3167,6 +3278,9 @@ export type PublicationDomainPage = {
 };
 
 export type NewsletterIssueRenderPayload = {
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   expectedRevision: string;
   fixture: string;
@@ -3174,6 +3288,9 @@ export type NewsletterIssueRenderPayload = {
 };
 
 export type NewsletterIssueCheckPayload = {
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   expectedRevision: string;
 };
@@ -3185,17 +3302,26 @@ export type NewsletterIssueSavePayload = {
 };
 
 export type NewsletterIssueRemovePayload = {
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   expectedRevision: string;
 };
 
 export type NewsletterIssueUpdatePayload = {
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   content: string;
   expectedRevision: string;
 };
 
 export type NewsletterIssueCreatePayload = {
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   content: string;
   expectedRevision?: string | null | undefined;
@@ -3204,6 +3330,9 @@ export type NewsletterIssueCreatePayload = {
 export type NewsletterIssueDocument = {
   projectId: TemplateProjectId;
   revision: string;
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   content: string;
 };
@@ -3215,6 +3344,9 @@ export type NewsletterIssueList = {
 };
 
 export type NewsletterIssueListItem = {
+  /**
+   * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+   */
   path: string;
   title: string | null;
   latestSend: NewsletterIssueSend | null;
@@ -5061,6 +5193,10 @@ export type EmailSenderPage = {
     verificationStatus: "pending" | "verified" | "failed";
     verifiedAt: string | null;
     verificationToken: string | null;
+    /**
+     * Whether a send from this address passes the ownership check every send runs: the sender is verified and active, and the address or its domain is a sending identity this organization owns. Always false for a pending, failed, or inactive sender. A verified sender whose domain is no longer verified here, or whose sending identity setup failed, is not sendable, and sends from it are refused with 403.
+     */
+    sendable: boolean;
     providerLifecycle: "provisioning" | "active" | "deleting" | "failed";
     providerFailureCode: string | null;
     isDefault: boolean;
@@ -5675,6 +5811,9 @@ export type EmailCampaignContent = {
    */
   issue?:
     | {
+        /**
+         * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+         */
         path: string;
         commit: string;
       }
@@ -5871,6 +6010,9 @@ export type EmailCampaignContentInput = {
    */
   issue?:
     | {
+        /**
+         * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+         */
         path: string;
         commit: string;
       }
@@ -11228,6 +11370,10 @@ export type EmailGetSenderResponses = {
     verificationStatus: "pending" | "verified" | "failed";
     verifiedAt: string | null;
     verificationToken: string | null;
+    /**
+     * Whether a send from this address passes the ownership check every send runs: the sender is verified and active, and the address or its domain is a sending identity this organization owns. Always false for a pending, failed, or inactive sender. A verified sender whose domain is no longer verified here, or whose sending identity setup failed, is not sendable, and sends from it are refused with 403.
+     */
+    sendable: boolean;
     providerLifecycle: "provisioning" | "active" | "deleting" | "failed";
     providerFailureCode: string | null;
     isDefault: boolean;
@@ -19356,6 +19502,9 @@ export type NewsletterIssuesListResponse =
 
 export type NewsletterIssuesUpdateData = {
   body: {
+    /**
+     * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+     */
     path: string;
     content: string;
     expectedRevision: string;
@@ -19435,6 +19584,9 @@ export type NewsletterIssuesUpdateResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -19454,6 +19606,9 @@ export type NewsletterIssuesUpdateResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19465,6 +19620,9 @@ export type NewsletterIssuesUpdateResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19475,6 +19633,9 @@ export type NewsletterIssuesUpdateResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19509,6 +19670,9 @@ export type NewsletterIssuesUpdateResponse =
 
 export type NewsletterIssuesCreateData = {
   body: {
+    /**
+     * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+     */
     path: string;
     content: string;
     expectedRevision?: string | null | undefined;
@@ -19588,6 +19752,9 @@ export type NewsletterIssuesCreateResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -19607,6 +19774,9 @@ export type NewsletterIssuesCreateResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19618,6 +19788,9 @@ export type NewsletterIssuesCreateResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19628,6 +19801,9 @@ export type NewsletterIssuesCreateResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19734,6 +19910,9 @@ export type NewsletterIssuesOpenResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -19753,6 +19932,9 @@ export type NewsletterIssuesOpenResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19764,6 +19946,9 @@ export type NewsletterIssuesOpenResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19774,6 +19959,9 @@ export type NewsletterIssuesOpenResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19812,6 +20000,9 @@ export type NewsletterIssuesGetData = {
     id: NewsletterId;
   };
   query: {
+    /**
+     * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+     */
     path: string;
     expectedRevision: string;
   };
@@ -19871,6 +20062,9 @@ export type NewsletterIssuesGetResponse =
 
 export type NewsletterIssuesRemoveData = {
   body: {
+    /**
+     * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+     */
     path: string;
     expectedRevision: string;
   };
@@ -19949,6 +20143,9 @@ export type NewsletterIssuesRemoveResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -19968,6 +20165,9 @@ export type NewsletterIssuesRemoveResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19979,6 +20179,9 @@ export type NewsletterIssuesRemoveResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -19989,6 +20192,9 @@ export type NewsletterIssuesRemoveResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -20161,6 +20367,9 @@ export type NewsletterIssuesSaveResponse =
 
 export type NewsletterIssuesCheckData = {
   body: {
+    /**
+     * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+     */
     path: string;
     expectedRevision: string;
   };
@@ -20223,7 +20432,7 @@ export type NewsletterIssuesCheckResponses = {
   200: {
     projectId: TemplateProjectId;
     revision: string;
-    entryPath: string | string;
+    entryPath: string;
     declaration: {
       codeDigest: string;
       templateId: string;
@@ -20238,6 +20447,9 @@ export type NewsletterIssuesCheckResponses = {
     } | null;
     issue?:
       | {
+          /**
+           * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+           */
           path: string;
           frontmatter: {
             title: string;
@@ -20330,6 +20542,9 @@ export type NewsletterIssuesCheckResponse =
 
 export type NewsletterIssuesRenderData = {
   body: {
+    /**
+     * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+     */
     path: string;
     expectedRevision: string;
     fixture: string;
@@ -20394,7 +20609,7 @@ export type NewsletterIssuesRenderResponses = {
   200: {
     projectId: TemplateProjectId;
     revision: string;
-    entryPath: string | string;
+    entryPath: string;
     declaration: {
       codeDigest: string;
       templateId: string;
@@ -20409,6 +20624,9 @@ export type NewsletterIssuesRenderResponses = {
     } | null;
     issue?:
       | {
+          /**
+           * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+           */
           path: string;
           frontmatter: {
             title: string;
@@ -22160,6 +22378,132 @@ export type TemplatesUpdateResponses = {
 
 export type TemplatesUpdateResponse = TemplatesUpdateResponses[keyof TemplatesUpdateResponses];
 
+export type TemplatesSuggestStartersData = {
+  body: {
+    /**
+     * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+     */
+    brief: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/templates/suggestions";
+};
+
+export type TemplatesSuggestStartersErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplatesSuggestStartersError =
+  TemplatesSuggestStartersErrors[keyof TemplatesSuggestStartersErrors];
+
+export type TemplatesSuggestStartersResponses = {
+  /**
+   * TemplateStarterSuggestions
+   */
+  200: TemplateStarterSuggestions;
+};
+
+export type TemplatesSuggestStartersResponse =
+  TemplatesSuggestStartersResponses[keyof TemplatesSuggestStartersResponses];
+
+export type TemplatesCreateFromBriefData = {
+  body: {
+    /**
+     * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+     */
+    brief: string;
+    name?: string | null | undefined;
+    galleryTemplateId?: string | null | undefined;
+    useBrand?: boolean | null | undefined;
+    /**
+     * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
+     */
+    namespaceId?: NamespaceId | null | undefined;
+  };
+  headers: {
+    "idempotency-key": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/templates/from-brief";
+};
+
+export type TemplatesCreateFromBriefErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError | TemplateInUseError
+   */
+  409: ConflictError | TemplateInUseError;
+  /**
+   * TemplateSourceError | ValidationError
+   */
+  422: TemplateSourceError | ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplatesCreateFromBriefError =
+  TemplatesCreateFromBriefErrors[keyof TemplatesCreateFromBriefErrors];
+
+export type TemplatesCreateFromBriefResponses = {
+  /**
+   * Success
+   */
+  201: TemplateFromBrief;
+};
+
+export type TemplatesCreateFromBriefResponse =
+  TemplatesCreateFromBriefResponses[keyof TemplatesCreateFromBriefResponses];
+
 export type TemplatesCreateFromWebsiteData = {
   body: {
     /**
@@ -22234,6 +22578,9 @@ export type TemplatesCreateFromWebsiteResponse =
 
 export type TemplatesAddEntryData = {
   body: {
+    /**
+     * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+     */
     entryPath: string;
     name: string;
     slug: string;
@@ -22364,6 +22711,9 @@ export type TemplatesPatchWorkspaceData = {
   body: {
     expectedRevision: string;
     patches: Array<{
+      /**
+       * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+       */
       path: string;
       content: string | null;
     }>;
@@ -22443,6 +22793,9 @@ export type TemplatesPatchWorkspaceResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -22462,6 +22815,9 @@ export type TemplatesPatchWorkspaceResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22473,6 +22829,9 @@ export type TemplatesPatchWorkspaceResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22483,6 +22842,9 @@ export type TemplatesPatchWorkspaceResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22589,6 +22951,9 @@ export type TemplatesOpenWorkspaceResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -22608,6 +22973,9 @@ export type TemplatesOpenWorkspaceResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22619,6 +22987,9 @@ export type TemplatesOpenWorkspaceResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22629,6 +23000,9 @@ export type TemplatesOpenWorkspaceResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22723,6 +23097,9 @@ export type TemplatesDiffWorkspaceResponses = {
     baseCommit: string;
     revision: string;
     changes: Array<{
+      /**
+       * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+       */
       path: string;
       before: string | null;
       after: string | null;
@@ -22742,6 +23119,9 @@ export type TemplatesDiffWorkspaceResponse =
 export type TemplatesPutWorkspaceAssetData = {
   body: {
     expectedRevision: string;
+    /**
+     * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+     */
     path: string;
     contentBase64: string;
     replace: boolean;
@@ -22821,6 +23201,9 @@ export type TemplatesPutWorkspaceAssetResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -22840,6 +23223,9 @@ export type TemplatesPutWorkspaceAssetResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22851,6 +23237,9 @@ export type TemplatesPutWorkspaceAssetResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22861,6 +23250,9 @@ export type TemplatesPutWorkspaceAssetResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -22896,6 +23288,9 @@ export type TemplatesPutWorkspaceAssetResponse =
 export type TemplatesResolveWorkspaceConflictData = {
   body: {
     expectedRevision: string;
+    /**
+     * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+     */
     path: string;
     resolution:
       | "draft"
@@ -22979,6 +23374,9 @@ export type TemplatesResolveWorkspaceConflictResponses = {
         status: "added" | "modified" | "deleted";
       }>;
       conflicts: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         base: string | null;
         draft: string | null;
@@ -22998,6 +23396,9 @@ export type TemplatesResolveWorkspaceConflictResponses = {
             access: "read-write";
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -23009,6 +23410,9 @@ export type TemplatesResolveWorkspaceConflictResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -23019,6 +23423,9 @@ export type TemplatesResolveWorkspaceConflictResponses = {
             name: string;
           }
         | {
+            /**
+             * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+             */
             root: string;
             digest: string;
             fileCount: number;
@@ -23270,6 +23677,9 @@ export type TemplatesRestoreWorkspaceResponses = {
           status: "added" | "modified" | "deleted";
         }>;
         conflicts: Array<{
+          /**
+           * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+           */
           path: string;
           base: string | null;
           draft: string | null;
@@ -23289,6 +23699,9 @@ export type TemplatesRestoreWorkspaceResponses = {
               access: "read-write";
             }
           | {
+              /**
+               * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+               */
               root: string;
               digest: string;
               fileCount: number;
@@ -23300,6 +23713,9 @@ export type TemplatesRestoreWorkspaceResponses = {
               name: string;
             }
           | {
+              /**
+               * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+               */
               root: string;
               digest: string;
               fileCount: number;
@@ -23310,6 +23726,9 @@ export type TemplatesRestoreWorkspaceResponses = {
               name: string;
             }
           | {
+              /**
+               * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+               */
               root: string;
               digest: string;
               fileCount: number;
@@ -23484,7 +23903,7 @@ export type TemplatesCheckWorkspaceResponses = {
   200: {
     projectId: TemplateProjectId;
     revision: string;
-    entryPath: string | string;
+    entryPath: string;
     declaration: {
       codeDigest: string;
       templateId: string;
@@ -23499,6 +23918,9 @@ export type TemplatesCheckWorkspaceResponses = {
     } | null;
     issue?:
       | {
+          /**
+           * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+           */
           path: string;
           frontmatter: {
             title: string;
@@ -23650,7 +24072,7 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
   200: {
     projectId: TemplateProjectId;
     revision: string;
-    entryPath: string | string;
+    entryPath: string;
     declaration: {
       codeDigest: string;
       templateId: string;
@@ -23665,6 +24087,9 @@ export type TemplatesRenderWorkspaceFixtureResponses = {
     } | null;
     issue?:
       | {
+          /**
+           * A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.
+           */
           path: string;
           frontmatter: {
             title: string;
@@ -23844,6 +24269,9 @@ export type TemplatesPublishData = {
   body: {
     projectId: TemplateProjectId;
     commitSha: string;
+    /**
+     * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+     */
     entryPath: string;
     expectedWorkspaceRevision: string;
     ifCurrentPublicationId?: TemplatePublicationId | null | undefined;
@@ -23908,6 +24336,9 @@ export type TemplatesPublishResponses = {
     inputContractId: TemplateInputContractId;
     commitSha: string;
     treeSha: string;
+    /**
+     * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+     */
     entryPath: string;
     buildIdentity: string;
     manifest: {
@@ -23936,7 +24367,7 @@ export type TemplatesPublishResponses = {
       source: {
         commitSha: string;
         treeSha: string;
-        entryPath: string | string;
+        entryPath: string;
         treeDigest: string;
       };
       brand?:
@@ -24090,6 +24521,9 @@ export type TemplatesGetPublicationResponses = {
     inputContractId: TemplateInputContractId;
     commitSha: string;
     treeSha: string;
+    /**
+     * A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.
+     */
     entryPath: string;
     buildIdentity: string;
     manifest: {
@@ -24118,7 +24552,7 @@ export type TemplatesGetPublicationResponses = {
       source: {
         commitSha: string;
         treeSha: string;
-        entryPath: string | string;
+        entryPath: string;
         treeDigest: string;
       };
       brand?:
@@ -24543,6 +24977,9 @@ export type TemplatesAttachWorkspaceResourceData = {
       resourceId: string;
       name: string;
       files: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         mediaType: string;
         contentBase64: string;
@@ -24623,6 +25060,9 @@ export type TemplatesAttachWorkspaceResourceResponses = {
       status: "added" | "modified" | "deleted";
     }>;
     conflicts: Array<{
+      /**
+       * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+       */
       path: string;
       base: string | null;
       draft: string | null;
@@ -24642,6 +25082,9 @@ export type TemplatesAttachWorkspaceResourceResponses = {
           access: "read-write";
         }
       | {
+          /**
+           * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+           */
           root: string;
           digest: string;
           fileCount: number;
@@ -24653,6 +25096,9 @@ export type TemplatesAttachWorkspaceResourceResponses = {
           name: string;
         }
       | {
+          /**
+           * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+           */
           root: string;
           digest: string;
           fileCount: number;
@@ -24663,6 +25109,9 @@ export type TemplatesAttachWorkspaceResourceResponses = {
           name: string;
         }
       | {
+          /**
+           * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+           */
           root: string;
           digest: string;
           fileCount: number;
@@ -24770,6 +25219,9 @@ export type TemplatesRemoveWorkspaceResourceResponses = {
       status: "added" | "modified" | "deleted";
     }>;
     conflicts: Array<{
+      /**
+       * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+       */
       path: string;
       base: string | null;
       draft: string | null;
@@ -24789,6 +25241,9 @@ export type TemplatesRemoveWorkspaceResourceResponses = {
           access: "read-write";
         }
       | {
+          /**
+           * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+           */
           root: string;
           digest: string;
           fileCount: number;
@@ -24800,6 +25255,9 @@ export type TemplatesRemoveWorkspaceResourceResponses = {
           name: string;
         }
       | {
+          /**
+           * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+           */
           root: string;
           digest: string;
           fileCount: number;
@@ -24810,6 +25268,9 @@ export type TemplatesRemoveWorkspaceResourceResponses = {
           name: string;
         }
       | {
+          /**
+           * An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.
+           */
           root: string;
           digest: string;
           fileCount: number;

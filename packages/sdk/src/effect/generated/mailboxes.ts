@@ -794,6 +794,7 @@ export type MailboxQuarantinedMessage = {
     | "dmarc"
     | "virus"
     | "virus_unscanned"
+    | "verdict_missing"
     | "phishing"
     | "fraud"
     | "prompt_injection";
@@ -815,6 +816,7 @@ export const MailboxQuarantinedMessage = /* @__PURE__ */ (() =>
       Schema.Literal("dmarc"),
       Schema.Literal("virus"),
       Schema.Literal("virus_unscanned"),
+      Schema.Literal("verdict_missing"),
       Schema.Literal("phishing"),
       Schema.Literal("fraud"),
       Schema.Literal("prompt_injection"),
@@ -2387,6 +2389,7 @@ export type MailboxNeedsYouItem =
         | "dmarc"
         | "virus"
         | "virus_unscanned"
+        | "verdict_missing"
         | "phishing"
         | "fraud"
         | "prompt_injection";
@@ -2449,6 +2452,7 @@ export const MailboxNeedsYouItem = /* @__PURE__ */ (() =>
         Schema.Literal("dmarc"),
         Schema.Literal("virus"),
         Schema.Literal("virus_unscanned"),
+        Schema.Literal("verdict_missing"),
         Schema.Literal("phishing"),
         Schema.Literal("fraud"),
         Schema.Literal("prompt_injection"),

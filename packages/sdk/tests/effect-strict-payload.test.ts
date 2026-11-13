@@ -4,59 +4,55 @@ import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
 import * as Email from "../src/effect/email";
+import { SamvaApi, InternalError } from "../src/effect/generated";
 import * as Retry from "../src/effect/retry";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 describe("effect client request bodies", () => {
-  const capturedBodies: Array<unknown> = [];
-
-  const layer = Layer.mergeAll(
-    Retry.layerDisabled,
-    Layer.provide(
-      FetchHttpClient.layer,
-      Layer.succeed(FetchHttpClient.Fetch, async (_input, init) => {
-        const raw = init?.body as unknown;
-        const text = raw instanceof Uint8Array ? new TextDecoder().decode(raw) : String(raw ?? "");
-        if (text.length > 0) capturedBodies.push(JSON.parse(text));
-        return new Response("{}", { status: 500, headers: { "content-type": "application/json" } });
-      }),
-    ),
-  );
-
-  const send = (input: Parameters<typeof Email.send>[0]) =>
+  const transport = () =>
+    fakeSamvaApi(SamvaApi)({
+      Messages: { messagesSend: () => Effect.fail(new InternalError({ message: "Captured" })) },
+    });
+  const send = (input: Parameters<typeof Email.send>[0], fake: ReturnType<typeof transport>) =>
     Email.send(input).pipe(
-      Effect.provide(Client.layer({ apiKey: "samva_sk_test" }).pipe(Layer.provideMerge(layer))),
+      Effect.provide([Client.layer({ apiKey: "samva_sk_test" }), Retry.layerDisabled]),
+      Effect.provide(
+        Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
+      ),
       Effect.exit,
     );
 
   it.effect("refuses a field the send contract does not declare, before any request", () =>
     Effect.gen(function* () {
-      capturedBodies.length = 0;
+      const fake = transport();
       const input = {
         to: "ada@example.com",
         subject: "Hello",
         html: "<p>Hi</p>",
         typo: true,
       };
-      const exit = yield* send(input);
+      const exit = yield* send(input, fake);
 
       expect(exit._tag).toBe("Failure");
       // Nothing reached the wire: the field was neither sent nor silently dropped.
-      expect(capturedBodies).toEqual([]);
+      expect(fake.requests).toEqual([]);
+      fake.assertComplete();
     }),
   );
 
   it.effect("sends a declared body unchanged", () =>
     Effect.gen(function* () {
-      capturedBodies.length = 0;
-      yield* send({ to: "ada@example.com", subject: "Hello", html: "<p>Hi</p>" });
+      const fake = transport();
+      yield* send({ to: "ada@example.com", subject: "Hello", html: "<p>Hi</p>" }, fake);
 
-      expect(capturedBodies).toEqual([
+      expect(fake.requests.map(({ body }) => body)).toEqual([
         {
           channel: "email",
           to: [{ email: "ada@example.com" }],
           email: { subject: "Hello", html: "<p>Hi</p>" },
         },
       ]);
+      fake.assertComplete();
     }),
   );
 });

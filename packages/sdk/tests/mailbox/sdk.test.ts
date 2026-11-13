@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "@effect/vitest";
 import { generateWebhookSecret, signWebhook } from "@samva/webhooks/protocol";
+import { Effect, Schema } from "effect";
 
+import { SamvaApi } from "../../src/effect/generated";
+import { MailboxSendAction } from "../../src/effect/generated/mailboxes";
+import { MailboxSendReceipt } from "../../src/effect/generated/shared";
 import {
   defineExtension,
   type ExtensionHandlers,
@@ -9,6 +13,27 @@ import {
 import { createTestClient, mailboxEvent, runExtension } from "../../src/mailbox/test";
 import { createWebhookHandler } from "../../src/mailbox/webhook";
 import { createClient } from "../../src/promises/index";
+import { fakeSamvaApi } from "../support/fake-samva-api";
+
+const receipt = (state: MailboxSendReceipt["state"]) =>
+  Schema.decodeSync(MailboxSendReceipt)({
+    actionId: "mbxact_0000000000000000",
+    draftId: null,
+    messageId: state === "accepted" ? "msg_0000000000000000" : null,
+    threadId: null,
+    state,
+    acceptedAt: state === "accepted" ? "2026-01-01T00:00:00.000Z" : null,
+    waitReason: null,
+    reviewExpectedAt: null,
+    skippedRecipients: [],
+    executeUntil: null,
+    retryAt: null,
+    problem: null,
+    retryEligible: false,
+    decision: null,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  });
 
 const manifest = {
   name: "auto-ack",
@@ -57,6 +82,9 @@ describe("extension authoring", () => {
   });
   it("uses a normal Samva client through the hosted binding without credentials", async () => {
     const calls: Request[] = [];
+    const api = fakeSamvaApi(SamvaApi)({
+      Mailboxes: { mailboxesReply: () => Effect.succeed(receipt("accepted")) },
+    });
     const subject = extension({
       "mailbox.message.received": async (received, context) => {
         expect(context.event).toBe(received);
@@ -72,8 +100,9 @@ describe("extension authoring", () => {
     const response = await hosted(
       subject,
       async (input, init) => {
-        calls.push(new Request(input, init));
-        return Response.json({ state: "accepted" });
+        const request = new Request(input, init);
+        calls.push(request.clone());
+        return api.fetch(request);
       },
       2,
     );
@@ -81,9 +110,10 @@ describe("extension authoring", () => {
     expect(calls[0]?.url).toBe(
       `https://api.samva.dev/v1/mailboxes/${event.data.mailboxId}/messages/${event.data.message.id}/reply`,
     );
-    expect(calls[0]?.headers.get("authorization")).toBeNull();
-    expect(calls[0]?.headers.get("x-api-key")).toBeNull();
-    expect(await calls[0]?.json()).toEqual({ text: "Thanks" });
+    expect(api.requests[0]?.headers.get("authorization")).toBeNull();
+    expect(api.requests[0]?.headers.get("x-api-key")).toBeNull();
+    expect(api.requests[0]?.body).toEqual({ text: "Thanks" });
+    api.assertComplete();
   });
   it("keeps handler logs separate and captures failures", async () => {
     const original = console.log;
@@ -180,7 +210,7 @@ describe("per-event idempotency", () => {
   });
   it("uses normal client calls outside dispatch and records only the current run", async () => {
     const client = createTestClient({
-      "POST /v1/mailboxes/mbx/messages": { state: "approvalRequired" },
+      "POST /v1/mailboxes/mbx/messages": receipt("approvalRequired"),
     });
     await client.mailboxes.sendMessage({ id: "mbx", to: ["a@example.com"], subject: "Hi" });
     expect(client.calls[0]?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
@@ -206,7 +236,9 @@ describe("webhook adapter", () => {
     });
   }
   it("verifies signatures and replays deterministic keys on redelivery", async () => {
-    const calls: Request[] = [];
+    const api = fakeSamvaApi(SamvaApi)({
+      Mailboxes: { mailboxesReply: () => Effect.succeed(receipt("queued")) },
+    });
     const handler = createWebhookHandler(
       extension({
         "mailbox.message.received": async (received, { samva }) => {
@@ -221,21 +253,19 @@ describe("webhook adapter", () => {
         apiKey: "installation-key",
         webhookSecret: secret,
         apiOrigin: "https://api.test",
-        fetch: async (input, init) => {
-          calls.push(new Request(input, init));
-          return Response.json({ state: "queued" });
-        },
+        fetch: api.fetch,
       },
     );
     for (let n = 0; n < 2; n++) expect((await handler(await request())).status).toBe(200);
-    expect(calls.map((call) => call.headers.get("x-api-key"))).toEqual([
+    expect(api.requests.map((call) => call.headers.get("x-api-key"))).toEqual([
       "installation-key",
       "installation-key",
     ]);
-    expect(calls.map((call) => call.headers.get("idempotency-key"))).toEqual([
+    expect(api.requests.map((call) => call.headers.get("idempotency-key"))).toEqual([
       `${event.id}:reply:1`,
       `${event.id}:reply:1`,
     ]);
+    api.assertComplete();
   });
   it("returns 401 without dispatch on a bad signature", async () => {
     const on = vi.fn();
@@ -267,7 +297,29 @@ it("observes original actions using the normal mailbox client without a send key
     apiKey: "key",
     fetch: async (input, init) => {
       calls.push(new Request(input, init));
-      return Response.json({ state: "queued" });
+      // Escaped path segments deliberately are not valid branded IDs, so this transport
+      // checks URL construction while the generated schemas still own response fixtures.
+      const send = receipt("queued");
+      return Response.json(
+        new Request(input, init).method === "GET"
+          ? Schema.decodeSync(MailboxSendAction)({
+              id: send.actionId,
+              source: "externalApi",
+              proposedBy: { kind: "apiKey", id: "key" },
+              threadId: null,
+              draftId: null,
+              decision: null,
+              resolution: null,
+              alwaysAllow: null,
+              createdAt: send.createdAt,
+              updatedAt: send.updatedAt,
+              type: "sendMessage",
+              state: "queued",
+              send,
+              intent: null,
+            })
+          : send,
+      );
     },
   });
   await client.mailboxes.getAction({ id: "mbx/a", actionId: "action/b" });

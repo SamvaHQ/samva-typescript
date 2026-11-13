@@ -771,6 +771,8 @@ import type {
   TemplatesCreateFamilyFromTemplateErrors,
   TemplatesCreateFamilyFromTemplateResponses,
   TemplatesCreateFamilyResponses,
+  TemplatesCreateFromBriefErrors,
+  TemplatesCreateFromBriefResponses,
   TemplatesCreateFromWebsiteErrors,
   TemplatesCreateFromWebsiteResponses,
   TemplatesCreateResponses,
@@ -824,6 +826,8 @@ import type {
   TemplatesRestoreWorkspaceResponses,
   TemplatesSaveWorkspaceErrors,
   TemplatesSaveWorkspaceResponses,
+  TemplatesSuggestStartersErrors,
+  TemplatesSuggestStartersResponses,
   TemplatesUpdateErrors,
   TemplatesUpdateResponses,
   TemplatesWorkspaceHistoryErrors,
@@ -3614,7 +3618,7 @@ export class Email {
   /**
    * Set the default sender
    *
-   * Sets a verified, active sender as the default for the caller's namespace, the explicit namespaceId, or the sender's own scope. A namespace can select its own sender or a sender on a shared organization domain. This changes only the namespace's default; it does not change a shared sender. Omitted-`from` sends use this default when neither the request nor the template names a `from`.
+   * Sets a sendable sender (see `sendable` on the sender) as the default for the caller's namespace, the explicit namespaceId, or the sender's own scope. A namespace can select its own sender or a sender on a shared organization domain. This changes only the namespace's default; it does not change a shared sender. Omitted-`from` sends use this default when neither the request nor the template names a `from`.
    */
   public static setDefaultSender<ThrowOnError extends boolean = false>(
     parameters: {
@@ -10974,6 +10978,105 @@ export class Templates {
   }
 
   /**
+   * Suggest designs for a brief
+   *
+   * Ranks Samva's gallery designs for a brief and returns the three to start a new email from, best first, each with the `galleryTemplateId` that creates a template from it. When the brief names a company's email, `recreation` says whether the gallery recreates that kind of email from it, recreates another kind (start from it for the look), or has none. The ranking is deterministic: the same brief returns the same designs.
+   */
+  public static suggestStarters<ThrowOnError extends boolean = false>(
+    parameters: {
+      brief: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplatesSuggestStartersResponses,
+    TemplatesSuggestStartersErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "brief" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesSuggestStarters",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          TemplatesSuggestStartersResponses,
+          TemplatesSuggestStartersErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/suggestions",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Create a template from a brief
+   *
+   * Creates an email template project from the gallery design that best fits a brief (the first of `POST /v1/templates/suggestions`, or the `galleryTemplateId` you name) and returns it with status 201, the design it started from, the other suggestions, any company email the brief named, and the request that makes the template assistant adapt the design. The assistant runs when that request is sent in the editor; an agent of your own adapts the design through the workspace endpoints instead.
+   */
+  public static createFromBrief<ThrowOnError extends boolean = false>(
+    parameters: {
+      brief: string;
+      name?: string | null | undefined;
+      galleryTemplateId?: string | null | undefined;
+      useBrand?: boolean | null | undefined;
+      namespaceId?: NamespaceId | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplatesCreateFromBriefResponses,
+    TemplatesCreateFromBriefErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "brief" },
+            { in: "body", key: "name" },
+            { in: "body", key: "galleryTemplateId" },
+            { in: "body", key: "useBrand" },
+            { in: "body", key: "namespaceId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesCreateFromBrief",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          TemplatesCreateFromBriefResponses,
+          TemplatesCreateFromBriefErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/from-brief",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
    * Create a template from a website
    *
    * Checks that the website is a public page Samva can read, creates an email template project from Samva's canonical TSX starter, and returns the template with status 201 and the request that makes the template assistant match the site. The assistant runs when the request is sent in the editor; it rebuilds the project's theme and blocks from the site and proposes a brand that applies only after the customer approves it. A 422 names why the site cannot be matched: not a web address, not public, no answer, a missing page, refused automated visits, or not a web page.
@@ -11129,6 +11232,9 @@ export class Templates {
       id: TemplateId;
       expectedRevision: string;
       patches: Array<{
+        /**
+         * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+         */
         path: string;
         content: string | null;
       }>;
@@ -11972,6 +12078,9 @@ export class Templates {
         resourceId: string;
         name: string;
         files: Array<{
+          /**
+           * A relative path of 1–1024 characters with no backslash, . or .., or .git segments.
+           */
           path: string;
           mediaType: string;
           contentBase64: string;
@@ -18016,6 +18125,10 @@ Object.assign(Templates.delete, { operation: "templatesDelete" });
 Object.assign(Templates.getById, { operation: "templatesGetById" });
 
 Object.assign(Templates.update, { operation: "templatesUpdate" });
+
+Object.assign(Templates.suggestStarters, { operation: "templatesSuggestStarters" });
+
+Object.assign(Templates.createFromBrief, { operation: "templatesCreateFromBrief" });
 
 Object.assign(Templates.createFromWebsite, { operation: "templatesCreateFromWebsite" });
 

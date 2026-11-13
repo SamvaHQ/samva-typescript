@@ -1,14 +1,16 @@
-import { describe, expect, it } from "@effect/vitest";
+import { afterEach, describe, expect, it } from "@effect/vitest";
 import { Duration, Effect, Fiber, Layer, Ref } from "effect";
-import { HttpClient, HttpClientResponse, type HttpClientRequest } from "effect/http";
+import { FetchHttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
 
 import { ConflictError, InternalError, RateLimitedError, ValidationError } from "../src/effect";
 import * as Client from "../src/effect/client";
 import * as Contacts from "../src/effect/contacts";
 import * as Email from "../src/effect/email";
+import { SamvaApi } from "../src/effect/generated";
 import * as Messages from "../src/effect/messages";
 import * as Retry from "../src/effect/retry";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 /**
  * Retry default policy + module-operation idempotency keys, driven by `TestClock`.
@@ -117,48 +119,44 @@ const sendInput = {
   html: "<p>Hi</p>",
 } as const;
 
-const jsonResponse = (status: number, body: unknown): Response =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
+const verifyScripts: Array<() => void> = [];
+afterEach(() => {
+  for (const verify of verifyScripts.splice(0)) verify();
+});
+const failedApi = () => {
+  const failure = () => Effect.fail(new InternalError({ message: "boom" }));
+  const fake = fakeSamvaApi(SamvaApi)({
+    Contacts: { contactsStartImport: failure },
+    Messages: { messagesSend: failure, messagesList: failure, messagesRemove: failure },
+    Email: { emailRotateDomainDkim: failure },
   });
-
-/** Stub that records the `Idempotency-Key` header of every request it sees. */
-const keyRecordingClient = (keys: Array<string | undefined>, status = 500): HttpClient.HttpClient =>
-  HttpClient.make((request: HttpClientRequest.HttpClientRequest) => {
-    keys.push(request.headers["idempotency-key"]);
-    return Effect.succeed(
-      HttpClientResponse.fromWeb(
-        request,
-        jsonResponse(status, {
-          _tag: "InternalError",
-          message: "boom",
-        }),
-      ),
-    );
-  });
-
-/** Stub that counts requests, always failing with a retryable 500. */
-const countingClient = (counter: { calls: number }): HttpClient.HttpClient =>
-  HttpClient.make((request: HttpClientRequest.HttpClientRequest) => {
+  verifyScripts.push(fake.assertComplete);
+  return fake;
+};
+const keyRecordingTransport = (keys: Array<string | undefined>) => {
+  const fake = failedApi();
+  const fetch: typeof globalThis.fetch = (input, init) => {
+    const request = new Request(input, init);
+    keys.push(request.headers.get("idempotency-key") ?? undefined);
+    return fake.fetch(request);
+  };
+  return Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fetch));
+};
+const countingTransport = (counter: { calls: number }) => {
+  const fake = failedApi();
+  const fetch: typeof globalThis.fetch = (input, init) => {
     counter.calls += 1;
-    return Effect.succeed(
-      HttpClientResponse.fromWeb(
-        request,
-        jsonResponse(500, {
-          _tag: "InternalError",
-          message: "boom",
-        }),
-      ),
-    );
-  });
+    return fake.fetch(input, init);
+  };
+  return Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fetch));
+};
 
 describe("facade idempotency keys and retry-safety", () => {
   it.effect("retries only the replayable new-import branch with the same key", () =>
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+        Layer.provide(keyRecordingTransport(keys)),
       );
       const fiber = yield* Effect.forkChild(
         Effect.exit(
@@ -203,7 +201,7 @@ describe("facade idempotency keys and retry-safety", () => {
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+        Layer.provide(keyRecordingTransport(keys)),
       );
 
       const fiber = yield* Effect.forkChild(
@@ -228,7 +226,7 @@ describe("facade idempotency keys and retry-safety", () => {
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+        Layer.provide(keyRecordingTransport(keys)),
       );
       const fiber = yield* Effect.forkChild(
         Effect.exit(
@@ -255,7 +253,7 @@ describe("facade idempotency keys and retry-safety", () => {
           operations.push(operation);
           return "event:rotate:1";
         },
-      }).pipe(Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))));
+      }).pipe(Layer.provide(keyRecordingTransport(keys)));
       const fiber = yield* Effect.forkChild(
         Effect.exit(
           Email.rotateDomainDkim({ id: "dom_7q2xk9mvt4znw8rh" }).pipe(Effect.provide(client)),
@@ -280,7 +278,7 @@ describe("facade idempotency keys and retry-safety", () => {
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+        Layer.provide(keyRecordingTransport(keys)),
       );
 
       yield* Email.send(sendInput).pipe(
@@ -301,7 +299,7 @@ describe("facade idempotency keys and retry-safety", () => {
     Effect.gen(function* () {
       const keys: Array<string | undefined> = [];
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, keyRecordingClient(keys))),
+        Layer.provide(keyRecordingTransport(keys)),
       );
 
       yield* Email.send(sendInput, { idempotencyKey: "caller-supplied-key" }).pipe(
@@ -317,7 +315,7 @@ describe("facade idempotency keys and retry-safety", () => {
     Effect.gen(function* () {
       const counter = { calls: 0 };
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, countingClient(counter))),
+        Layer.provide(countingTransport(counter)),
       );
 
       const fiber = yield* Effect.forkChild(
@@ -337,7 +335,7 @@ describe("facade idempotency keys and retry-safety", () => {
     Effect.gen(function* () {
       const counter = { calls: 0 };
       const client = Client.layer({ apiKey: "samva_sk_test" }).pipe(
-        Layer.provide(Layer.succeed(HttpClient.HttpClient, countingClient(counter))),
+        Layer.provide(countingTransport(counter)),
       );
 
       yield* Messages.remove({ id: "msg_7q2xk9mvt4znw8rh" }).pipe(

@@ -1,23 +1,42 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
+import {
+  SamvaApi,
+  TemplateProjectId,
+  OrganizationId,
+  UserId,
+  TemplateSourceError,
+  ConflictError,
+  FlagDisabledError,
+} from "../src/effect/generated";
+import type {
+  NewsletterIssuesOpen200,
+  NewsletterIssuesCheck200,
+  NewsletterIssuesSave200,
+  NewsletterIssuesRender200,
+} from "../src/effect/generated/newsletter-issues";
 import * as NewsletterIssues from "../src/effect/newsletter-issues";
 import { createClient, type SamvaClient } from "../src/promises";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 const id = "nl_1234567890abcdef";
-const projectId = "tproj_1234567890abcdef";
+const projectId = Schema.decodeSync(TemplateProjectId)("tproj_1234567890abcdef");
 const revision = "draft-7";
 const commit = "1111111111111111111111111111111111111111";
 const path = "issues/weekly digest.md";
 const content =
   "---\ntitle: Weekly digest\nslug: weekly-digest\ntopic: newsletter\n---\n\nHello!\n";
-const actor = { userId: "user_1234567890abcdef", via: "api" };
-const view = {
+const actor = {
+  userId: Schema.decodeSync(UserId)("user_1234567890abcdef"),
+  via: "api" as const,
+};
+const view: NewsletterIssuesOpen200 = {
   workspace: {
     projectId,
-    organizationId: "org_1234567890abcdef",
+    organizationId: Schema.decodeSync(OrganizationId)("org_1234567890abcdef"),
     ownerEpoch: 0,
     repositoryName: "newsletter",
     defaultBranch: "main",
@@ -38,7 +57,7 @@ const view = {
   },
   files: { [path]: content },
 };
-const checked = {
+const checked: NewsletterIssuesCheck200 = {
   projectId,
   revision,
   entryPath: path,
@@ -49,7 +68,7 @@ const checked = {
 };
 const fenced = { path, expectedRevision: revision };
 const write = { ...fenced, content };
-const saved = {
+const saved: NewsletterIssuesSave200 = {
   commit,
   parentCommit: commit,
   tree: commit,
@@ -236,21 +255,52 @@ describe("topic issues service transport parity", () => {
   it.each(cells)(
     "$name preserves the public request and response in both clients",
     async (cell: Cell) => {
-      const requests: Array<unknown> = [];
-      const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-        const request = input instanceof Request ? input : new Request(input, init);
-        const url = new URL(request.url);
-        const body = await request.text();
-        requests.push({
-          method: request.method,
-          path: url.pathname,
-          query: Object.fromEntries(url.searchParams),
-          apiKey: request.headers.get("x-api-key"),
-          "idempotency-key": request.headers.get("idempotency-key"),
-          body: body === "" ? undefined : JSON.parse(body),
-        });
-        return Response.json(cell.response);
-      };
+      const fake = fakeSamvaApi(SamvaApi)({
+        "Newsletter issues": {
+          newsletterIssuesList: () =>
+            Effect.succeed({
+              projectId,
+              revision,
+              items: [{ path, title: "October", latestSend: null }],
+            }),
+          newsletterIssuesOpen: () => Effect.succeed(view),
+          newsletterIssuesGet: () => Effect.succeed({ projectId, revision, path, content }),
+          newsletterIssuesCreate: () => Effect.succeed(view),
+          newsletterIssuesUpdate: () => Effect.succeed(view),
+          newsletterIssuesRemove: () => Effect.succeed(view),
+          newsletterIssuesSave: () => Effect.succeed(saved),
+          newsletterIssuesCheck: () => Effect.succeed(checked),
+          newsletterIssuesRender: ({ payload }) => {
+            const response: NewsletterIssuesRender200 = {
+              ...checked,
+              fixture: "default",
+              rendered: null,
+              whatsapp: null,
+              page:
+                payload.target === "web"
+                  ? { kind: "page", html: "<p>Hello!</p>", selections: [] }
+                  : null,
+            };
+            return Effect.succeed(response);
+          },
+          newsletterIssuesHead: () => Effect.succeed({ projectId, revision, remoteHead: commit }),
+          newsletterIssuesHistory: () =>
+            Effect.succeed({
+              projectId,
+              head: commit,
+              commits: [
+                {
+                  commit,
+                  tree: commit,
+                  parentCommit: null,
+                  message: "Initial issue",
+                  committedAt: "2026-10-26T12:00:00.000Z",
+                },
+              ],
+            }),
+        },
+      });
+      const { fetch } = fake;
       const promise = await cell.promise(createClient({ apiKey: "samva_sk_test", fetch }));
       const effect = await Effect.runPromise(provide(cell.effect(), fetch));
       expect(JSON.parse(JSON.stringify(promise))).toEqual(cell.response);
@@ -258,7 +308,17 @@ describe("topic issues service transport parity", () => {
       const expectedBody = cell.body;
       const expectedKey =
         cell.method === "GET" ? null : (cell.idempotencyKey ?? expect.any(String));
-      expect(requests).toEqual(
+      fake.assertComplete();
+      expect(
+        fake.requests.map((request) => ({
+          method: request.method,
+          path: request.path,
+          query: request.query,
+          apiKey: request.headers.get("x-api-key"),
+          "idempotency-key": request.headers.get("idempotency-key"),
+          body: request.body,
+        })),
+      ).toEqual(
         Array.from({ length: 2 }, () => ({
           method: cell.method,
           path: `/v1/newsletters/${id}/issues${cell.suffix}`,
@@ -273,20 +333,23 @@ describe("topic issues service transport parity", () => {
 
   it("preserves an uninitialized topic without inventing a project or revision", async () => {
     const response = { projectId: null, revision: null, items: [] };
-    const fetch = async () => Response.json(response);
+    const fake = fakeSamvaApi(SamvaApi)({
+      "Newsletter issues": { newsletterIssuesList: () => Effect.succeed(response) },
+    });
+    const { fetch } = fake;
     expect(
       await createClient({ apiKey: "samva_sk_test", fetch }).newsletters.issues.list({ id }),
     ).toEqual(response);
     expect(await Effect.runPromise(provide(NewsletterIssues.list({ id }), fetch))).toEqual(
       response,
     );
+    fake.assertComplete();
   });
 
   it.each([
     {
       status: 422,
-      body: {
-        _tag: "TemplateSourceError",
+      body: new TemplateSourceError({
         message: "Issue source could not be compiled",
         revision: "draft-8",
         diagnostics: [
@@ -303,27 +366,28 @@ describe("topic issues service transport parity", () => {
             compatibility: null,
           },
         ],
-      },
+      }),
     },
     {
       status: 409,
-      body: {
-        _tag: "ConflictError",
+      body: new ConflictError({
         message: "Workspace changed",
         resource: "TemplateWorkspace",
         id,
-      },
+      }),
     },
     {
       status: 403,
-      body: {
-        _tag: "FlagDisabledError",
+      body: new FlagDisabledError({
         flag: "newsletters",
         message: "Issue content is unavailable",
-      },
+      }),
     },
-  ])("preserves the tagged $status failure in both clients", async ({ status, body }) => {
-    const fetch = async () => Response.json(body, { status });
+  ])("preserves the tagged $status failure in both clients", async ({ body }) => {
+    const fake = fakeSamvaApi(SamvaApi)({
+      "Newsletter issues": { newsletterIssuesUpdate: () => Effect.fail(body) },
+    });
+    const { fetch } = fake;
     await expect(
       createClient({ apiKey: "samva_sk_test", fetch }).newsletters.issues.update(
         { id, ...write },
@@ -343,5 +407,6 @@ describe("topic issues service transport parity", () => {
       ),
     );
     expect(failure).toMatchObject(body);
+    fake.assertComplete();
   });
 });

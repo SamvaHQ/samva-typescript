@@ -1,3 +1,37 @@
+## samva@0.44.0
+
+### The API checks sender names, subjects, email addresses, and template paths
+
+The Effect SDK no longer checks these values before sending: control characters in sender names
+and subjects, email address shape, and issue, entry, and workspace paths. The API still rejects
+invalid values with the same messages, as a 422 response. The published OpenAPI document no longer
+carries these patterns, so clients whose regex engines reject Unicode property escapes (Python,
+Go) can compile every schema. Template slugs keep their kebab-case pattern; the 100-character limit
+is checked by the API.
+
+### Start a template from a brief
+
+`client.templates.suggestStarters({ brief })` returns the three gallery designs a new email for
+that brief starts from, best first, each with its `galleryTemplateId`, and says whether the gallery
+recreates a company email the brief names. `client.templates.createFromBrief({ brief })` creates the
+template project from the first of them (or the `galleryTemplateId` you pass) and returns the
+template, the design it started from, the other suggestions, and the brief to send the template
+assistant. The Effect SDK has the same calls as `Templates.suggestStarters` and
+`Templates.createFromBrief`.
+
+### Senders report whether a send from them would be accepted
+
+`EmailSender` gains `sendable`: true only when the sender is verified and active and your
+organization owns a verified sending identity for the address or its domain, the same check every
+send runs. A verified sender whose domain is no longer verified in your organization reads
+`sendable: false`, and `setDefaultSender` refuses it.
+
+### Check the disposition on received webhooks
+
+**Breaking:** `message.received` requires `disposition` and `reason`. Update webhook fixtures and payload types; `@samva/webhooks` validates both fields. Delivered messages have a null reason. Email held for a missing receipt verdict uses `verdict_missing`, which is also a mailbox quarantine reason in the Promise and Effect SDKs.
+
+The organization event reports the disposition at commit time. Mailbox content screening can hold the message later; use mailbox events and the quarantine API to follow those holds.
+
 ## samva@0.43.3
 
 ### Read your hosted mailbox domain

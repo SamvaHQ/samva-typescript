@@ -113,10 +113,8 @@ export const StoredEmailContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -158,16 +156,7 @@ export type EmailDispatchContent = {
 };
 export const EmailDispatchContent = /* @__PURE__ */ (() =>
   Schema.Struct({
-    subject: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    ),
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(EmailAttachments),
@@ -177,10 +166,8 @@ export const EmailDispatchContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,

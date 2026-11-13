@@ -1,14 +1,20 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
 import * as Contacts from "../src/effect/contacts";
+import { SamvaApi, ContactImportJobId, TopicId } from "../src/effect/generated";
+import type {
+  ContactsPlanImport200,
+  ContactsStartImport202,
+} from "../src/effect/generated/contacts";
 import {
   createClient,
   type ContactsPlanImportData,
   type ContactsStartImportData,
 } from "../src/promises";
+import { fakeSamvaApi } from "./support/fake-samva-api";
 
 describe("contact import SDK facades", () => {
   it("preserves declared evidence, preview hash, and fenced resume on both clients", async () => {
@@ -41,21 +47,21 @@ describe("contact import SDK facades", () => {
       created: 2,
       existing: 0,
     };
-    const plan = {
+    const plan: ContactsPlanImport200 = {
       planHash: "a".repeat(64),
       presetVersion: "1",
       namespaceId: null,
-      topicId,
+      topicId: Schema.decodeSync(TopicId)(topicId),
       canStart: true,
       counts,
       diagnostics: [],
       diagnosticsTruncated: false,
     };
     const now = "2026-10-25T00:00:00.000Z";
-    const job = {
-      id,
+    const job: ContactsStartImport202 = {
+      id: Schema.decodeSync(ContactImportJobId)(id),
       namespaceId: null,
-      topicId,
+      topicId: Schema.decodeSync(TopicId)(topicId),
       preset: "mailchimp",
       status: "running",
       generation: 2,
@@ -69,22 +75,14 @@ describe("contact import SDK facades", () => {
       failure: null,
       resumable: false,
     };
-    const keys: Array<string | null> = [];
-    const requests: Array<{ method: string; path: string; body: unknown }> = [];
-    const fetch = async (url: RequestInfo | URL, init?: RequestInit) => {
-      const request = url instanceof Request ? url : new Request(url, init);
-      const path = new URL(request.url).pathname;
-      keys.push(request.headers.get("idempotency-key"));
-      requests.push({
-        method: request.method,
-        path,
-        body: request.method === "POST" ? await request.json() : null,
-      });
-      return new Response(JSON.stringify(path.endsWith("/plan") ? plan : job), {
-        status: request.method === "POST" && !path.endsWith("/plan") ? 202 : 200,
-        headers: { "content-type": "application/json" },
-      });
-    };
+    const fake = fakeSamvaApi(SamvaApi)({
+      Contacts: {
+        contactsPlanImport: () => Effect.succeed(plan),
+        contactsStartImport: () => Effect.succeed(job),
+        contactsGetImportJob: () => Effect.succeed(job),
+      },
+    });
+    const { fetch } = fake;
     const start: ContactsStartImportData["body"] = {
       mode: "new",
       input,
@@ -119,6 +117,13 @@ describe("contact import SDK facades", () => {
       { method: "GET", path: `/v1/contacts/imports/${id}`, body: null },
       { method: "POST", path: "/v1/contacts/imports", body: resume },
     ];
+    fake.assertComplete();
+    const requests = fake.requests.map(({ method, path, body }) => ({
+      method,
+      path,
+      body: body ?? null,
+    }));
+    const keys = fake.requests.map(({ headers }) => headers.get("idempotency-key"));
     expect(requests).toEqual([...expected, ...expected]);
     expect(keys[1]).toBe("migration-1");
     expect(keys[5]).toBe("migration-1");

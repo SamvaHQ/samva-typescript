@@ -538,6 +538,25 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
         errorMessage: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
         parts: Schema.optionalKey(Schema.Union([Schema.Finite, Schema.Null])),
         carrier: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+        disposition: Schema.Literals(["delivered", "quarantined", "isolated"]).annotate({
+          description:
+            "The message disposition when this event was committed, before mailbox content screening.",
+        }),
+        reason: Schema.Union([
+          Schema.Literals([
+            "spam",
+            "dmarc",
+            "virus",
+            "virus_unscanned",
+            "verdict_missing",
+            "phishing",
+            "fraud",
+            "prompt_injection",
+          ]),
+          Schema.Null,
+        ]).annotate({
+          description: "Why the message is held, or null when delivered.",
+        }),
         campaign: Schema.optionalKey(
           Schema.Union([
             Schema.StructWithRest(
@@ -4483,6 +4502,7 @@ export const MailboxMessageQuarantinedEventSchema = Schema.StructWithRest(
           "dmarc",
           "virus",
           "virus_unscanned",
+          "verdict_missing",
           "phishing",
           "fraud",
           "prompt_injection",
@@ -4599,6 +4619,7 @@ export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
           "dmarc",
           "virus",
           "virus_unscanned",
+          "verdict_missing",
           "phishing",
           "fraud",
           "prompt_injection",
@@ -4823,6 +4844,7 @@ export const MailboxMessageDiscardedEventSchema = Schema.StructWithRest(
           "dmarc",
           "virus",
           "virus_unscanned",
+          "verdict_missing",
           "phishing",
           "fraud",
           "prompt_injection",

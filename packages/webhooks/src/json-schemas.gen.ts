@@ -392,6 +392,31 @@ export const WebhookEventJsonSchemas: Readonly<
           errorMessage: { anyOf: [{ type: "string" }, { type: "null" }] },
           parts: { anyOf: [{ type: "number" }, { type: "null" }] },
           carrier: { anyOf: [{ type: "string" }, { type: "null" }] },
+          disposition: {
+            type: "string",
+            enum: ["delivered", "quarantined", "isolated"],
+            description:
+              "The message disposition when this event was committed, before mailbox content screening.",
+          },
+          reason: {
+            anyOf: [
+              {
+                type: "string",
+                enum: [
+                  "spam",
+                  "dmarc",
+                  "virus",
+                  "virus_unscanned",
+                  "verdict_missing",
+                  "phishing",
+                  "fraud",
+                  "prompt_injection",
+                ],
+              },
+              { type: "null" },
+            ],
+            description: "Why the message is held, or null when delivered.",
+          },
           campaign: {
             anyOf: [
               {
@@ -1057,7 +1082,7 @@ export const WebhookEventJsonSchemas: Readonly<
           messageId: { type: "string" },
           organizationId: { type: "string" },
         },
-        required: ["channel", "messageId", "organizationId"],
+        required: ["channel", "disposition", "reason", "messageId", "organizationId"],
         additionalProperties: true,
       },
     },
@@ -2877,6 +2902,7 @@ export const WebhookEventJsonSchemas: Readonly<
               "dmarc",
               "virus",
               "virus_unscanned",
+              "verdict_missing",
               "phishing",
               "fraud",
               "prompt_injection",
@@ -2956,6 +2982,7 @@ export const WebhookEventJsonSchemas: Readonly<
               "dmarc",
               "virus",
               "virus_unscanned",
+              "verdict_missing",
               "phishing",
               "fraud",
               "prompt_injection",
@@ -3103,6 +3130,7 @@ export const WebhookEventJsonSchemas: Readonly<
               "dmarc",
               "virus",
               "virus_unscanned",
+              "verdict_missing",
               "phishing",
               "fraud",
               "prompt_injection",

@@ -150,6 +150,74 @@ export const TemplatePublicationRender = /* @__PURE__ */ (() =>
       }),
     ),
   }).annotate({ identifier: "TemplatePublicationRender" }))();
+export type TemplateStarterSuggestion = {
+  readonly galleryTemplateId: string;
+  readonly slug: string;
+  readonly name: string;
+  readonly description: string;
+  readonly intent: string;
+  readonly tags: ReadonlyArray<string>;
+  readonly structure: string;
+  readonly imagery: "none" | "markup" | "pictures";
+  readonly recreates?: string;
+  readonly reason: string;
+};
+export const TemplateStarterSuggestion = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    galleryTemplateId: Schema.String.annotate({
+      description:
+        "The gallery design to start from. Pass it as `galleryTemplateId` to create a template from it.",
+    }),
+    slug: Schema.String.annotate({ description: "The design's gallery page, under /templates/." }),
+    name: Schema.String,
+    description: Schema.String,
+    intent: Schema.String.annotate({ description: "The brief this design fits, in one sentence." }),
+    tags: Schema.Array(Schema.String),
+    structure: Schema.String.annotate({
+      description:
+        "How the design is built: letter, code, ledger, timeline, grid, poster, and so on.",
+    }),
+    imagery: Schema.Union([
+      Schema.Literal("none"),
+      Schema.Literal("markup"),
+      Schema.Literal("pictures"),
+    ]).annotate({
+      description:
+        "Whether adapting it means replacing pictures: none, graphics built in markup, or image files.",
+    }),
+    recreates: Schema.optionalKey(
+      Schema.String.annotate({ description: "The company whose email this design recreates." }),
+    ),
+    reason: Schema.String.annotate({ description: "Why it was suggested for this brief." }),
+  }).annotate({ identifier: "TemplateStarterSuggestion" }))();
+export type TemplateRecreationMatch =
+  | { readonly status: "exact"; readonly company: string; readonly galleryTemplateId: string }
+  | {
+      readonly status: "kind-differs";
+      readonly company: string;
+      readonly galleryTemplateId: string;
+      readonly recreationName: string;
+    }
+  | { readonly status: "missing"; readonly company: string };
+export const TemplateRecreationMatch = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      status: Schema.Literal("exact"),
+      company: Schema.String,
+      galleryTemplateId: Schema.String,
+    }),
+    Schema.Struct({
+      status: Schema.Literal("kind-differs"),
+      company: Schema.String,
+      galleryTemplateId: Schema.String,
+      recreationName: Schema.String,
+    }),
+    Schema.Struct({ status: Schema.Literal("missing"), company: Schema.String }),
+  ]).annotate({
+    description:
+      "The company email the brief named: `exact` when the gallery recreates that kind of email from it, `kind-differs` when it recreates another kind (start from it for the look and adapt the kind), `missing` when the gallery has no recreation of that company.",
+    identifier: "TemplateRecreationMatch",
+  }))();
 export type TemplateInputContractPage = {
   readonly items: ReadonlyArray<{
     readonly id: TemplateInputContractId;
@@ -258,18 +326,13 @@ export const TemplateSummary = /* @__PURE__ */ (() =>
       description:
         "Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.",
     }),
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -336,6 +399,17 @@ export const WhatsAppTemplateComponent = /* @__PURE__ */ (() =>
       buttons: Schema.Array(WhatsAppTemplateButton),
     }),
   ]).annotate({ identifier: "WhatsAppTemplateComponent" }))();
+export type TemplateStarterSuggestions = {
+  readonly suggestions: ReadonlyArray<TemplateStarterSuggestion>;
+  readonly recreation: TemplateRecreationMatch | null;
+};
+export const TemplateStarterSuggestions = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    suggestions: Schema.Array(TemplateStarterSuggestion).annotate({
+      description: "Best first; a new email for this brief starts from the first.",
+    }),
+    recreation: Schema.Union([TemplateRecreationMatch, Schema.Null]),
+  }).annotate({ identifier: "TemplateStarterSuggestions" }))();
 export type TemplateFamily = {
   readonly id: TemplateFamilyId;
   readonly name: string;
@@ -430,18 +504,13 @@ export const Template = /* @__PURE__ */ (() =>
       description:
         "Whether the template's project is shared with every namespace. Every entry in a project shares it. A namespace-scoped key reads and sends a shared template in its own namespace but cannot change it. Only an organization-level project is shared.",
     }),
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -551,6 +620,30 @@ export const TemplateFamilyPage = /* @__PURE__ */ (() =>
     items: Schema.Array(TemplateFamily),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "TemplateFamilyPage" }))();
+export type TemplateFromBrief = {
+  readonly template: Template;
+  readonly startedFrom: TemplateStarterSuggestion;
+  readonly alternatives: ReadonlyArray<TemplateStarterSuggestion>;
+  readonly recreation: TemplateRecreationMatch | null;
+  readonly ask: string;
+};
+export const TemplateFromBrief = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    template: Template,
+    startedFrom: TemplateStarterSuggestion,
+    alternatives: Schema.Array(TemplateStarterSuggestion).annotate({
+      description: "The other designs suggested for the brief, best first.",
+    }),
+    recreation: Schema.Union([TemplateRecreationMatch, Schema.Null]),
+    ask: Schema.String.annotate({
+      description:
+        "The request to send the template assistant in the editor: the brief, then the design the project starts from and what the gallery has of a company email the brief names. The assistant adapts the design to it; nothing runs until it is sent.",
+    }),
+  }).annotate({
+    description:
+      "A template project created from a brief. `startedFrom` is the gallery design the project was created from.",
+    identifier: "TemplateFromBrief",
+  }))();
 export type TemplateFromWebsite = {
   readonly template: Template;
   readonly website: { readonly url: string; readonly host: string };
@@ -717,10 +810,8 @@ export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
     slug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -872,10 +963,8 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
       slug: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-            ).annotate({
-              expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+            Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
             }),
           ),
           Schema.Null,
@@ -883,20 +972,13 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
       ),
       entryPath: Schema.optionalKey(
         Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          Schema.String.annotate({
+            description:
+              "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(
@@ -923,24 +1005,7 @@ export const TemplatesUpdateRequestJson = /* @__PURE__ */ (() =>
         ]),
       ),
       fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefaultInput, Schema.Null])),
-      replyToDefault: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.String.check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
+      replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
       trackingDefault: Schema.optionalKey(
         Schema.Union([TemplateTrackingDefault, Schema.Null]).annotate({
           description:
@@ -1084,18 +1149,13 @@ export const TemplatesPublishRequestJson = /* @__PURE__ */ (() =>
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -1233,18 +1293,13 @@ export const TemplatesPublish201 = /* @__PURE__ */ (() =>
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -1372,20 +1427,13 @@ export const TemplatesPublish201 = /* @__PURE__ */ (() =>
           }),
         ),
         entryPath: Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          Schema.String.annotate({
+            description:
+              "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(
@@ -1393,20 +1441,13 @@ export const TemplatesPublish201 = /* @__PURE__ */ (() =>
                 expected: "a value with a length of at most 1024",
               }),
             ),
-          Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          Schema.String.annotate({
+            description:
+              "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(
@@ -1851,18 +1892,13 @@ export const TemplatesGetPublication200 = /* @__PURE__ */ (() =>
         expected: "a string matching the RegExp ^[a-f0-9]{40}$",
       }),
     ),
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -1990,20 +2026,13 @@ export const TemplatesGetPublication200 = /* @__PURE__ */ (() =>
           }),
         ),
         entryPath: Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          Schema.String.annotate({
+            description:
+              "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(
@@ -2011,20 +2040,13 @@ export const TemplatesGetPublication200 = /* @__PURE__ */ (() =>
                 expected: "a value with a length of at most 1024",
               }),
             ),
-          Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          Schema.String.annotate({
+            description:
+              "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(
@@ -2607,16 +2629,23 @@ export const TemplatesOpenWorkspace200 = /* @__PURE__ */ (() =>
       ),
       conflicts: Schema.Array(
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            }),
-          ),
+          path: Schema.String.annotate({
+            description:
+              "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+          })
+            .check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+            .check(
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 1024).annotate({
+                expected: "a value with a length between 1 and 1024",
+              }),
+            ),
           base: Schema.Union([Schema.String, Schema.Null]),
           draft: Schema.Union([Schema.String, Schema.Null]),
           main: Schema.Union([Schema.String, Schema.Null]),
@@ -2639,20 +2668,13 @@ export const TemplatesOpenWorkspace200 = /* @__PURE__ */ (() =>
             access: Schema.Literal("read-write"),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -2722,20 +2744,13 @@ export const TemplatesOpenWorkspace200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -2792,20 +2807,13 @@ export const TemplatesOpenWorkspace200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -2939,16 +2947,23 @@ export const TemplatesPatchWorkspaceRequestJson = /* @__PURE__ */ (() =>
     expectedRevision: Schema.String,
     patches: Schema.Array(
       Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
+        path: Schema.String.annotate({
+          description:
+            "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+          .check(
+            Schema.isBetweenLength(1, 1024).annotate({
+              expected: "a value with a length between 1 and 1024",
+            }),
+          ),
         content: Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(1048576).annotate({
@@ -3104,16 +3119,23 @@ export const TemplatesPatchWorkspace200 = /* @__PURE__ */ (() =>
       ),
       conflicts: Schema.Array(
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            }),
-          ),
+          path: Schema.String.annotate({
+            description:
+              "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+          })
+            .check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+            .check(
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 1024).annotate({
+                expected: "a value with a length between 1 and 1024",
+              }),
+            ),
           base: Schema.Union([Schema.String, Schema.Null]),
           draft: Schema.Union([Schema.String, Schema.Null]),
           main: Schema.Union([Schema.String, Schema.Null]),
@@ -3136,20 +3158,13 @@ export const TemplatesPatchWorkspace200 = /* @__PURE__ */ (() =>
             access: Schema.Literal("read-write"),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -3219,20 +3234,13 @@ export const TemplatesPatchWorkspace200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -3289,20 +3297,13 @@ export const TemplatesPatchWorkspace200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -3436,16 +3437,21 @@ export type TemplatesPutWorkspaceAssetRequestJson = {
 export const TemplatesPutWorkspaceAssetRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     expectedRevision: Schema.String,
-    path: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-      }),
-    ),
+    path: Schema.String.annotate({
+      description:
+        "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+      .check(
+        Schema.isBetweenLength(1, 1024).annotate({
+          expected: "a value with a length between 1 and 1024",
+        }),
+      ),
     contentBase64: Schema.String,
     replace: Schema.Boolean,
   }))();
@@ -3585,16 +3591,23 @@ export const TemplatesPutWorkspaceAsset200 = /* @__PURE__ */ (() =>
       ),
       conflicts: Schema.Array(
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            }),
-          ),
+          path: Schema.String.annotate({
+            description:
+              "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+          })
+            .check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+            .check(
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 1024).annotate({
+                expected: "a value with a length between 1 and 1024",
+              }),
+            ),
           base: Schema.Union([Schema.String, Schema.Null]),
           draft: Schema.Union([Schema.String, Schema.Null]),
           main: Schema.Union([Schema.String, Schema.Null]),
@@ -3617,20 +3630,13 @@ export const TemplatesPutWorkspaceAsset200 = /* @__PURE__ */ (() =>
             access: Schema.Literal("read-write"),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -3700,20 +3706,13 @@ export const TemplatesPutWorkspaceAsset200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -3770,20 +3769,13 @@ export const TemplatesPutWorkspaceAsset200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -3984,39 +3976,25 @@ export const TemplatesCheckWorkspace200 = /* @__PURE__ */ (() =>
     projectId: TemplateProjectId,
     revision: Schema.String,
     entryPath: Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
+      Schema.String.annotate({
+        description:
+          "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+      })
         .check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-              "u",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
           }),
         )
         .check(
           Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
         ),
-      Schema.String.check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
+      Schema.String.annotate({
+        description:
+          "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+      })
         .check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-              "u",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
           }),
         )
         .check(
@@ -4074,20 +4052,13 @@ export const TemplatesCheckWorkspace200 = /* @__PURE__ */ (() =>
     ]),
     issue: Schema.optionalKey(
       Schema.Struct({
-        path: Schema.String.check(
-          Schema.isMaxCodePoints(1024).annotate({
-            expected: "a string with at most 1024 code points",
-          }),
-        )
+        path: Schema.String.annotate({
+          description:
+            "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+        })
           .check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
             }),
           )
           .check(
@@ -4359,16 +4330,21 @@ export type TemplatesResolveWorkspaceConflictRequestJson = {
 export const TemplatesResolveWorkspaceConflictRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     expectedRevision: Schema.String,
-    path: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp(
-          "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-      }),
-    ),
+    path: Schema.String.annotate({
+      description:
+        "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
+        }),
+      )
+      .check(
+        Schema.isBetweenLength(1, 1024).annotate({
+          expected: "a value with a length between 1 and 1024",
+        }),
+      ),
     resolution: Schema.Union([
       Schema.Literal("draft"),
       Schema.Literal("main"),
@@ -4511,16 +4487,23 @@ export const TemplatesResolveWorkspaceConflict200 = /* @__PURE__ */ (() =>
       ),
       conflicts: Schema.Array(
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            }),
-          ),
+          path: Schema.String.annotate({
+            description:
+              "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+          })
+            .check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+            .check(
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 1024).annotate({
+                expected: "a value with a length between 1 and 1024",
+              }),
+            ),
           base: Schema.Union([Schema.String, Schema.Null]),
           draft: Schema.Union([Schema.String, Schema.Null]),
           main: Schema.Union([Schema.String, Schema.Null]),
@@ -4543,20 +4526,13 @@ export const TemplatesResolveWorkspaceConflict200 = /* @__PURE__ */ (() =>
             access: Schema.Literal("read-write"),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -4626,20 +4602,13 @@ export const TemplatesResolveWorkspaceConflict200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -4696,20 +4665,13 @@ export const TemplatesResolveWorkspaceConflict200 = /* @__PURE__ */ (() =>
               ),
           }),
           Schema.Struct({
-            root: Schema.String.check(
-              Schema.isMaxCodePoints(2048).annotate({
-                expected: "a string with at most 2048 code points",
-              }),
-            )
+            root: Schema.String.annotate({
+              description:
+                "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+            })
               .check(
-                Schema.isPattern(
-                  new globalThis.RegExp(
-                    "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                    "u",
-                  ),
-                ).annotate({
-                  expected:
-                    "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                Schema.isMaxCodePoints(2048).annotate({
+                  expected: "a string with at most 2048 code points",
                 }),
               )
               .check(
@@ -4851,16 +4813,23 @@ export const TemplatesDiffWorkspace200 = /* @__PURE__ */ (() =>
     revision: Schema.String,
     changes: Schema.Array(
       Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
+        path: Schema.String.annotate({
+          description:
+            "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+          .check(
+            Schema.isBetweenLength(1, 1024).annotate({
+              expected: "a value with a length between 1 and 1024",
+            }),
+          ),
         before: Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(1048576).annotate({
@@ -5103,39 +5072,25 @@ export const TemplatesRenderWorkspaceFixture200 = /* @__PURE__ */ (() =>
     projectId: TemplateProjectId,
     revision: Schema.String,
     entryPath: Schema.Union([
-      Schema.String.check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
+      Schema.String.annotate({
+        description:
+          "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+      })
         .check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-              "u",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
           }),
         )
         .check(
           Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
         ),
-      Schema.String.check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
+      Schema.String.annotate({
+        description:
+          "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+      })
         .check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-              "u",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
           }),
         )
         .check(
@@ -5193,20 +5148,13 @@ export const TemplatesRenderWorkspaceFixture200 = /* @__PURE__ */ (() =>
     ]),
     issue: Schema.optionalKey(
       Schema.Struct({
-        path: Schema.String.check(
-          Schema.isMaxCodePoints(1024).annotate({
-            expected: "a string with at most 1024 code points",
-          }),
-        )
+        path: Schema.String.annotate({
+          description:
+            "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+        })
           .check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-                "u",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
             }),
           )
           .check(
@@ -5879,16 +5827,23 @@ export const TemplatesAttachWorkspaceResourceRequestJson = /* @__PURE__ */ (() =
         ),
       files: Schema.Array(
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp(
-                "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-              ),
-            ).annotate({
-              expected:
-                "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            }),
-          ),
+          path: Schema.String.annotate({
+            description:
+              "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+          })
+            .check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            )
+            .check(
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
+              }),
+            )
+            .check(
+              Schema.isBetweenLength(1, 1024).annotate({
+                expected: "a value with a length between 1 and 1024",
+              }),
+            ),
           mediaType: Schema.String.check(
             Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
           )
@@ -6051,16 +6006,23 @@ export const TemplatesAttachWorkspaceResource200 = /* @__PURE__ */ (() =>
     ),
     conflicts: Schema.Array(
       Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
+        path: Schema.String.annotate({
+          description:
+            "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+          .check(
+            Schema.isBetweenLength(1, 1024).annotate({
+              expected: "a value with a length between 1 and 1024",
+            }),
+          ),
         base: Schema.Union([Schema.String, Schema.Null]),
         draft: Schema.Union([Schema.String, Schema.Null]),
         main: Schema.Union([Schema.String, Schema.Null]),
@@ -6083,20 +6045,13 @@ export const TemplatesAttachWorkspaceResource200 = /* @__PURE__ */ (() =>
           access: Schema.Literal("read-write"),
         }),
         Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
+          root: Schema.String.annotate({
+            description:
+              "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
               }),
             )
             .check(
@@ -6166,20 +6121,13 @@ export const TemplatesAttachWorkspaceResource200 = /* @__PURE__ */ (() =>
             ),
         }),
         Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
+          root: Schema.String.annotate({
+            description:
+              "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
               }),
             )
             .check(
@@ -6236,20 +6184,13 @@ export const TemplatesAttachWorkspaceResource200 = /* @__PURE__ */ (() =>
             ),
         }),
         Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
+          root: Schema.String.annotate({
+            description:
+              "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
               }),
             )
             .check(
@@ -6515,16 +6456,23 @@ export const TemplatesRemoveWorkspaceResource200 = /* @__PURE__ */ (() =>
     ),
     conflicts: Schema.Array(
       Schema.Struct({
-        path: Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp(
-              "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-            ),
-          ).annotate({
-            expected:
-              "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          }),
-        ),
+        path: Schema.String.annotate({
+          description:
+            "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(1024).annotate({
+              expected: "a string with at most 1024 code points",
+            }),
+          )
+          .check(
+            Schema.isBetweenLength(1, 1024).annotate({
+              expected: "a value with a length between 1 and 1024",
+            }),
+          ),
         base: Schema.Union([Schema.String, Schema.Null]),
         draft: Schema.Union([Schema.String, Schema.Null]),
         main: Schema.Union([Schema.String, Schema.Null]),
@@ -6547,20 +6495,13 @@ export const TemplatesRemoveWorkspaceResource200 = /* @__PURE__ */ (() =>
           access: Schema.Literal("read-write"),
         }),
         Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
+          root: Schema.String.annotate({
+            description:
+              "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
               }),
             )
             .check(
@@ -6630,20 +6571,13 @@ export const TemplatesRemoveWorkspaceResource200 = /* @__PURE__ */ (() =>
             ),
         }),
         Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
+          root: Schema.String.annotate({
+            description:
+              "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
               }),
             )
             .check(
@@ -6700,20 +6634,13 @@ export const TemplatesRemoveWorkspaceResource200 = /* @__PURE__ */ (() =>
             ),
         }),
         Schema.Struct({
-          root: Schema.String.check(
-            Schema.isMaxCodePoints(2048).annotate({
-              expected: "a string with at most 2048 code points",
-            }),
-          )
+          root: Schema.String.annotate({
+            description:
+              "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+              Schema.isMaxCodePoints(2048).annotate({
+                expected: "a string with at most 2048 code points",
               }),
             )
             .check(
@@ -6991,16 +6918,23 @@ export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ (() =>
         ),
         conflicts: Schema.Array(
           Schema.Struct({
-            path: Schema.String.check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-              }),
-            ),
+            path: Schema.String.annotate({
+              description:
+                "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+            })
+              .check(
+                Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+              )
+              .check(
+                Schema.isMaxCodePoints(1024).annotate({
+                  expected: "a string with at most 1024 code points",
+                }),
+              )
+              .check(
+                Schema.isBetweenLength(1, 1024).annotate({
+                  expected: "a value with a length between 1 and 1024",
+                }),
+              ),
             base: Schema.Union([Schema.String, Schema.Null]),
             draft: Schema.Union([Schema.String, Schema.Null]),
             main: Schema.Union([Schema.String, Schema.Null]),
@@ -7023,20 +6957,13 @@ export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ (() =>
               access: Schema.Literal("read-write"),
             }),
             Schema.Struct({
-              root: Schema.String.check(
-                Schema.isMaxCodePoints(2048).annotate({
-                  expected: "a string with at most 2048 code points",
-                }),
-              )
+              root: Schema.String.annotate({
+                description:
+                  "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+              })
                 .check(
-                  Schema.isPattern(
-                    new globalThis.RegExp(
-                      "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                      "u",
-                    ),
-                  ).annotate({
-                    expected:
-                      "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  Schema.isMaxCodePoints(2048).annotate({
+                    expected: "a string with at most 2048 code points",
                   }),
                 )
                 .check(
@@ -7106,20 +7033,13 @@ export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ (() =>
                 ),
             }),
             Schema.Struct({
-              root: Schema.String.check(
-                Schema.isMaxCodePoints(2048).annotate({
-                  expected: "a string with at most 2048 code points",
-                }),
-              )
+              root: Schema.String.annotate({
+                description:
+                  "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+              })
                 .check(
-                  Schema.isPattern(
-                    new globalThis.RegExp(
-                      "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                      "u",
-                    ),
-                  ).annotate({
-                    expected:
-                      "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  Schema.isMaxCodePoints(2048).annotate({
+                    expected: "a string with at most 2048 code points",
                   }),
                 )
                 .check(
@@ -7176,20 +7096,13 @@ export const TemplatesRestoreWorkspace200 = /* @__PURE__ */ (() =>
                 ),
             }),
             Schema.Struct({
-              root: Schema.String.check(
-                Schema.isMaxCodePoints(2048).annotate({
-                  expected: "a string with at most 2048 code points",
-                }),
-              )
+              root: Schema.String.annotate({
+                description:
+                  "An absolute path under a workspace mount root, at most 2048 characters, with no . or .., or .git segments.",
+              })
                 .check(
-                  Schema.isPattern(
-                    new globalThis.RegExp(
-                      "^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
-                      "u",
-                    ),
-                  ).annotate({
-                    expected:
-                      "a string matching the RegExp ^\\/(?:project|references\\/started-from\\/[a-f0-9]{64}|resources\\/[A-Za-z0-9._-]+\\/[a-f0-9]{64}|library\\/templates\\/[a-z0-9]+(?:-[a-z0-9]+)*\\/[a-f0-9]{64})(?:\\/(?!\\.{1,2}(?:\\/|$)|\\.git(?:\\/|$))[^\\\\/]+)*$",
+                  Schema.isMaxCodePoints(2048).annotate({
+                    expected: "a string with at most 2048 code points",
                   }),
                 )
                 .check(
@@ -7440,16 +7353,21 @@ export const TemplatesSaveWorkspace200 = /* @__PURE__ */ (() =>
     ),
     revision: Schema.String,
     changedPaths: Schema.Array(
-      Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$)).{1,1024}$",
-        }),
-      ),
+      Schema.String.annotate({
+        description:
+          "A relative path of 1–1024 characters with no backslash, . or .., or .git segments.",
+      })
+        .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+        .check(
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
+          }),
+        )
+        .check(
+          Schema.isBetweenLength(1, 1024).annotate({
+            expected: "a value with a length between 1 and 1024",
+          }),
+        ),
     ),
     sourceDigest: Schema.String.check(
       Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
@@ -7866,6 +7784,118 @@ export type TemplatesCreateFamilyFromTemplate500 = InternalError;
 export const TemplatesCreateFamilyFromTemplate500 = InternalError;
 export type TemplatesCreateFamilyFromTemplate504 = GatewayTimeoutError;
 export const TemplatesCreateFamilyFromTemplate504 = GatewayTimeoutError;
+export type TemplatesCreateFromBriefHeaders = { readonly "idempotency-key": string };
+export const TemplatesCreateFromBriefHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    "idempotency-key": Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+  }))();
+export type TemplatesCreateFromBriefRequestJson = {
+  readonly brief: string;
+  readonly name?: string | null;
+  readonly galleryTemplateId?: string | null;
+  readonly useBrand?: boolean | null;
+  readonly namespaceId?: NamespaceId | null;
+};
+export const TemplatesCreateFromBriefRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    brief: Schema.String.annotate({
+      description:
+        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description: "The template's name. Defaults to the name of the design it starts from.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    galleryTemplateId: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Start from this gallery design instead of the first suggestion, for example another one the suggestions offered.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    useBrand: Schema.optionalKey(
+      Schema.Union([
+        Schema.Boolean.annotate({
+          description:
+            "Whether the new project's `theme.css` imports the organization's default brand over the design's look. Defaults to false.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
+      }),
+    ),
+  }))();
+export type TemplatesCreateFromBrief201 = TemplateFromBrief;
+export const TemplatesCreateFromBrief201 = TemplateFromBrief;
+export type TemplatesCreateFromBrief400 = MalformedRequestError;
+export const TemplatesCreateFromBrief400 = MalformedRequestError;
+export type TemplatesCreateFromBrief401 = UnauthorizedError;
+export const TemplatesCreateFromBrief401 = UnauthorizedError;
+export type TemplatesCreateFromBrief403 = ForbiddenError;
+export const TemplatesCreateFromBrief403 = ForbiddenError;
+export type TemplatesCreateFromBrief404 = ResourceNotFoundError;
+export const TemplatesCreateFromBrief404 = ResourceNotFoundError;
+export type TemplatesCreateFromBrief409 = ConflictError | TemplateInUseError;
+export const TemplatesCreateFromBrief409 = /* @__PURE__ */ (() =>
+  Schema.Union([ConflictError, TemplateInUseError]))();
+export type TemplatesCreateFromBrief422 = TemplateSourceError | ValidationError;
+export const TemplatesCreateFromBrief422 = /* @__PURE__ */ (() =>
+  Schema.Union([TemplateSourceError, ValidationError]))();
+export type TemplatesCreateFromBrief500 = InternalError;
+export const TemplatesCreateFromBrief500 = InternalError;
+export type TemplatesCreateFromBrief503 = ServiceUnavailableError;
+export const TemplatesCreateFromBrief503 = ServiceUnavailableError;
+export type TemplatesCreateFromBrief504 = GatewayTimeoutError;
+export const TemplatesCreateFromBrief504 = GatewayTimeoutError;
 export type TemplatesCreateFromWebsiteHeaders = { readonly "idempotency-key": string };
 export const TemplatesCreateFromWebsiteHeaders = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -7985,18 +8015,13 @@ export type TemplatesAddEntryRequestJson = {
 };
 export const TemplatesAddEntryRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -8012,10 +8037,8 @@ export const TemplatesAddEntryRequestJson = /* @__PURE__ */ (() =>
         Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
       ),
     slug: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-      ).annotate({
-        expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+      Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
       }),
     ),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
@@ -8052,6 +8075,37 @@ export type TemplatesAddEntry500 = InternalError;
 export const TemplatesAddEntry500 = InternalError;
 export type TemplatesAddEntry504 = GatewayTimeoutError;
 export const TemplatesAddEntry504 = GatewayTimeoutError;
+export type TemplatesSuggestStartersRequestJson = { readonly brief: string };
+export const TemplatesSuggestStartersRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    brief: Schema.String.annotate({
+      description:
+        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+  }))();
+export type TemplatesSuggestStarters200 = TemplateStarterSuggestions;
+export const TemplatesSuggestStarters200 = TemplateStarterSuggestions;
+export type TemplatesSuggestStarters400 = MalformedRequestError;
+export const TemplatesSuggestStarters400 = MalformedRequestError;
+export type TemplatesSuggestStarters401 = UnauthorizedError;
+export const TemplatesSuggestStarters401 = UnauthorizedError;
+export type TemplatesSuggestStarters403 = ForbiddenError;
+export const TemplatesSuggestStarters403 = ForbiddenError;
+export type TemplatesSuggestStarters422 = ValidationError;
+export const TemplatesSuggestStarters422 = ValidationError;
+export type TemplatesSuggestStarters500 = InternalError;
+export const TemplatesSuggestStarters500 = InternalError;
+export type TemplatesSuggestStarters504 = GatewayTimeoutError;
+export const TemplatesSuggestStarters504 = GatewayTimeoutError;
 
 export class TemplatesGroup extends HttpApiGroup.make("Templates")
   .add(
@@ -8800,6 +8854,29 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         OpenApi.Description,
         "Creates a template family containing the specified template and returns the new family with status 201.",
       ),
+    HttpApiEndpoint.post("templatesCreateFromBrief", "/v1/templates/from-brief", {
+      headers: TemplatesCreateFromBriefHeaders,
+      payload: TemplatesCreateFromBriefRequestJson,
+      success: TemplatesCreateFromBrief201.pipe(HttpApiSchema.status(201)),
+      error: [
+        TemplatesCreateFromBrief400.pipe(HttpApiSchema.status(400)),
+        TemplatesCreateFromBrief401.pipe(HttpApiSchema.status(401)),
+        TemplatesCreateFromBrief403.pipe(HttpApiSchema.status(403)),
+        TemplatesCreateFromBrief404.pipe(HttpApiSchema.status(404)),
+        TemplatesCreateFromBrief409.pipe(HttpApiSchema.status(409)),
+        TemplatesCreateFromBrief422.pipe(HttpApiSchema.status(422)),
+        TemplatesCreateFromBrief500,
+        TemplatesCreateFromBrief503.pipe(HttpApiSchema.status(503)),
+        TemplatesCreateFromBrief504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "templates.createFromBrief")
+      .annotate(OpenApi.Summary, "Create a template from a brief")
+      .annotate(
+        OpenApi.Description,
+        "Creates an email template project from the gallery design that best fits a brief (the first of `POST /v1/templates/suggestions`, or the `galleryTemplateId` you name) and returns it with status 201, the design it started from, the other suggestions, any company email the brief named, and the request that makes the template assistant adapt the design. The assistant runs when that request is sent in the editor; an agent of your own adapts the design through the workspace endpoints instead.",
+      ),
     HttpApiEndpoint.post("templatesCreateFromWebsite", "/v1/templates/from-website", {
       headers: TemplatesCreateFromWebsiteHeaders,
       payload: TemplatesCreateFromWebsiteRequestJson,
@@ -8865,6 +8942,25 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(
         OpenApi.Description,
         "Registers a `.tsx` file under `templates/` or `emails/` in an existing template project as its own template and returns it with status 201. The file does not need to exist yet; publishing fails until a commit contains it. Repeating the call with the same entry path, name, and slug returns the existing template.",
+      ),
+    HttpApiEndpoint.post("templatesSuggestStarters", "/v1/templates/suggestions", {
+      payload: TemplatesSuggestStartersRequestJson,
+      success: TemplatesSuggestStarters200,
+      error: [
+        TemplatesSuggestStarters400.pipe(HttpApiSchema.status(400)),
+        TemplatesSuggestStarters401.pipe(HttpApiSchema.status(401)),
+        TemplatesSuggestStarters403.pipe(HttpApiSchema.status(403)),
+        TemplatesSuggestStarters422.pipe(HttpApiSchema.status(422)),
+        TemplatesSuggestStarters500,
+        TemplatesSuggestStarters504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "templates.suggestStarters")
+      .annotate(OpenApi.Summary, "Suggest designs for a brief")
+      .annotate(
+        OpenApi.Description,
+        "Ranks Samva's gallery designs for a brief and returns the three to start a new email from, best first, each with the `galleryTemplateId` that creates a template from it. When the brief names a company's email, `recreation` says whether the gallery recreates that kind of email from it, recreates another kind (start from it for the look), or has none. The ranking is deterministic: the same brief returns the same designs.",
       ),
   )
   .annotate(

@@ -719,54 +719,23 @@ export const SendsSeries = /* @__PURE__ */ (() =>
   }))();
 export type ReplyToAddresses = ReadonlyArray<string> | null;
 export const ReplyToAddresses = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Array(
-      Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
-    ),
-    Schema.Null,
-  ]).annotate({ identifier: "ReplyToAddresses" }))();
+  Schema.Union([Schema.Array(Schema.String), Schema.Null]).annotate({
+    identifier: "ReplyToAddresses",
+  }))();
 export type CampaignFromInput = { readonly email: string; readonly name?: string | null } | null;
 export const CampaignFromInput = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({
-      email: Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
+      email: Schema.String,
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          )
-            .check(
-              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(120).annotate({
-                expected: "a value with a length of at most 120",
-              }),
-            ),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
           Schema.Null,
         ]),
       ),
@@ -1542,34 +1511,16 @@ export type EmailSender = { readonly email: string; readonly name?: string | nul
 export const EmailSender = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({
-      email: Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
+      email: Schema.String,
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          )
-            .check(
-              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(120).annotate({
-                expected: "a value with a length of at most 120",
-              }),
-            ),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
           Schema.Null,
         ]),
       ),
@@ -2550,32 +2501,16 @@ export class TemplateInUseError extends Schema.TaggedError<TemplateInUseError>()
 export type TemplateFromDefaultInput = { readonly email: string; readonly name?: string | null };
 export const TemplateFromDefaultInput = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp(
-          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-      }),
-    ),
+    email: Schema.String,
     name: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
           Schema.isMaxCodePoints(120).annotate({
             expected: "a string with at most 120 code points",
           }),
-        )
-          .check(
-            Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-              expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
+        ).check(
+          Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+        ),
         Schema.Null,
       ]),
     ),
@@ -2603,18 +2538,13 @@ export type AddTemplateEntryPayload = {
 };
 export const AddTemplateEntryPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    entryPath: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    entryPath: Schema.String.annotate({
+      description:
+        "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -2630,10 +2560,8 @@ export const AddTemplateEntryPayload = /* @__PURE__ */ (() =>
         Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
       ),
     slug: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-      ).annotate({
-        expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+      Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
       }),
     ),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
@@ -2821,18 +2749,13 @@ export type NewsletterIssueCheckPayload = {
 };
 export const NewsletterIssueCheckPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    path: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    path: Schema.String.annotate({
+      description:
+        "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -2857,18 +2780,13 @@ export type NewsletterIssueCreatePayload = {
 };
 export const NewsletterIssueCreatePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    path: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    path: Schema.String.annotate({
+      description:
+        "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -2900,18 +2818,13 @@ export type NewsletterIssueRemovePayload = {
 };
 export const NewsletterIssueRemovePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    path: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    path: Schema.String.annotate({
+      description:
+        "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -2937,18 +2850,13 @@ export type NewsletterIssueRenderPayload = {
 };
 export const NewsletterIssueRenderPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    path: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    path: Schema.String.annotate({
+      description:
+        "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -3016,18 +2924,13 @@ export type NewsletterIssueUpdatePayload = {
 };
 export const NewsletterIssueUpdatePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    path: Schema.String.check(
-      Schema.isMaxCodePoints(1024).annotate({ expected: "a string with at most 1024 code points" }),
-    )
+    path: Schema.String.annotate({
+      description:
+        "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+    })
       .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+        Schema.isMaxCodePoints(1024).annotate({
+          expected: "a string with at most 1024 code points",
         }),
       )
       .check(
@@ -3175,6 +3078,23 @@ export const ReapplyOnboardingReviewInput = /* @__PURE__ */ (() =>
         }),
       ),
   }).annotate({ identifier: "ReapplyOnboardingReviewInput" }))();
+export type SuggestTemplateStartersPayload = { readonly brief: string };
+export const SuggestTemplateStartersPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    brief: Schema.String.annotate({
+      description:
+        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+  }).annotate({ identifier: "SuggestTemplateStartersPayload" }))();
 export type TemplateFamilyName = { readonly name: string };
 export const TemplateFamilyName = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -3525,6 +3445,83 @@ export const UpdateNamespacePayload = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "UpdateNamespacePayload" }))();
+export type CreateTemplateFromBriefPayload = {
+  readonly brief: string;
+  readonly name?: string | null;
+  readonly galleryTemplateId?: string | null;
+  readonly useBrand?: boolean | null;
+  readonly namespaceId?: NamespaceId | null;
+};
+export const CreateTemplateFromBriefPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    brief: Schema.String.annotate({
+      description:
+        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description: "The template's name. Defaults to the name of the design it starts from.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    galleryTemplateId: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Start from this gallery design instead of the first suggestion, for example another one the suggestions offered.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    useBrand: Schema.optionalKey(
+      Schema.Union([
+        Schema.Boolean.annotate({
+          description:
+            "Whether the new project's `theme.css` imports the organization's default brand over the design's look. Defaults to false.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
+      }),
+    ),
+  }).annotate({ identifier: "CreateTemplateFromBriefPayload" }))();
 export type CreateTemplateFromWebsitePayload = {
   readonly url: string;
   readonly name?: string | null;
@@ -3617,10 +3614,8 @@ export const CreateTemplatePayload = /* @__PURE__ */ (() =>
     slug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -4499,47 +4494,19 @@ export type SubscribePayload = {
 };
 export const SubscribePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    email: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp(
-          "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-          "u",
-        ),
-      ).annotate({
-        expected:
-          "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-      }),
-    ),
+    email: Schema.String,
     topicId: TopicId,
     from: Schema.Struct({
-      email: Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
+      email: Schema.String,
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
             Schema.isMaxCodePoints(120).annotate({
               expected: "a string with at most 120 code points",
             }),
-          )
-            .check(
-              Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-                expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-              }),
-            )
-            .check(
-              Schema.isMaxLength(120).annotate({
-                expected: "a value with a length of at most 120",
-              }),
-            ),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
           Schema.Null,
         ]),
       ),
@@ -4549,14 +4516,9 @@ export const SubscribePayload = /* @__PURE__ */ (() =>
     }),
     templateSlug: Schema.optionalKey(
       Schema.Union([
-        Schema.String.annotate({
-          description:
-            "A published email template slug receiving confirmUrl. Omit it to send the default confirmation email.",
-        }).check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -4646,17 +4608,7 @@ export const ContactEventReference = /* @__PURE__ */ (() =>
       email: Schema.optionalKey(Schema.Never),
     }),
     Schema.Struct({
-      email: Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
+      email: Schema.String,
       id: Schema.optionalKey(Schema.Never),
       externalId: Schema.optionalKey(Schema.Never),
     }),
@@ -4668,17 +4620,7 @@ export const EmailRecipient = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({ contactId: ContactId }),
     Schema.Struct({
-      email: Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-            "u",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-        }),
-      ),
+      email: Schema.String,
       name: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
@@ -4957,10 +4899,8 @@ export const JourneySendEmailConfig = /* @__PURE__ */ (() =>
     template: Schema.Union([
       TemplateId,
       Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-        ).annotate({
-          expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+        Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
         }),
       ),
     ]),
@@ -5500,10 +5440,8 @@ export type WhatsAppTemplateSlugContent = {
 export const WhatsAppTemplateSlugContent = /* @__PURE__ */ (() =>
   Schema.Struct({
     templateSlug: Schema.String.check(
-      Schema.isPattern(
-        new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-      ).annotate({
-        expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+      Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
       }),
     ),
     templateData: Schema.optionalKey(WhatsAppTemplateData),
@@ -5843,10 +5781,8 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
       slug: Schema.optionalKey(
         Schema.Union([
           Schema.String.check(
-            Schema.isPattern(
-              new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-            ).annotate({
-              expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+            Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
             }),
           ),
           Schema.Null,
@@ -5854,20 +5790,13 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
       ),
       entryPath: Schema.optionalKey(
         Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          Schema.String.annotate({
+            description:
+              "A relative .tsx file under templates or emails/, at most 1024 characters, with no backslash, . or .., or .git segments.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!\\/)(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?:templates|emails)\\/.+\\.tsx$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(
@@ -5894,24 +5823,7 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
         ]),
       ),
       fromDefault: Schema.optionalKey(Schema.Union([TemplateFromDefaultInput, Schema.Null])),
-      replyToDefault: Schema.optionalKey(
-        Schema.Union([
-          Schema.Array(
-            Schema.String.check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?=[^@]{1,64}@)[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[^\\s@/\\\\:#?%[\\]\\p{Cc}]+[.\\u3002\\uff0e\\uff61][^\\s@/\\\\:#?%[\\]\\p{Cc}]+$",
-              }),
-            ),
-          ),
-          Schema.Null,
-        ]),
-      ),
+      replyToDefault: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
       trackingDefault: Schema.optionalKey(
         Schema.Union([TemplateTrackingDefault, Schema.Null]).annotate({
           description:
@@ -6339,10 +6251,8 @@ export const SmsContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -6363,10 +6273,8 @@ export const SmsDispatchContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -6824,16 +6732,7 @@ export type CampaignEmailInput = {
 };
 export const CampaignEmailInput = /* @__PURE__ */ (() =>
   Schema.Struct({
-    subject: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    ),
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(EmailAttachments),
@@ -6843,10 +6742,8 @@ export const CampaignEmailInput = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -6889,16 +6786,7 @@ export type EmailContent = {
 };
 export const EmailContent = /* @__PURE__ */ (() =>
   Schema.Struct({
-    subject: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new globalThis.RegExp("^[^\\p{Cc}]*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[^\\p{Cc}]*$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    ),
+    subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     attachments: Schema.optionalKey(EmailAttachments),
@@ -6908,10 +6796,8 @@ export const EmailContent = /* @__PURE__ */ (() =>
     templateSlug: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
-          Schema.isPattern(
-            new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-          ).annotate({
-            expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         ),
         Schema.Null,
@@ -7014,10 +6900,8 @@ export const WhatsAppTemplateDispatch = /* @__PURE__ */ (() =>
     template: Schema.Union([
       TemplateId,
       Schema.String.check(
-        Schema.isPattern(
-          new globalThis.RegExp("^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$", "u"),
-        ).annotate({
-          expected: "a string matching the RegExp ^(?=.{1,100}$)[a-z0-9]+(?:-[a-z0-9]+)*$",
+        Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
         }),
       ),
     ]),
@@ -7173,20 +7057,13 @@ export const EmailCampaignContentInput = /* @__PURE__ */ (() =>
     issue: Schema.optionalKey(
       Schema.Union([
         Schema.Struct({
-          path: Schema.String.check(
-            Schema.isMaxCodePoints(1024).annotate({
-              expected: "a string with at most 1024 code points",
-            }),
-          )
+          path: Schema.String.annotate({
+            description:
+              "A .md file under issues/, at most 1024 characters, with no backslash, . or .., .git, or control characters.",
+          })
             .check(
-              Schema.isPattern(
-                new globalThis.RegExp(
-                  "^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
-                  "u",
-                ),
-              ).annotate({
-                expected:
-                  "a string matching the RegExp ^(?!.*\\\\)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/)\\.git(?:\\/|$))(?!.*\\p{Cc})issues\\/(?:[^/]+\\/)*[^/]+\\.md$",
+              Schema.isMaxCodePoints(1024).annotate({
+                expected: "a string with at most 1024 code points",
               }),
             )
             .check(

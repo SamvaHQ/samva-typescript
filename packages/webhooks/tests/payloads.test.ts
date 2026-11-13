@@ -98,6 +98,8 @@ describe("typed webhook payload boundary", () => {
         messageId: "msg_example",
         organizationId: "org_example",
         channel: "whatsapp",
+        disposition: "delivered",
+        reason: null,
         status: "delivered",
         direction: "inbound",
         from: "+919800000001",
