@@ -13,8 +13,9 @@ import { createClient } from "samva";
 
 const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
+const { organization } = await samva.whoami.get();
 const mailbox = await samva.mailboxes.create({
-  endpoint: { channel: "email", address: "support@acme.samva.email" },
+  endpoint: { channel: "email", address: `support@${organization.hostedMailDomain}` },
   name: "Support",
 });
 
@@ -29,9 +30,9 @@ console.log(receipt.state);
 
 Replies arrive as signed webhooks or over the mailbox event stream, threaded to the conversation. Give
 the agent a key that reaches only its own mailbox, and set rules that hold a send for a person to
-approve: see [Give an agent an inbox](https://samva.dev/docs/mailboxes). To drive the same mailbox
+approve: see [Give an agent an inbox](https://samva.dev/docs/mailboxes?utm_source=readme&utm_medium=sdk). To drive the same mailbox
 from an MCP client instead, connect it to `https://mcp.samva.dev`
-([guide](https://samva.dev/docs/developers/mcp)).
+([guide](https://samva.dev/docs/developers/mcp?utm_source=readme&utm_medium=sdk)).
 
 ## Documentation
 
@@ -255,7 +256,7 @@ The Promise client exposes:
 - `webhooks`
 - `whoami`
 
-The Effect SDK exposes Pascal-cased domain modules; see the [namespace reference](https://samva.dev/docs/developers/typescript-sdk#namespaces) for their import paths.
+The Effect SDK exposes Pascal-cased domain modules; see the [namespace reference](https://samva.dev/docs/developers/typescript-sdk?utm_source=readme&utm_medium=sdk#namespaces) for their import paths.
 
 Effect operations take direct parameter objects: body, path, and query fields are not wrapped in `payload` or `params` envelopes. Import the modules you use from `samva/effect/<lower-kebab>` and provide `Client.layerFetch` once at the program boundary.
 
@@ -539,7 +540,7 @@ completed, and `notSent` replays return `200`. Non-send approvals execute synchr
 `200`, as does `denyAction`.
 The same behavior applies to `samva/effect/mailboxes`.
 
-See [mailbox approvals and receipts](https://samva.dev/docs/mailboxes/approvals) for the receipt
+See [mailbox approvals and receipts](https://samva.dev/docs/mailboxes/approvals?utm_source=readme&utm_medium=sdk) for the receipt
 fields, sending deadline, approval permissions, and idempotency retention.
 
 ### Read Mailbox Events

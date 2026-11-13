@@ -1,3 +1,11 @@
+## samva@0.43.3
+
+### Read your hosted mailbox domain
+
+`client.whoami.get()` and `Whoami.get()` return `organization.hostedMailDomain`, the domain to use
+when creating a hosted mailbox. It can differ from the organization slug. A mailbox address refused
+because its domain is not configured now names a corrected address on the hosted domain.
+
 ## samva@0.43.2
 
 ### Held actions say who can always allow them

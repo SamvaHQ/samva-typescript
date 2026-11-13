@@ -24,11 +24,18 @@ export type WhoamiOrganization = {
   readonly id: OrganizationId;
   readonly slug: string;
   readonly name: string;
+  readonly hostedMailDomain: string;
 };
 export const WhoamiOrganization = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: OrganizationId, slug: Schema.String, name: Schema.String }).annotate({
-    identifier: "WhoamiOrganization",
-  }))();
+  Schema.Struct({
+    id: OrganizationId,
+    slug: Schema.String,
+    name: Schema.String,
+    hostedMailDomain: Schema.String.annotate({
+      description:
+        "The organization’s hosted mail domain. Create mailbox addresses on this domain without adding or verifying a custom domain. It may differ from the organization slug.",
+    }),
+  }).annotate({ identifier: "WhoamiOrganization" }))();
 export type WhoamiUserCredential = {
   readonly type: "user";
   readonly user: WhoamiUser;

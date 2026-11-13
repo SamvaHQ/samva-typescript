@@ -2148,6 +2148,10 @@ export type WhoamiOrganization = {
   id: OrganizationId;
   slug: string;
   name: string;
+  /**
+   * The organization’s hosted mail domain. Create mailbox addresses on this domain without adding or verifying a custom domain. It may differ from the organization slug.
+   */
+  hostedMailDomain: string;
 };
 
 export type FeedbackReceipt = {
