@@ -36,6 +36,10 @@ import {
 } from "../client/client";
 import {
   Agents as agents,
+  Whatsapp as whatsapp,
+  WhatsappFlows as whatsappFlows,
+  WhatsappSetupLinks as whatsappSetupLinks,
+  TemplateRegistrations as templateRegistrations,
   Analytics as analytics,
   ApiKeys as apiKeys,
   Attachments as attachments,
@@ -527,6 +531,11 @@ export interface SamvaRawClient {
   readonly messages: typeof messages;
   readonly scheduledMessages: typeof scheduledMessages;
   readonly brands: typeof brands;
+  readonly whatsapp: typeof whatsapp;
+  readonly whatsappFlows: typeof whatsappFlows;
+  readonly whatsappSetupLinks: typeof whatsappSetupLinks;
+  readonly templateRegistrations: typeof templateRegistrations;
+
   readonly campaigns: typeof campaigns;
   readonly email: typeof email;
   readonly media: typeof media;
@@ -572,6 +581,11 @@ export interface SamvaClient {
   readonly messages: DirectService<PromiseMessagesTransport>;
   readonly scheduledMessages: DirectService<typeof scheduledMessages>;
   readonly brands: DirectService<typeof brands>;
+  readonly whatsapp: DirectService<typeof whatsapp>;
+  readonly whatsappFlows: DirectService<typeof whatsappFlows>;
+  readonly whatsappSetupLinks: DirectService<typeof whatsappSetupLinks>;
+  readonly templateRegistrations: DirectService<typeof templateRegistrations>;
+
   readonly campaigns: DirectService<typeof campaigns>;
   readonly email: DirectService<PromiseEmailTransport>;
   readonly media: DirectService<typeof media>;
@@ -656,6 +670,11 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     messages: createBoundService(messages, clientInstance),
     scheduledMessages: createBoundService(scheduledMessages, clientInstance),
     brands: createBoundService(brands, clientInstance),
+    whatsapp: createBoundService(whatsapp, clientInstance),
+    whatsappFlows: createBoundService(whatsappFlows, clientInstance),
+    whatsappSetupLinks: createBoundService(whatsappSetupLinks, clientInstance),
+    templateRegistrations: createBoundService(templateRegistrations, clientInstance),
+
     campaigns: createBoundService(campaigns, clientInstance),
     email: createBoundService(email, clientInstance),
     media: createBoundService(media, clientInstance),
@@ -707,6 +726,11 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     messages: createDirectService(promiseMessages),
     scheduledMessages: createDirectService(raw.scheduledMessages),
     brands: createDirectService(raw.brands),
+    whatsapp: createDirectService(raw.whatsapp),
+    whatsappFlows: createDirectService(raw.whatsappFlows),
+    whatsappSetupLinks: createDirectService(raw.whatsappSetupLinks),
+    templateRegistrations: createDirectService(raw.templateRegistrations),
+
     campaigns: createDirectService(raw.campaigns),
     email: createDirectService(promiseEmail),
     media: createDirectService(raw.media),

@@ -8,6 +8,7 @@ import * as Schema from "effect/Schema";
 
 import {
   AbsoluteInstant as __SamvaRuntimeAbsoluteInstant,
+  NonEmptySensitiveString as __SamvaRuntimeNonEmptySensitiveString,
   SensitiveString as __SamvaRuntimeSensitiveString,
 } from "../runtime";
 
@@ -1049,6 +1050,14 @@ export const FeedbackContext = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "FeedbackContext" }))();
+export type JourneyId = string & EffectBrand.Brand<"JourneyId">;
+export const JourneyId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "JourneyId",
+    }),
+  ).pipe(Schema.brand("JourneyId")))();
 export type JourneyName = string;
 export const JourneyName = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -2379,6 +2388,22 @@ export const WhatsAppContactCard = /* @__PURE__ */ (() =>
     ),
     birthday: Schema.optionalKey(Schema.String),
   }).annotate({ identifier: "WhatsAppContactCard" }))();
+export type WhatsAppFlowVersionId = string & EffectBrand.Brand<"WhatsAppFlowVersionId">;
+export const WhatsAppFlowVersionId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^wafver_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WhatsAppFlowVersionId",
+    }),
+  ).pipe(Schema.brand("WhatsAppFlowVersionId")))();
+export type MessageDeliveryId = string & EffectBrand.Brand<"MessageDeliveryId">;
+export const MessageDeliveryId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MessageDeliveryId",
+    }),
+  ).pipe(Schema.brand("MessageDeliveryId")))();
 export type IanaTimezone = string;
 export const IanaTimezone = /* @__PURE__ */ (() =>
   Schema.String.annotate({ identifier: "IanaTimezone" }))();
@@ -2515,12 +2540,67 @@ export const TemplateFromDefaultInput = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "TemplateFromDefaultInput" }))();
+export class CredentialsError extends Schema.TaggedError<CredentialsError>()(
+  "CredentialsError",
+  Schema.Struct({ message: Schema.String, retryable: Schema.Boolean }),
+) {}
+export class WhatsAppChannelError extends Schema.TaggedError<WhatsAppChannelError>()(
+  "WhatsAppChannelError",
+  Schema.Struct({
+    reason: Schema.Union([
+      Schema.Literal("transport"),
+      Schema.Literal("rejected"),
+      Schema.Literal("rate_limited"),
+      Schema.Literal("auth"),
+      Schema.Literal("unsupported"),
+    ]),
+    message: Schema.String,
+    provider: Schema.String,
+    providerCode: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    statusCode: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        Schema.Null,
+      ]),
+    ),
+  }),
+) {}
 export type TopicContactByEmail = { readonly email: string };
 export const TopicContactByEmail = /* @__PURE__ */ (() =>
   Schema.Struct({ email: Schema.String }).annotate({ identifier: "TopicContactByEmail" }))();
 export type TopicContactByPhone = { readonly phone: string };
 export const TopicContactByPhone = /* @__PURE__ */ (() =>
   Schema.Struct({ phone: Schema.String }).annotate({ identifier: "TopicContactByPhone" }))();
+export type WhatsAppSetupLinkMetadata = { readonly [x: string]: string };
+export const WhatsAppSetupLinkMetadata = /* @__PURE__ */ (() =>
+  Schema.Record(
+    Schema.String,
+    Schema.String.check(
+      Schema.isMaxCodePoints(512).annotate({ expected: "a string with at most 512 code points" }),
+    ).check(Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" })),
+  ).check(
+    Schema.isPropertyNames(
+      Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ).check(
+        Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+      ),
+    ).annotate({
+      expected: "an object with property names matching the schema",
+      identifier: "WhatsAppSetupLinkMetadata",
+    }),
+  ))();
+export class WhatsAppSetupLinkUnavailableError extends Schema.TaggedError<WhatsAppSetupLinkUnavailableError>()(
+  "WhatsAppSetupLinkUnavailableError",
+  Schema.Struct({
+    reason: Schema.Union([
+      Schema.Literal("completed"),
+      Schema.Literal("revoked"),
+      Schema.Literal("expired"),
+    ]),
+    message: Schema.String,
+  }),
+) {}
 export type AddTemplateEntryPayload = {
   readonly entryPath: string;
   readonly name: string;
@@ -3078,6 +3158,26 @@ export const ReapplyOnboardingReviewInput = /* @__PURE__ */ (() =>
         }),
       ),
   }).annotate({ identifier: "ReapplyOnboardingReviewInput" }))();
+export type RecordWhatsAppFlowVersionPayload = {
+  readonly commitSha: string;
+  readonly expectedWorkspaceRevision: string;
+};
+export const RecordWhatsAppFlowVersionPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    commitSha: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+      }),
+    ),
+    expectedWorkspaceRevision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+  }).annotate({ identifier: "RecordWhatsAppFlowVersionPayload" }))();
+export type SetWhatsAppFlowEndpointPayload = { readonly url: string };
+export const SetWhatsAppFlowEndpointPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({ url: Schema.String }).annotate({
+    identifier: "SetWhatsAppFlowEndpointPayload",
+  }))();
 export type SuggestTemplateStartersPayload = { readonly brief: string };
 export const SuggestTemplateStartersPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -4570,6 +4670,29 @@ export const WhatsAppTemplateBinding = /* @__PURE__ */ (() =>
   Schema.Union([WhatsAppTemplateContactBinding, WhatsAppTemplateCustomFieldBinding]).annotate({
     identifier: "WhatsAppTemplateBinding",
   }))();
+export type RegisterWhatsAppFlowPayload = {
+  readonly businessAccountId?: WhatsAppBusinessAccountId;
+};
+export const RegisterWhatsAppFlowPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({ businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId) }).annotate({
+    identifier: "RegisterWhatsAppFlowPayload",
+  }))();
+export type RotateWhatsAppFlowEncryptionKeyPayload = {
+  readonly businessAccountId?: WhatsAppBusinessAccountId;
+};
+export const RotateWhatsAppFlowEncryptionKeyPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({ businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId) }).annotate({
+    identifier: "RotateWhatsAppFlowEncryptionKeyPayload",
+  }))();
+export type SubmitTemplateRegistrationPayload = {
+  readonly provider: "whatsapp";
+  readonly businessAccountId?: WhatsAppBusinessAccountId;
+};
+export const SubmitTemplateRegistrationPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    provider: Schema.Literal("whatsapp"),
+    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
+  }).annotate({ identifier: "SubmitTemplateRegistrationPayload" }))();
 export type ContactEvent = {
   readonly id: string;
   readonly contactId: ContactId;
@@ -5646,6 +5769,45 @@ export const AssignNamespaceResourcePayload = /* @__PURE__ */ (() =>
       description: "The resource's id, such as `dom_...` for a domain.",
     }),
   }).annotate({ identifier: "AssignNamespaceResourcePayload" }))();
+export type CreateWhatsAppFlowPayload = {
+  readonly projectId: TemplateProjectId;
+  readonly handle: string;
+  readonly categories: ReadonlyArray<
+    | "SIGN_UP"
+    | "SIGN_IN"
+    | "APPOINTMENT_BOOKING"
+    | "LEAD_GENERATION"
+    | "CONTACT_US"
+    | "CUSTOMER_SUPPORT"
+    | "SURVEY"
+    | "OTHER"
+  >;
+};
+export const CreateWhatsAppFlowPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    projectId: TemplateProjectId,
+    handle: Schema.String.check(
+      Schema.isMaxCodePoints(64).annotate({ expected: "a string with at most 64 code points" }),
+    )
+      .check(
+        Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        }),
+      )
+      .check(Schema.isMaxLength(64).annotate({ expected: "a value with a length of at most 64" })),
+    categories: Schema.Array(
+      Schema.Union([
+        Schema.Literal("SIGN_UP"),
+        Schema.Literal("SIGN_IN"),
+        Schema.Literal("APPOINTMENT_BOOKING"),
+        Schema.Literal("LEAD_GENERATION"),
+        Schema.Literal("CONTACT_US"),
+        Schema.Literal("CUSTOMER_SUPPORT"),
+        Schema.Literal("SURVEY"),
+        Schema.Literal("OTHER"),
+      ]),
+    ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
+  }).annotate({ identifier: "CreateWhatsAppFlowPayload" }))();
 export type Operation = {
   readonly id: OperationId;
   readonly organizationId: string;
@@ -5838,6 +6000,19 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
       ),
     }),
   }).annotate({ identifier: "UpdateTemplatePayload" }))();
+export type CreateWhatsAppSetupLinkPayload = {
+  readonly namespaceId: NamespaceId;
+  readonly redirectUrl?: WhatsAppSetupLinkRedirectUrl | null;
+  readonly metadata?: WhatsAppSetupLinkMetadata | null;
+  readonly expiresAt?: string | null;
+};
+export const CreateWhatsAppSetupLinkPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    namespaceId: NamespaceId,
+    redirectUrl: Schema.optionalKey(Schema.Union([WhatsAppSetupLinkRedirectUrl, Schema.Null])),
+    metadata: Schema.optionalKey(Schema.Union([WhatsAppSetupLinkMetadata, Schema.Null])),
+    expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }).annotate({ identifier: "CreateWhatsAppSetupLinkPayload" }))();
 export type PolicyRuleMatch = {
   readonly kind?: "send" | "reply" | "toolCall" | "handoff" | null;
   readonly effect?: PolicyEffect | null;
@@ -7603,7 +7778,11 @@ const __recursive_JsonValue = Schema.Union([
   ),
 ]).annotate({ identifier: "JsonValue" });
 
-export { __SamvaRuntimeAbsoluteInstant, __SamvaRuntimeSensitiveString };
+export {
+  __SamvaRuntimeAbsoluteInstant,
+  __SamvaRuntimeSensitiveString,
+  __SamvaRuntimeNonEmptySensitiveString,
+};
 
 export const ApiKeySecurity = HttpApiSecurity.apiKey({ key: "x-api-key", in: "header" });
 

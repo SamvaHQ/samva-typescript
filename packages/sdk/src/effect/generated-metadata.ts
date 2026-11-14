@@ -19,6 +19,23 @@ export const SamvaErrorMetadata = {
     categories: ["conflict"],
     retryable: false,
   },
+  CredentialsError: {
+    categories: [],
+    retryable: false,
+    rules: {
+      field: "retryable",
+      cases: {
+        true: {
+          categories: ["transient"],
+          retryable: true,
+        },
+        false: {
+          categories: [],
+          retryable: false,
+        },
+      },
+    },
+  },
   DeliveryUnavailableError: {
     categories: ["transient"],
     retryable: true,
@@ -26,6 +43,27 @@ export const SamvaErrorMetadata = {
   EmailChannelError: {
     categories: [],
     retryable: false,
+    rules: {
+      field: "reason",
+      cases: {
+        transport: {
+          categories: ["transient"],
+          retryable: true,
+        },
+        rejected: {
+          categories: ["validation"],
+          retryable: false,
+        },
+        rate_limited: {
+          categories: ["throttling", "transient"],
+          retryable: true,
+        },
+        auth: {
+          categories: ["auth"],
+          retryable: false,
+        },
+      },
+    },
   },
   ExternalServiceError: {
     categories: ["transient"],
@@ -103,7 +141,40 @@ export const SamvaErrorMetadata = {
     categories: ["validation"],
     retryable: false,
   },
+  WhatsAppChannelError: {
+    categories: [],
+    retryable: false,
+    rules: {
+      field: "reason",
+      cases: {
+        transport: {
+          categories: ["transient"],
+          retryable: true,
+        },
+        rejected: {
+          categories: ["validation"],
+          retryable: false,
+        },
+        rate_limited: {
+          categories: ["throttling", "transient"],
+          retryable: true,
+        },
+        auth: {
+          categories: ["auth"],
+          retryable: false,
+        },
+        unsupported: {
+          categories: [],
+          retryable: false,
+        },
+      },
+    },
+  },
   WhatsAppServiceWindowClosedError: {
+    categories: [],
+    retryable: false,
+  },
+  WhatsAppSetupLinkUnavailableError: {
     categories: [],
     retryable: false,
   },
@@ -930,118 +1001,202 @@ const operationMetadata116 = {
 } as const;
 
 const operationMetadata117 = {
+  group: "Template registrations",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata118 = {
+  group: "Template registrations",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata119 = {
   group: "Templates",
   method: "PATCH",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata118 = {
+const operationMetadata120 = {
   group: "Templates",
   method: "PUT",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata119 = {
-  group: "Topics",
-  method: "GET",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata120 = {
-  group: "Topics",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
 const operationMetadata121 = {
   group: "Topics",
-  method: "DELETE",
+  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata122 = {
   group: "Topics",
-  method: "PATCH",
+  method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata123 = {
-  group: "Topic forms",
-  method: "GET",
+  group: "Topics",
+  method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata124 = {
-  group: "Topic forms",
-  method: "POST",
+  group: "Topics",
+  method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata125 = {
   group: "Topic forms",
-  method: "DELETE",
+  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata126 = {
   group: "Topic forms",
-  method: "PATCH",
+  method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata127 = {
+  group: "Topic forms",
+  method: "DELETE",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata128 = {
+  group: "Topic forms",
+  method: "PATCH",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata129 = {
   group: "Topics",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata128 = {
+const operationMetadata130 = {
   group: "Webhooks",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata129 = {
+const operationMetadata131 = {
   group: "Webhooks",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata130 = {
+const operationMetadata132 = {
   group: "Webhooks",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata131 = {
+const operationMetadata133 = {
   group: "Webhooks",
   method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata132 = {
+const operationMetadata134 = {
   group: "Webhooks",
   method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata133 = {
+const operationMetadata135 = {
+  group: "WhatsApp",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata136 = {
+  group: "WhatsApp",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata137 = {
+  group: "WhatsApp",
+  method: "DELETE",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata138 = {
+  group: "WhatsApp",
+  method: "PATCH",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata139 = {
+  group: "WhatsApp flows",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata140 = {
+  group: "WhatsApp flows",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata141 = {
+  group: "WhatsApp flows",
+  method: "PUT",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata142 = {
+  group: "WhatsApp setup links",
+  method: "GET",
+  idempotent: false,
+  paginated: true,
+} as const;
+
+const operationMetadata143 = {
+  group: "WhatsApp setup links",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata144 = {
+  group: "WhatsApp setup links",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata145 = {
   group: "Whoami",
   method: "GET",
   idempotent: false,
@@ -1381,11 +1536,14 @@ export const SamvaOperations = {
   templatesPublish: operationMetadata116,
   templatesGetPublication: operationMetadata113,
   templatesRenderPublication: operationMetadata116,
+  templateRegistrationsList: operationMetadata117,
+  templateRegistrationsSubmit: operationMetadata118,
+  templateRegistrationsGet: operationMetadata117,
   templatesGetGitRepository: operationMetadata113,
   templatesIssueGitCredential: operationMetadata116,
   templatesOpenWorkspace: operationMetadata116,
-  templatesPatchWorkspace: operationMetadata117,
-  templatesPutWorkspaceAsset: operationMetadata118,
+  templatesPatchWorkspace: operationMetadata119,
+  templatesPutWorkspaceAsset: operationMetadata120,
   templatesCheckWorkspace: operationMetadata116,
   templatesResolveWorkspaceConflict: operationMetadata112,
   templatesDiffWorkspace: operationMetadata116,
@@ -1408,30 +1566,56 @@ export const SamvaOperations = {
   templatesDeleteProject: operationMetadata114,
   templatesAddEntry: operationMetadata116,
   templatesSuggestStarters: operationMetadata116,
-  topicsList: operationMetadata119,
-  topicsCreate: operationMetadata120,
-  topicsGet: operationMetadata119,
-  topicsRemove: operationMetadata121,
-  topicsUpdate: operationMetadata122,
-  topicsSetDefault: operationMetadata120,
-  topicFormsList: operationMetadata123,
-  topicFormsCreate: operationMetadata124,
-  topicFormsGet: operationMetadata123,
-  topicFormsRemove: operationMetadata125,
-  topicFormsUpdate: operationMetadata126,
-  topicsListSubscriptions: operationMetadata127,
-  topicsSetSubscriptions: operationMetadata120,
-  topicsCheckSubscription: operationMetadata119,
-  webhooksList: operationMetadata128,
-  webhooksCreate: operationMetadata129,
-  webhooksGet: operationMetadata130,
-  webhooksRemove: operationMetadata131,
-  webhooksUpdate: operationMetadata132,
-  webhooksRetryDelivery: operationMetadata129,
-  webhooksGetLogs: operationMetadata128,
-  webhooksRegenerateSecret: operationMetadata129,
-  webhooksGetSecret: operationMetadata130,
-  webhooksGetStats: operationMetadata130,
-  webhooksTest: operationMetadata129,
-  whoamiGet: operationMetadata133,
+  topicsList: operationMetadata121,
+  topicsCreate: operationMetadata122,
+  topicsGet: operationMetadata121,
+  topicsRemove: operationMetadata123,
+  topicsUpdate: operationMetadata124,
+  topicsSetDefault: operationMetadata122,
+  topicFormsList: operationMetadata125,
+  topicFormsCreate: operationMetadata126,
+  topicFormsGet: operationMetadata125,
+  topicFormsRemove: operationMetadata127,
+  topicFormsUpdate: operationMetadata128,
+  topicsListSubscriptions: operationMetadata129,
+  topicsSetSubscriptions: operationMetadata122,
+  topicsCheckSubscription: operationMetadata121,
+  webhooksList: operationMetadata130,
+  webhooksCreate: operationMetadata131,
+  webhooksGet: operationMetadata132,
+  webhooksRemove: operationMetadata133,
+  webhooksUpdate: operationMetadata134,
+  webhooksRetryDelivery: operationMetadata131,
+  webhooksGetLogs: operationMetadata130,
+  webhooksRegenerateSecret: operationMetadata131,
+  webhooksGetSecret: operationMetadata132,
+  webhooksGetStats: operationMetadata132,
+  webhooksTest: operationMetadata131,
+  whatsappListBusinessAccounts: operationMetadata135,
+  whatsappConnectBusinessAccount: operationMetadata136,
+  whatsappGetBusinessAccount: operationMetadata135,
+  whatsappDisconnectBusinessAccount: operationMetadata137,
+  whatsappUpdateBusinessAccount: operationMetadata138,
+  whatsappSetDefaultBusinessAccount: operationMetadata136,
+  whatsappSyncAccountStatus: operationMetadata136,
+  whatsappFlowsList: operationMetadata139,
+  whatsappFlowsCreate: operationMetadata140,
+  whatsappFlowsGet: operationMetadata139,
+  whatsappFlowsSetEndpoint: operationMetadata141,
+  whatsappFlowsRotateEndpointSecret: operationMetadata140,
+  whatsappFlowsListRegistrations: operationMetadata139,
+  whatsappFlowsRegister: operationMetadata140,
+  whatsappFlowsListVersions: operationMetadata139,
+  whatsappFlowsRecordVersion: operationMetadata140,
+  whatsappFlowsRotateEncryptionKey: operationMetadata140,
+  whatsappGetMediaDownloadUrl: operationMetadata135,
+  whatsappGetServiceWindowBilling: operationMetadata135,
+  whatsappGetServiceWindowStatus: operationMetadata135,
+  whatsappSetupLinksList: operationMetadata142,
+  whatsappSetupLinksCreate: operationMetadata143,
+  whatsappSetupLinksGet: operationMetadata144,
+  whatsappSetupLinksRevoke: operationMetadata143,
+  whatsappGetStats: operationMetadata135,
+  whatsappGetTemplateStats: operationMetadata135,
+  whoamiGet: operationMetadata145,
 } as const;

@@ -7,7 +7,7 @@ import {
   type ParsedOperationParameter,
   type ParsedOperationSecurityRequirement,
 } from "@effect/openapi-generator/ParsedOperation";
-import { JsonSchema, Predicate, SchemaRepresentation } from "effect";
+import { JsonSchema, Predicate, Schema, SchemaRepresentation } from "effect";
 import type {
   OpenAPISpecExternalDocs,
   OpenAPISpecLicense,
@@ -48,6 +48,13 @@ export const SPECIAL_LEAVES = {
     typeExpression: "string | Redacted.Redacted<string>",
     encodedExpression: "string",
   },
+  NonEmptySensitiveString: {
+    extension: "x-sensitive",
+    placeholder: { type: "string", minLength: 1 },
+    runtimeExport: "NonEmptySensitiveString",
+    typeExpression: "string | Redacted.Redacted<string>",
+    encodedExpression: "string",
+  },
   AbsoluteInstant: {
     extension: "x-samva-schema",
     placeholder: { type: "string", format: "date-time" },
@@ -64,12 +71,24 @@ interface StringSubstitution {
   readonly checks: readonly [StringCheck, ...Array<StringCheck>];
 }
 
+const ErrorCategoryRules = Schema.Struct({
+  field: Schema.String.check(Schema.isMinLength(1)),
+  cases: Schema.Record(
+    Schema.String,
+    Schema.Struct({
+      categories: Schema.Array(Schema.String),
+      retryable: Schema.Boolean,
+    }),
+  ),
+});
+
 interface ErrorExtension {
   readonly name: string;
   readonly tag: string;
   readonly categories: ReadonlyArray<string>;
   readonly retryable: boolean;
   readonly body: JsonObject;
+  readonly rules?: typeof ErrorCategoryRules.Type;
 }
 
 interface RuntimeSubstitution {
@@ -267,6 +286,7 @@ const errorExtension = (name: string, schema: JsonObject): ErrorExtension | unde
   delete (body as { [key: string]: Json | undefined }).required;
   delete (body as { [key: string]: Json | undefined })["x-category"];
   delete (body as { [key: string]: Json | undefined })["x-retryable"];
+  delete (body as { [key: string]: Json | undefined })["x-category-rules"];
   if (required !== undefined && required.length > 0) {
     (body as { [key: string]: Json }).required = required;
   }
@@ -275,6 +295,9 @@ const errorExtension = (name: string, schema: JsonObject): ErrorExtension | unde
     tag,
     categories,
     retryable: schema["x-retryable"] === true,
+    ...(schema["x-category-rules"] === undefined
+      ? {}
+      : { rules: Schema.decodeUnknownSync(ErrorCategoryRules)(schema["x-category-rules"]) }),
     body,
   };
 };
@@ -285,7 +308,7 @@ const specialLeafName = (schema: JsonObject): SpecialLeafName | undefined => {
   if (sensitive && typeof named === "string") {
     throw new Error("A schema node cannot declare both x-sensitive and x-samva-schema");
   }
-  if (sensitive) return "SensitiveString";
+  if (sensitive) return schema.minLength === 1 ? "NonEmptySensitiveString" : "SensitiveString";
   if (typeof named !== "string") return undefined;
   if (!Object.hasOwn(SPECIAL_LEAVES, named)) {
     throw new Error(`Unknown x-samva-schema value: ${named}`);
@@ -1179,7 +1202,14 @@ const renderErrorMetadata = (errors: ReadonlyMap<string, ErrorExtension>): strin
   const metadata = Object.fromEntries(
     [...errors.values()]
       .sort((left, right) => left.name.localeCompare(right.name))
-      .map((error) => [error.tag, { categories: error.categories, retryable: error.retryable }]),
+      .map((error) => [
+        error.tag,
+        {
+          categories: error.categories,
+          retryable: error.retryable,
+          ...(error.rules === undefined ? {} : { rules: error.rules }),
+        },
+      ]),
   );
   return `export const SamvaErrorMetadata = ${JSON.stringify(metadata, null, 2)} as const`;
 };

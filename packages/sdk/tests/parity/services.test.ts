@@ -1,6 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 
 import {
+  WhatsApp,
+  WhatsAppFlows,
+  WhatsAppSetupLinks,
+  TemplateRegistrations,
+} from "../../src/effect";
+import {
   Agents,
   Analytics,
   ApiKeys,
@@ -51,6 +57,10 @@ const generatedOperationNames = (): ReadonlyArray<string> => {
 
 const effectModules = {
   agents: Agents,
+  whatsapp: WhatsApp,
+  whatsappFlows: WhatsAppFlows,
+  whatsappSetupLinks: WhatsAppSetupLinks,
+  templateRegistrations: TemplateRegistrations,
   analytics: Analytics,
   apiKeys: ApiKeys,
   attachments: Attachments,
@@ -132,7 +142,7 @@ describe("SDK surface inventory", () => {
 
   it("maps every Effect module and Promise service to the public operation registry", () => {
     // Generated HttpApi endpoints are the source of truth for operation
-    // coverage; the service map only supplies hand-written adaptation details.
+    // coverage; the generated service map supplies facade names and call shapes.
     expect(Object.keys(SDK_OPERATION_CALLS).sort()).toEqual(generatedOperationNames());
 
     const serviceNames = Object.keys(SDK_SERVICE_OPERATIONS) as ReadonlyArray<

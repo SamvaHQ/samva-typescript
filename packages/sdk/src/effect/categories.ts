@@ -23,7 +23,6 @@ import * as Predicate from "effect/Predicate";
 import type {
   BillingProviderError,
   ConflictError,
-  EmailChannelError,
   ExternalServiceError,
   ForbiddenError,
   FromAddressRequiredError,
@@ -48,49 +47,35 @@ export type ErrorCategory =
   | "billing"
   | "transient";
 
-const emailChannelCategories = (reason: unknown): ReadonlyArray<ErrorCategory> => {
-  switch (reason) {
-    case "auth":
-      return ["auth"];
-    case "rejected":
-      return ["validation"];
-    case "rate_limited":
-      return ["throttling", "transient"];
-    case "transport":
-      return ["transient"];
-    default:
-      return [];
-  }
+interface ErrorOutcome {
+  readonly categories: ReadonlyArray<string>;
+  readonly retryable: boolean;
+}
+interface ErrorMetadata extends ErrorOutcome {
+  readonly rules?: {
+    readonly field: string;
+    readonly cases: Readonly<Record<string, ErrorOutcome>>;
+  };
+}
+const metadata: Readonly<Record<string, ErrorMetadata>> = SamvaErrorMetadata;
+
+const outcomeOf = (error: unknown): ErrorOutcome | undefined => {
+  if (!Predicate.isObject(error) || typeof error._tag !== "string") return undefined;
+  const entry = metadata[error._tag];
+  if (entry?.rules === undefined) return entry;
+  const value = error[entry.rules.field];
+  return typeof value === "string" || typeof value === "boolean"
+    ? (entry.rules.cases[String(value)] ?? entry)
+    : entry;
 };
 
-export const categoriesOf = (error: unknown): ReadonlyArray<ErrorCategory> => {
-  if (!Predicate.isObject(error) || typeof error._tag !== "string") return [];
-  if (error._tag === "EmailChannelError") return emailChannelCategories(error.reason);
-  const metadata = (
-    SamvaErrorMetadata as Readonly<
-      Record<
-        string,
-        {
-          readonly categories: ReadonlyArray<string>;
-          readonly retryable: boolean;
-        }
-      >
-    >
-  )[error._tag];
-  return (metadata?.categories ?? []) as ReadonlyArray<ErrorCategory>;
-};
+export const categoriesOf = (error: unknown): ReadonlyArray<ErrorCategory> =>
+  (outcomeOf(error)?.categories ?? []) as ReadonlyArray<ErrorCategory>;
 
 export const hasCategory = (error: unknown, category: ErrorCategory): boolean =>
   categoriesOf(error).includes(category);
 
-const isRetryableError = (error: unknown): boolean => {
-  if (!Predicate.isObject(error) || typeof error._tag !== "string") return false;
-  if (error._tag === "EmailChannelError") return categoriesOf(error).includes("transient");
-  return (
-    (SamvaErrorMetadata as Readonly<Record<string, { readonly retryable: boolean }>>)[error._tag]
-      ?.retryable ?? false
-  );
-};
+const isRetryableError = (error: unknown): boolean => outcomeOf(error)?.retryable ?? false;
 
 // Category → error-class map for classes whose membership is TOTAL (every
 // instance belongs). Only these may be `Exclude`d from the error channel by the
@@ -110,14 +95,29 @@ type CategoryError = {
     | DeliveryUnavailableError;
 };
 
-// `EmailChannelError` is categorized per instance by `reason` (auth / rejected→
-// validation / rate_limited→throttling+transient / transport→transient), so a
-// category handler can RECEIVE one, but the class is never narrowed out of the
-// channel — instances with other reasons still flow through uncaught.
-type EmailChannelCategory = "auth" | "validation" | "throttling" | "transient";
+// Per-instance errors stay in the uncaught channel because another instance can belong to a
+// different category. Derive their types from the public error exports rather than a tag list.
+type ErrorExports = typeof import("./errors");
+type PublicError = {
+  [Key in keyof ErrorExports]: ErrorExports[Key] extends { readonly prototype: infer Error }
+    ? Error
+    : never;
+}[keyof ErrorExports];
+type RuleCategory<Entry> = Entry extends { readonly rules: { readonly cases: infer Cases } }
+  ? Cases[keyof Cases] extends { readonly categories: ReadonlyArray<infer Category> }
+    ? Category
+    : never
+  : never;
+type PerInstanceError<Category extends ErrorCategory> = {
+  [Tag in keyof typeof SamvaErrorMetadata]: Category extends RuleCategory<
+    (typeof SamvaErrorMetadata)[Tag]
+  >
+    ? Extract<PublicError, { readonly _tag: Tag }>
+    : never;
+}[keyof typeof SamvaErrorMetadata];
 type CategoryHandlerError<Category extends ErrorCategory> =
   | CategoryError[Category]
-  | (Category extends EmailChannelCategory ? EmailChannelError : never);
+  | PerInstanceError<Category>;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Predicates
@@ -161,9 +161,9 @@ export const isRetryable = (error: unknown): boolean =>
 
 /**
  * Catch every error in `category`. The handler receives the category's error
- * union — including `EmailChannelError` where its `reason` can place it in the
+ * union — including reason- and retryability-based errors where their fields place them in the
  * category — while only total-membership classes are narrowed out of the error
- * channel (`EmailChannelError` stays: instances with other reasons pass through).
+ * channel (per-instance errors stay: other instances pass through).
  */
 export const catchCategory =
   <Category extends ErrorCategory, A2, E2, R2>(

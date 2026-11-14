@@ -250,6 +250,10 @@ The Promise client exposes:
 - `scheduledMessages`
 - `subscriptions`
 - `templates`
+- `templateRegistrations`
+- `whatsapp`
+- `whatsappFlows`
+- `whatsappSetupLinks`
 - `topicForms`
 - `newsletters` (Preview), including `newsletters.issues` and `newsletters.domains`
 - `topics`

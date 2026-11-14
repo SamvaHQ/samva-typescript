@@ -7,6 +7,9 @@ const Sensitive = <A, E, RD, RE>(schema: Schema.Codec<A, E, RD, RE>) =>
 export const SensitiveString = Sensitive(Schema.String);
 export type SensitiveString = typeof SensitiveString.Type;
 
+export const NonEmptySensitiveString = Sensitive(Schema.String.check(Schema.isMinLength(1)));
+export type NonEmptySensitiveString = typeof NonEmptySensitiveString.Type;
+
 const ABSOLUTE_ISO_INSTANT_PATTERN =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?(Z|([+-])(\d{2}):(\d{2}))$/;
 

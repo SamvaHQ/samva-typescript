@@ -31,6 +31,7 @@ import {
   JsonValue,
   MalformedRequestError,
   MediaId,
+  MessageDeliveryId,
   MessageId,
   MessageMetadata,
   MessagePage,
@@ -48,6 +49,7 @@ import {
   WhatsAppButtonsMessage,
   WhatsAppCtaUrlMessage,
   WhatsAppFlowId,
+  WhatsAppFlowVersionId,
   WhatsAppListMessage,
   WhatsAppSendMessagePayload,
   WhatsAppTextHeader,
@@ -89,14 +91,6 @@ export const SmsMessageContent = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "SmsMessageContent" }))();
-export type WhatsAppFlowVersionId = string & EffectBrand.Brand<"WhatsAppFlowVersionId">;
-export const WhatsAppFlowVersionId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^wafver_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^wafver_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "WhatsAppFlowVersionId",
-    }),
-  ).pipe(Schema.brand("WhatsAppFlowVersionId")))();
 export type WhatsAppStoredLocation = {
   readonly latitude: number;
   readonly longitude: number;
@@ -239,14 +233,6 @@ export const WhatsAppStructuredContent = /* @__PURE__ */ (() =>
   Schema.Struct({ type: Schema.String, data: Schema.Record(Schema.String, JsonValue) }).annotate({
     identifier: "WhatsAppStructuredContent",
   }))();
-export type MessageDeliveryId = string & EffectBrand.Brand<"MessageDeliveryId">;
-export const MessageDeliveryId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^mdel_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^mdel_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "MessageDeliveryId",
-    }),
-  ).pipe(Schema.brand("MessageDeliveryId")))();
 export type MessageDeliveryError = {
   readonly code: string | null;
   readonly message: string | null;

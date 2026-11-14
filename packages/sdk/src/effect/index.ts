@@ -80,3 +80,8 @@ export type { CursorPageEnvelope } from "./pagination";
 export type { Json as JsonValue } from "effect/Schema";
 
 export * as Newsletters from "./newsletters";
+
+export * as WhatsApp from "./whatsapp";
+export * as WhatsAppFlows from "./whatsapp-flows";
+export * as WhatsAppSetupLinks from "./whatsapp-setup-links";
+export * as TemplateRegistrations from "./template-registrations";

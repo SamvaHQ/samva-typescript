@@ -116,6 +116,79 @@ describe("structured Effect codegen driver", () => {
     expect(SPECIAL_LEAVES.SensitiveString.encodedExpression).toBe("string");
   });
 
+  it("copies arbitrary per-instance rules from the public metadata", () => {
+    const rules = {
+      field: "decision",
+      cases: {
+        defer: { categories: ["transient"], retryable: true },
+        deny: { categories: ["auth"], retryable: false },
+      },
+    };
+    const document = {
+      ...fixture,
+      components: {
+        schemas: {
+          ...fixture.components.schemas,
+          DecisionError: {
+            type: "object",
+            properties: {
+              _tag: { const: "DecisionError" },
+              decision: { type: "string", enum: ["defer", "deny"] },
+            },
+            required: ["_tag", "decision"],
+            "x-category-rules": rules,
+          },
+        },
+      },
+    };
+    expect(prepareOpenApi(document).extensions.errors.get("DecisionError")?.rules).toEqual(rules);
+    const metadata = generateEffectMetadataSource(document);
+    expect(metadata).toContain('"field": "decision"');
+    expect(metadata).toContain('"defer"');
+    expect(metadata).toContain('"deny"');
+  });
+
+  it("does not infer recovery from reason names or a retryable property", () => {
+    const document = {
+      ...fixture,
+      components: {
+        schemas: {
+          ...fixture.components.schemas,
+          UnruledError: {
+            type: "object",
+            properties: {
+              _tag: { const: "UnruledError" },
+              reason: { type: "string", enum: ["auth", "transport"] },
+              retryable: { type: "boolean" },
+            },
+            required: ["_tag", "reason", "retryable"],
+          },
+        },
+      },
+    };
+    expect(generateEffectMetadataSource(document)).not.toContain('"rules"');
+  });
+
+  it("rejects malformed per-instance metadata", () => {
+    const document = {
+      ...fixture,
+      components: {
+        schemas: {
+          ...fixture.components.schemas,
+          InvalidRulesError: {
+            type: "object",
+            properties: { _tag: { const: "InvalidRulesError" } },
+            "x-category-rules": {
+              field: "reason",
+              cases: { auth: { categories: ["auth"], retryable: "yes" } },
+            },
+          },
+        },
+      },
+    };
+    expect(() => prepareOpenApi(document)).toThrow();
+  });
+
   it("emits brands, runtime leaves, and tagged errors from structured IR", () => {
     const source = generateEffectSource(fixture);
     expect(source).toContain('Brand.Brand<"MessageId">');

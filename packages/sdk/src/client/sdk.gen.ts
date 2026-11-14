@@ -598,6 +598,7 @@ import type {
   MediaId,
   MediaRemoveErrors,
   MediaRemoveResponses,
+  MessageDeliveryId,
   MessageId,
   MessageMetadataWritable,
   MessagesGetContentErrors,
@@ -758,6 +759,13 @@ import type {
   TemplateInputContractId,
   TemplateProjectId,
   TemplatePublicationId,
+  TemplateRegistrationId,
+  TemplateRegistrationsGetErrors,
+  TemplateRegistrationsGetResponses,
+  TemplateRegistrationsListErrors,
+  TemplateRegistrationsListResponses,
+  TemplateRegistrationsSubmitErrors,
+  TemplateRegistrationsSubmitResponses,
   TemplatesAddEntryErrors,
   TemplatesAddEntryResponses,
   TemplatesAttachFamilyMemberErrors,
@@ -889,8 +897,66 @@ import type {
   WebhooksTestResponses,
   WebhooksUpdateErrors,
   WebhooksUpdateResponses,
+  WhatsAppBusinessAccountId,
+  WhatsappConnectBusinessAccountErrors,
+  WhatsappConnectBusinessAccountResponses,
+  WhatsappDisconnectBusinessAccountErrors,
+  WhatsappDisconnectBusinessAccountResponses,
+  WhatsAppFlowId,
+  WhatsappFlowsCreateErrors,
+  WhatsappFlowsCreateResponses,
+  WhatsappFlowsGetErrors,
+  WhatsappFlowsGetResponses,
+  WhatsappFlowsListErrors,
+  WhatsappFlowsListRegistrationsErrors,
+  WhatsappFlowsListRegistrationsResponses,
+  WhatsappFlowsListResponses,
+  WhatsappFlowsListVersionsErrors,
+  WhatsappFlowsListVersionsResponses,
+  WhatsappFlowsRecordVersionErrors,
+  WhatsappFlowsRecordVersionResponses,
+  WhatsappFlowsRegisterErrors,
+  WhatsappFlowsRegisterResponses,
+  WhatsappFlowsRotateEncryptionKeyErrors,
+  WhatsappFlowsRotateEncryptionKeyResponses,
+  WhatsappFlowsRotateEndpointSecretErrors,
+  WhatsappFlowsRotateEndpointSecretResponses,
+  WhatsappFlowsSetEndpointErrors,
+  WhatsappFlowsSetEndpointResponses,
+  WhatsappGetBusinessAccountErrors,
+  WhatsappGetBusinessAccountResponses,
+  WhatsappGetMediaDownloadUrlErrors,
+  WhatsappGetMediaDownloadUrlResponses,
+  WhatsappGetServiceWindowBillingErrors,
+  WhatsappGetServiceWindowBillingResponses,
+  WhatsappGetServiceWindowStatusErrors,
+  WhatsappGetServiceWindowStatusResponses,
+  WhatsappGetStatsErrors,
+  WhatsappGetStatsResponses,
+  WhatsappGetTemplateStatsErrors,
+  WhatsappGetTemplateStatsResponses,
+  WhatsappListBusinessAccountsErrors,
+  WhatsappListBusinessAccountsResponses,
   WhatsAppSendMessagePayload,
+  WhatsAppServiceWindowId,
+  WhatsappSetDefaultBusinessAccountErrors,
+  WhatsappSetDefaultBusinessAccountResponses,
+  WhatsAppSetupLinkId,
+  WhatsAppSetupLinkMetadataWritable,
   WhatsAppSetupLinkRedirectUrl,
+  WhatsappSetupLinksCreateErrors,
+  WhatsappSetupLinksCreateResponses,
+  WhatsappSetupLinksGetErrors,
+  WhatsappSetupLinksGetResponses,
+  WhatsappSetupLinksListErrors,
+  WhatsappSetupLinksListResponses,
+  WhatsappSetupLinksRevokeErrors,
+  WhatsappSetupLinksRevokeResponses,
+  WhatsAppSetupLinkStatus,
+  WhatsappSyncAccountStatusErrors,
+  WhatsappSyncAccountStatusResponses,
+  WhatsappUpdateBusinessAccountErrors,
+  WhatsappUpdateBusinessAccountResponses,
   WhoamiGetErrors,
   WhoamiGetResponses,
 } from "./types.gen";
@@ -17640,6 +17706,1251 @@ export class ExtensionInstallations2 {
   static extensionInstallations = ExtensionInstallations;
 }
 
+export class Whatsapp {
+  /**
+   * Get WhatsApp messaging stats
+   *
+   * Returns aggregate WhatsApp delivery, read, and failure statistics for the organization.
+   */
+  public static getStats<ThrowOnError extends boolean = false>(
+    parameters?: {
+      startDate?: string | undefined;
+      endDate?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappGetStatsResponses, WhatsappGetStatsErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "startDate" },
+            { in: "query", key: "endDate" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "whatsappGetStats", options, (headers) =>
+      (options?.client ?? client).get<
+        WhatsappGetStatsResponses,
+        WhatsappGetStatsErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/whatsapp/stats",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Get WhatsApp template stats
+   *
+   * Returns sent, delivered, read, and failed counts and Meta's estimated cost for each WhatsApp template, split by what sent it: a campaign, a journey step, or a direct send. Filter by template, campaign, journey, or the time the message was created.
+   */
+  public static getTemplateStats<ThrowOnError extends boolean = false>(
+    parameters?: {
+      startDate?: string | undefined;
+      endDate?: string | undefined;
+      templateId?: TemplateId | undefined;
+      campaignId?: CampaignId | undefined;
+      journeyId?: JourneyId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappGetTemplateStatsResponses,
+    WhatsappGetTemplateStatsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "startDate" },
+            { in: "query", key: "endDate" },
+            { in: "query", key: "templateId" },
+            { in: "query", key: "campaignId" },
+            { in: "query", key: "journeyId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappGetTemplateStats",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappGetTemplateStatsResponses,
+          WhatsappGetTemplateStatsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/templates/stats",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get WhatsApp service window status
+   *
+   * Returns whether the service window and free entry point are active for a customer and business phone pair.
+   */
+  public static getServiceWindowStatus<ThrowOnError extends boolean = false>(
+    parameters: {
+      customerPhone: string;
+      businessPhone: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappGetServiceWindowStatusResponses,
+    WhatsappGetServiceWindowStatusErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "customerPhone" },
+            { in: "query", key: "businessPhone" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappGetServiceWindowStatus",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappGetServiceWindowStatusResponses,
+          WhatsappGetServiceWindowStatusErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/service-window/status",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get WhatsApp service window billing
+   *
+   * Returns message counts and the estimated Meta cost for a WhatsApp service window.
+   */
+  public static getServiceWindowBilling<ThrowOnError extends boolean = false>(
+    parameters: {
+      serviceWindowId: WhatsAppServiceWindowId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappGetServiceWindowBillingResponses,
+    WhatsappGetServiceWindowBillingErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "query", key: "serviceWindowId" }] }],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappGetServiceWindowBilling",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappGetServiceWindowBillingResponses,
+          WhatsappGetServiceWindowBillingErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/service-window/billing",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get a WhatsApp media download URL
+   *
+   * Returns a short-lived URL for the media an inbound WhatsApp delivery carried, when Samva stored it.
+   */
+  public static getMediaDownloadUrl<ThrowOnError extends boolean = false>(
+    parameters: {
+      deliveryId: MessageDeliveryId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappGetMediaDownloadUrlResponses,
+    WhatsappGetMediaDownloadUrlErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "deliveryId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappGetMediaDownloadUrl",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappGetMediaDownloadUrlResponses,
+          WhatsappGetMediaDownloadUrlErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/media/{deliveryId}/download-url",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * List WhatsApp business accounts
+   *
+   * Returns a paginated list of the organization's connected WhatsApp business accounts.
+   */
+  public static listBusinessAccounts<ThrowOnError extends boolean = false>(
+    parameters?: {
+      page?: number | null | undefined;
+      limit?: number | null | undefined;
+      isActive?: boolean | null | undefined;
+      verificationStatus?: "pending" | "verified" | "failed" | "suspended" | undefined;
+      namespaceId?: NamespaceId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappListBusinessAccountsResponses,
+    WhatsappListBusinessAccountsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "page" },
+            { in: "query", key: "limit" },
+            { in: "query", key: "isActive" },
+            { in: "query", key: "verificationStatus" },
+            { in: "query", key: "namespaceId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappListBusinessAccounts",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappListBusinessAccountsResponses,
+          WhatsappListBusinessAccountsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Connect a WhatsApp business account
+   *
+   * Completes embedded signup: exchanges its code for the business's Meta token, checks the token grants Samva both WhatsApp permissions over the WABA, subscribes Samva to the WABA's webhooks, and registers the phone number with the Cloud API. A number that stays on the WhatsApp Business app (coexistence) is already registered, so it skips registration and Samva asks Meta to sync its contacts and chat history. A number Meta has not verified yet connects as pending; sync it once verification finishes.
+   */
+  public static connectBusinessAccount<ThrowOnError extends boolean = false>(
+    parameters: {
+      code: string;
+      wabaId: string;
+      phoneNumberId: string;
+      namespaceId?: NamespaceId | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappConnectBusinessAccountResponses,
+    WhatsappConnectBusinessAccountErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "code" },
+            { in: "body", key: "wabaId" },
+            { in: "body", key: "phoneNumberId" },
+            { in: "body", key: "namespaceId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappConnectBusinessAccount",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappConnectBusinessAccountResponses,
+          WhatsappConnectBusinessAccountErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Disconnect a WhatsApp business account
+   *
+   * Disconnects a WhatsApp business account from the organization.
+   */
+  public static disconnectBusinessAccount<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappDisconnectBusinessAccountResponses,
+    WhatsappDisconnectBusinessAccountErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappDisconnectBusinessAccount",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          WhatsappDisconnectBusinessAccountResponses,
+          WhatsappDisconnectBusinessAccountErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts/{accountId}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get a WhatsApp business account
+   *
+   * Returns a single connected WhatsApp business account by its identifier.
+   */
+  public static getBusinessAccount<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappGetBusinessAccountResponses,
+    WhatsappGetBusinessAccountErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappGetBusinessAccount",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappGetBusinessAccountResponses,
+          WhatsappGetBusinessAccountErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts/{accountId}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Update a WhatsApp business account
+   *
+   * Updates the display name or webhook settings of a connected WhatsApp business account.
+   */
+  public static updateBusinessAccount<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+      displayName?: string | null | undefined;
+      webhookUrl?: string | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappUpdateBusinessAccountResponses,
+    WhatsappUpdateBusinessAccountErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "accountId" },
+            { in: "body", key: "displayName" },
+            { in: "body", key: "webhookUrl" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappUpdateBusinessAccount",
+      options,
+      (headers) =>
+        (options?.client ?? client).patch<
+          WhatsappUpdateBusinessAccountResponses,
+          WhatsappUpdateBusinessAccountErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts/{accountId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Set the default WhatsApp business account
+   *
+   * Marks a connected WhatsApp business account as the organization's default and returns it.
+   */
+  public static setDefaultBusinessAccount<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappSetDefaultBusinessAccountResponses,
+    WhatsappSetDefaultBusinessAccountErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappSetDefaultBusinessAccount",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappSetDefaultBusinessAccountResponses,
+          WhatsappSetDefaultBusinessAccountErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts/{accountId}/set-default",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Sync a WhatsApp business account status
+   *
+   * Reads the number's quality rating, messaging limit, and registration from Meta, and registers the number with the Cloud API if it is verified but not yet registered.
+   */
+  public static syncAccountStatus<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappSyncAccountStatusResponses,
+    WhatsappSyncAccountStatusErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappSyncAccountStatus",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappSyncAccountStatusResponses,
+          WhatsappSyncAccountStatusErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/business-accounts/{accountId}/sync",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+}
+
+export class Whatsapp2 {
+  static whatsapp = Whatsapp;
+}
+
+export class WhatsappFlows {
+  /**
+   * List flows
+   *
+   * Returns the organization's flows, newest first, each with its current version.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappFlowsListResponses, WhatsappFlowsListErrors, ThrowOnError> {
+    return requestWithPolicy(options?.client ?? client, "whatsappFlowsList", options, (headers) =>
+      (options?.client ?? client).get<
+        WhatsappFlowsListResponses,
+        WhatsappFlowsListErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/whatsapp/flows",
+        ...options,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Create a flow
+   *
+   * Creates a WhatsApp flow whose versions read `flows/<handle>.json` in the template project. The handle is unique in the organization; the categories are Meta's and go with every version to Meta.
+   */
+  public static create<ThrowOnError extends boolean = false>(
+    parameters: {
+      projectId: TemplateProjectId;
+      handle: string;
+      categories: Array<
+        | "SIGN_UP"
+        | "SIGN_IN"
+        | "APPOINTMENT_BOOKING"
+        | "LEAD_GENERATION"
+        | "CONTACT_US"
+        | "CUSTOMER_SUPPORT"
+        | "SURVEY"
+        | "OTHER"
+      >;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappFlowsCreateResponses, WhatsappFlowsCreateErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "projectId" },
+            { in: "body", key: "handle" },
+            { in: "body", key: "categories" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "whatsappFlowsCreate", options, (headers) =>
+      (options?.client ?? client).post<
+        WhatsappFlowsCreateResponses,
+        WhatsappFlowsCreateErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/whatsapp/flows",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+        headers: { "Content-Type": "application/json", ...headers },
+      }),
+    );
+  }
+
+  /**
+   * Get a flow
+   *
+   * Returns one flow by its ID.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappFlowsGetResponses, WhatsappFlowsGetErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(options?.client ?? client, "whatsappFlowsGet", options, (headers) =>
+      (options?.client ?? client).get<
+        WhatsappFlowsGetResponses,
+        WhatsappFlowsGetErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/whatsapp/flows/{id}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * List a flow's versions
+   *
+   * Newest first.
+   */
+  public static listVersions<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappFlowsListVersionsResponses,
+    WhatsappFlowsListVersionsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsListVersions",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappFlowsListVersionsResponses,
+          WhatsappFlowsListVersionsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}/versions",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Record a flow version
+   *
+   * Reads the flow's file at a commit on the project's default branch, checks it is Flow JSON Samva sends, and records it as the flow's current version. The same content returns the version that already recorded it.
+   */
+  public static recordVersion<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+      commitSha: string;
+      expectedWorkspaceRevision: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappFlowsRecordVersionResponses,
+    WhatsappFlowsRecordVersionErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "commitSha" },
+            { in: "body", key: "expectedWorkspaceRevision" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsRecordVersion",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappFlowsRecordVersionResponses,
+          WhatsappFlowsRecordVersionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}/versions",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * List a flow's registrations
+   *
+   * Returns every Meta flow the flow's versions registered as, newest version first, with its status on its business account.
+   */
+  public static listRegistrations<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappFlowsListRegistrationsResponses,
+    WhatsappFlowsListRegistrationsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsListRegistrations",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappFlowsListRegistrationsResponses,
+          WhatsappFlowsListRegistrationsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}/registrations",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Register and publish a flow
+   *
+   * Creates the flow's current version as a Meta flow on the business account of the named number, or of the default number, and publishes it. A version already published there returns its registration. Meta's validator findings answer a validation error and stay on the draft registration.
+   */
+  public static register<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+      businessAccountId?: WhatsAppBusinessAccountId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappFlowsRegisterResponses, WhatsappFlowsRegisterErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "businessAccountId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsRegister",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappFlowsRegisterResponses,
+          WhatsappFlowsRegisterErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}/registrations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Rotate a business account's flow encryption key
+   *
+   * Replaces the key WhatsApp encrypts data-exchange requests with on the business account of the named number, or of the default number, and uploads it to each of the account's numbers. The replaced key keeps decrypting for a day while clients fetch the new one.
+   */
+  public static rotateEncryptionKey<ThrowOnError extends boolean = false>(
+    parameters?: {
+      businessAccountId?: WhatsAppBusinessAccountId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappFlowsRotateEncryptionKeyResponses,
+    WhatsappFlowsRotateEncryptionKeyErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "body", key: "businessAccountId" }] }],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsRotateEncryptionKey",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappFlowsRotateEncryptionKeyResponses,
+          WhatsappFlowsRotateEncryptionKeyErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/encryption-key/rotate",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Set a flow's endpoint
+   *
+   * Sets the HTTPS endpoint Samva forwards the flow's data-exchange requests to, signed like a webhook delivery. The flow's first endpoint is issued a signing secret, returned once; changing the URL keeps the secret.
+   */
+  public static setEndpoint<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+      url: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappFlowsSetEndpointResponses,
+    WhatsappFlowsSetEndpointErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "url" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsSetEndpoint",
+      options,
+      (headers) =>
+        (options?.client ?? client).put<
+          WhatsappFlowsSetEndpointResponses,
+          WhatsappFlowsSetEndpointErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}/endpoint",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Rotate a flow endpoint's signing secret
+   *
+   * Issues and returns a new signing secret. Requests carry a signature from the previous secret too for 24 hours.
+   */
+  public static rotateEndpointSecret<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: WhatsAppFlowId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappFlowsRotateEndpointSecretResponses,
+    WhatsappFlowsRotateEndpointSecretErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsRotateEndpointSecret",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappFlowsRotateEndpointSecretResponses,
+          WhatsappFlowsRotateEndpointSecretErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}/endpoint/rotate-secret",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+}
+
+export class WhatsappFlows2 {
+  static whatsappFlows = WhatsappFlows;
+}
+
+export class WhatsappSetupLinks {
+  /**
+   * List WhatsApp setup links
+   *
+   * Returns setup links newest first, by namespace and status when named.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    parameters?: {
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
+      status?: WhatsAppSetupLinkStatus | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappSetupLinksListResponses, WhatsappSetupLinksListErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
+            { in: "query", key: "status" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappSetupLinksList",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappSetupLinksListResponses,
+          WhatsappSetupLinksListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/setup-links",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Create a WhatsApp setup link
+   *
+   * Creates a single-use link your customer opens to connect their WhatsApp number into the namespace, without a Samva account. The response carries the link's URL once; Samva keeps only a digest of its token. The link expires at `expiresAt`, at most 30 days ahead and 7 days when omitted.
+   */
+  public static create<ThrowOnError extends boolean = false>(
+    parameters: {
+      namespaceId: NamespaceId;
+      redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
+      metadata?: WhatsAppSetupLinkMetadataWritable | null | undefined;
+      expiresAt?: string | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappSetupLinksCreateResponses,
+    WhatsappSetupLinksCreateErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "namespaceId" },
+            { in: "body", key: "redirectUrl" },
+            { in: "body", key: "metadata" },
+            { in: "body", key: "expiresAt" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappSetupLinksCreate",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappSetupLinksCreateResponses,
+          WhatsappSetupLinksCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/setup-links",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Get a WhatsApp setup link
+   *
+   * Returns a setup link’s status and connection details.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      linkId: WhatsAppSetupLinkId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<WhatsappSetupLinksGetResponses, WhatsappSetupLinksGetErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "linkId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappSetupLinksGet",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          WhatsappSetupLinksGetResponses,
+          WhatsappSetupLinksGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/setup-links/{linkId}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Revoke a WhatsApp setup link
+   *
+   * Stops a pending link from connecting a number. A link that already connected one, was revoked, or expired answers 410.
+   */
+  public static revoke<ThrowOnError extends boolean = false>(
+    parameters: {
+      linkId: WhatsAppSetupLinkId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    WhatsappSetupLinksRevokeResponses,
+    WhatsappSetupLinksRevokeErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "linkId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappSetupLinksRevoke",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          WhatsappSetupLinksRevokeResponses,
+          WhatsappSetupLinksRevokeErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/setup-links/{linkId}/revoke",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+}
+
+export class WhatsappSetupLinks2 {
+  static whatsappSetupLinks = WhatsappSetupLinks;
+}
+
+export class TemplateRegistrations {
+  /**
+   * List a template's registrations
+   *
+   * Returns every provider registration of the template, newest first, with its review status and the publication it last submitted.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TemplateId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateRegistrationsListResponses,
+    TemplateRegistrationsListErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateRegistrationsList",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          TemplateRegistrationsListResponses,
+          TemplateRegistrationsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}/registrations",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Submit a template registration
+   *
+   * Submits the template's current publication for the provider's review: for WhatsApp, as a message template on the business account of the named number, or of the default number. A first submission creates the provider template; a later one resubmits the newer publication's content to the same template.
+   */
+  public static submit<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TemplateId;
+      provider: "whatsapp";
+      businessAccountId?: WhatsAppBusinessAccountId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateRegistrationsSubmitResponses,
+    TemplateRegistrationsSubmitErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "provider" },
+            { in: "body", key: "businessAccountId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateRegistrationsSubmit",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          TemplateRegistrationsSubmitResponses,
+          TemplateRegistrationsSubmitErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}/registrations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Get a template registration
+   *
+   * Returns one registration: its status, the category the provider assigned, and why the provider rejected, paused, or disabled it.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: TemplateId;
+      registrationId: TemplateRegistrationId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateRegistrationsGetResponses,
+    TemplateRegistrationsGetErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "registrationId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateRegistrationsGet",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          TemplateRegistrationsGetResponses,
+          TemplateRegistrationsGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}/registrations/{registrationId}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+}
+
+export class TemplateRegistrations2 {
+  static templateRegistrations = TemplateRegistrations;
+}
+
 Object.assign(Messages.list, { operation: "messagesList" });
 
 Object.assign(Messages.send, { operation: "messagesSend" });
@@ -18431,3 +19742,67 @@ Object.assign(ExtensionInstallations.enable, { operation: "extensionInstallation
 Object.assign(ExtensionInstallations.listRuns, { operation: "extensionInstallationsListRuns" });
 
 Object.assign(ExtensionInstallations.getRun, { operation: "extensionInstallationsGetRun" });
+
+Object.assign(Whatsapp.getStats, { operation: "whatsappGetStats" });
+
+Object.assign(Whatsapp.getTemplateStats, { operation: "whatsappGetTemplateStats" });
+
+Object.assign(Whatsapp.getServiceWindowStatus, { operation: "whatsappGetServiceWindowStatus" });
+
+Object.assign(Whatsapp.getServiceWindowBilling, { operation: "whatsappGetServiceWindowBilling" });
+
+Object.assign(Whatsapp.getMediaDownloadUrl, { operation: "whatsappGetMediaDownloadUrl" });
+
+Object.assign(Whatsapp.listBusinessAccounts, { operation: "whatsappListBusinessAccounts" });
+
+Object.assign(Whatsapp.connectBusinessAccount, { operation: "whatsappConnectBusinessAccount" });
+
+Object.assign(Whatsapp.disconnectBusinessAccount, {
+  operation: "whatsappDisconnectBusinessAccount",
+});
+
+Object.assign(Whatsapp.getBusinessAccount, { operation: "whatsappGetBusinessAccount" });
+
+Object.assign(Whatsapp.updateBusinessAccount, { operation: "whatsappUpdateBusinessAccount" });
+
+Object.assign(Whatsapp.setDefaultBusinessAccount, {
+  operation: "whatsappSetDefaultBusinessAccount",
+});
+
+Object.assign(Whatsapp.syncAccountStatus, { operation: "whatsappSyncAccountStatus" });
+
+Object.assign(WhatsappFlows.list, { operation: "whatsappFlowsList" });
+
+Object.assign(WhatsappFlows.create, { operation: "whatsappFlowsCreate" });
+
+Object.assign(WhatsappFlows.get, { operation: "whatsappFlowsGet" });
+
+Object.assign(WhatsappFlows.listVersions, { operation: "whatsappFlowsListVersions" });
+
+Object.assign(WhatsappFlows.recordVersion, { operation: "whatsappFlowsRecordVersion" });
+
+Object.assign(WhatsappFlows.listRegistrations, { operation: "whatsappFlowsListRegistrations" });
+
+Object.assign(WhatsappFlows.register, { operation: "whatsappFlowsRegister" });
+
+Object.assign(WhatsappFlows.rotateEncryptionKey, { operation: "whatsappFlowsRotateEncryptionKey" });
+
+Object.assign(WhatsappFlows.setEndpoint, { operation: "whatsappFlowsSetEndpoint" });
+
+Object.assign(WhatsappFlows.rotateEndpointSecret, {
+  operation: "whatsappFlowsRotateEndpointSecret",
+});
+
+Object.assign(WhatsappSetupLinks.list, { operation: "whatsappSetupLinksList" });
+
+Object.assign(WhatsappSetupLinks.create, { operation: "whatsappSetupLinksCreate" });
+
+Object.assign(WhatsappSetupLinks.get, { operation: "whatsappSetupLinksGet" });
+
+Object.assign(WhatsappSetupLinks.revoke, { operation: "whatsappSetupLinksRevoke" });
+
+Object.assign(TemplateRegistrations.list, { operation: "templateRegistrationsList" });
+
+Object.assign(TemplateRegistrations.submit, { operation: "templateRegistrationsSubmit" });
+
+Object.assign(TemplateRegistrations.get, { operation: "templateRegistrationsGet" });

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -32,3 +33,15 @@ process.stdout.write(
 await writeFile(metadataOutputPath, generateEffectMetadataSource(document));
 process.stdout.write(`Generated ${outputPath}\n`);
 process.stdout.write(`Generated ${metadataOutputPath}\n`);
+
+execFileSync(
+  "bun",
+  [
+    "run",
+    "oxfmt",
+    "--config=../../oxfmt.config.ts",
+    ...[...generated.sources.keys()].map((filename) => resolve(outputPath, filename)),
+    metadataOutputPath,
+  ],
+  { cwd: root, stdio: "inherit" },
+);

@@ -1,7 +1,9 @@
-import { describe, expect, it } from "@effect/vitest";
+import { describe, expect, expectTypeOf, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 
 import {
+  CredentialsError,
+  WhatsAppChannelError,
   BillingProviderError,
   catchAuthError,
   catchCategory,
@@ -156,6 +158,73 @@ describe("error categories", () => {
       ).pipe(catchAuthError((error) => Effect.succeed(error.message)));
       expect(auth).toBe("bad creds");
     }),
+  );
+
+  it("uses credential retryability and channel reasons per instance", () => {
+    for (const retryable of [true, false]) {
+      const error = new CredentialsError({ message: "custody failed", retryable });
+      expect(isRetryable(error)).toBe(retryable);
+      expect(isTransient(error)).toBe(retryable);
+    }
+    const cases = [
+      ["auth", ["auth"], false],
+      ["transport", ["transient"], true],
+      ["rate_limited", ["throttling", "transient"], true],
+      ["rejected", ["validation"], false],
+      ["unsupported", [], false],
+    ] as const;
+    for (const [reason, categories, retryable] of cases) {
+      const error = new WhatsAppChannelError({
+        reason,
+        message: "channel failed",
+        provider: "whatsapp-cloud",
+      });
+      expect(categoriesOf(error)).toEqual(categories);
+      expect(isRetryable(error)).toBe(retryable);
+    }
+    expect(isRetryable({ _tag: "UnknownError", retryable: true })).toBe(false);
+  });
+
+  it.effect(
+    "catches WhatsApp auth and retryable credentials while passing other instances through",
+    () =>
+      Effect.gen(function* () {
+        const auth = new WhatsAppChannelError({
+          reason: "auth",
+          message: "bad credentials",
+          provider: "whatsapp-cloud",
+        });
+        const handled = yield* Effect.fail(auth).pipe(
+          catchAuthError((error) => {
+            if (error._tag === "WhatsAppChannelError")
+              expectTypeOf(error).toEqualTypeOf<WhatsAppChannelError>();
+            return Effect.succeed(error.message);
+          }),
+        );
+        expect(handled).toBe(auth.message);
+        const transport = new WhatsAppChannelError({
+          reason: "transport",
+          message: "offline",
+          provider: "whatsapp-cloud",
+        });
+        const uncaught = yield* Effect.fail(transport).pipe(
+          catchAuthError(() => Effect.succeed("wrong")),
+          Effect.flip,
+        );
+        expect(uncaught).toBe(transport);
+        for (const retryable of [true, false]) {
+          const error = new CredentialsError({ message: "custody failed", retryable });
+          const result = yield* Effect.fail(error).pipe(
+            catchCategory("transient", (caught) => {
+              if (caught._tag === "CredentialsError")
+                expectTypeOf(caught.retryable).toEqualTypeOf<boolean>();
+              return Effect.succeed("recovered");
+            }),
+            Effect.result,
+          );
+          expect(result._tag).toBe(retryable ? "Success" : "Failure");
+        }
+      }),
   );
 
   it("keeps email provider diagnostics off the encoded error", () => {

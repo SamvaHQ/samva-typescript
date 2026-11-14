@@ -11,6 +11,11 @@ export default defineConfig({
     "src/effect/categories.ts",
     "src/effect/errors.ts",
     "src/effect/agents.ts",
+    "src/effect/whatsapp.ts",
+    "src/effect/whatsapp-flows.ts",
+    "src/effect/whatsapp-setup-links.ts",
+    "src/effect/template-registrations.ts",
+
     "src/effect/analytics.ts",
     "src/effect/api-keys.ts",
     "src/effect/attachments.ts",

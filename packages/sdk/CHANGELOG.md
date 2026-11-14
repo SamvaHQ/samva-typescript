@@ -1,3 +1,21 @@
+## samva@0.45.0
+
+### Manage WhatsApp accounts, flows, setup links, and template registrations
+
+Use `client.whatsapp`, `client.whatsappFlows`, `client.whatsappSetupLinks`, and
+`client.templateRegistrations` to manage WhatsApp through the Promise SDK. Effect applications
+can import `samva/effect/whatsapp`, `samva/effect/whatsapp-flows`,
+`samva/effect/whatsapp-setup-links`, and `samva/effect/template-registrations`.
+
+The public OpenAPI document includes these management operations. The organization's WhatsApp
+access still applies to every request.
+
+Effect schemas protect embedded-signup codes, private media URLs, setup-link URLs, and flow signing
+secrets with `Redacted`. Pass `Redacted.make(code)` when connecting an account through Effect; the
+Promise client and HTTP wire keep plain strings. Recovery helpers honor credential retryability
+and WhatsApp channel error reasons. The public OpenAPI document includes their per-instance
+recovery rules.
+
 ## samva@0.44.0
 
 ### The API checks sender names, subjects, email addresses, and template paths

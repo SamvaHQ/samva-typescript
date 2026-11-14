@@ -78,3 +78,6 @@ Use `client.newsletters` for newsletter management and `client.newsletters.domai
 `client.newsletters.domains.list({ id, cursor, limit })` returns a hostname-ordered page with
 `items` and `nextCursor`. Pass the cursor back unchanged. Use `domains.get` to recheck one domain's
 DNS and certificate status.
+
+Maintainers: generate `src/service-map.ts` and the Effect domain operation lists with
+`bun run generate`; ergonomic adapters and schema exports belong in `codegen/facade-overrides.ts`.

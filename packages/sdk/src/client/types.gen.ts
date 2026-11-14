@@ -12,6 +12,17 @@ export type MalformedRequestError = {
   };
 };
 
+export type ValidationError = {
+  _tag: "ValidationError";
+  message: string;
+  fields?:
+    | {
+        [key: string]: Array<string>;
+      }
+    | null
+    | undefined;
+};
+
 export type GatewayTimeoutError = {
   _tag: "GatewayTimeoutError";
   message: string;
@@ -28,20 +39,15 @@ export type ForbiddenError = {
   message: string;
 };
 
-export type InternalError = {
-  _tag: "InternalError";
+export type FlagDisabledError = {
+  _tag: "FlagDisabledError";
+  flag: string;
   message: string;
 };
 
-export type ValidationError = {
-  _tag: "ValidationError";
+export type InternalError = {
+  _tag: "InternalError";
   message: string;
-  fields?:
-    | {
-        [key: string]: Array<string>;
-      }
-    | null
-    | undefined;
 };
 
 export type ResourceNotFoundError = {
@@ -50,6 +56,365 @@ export type ResourceNotFoundError = {
   id: string;
   message: string;
 };
+
+export type TemplateRegistration = {
+  id: TemplateRegistrationId;
+  templateId: TemplateId;
+  publicationId: TemplatePublicationId;
+  target: TemplateRegistrationTarget;
+  name: string;
+  language: string;
+  status: "draft" | "submitted" | "approved" | "rejected" | "paused" | "disabled";
+  category:
+    | "marketing"
+    | "utility"
+    | "authentication"
+    | "transactional"
+    | "service_implicit"
+    | "service_explicit"
+    | "promotional";
+  providerCategory:
+    | "marketing"
+    | "utility"
+    | "authentication"
+    | "transactional"
+    | "service_implicit"
+    | "service_explicit"
+    | "promotional"
+    | null;
+  providerTemplateId: string | null;
+  reason: string | null;
+  submittedAt: string | null;
+  statusChangedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TemplateRegistrationTarget = WhatsAppRegistrationTarget | DltRegistrationTarget;
+
+export type DltRegistrationTarget = {
+  provider: "dlt";
+  entityId: string;
+  headerId: string;
+};
+
+export type WhatsAppRegistrationTarget = {
+  provider: "whatsapp";
+  wabaId: string;
+};
+
+export type TemplatePublicationId = string;
+
+export type TemplateId = string;
+
+export type TemplateRegistrationId = string;
+
+export type TemplateRegistrationList = {
+  data: Array<TemplateRegistration>;
+};
+
+export type CredentialsError = {
+  _tag: "CredentialsError";
+  message: string;
+  retryable: boolean;
+};
+
+export type WhatsAppChannelError = {
+  _tag: "WhatsAppChannelError";
+  reason: "transport" | "rejected" | "rate_limited" | "auth" | "unsupported";
+  message: string;
+  provider: string;
+  providerCode?: string | null | undefined;
+  statusCode?: number | null | undefined;
+};
+
+export type ConflictError = {
+  _tag: "ConflictError";
+  message: string;
+  resource: string;
+  id?: string | null | undefined;
+};
+
+export type SubmitTemplateRegistrationPayload = {
+  provider: "whatsapp";
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+};
+
+export type WhatsAppBusinessAccountId = string;
+
+export type WhatsAppSetupLinkUnavailableError = {
+  _tag: "WhatsAppSetupLinkUnavailableError";
+  reason: "completed" | "revoked" | "expired";
+  message: string;
+};
+
+export type WhatsAppSetupLink = {
+  id: WhatsAppSetupLinkId;
+  organizationId: OrganizationId;
+  namespaceId: NamespaceId;
+  status: WhatsAppSetupLinkStatus;
+  redirectUrl: string | null;
+  metadata: WhatsAppSetupLinkMetadata;
+  expiresAt: string;
+  businessAccountId: WhatsAppBusinessAccountId | null;
+  completedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WhatsAppSetupLinkMetadata = {
+  [key: string]: string;
+};
+
+export type WhatsAppSetupLinkMetadataWritable = {
+  [key: string]: string | undefined;
+};
+
+export type WhatsAppSetupLinkStatus = "pending" | "completed" | "revoked" | "expired";
+
+export type NamespaceId = string;
+
+export type OrganizationId = string;
+
+export type WhatsAppSetupLinkId = string;
+
+export type WhatsAppSetupLinkPage = {
+  items: Array<WhatsAppSetupLink>;
+  nextCursor: string | null;
+};
+
+export type BillingProviderError = {
+  _tag: "BillingProviderError";
+  message: string;
+};
+
+export type PaymentRequiredError = {
+  _tag: "PaymentRequiredError";
+  message: string;
+  resource: string;
+  currentUsage: number;
+  limit: number;
+};
+
+export type CreatedWhatsAppSetupLink = {
+  id: WhatsAppSetupLinkId;
+  organizationId: OrganizationId;
+  namespaceId: NamespaceId;
+  status: WhatsAppSetupLinkStatus;
+  redirectUrl: string | null;
+  metadata: WhatsAppSetupLinkMetadata;
+  expiresAt: string;
+  businessAccountId: WhatsAppBusinessAccountId | null;
+  completedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  url: string;
+};
+
+export type CreateWhatsAppSetupLinkPayload = {
+  namespaceId: NamespaceId;
+  redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
+  metadata?: WhatsAppSetupLinkMetadata | null | undefined;
+  expiresAt?: string | null | undefined;
+};
+
+export type WhatsAppSetupLinkRedirectUrl = string;
+
+export type WhatsAppFlowRegistrationList = {
+  data: Array<WhatsAppFlowRegistration>;
+};
+
+export type WhatsAppFlowRegistration = {
+  id: WhatsAppFlowRegistrationId;
+  flowId: WhatsAppFlowId;
+  versionId: WhatsAppFlowVersionId;
+  versionNumber: number;
+  wabaId: string;
+  providerFlowId: string | null;
+  name: string;
+  status: "draft" | "published" | "throttled" | "blocked" | "deprecated";
+  validationErrors: Array<WhatsAppFlowValidationError>;
+  endpointAlerts: Array<WhatsAppFlowEndpointAlert>;
+  publishedAt: string | null;
+  statusChangedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WhatsAppFlowEndpointAlert = {
+  kind: string;
+  message: string;
+  value: number | null;
+  threshold: number | null;
+  activatedAt: string;
+};
+
+export type WhatsAppFlowValidationError = {
+  error: string;
+  message: string;
+  path?: string | undefined;
+  line?: number | undefined;
+  column?: number | undefined;
+};
+
+export type WhatsAppFlowVersionId = string;
+
+export type WhatsAppFlowId = string;
+
+export type WhatsAppFlowRegistrationId = string;
+
+export type WhatsAppFlowEndpointSettings = {
+  url: string;
+  updatedAt: string;
+  secret?: string | undefined;
+};
+
+export type SetWhatsAppFlowEndpointPayload = {
+  url: string;
+};
+
+export type WhatsAppFlowEncryptionKey = {
+  wabaId: string;
+  publicKey: string;
+  phoneNumberIds: Array<string>;
+  createdAt: string;
+};
+
+export type RotateWhatsAppFlowEncryptionKeyPayload = {
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+};
+
+export type RegisterWhatsAppFlowPayload = {
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+};
+
+export type WhatsAppFlowVersionList = {
+  data: Array<WhatsAppFlowVersion>;
+};
+
+export type WhatsAppFlowVersion = {
+  id: WhatsAppFlowVersionId;
+  flowId: WhatsAppFlowId;
+  number: number;
+  commitSha: string;
+  digest: string;
+  jsonVersion: string;
+  screens: Array<string>;
+  dataExchange: boolean;
+  createdAt: string;
+};
+
+export type ServiceUnavailableError = {
+  _tag: "ServiceUnavailableError";
+  message: string;
+  retryAfterSeconds: number;
+};
+
+export type RecordWhatsAppFlowVersionPayload = {
+  commitSha: string;
+  expectedWorkspaceRevision: string;
+};
+
+export type WhatsAppFlow = {
+  id: WhatsAppFlowId;
+  projectId: TemplateProjectId;
+  handle: string;
+  path: string;
+  categories: Array<
+    | "SIGN_UP"
+    | "SIGN_IN"
+    | "APPOINTMENT_BOOKING"
+    | "LEAD_GENERATION"
+    | "CONTACT_US"
+    | "CUSTOMER_SUPPORT"
+    | "SURVEY"
+    | "OTHER"
+  >;
+  endpoint: WhatsAppFlowEndpoint | null;
+  currentVersion: WhatsAppFlowVersion | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WhatsAppFlowEndpoint = {
+  url: string;
+  updatedAt: string;
+};
+
+export type TemplateProjectId = string;
+
+export type WhatsAppFlowList = {
+  data: Array<WhatsAppFlow>;
+};
+
+export type CreateWhatsAppFlowPayload = {
+  projectId: TemplateProjectId;
+  handle: string;
+  categories: Array<
+    | "SIGN_UP"
+    | "SIGN_IN"
+    | "APPOINTMENT_BOOKING"
+    | "LEAD_GENERATION"
+    | "CONTACT_US"
+    | "CUSTOMER_SUPPORT"
+    | "SURVEY"
+    | "OTHER"
+  >;
+};
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export type MessageDeliveryId = string;
+
+export type MoneyAmount = {
+  amount: string;
+  currency: string;
+};
+
+export type WhatsAppServiceWindowId = string;
+
+export type WhatsAppTemplateStats = {
+  items: Array<WhatsAppTemplateStatsRow>;
+};
+
+export type WhatsAppTemplateStatsRow = {
+  templateId: TemplateId;
+  templateSlug: string;
+  name: string;
+  language: string;
+  category: "marketing" | "utility" | "authentication" | null;
+  source: WhatsAppTemplateStatsSource;
+  sent: number;
+  delivered: number;
+  read: number;
+  failed: number;
+  estimatedProviderCosts: Array<MoneyAmount>;
+};
+
+export type WhatsAppTemplateStatsSource =
+  | {
+      type: "campaign";
+      campaignId: CampaignId;
+    }
+  | {
+      type: "journey";
+      journeyId: JourneyId;
+      nodeId: string;
+    }
+  | {
+      type: "direct";
+    };
+
+export type JourneyId = string;
+
+export type CampaignId = string;
 
 export type ExtensionRun = {
   id: string;
@@ -94,13 +459,6 @@ export type ExtensionRunSummary = {
   error: string | null;
 };
 
-export type ConflictError = {
-  _tag: "ConflictError";
-  message: string;
-  resource: string;
-  id?: string | null | undefined;
-};
-
 export type ExtensionInstallation = {
   id: ExtensionInstallationId;
   extensionId: ExtensionId;
@@ -134,8 +492,6 @@ export type ExtensionInstallation = {
 };
 
 export type WebhookEndpointId = string;
-
-export type NamespaceId = string;
 
 export type MailboxId = string;
 
@@ -248,8 +604,6 @@ export type ExtensionPermissionDiff = {
     | "event:mailbox.message.discarded"
   >;
 };
-
-export type OrganizationId = string;
 
 export type UpgradeExtensionPayload = {
   version?: string | ExtensionVersionId | null | undefined;
@@ -449,14 +803,6 @@ export type CreateNamespacePortalLinkPayload = {
   redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
   metadata?: NamespacePortalLinkMetadata | null | undefined;
   expiresIn?: number | null | undefined;
-};
-
-export type WhatsAppSetupLinkRedirectUrl = string;
-
-export type FlagDisabledError = {
-  _tag: "FlagDisabledError";
-  flag: string;
-  message: string;
 };
 
 export type NamespaceResource = {
@@ -947,8 +1293,6 @@ export type JsonObjectWritable = {
 
 export type TemplateChannelVariantId = string;
 
-export type TemplateId = string;
-
 export type MailboxSmsEndpointBinding = {
   channel: "sms";
   phoneNumberId: SmsPhoneNumberId;
@@ -960,8 +1304,6 @@ export type MailboxWhatsAppEndpointBinding = {
   channel: "whatsapp";
   businessAccountId: WhatsAppBusinessAccountId;
 };
-
-export type WhatsAppBusinessAccountId = string;
 
 export type MailboxEndpointId = string;
 
@@ -996,19 +1338,6 @@ export type MediaId = string;
 export type DenyMailboxActionPayload = {
   reviewRound: PolicyReviewRound;
   reason: string;
-};
-
-export type BillingProviderError = {
-  _tag: "BillingProviderError";
-  message: string;
-};
-
-export type PaymentRequiredError = {
-  _tag: "PaymentRequiredError";
-  message: string;
-  resource: string;
-  currentUsage: number;
-  limit: number;
 };
 
 export type RateLimitedError = {
@@ -1338,8 +1667,6 @@ export type MailboxMessageSender = {
 };
 
 export type CampaignRunId = string;
-
-export type CampaignId = string;
 
 export type MailboxEmailMessage = {
   id: MessageId;
@@ -2727,12 +3054,6 @@ export type BrandList = {
   items: Array<Brand>;
 };
 
-export type ServiceUnavailableError = {
-  _tag: "ServiceUnavailableError";
-  message: string;
-  retryAfterSeconds: number;
-};
-
 export type TemplateSourceError = {
   _tag: "TemplateSourceError";
   message: string;
@@ -2779,8 +3100,6 @@ export type TemplateInUseError = {
   }>;
 };
 
-export type TemplateProjectId = string;
-
 export type TemplateInputContractId = string;
 
 export type TemplateInputContractPage = {
@@ -2804,8 +3123,6 @@ export type TemplatePublicationRender = {
   html: string;
   text: string;
 };
-
-export type TemplatePublicationId = string;
 
 export type RenderTemplatePublicationPayload = {
   /**
@@ -3981,8 +4298,6 @@ export type JourneyRunTrigger = {
 export type JourneyRunExitReason = "completed" | "goal" | "archived";
 
 export type JourneyRunStatus = "active" | "paused" | "exited" | "failed";
-
-export type JourneyId = string;
 
 export type JourneyRunId = string;
 
@@ -6281,8 +6596,6 @@ export type WhatsAppFlowMessageWritable = {
     | undefined;
 };
 
-export type WhatsAppFlowId = string;
-
 export type WhatsAppMediaContent = {
   media: WhatsAppOutboundMedia;
 };
@@ -6992,8 +7305,6 @@ export type WhatsAppStoredFlowMessage = {
   providerFlowId: string;
 };
 
-export type WhatsAppFlowVersionId = string;
-
 export type WhatsAppCtaUrlMessage = {
   type: "cta_url";
   header?: WhatsAppInteractiveHeader | undefined;
@@ -7145,8 +7456,6 @@ export type MessageDeliveryError = {
   message: string | null;
   retryable: boolean | null;
 };
-
-export type MessageDeliveryId = string;
 
 export type Message = {
   id: MessageId;
@@ -32793,3 +33102,1826 @@ export type ExtensionInstallationsGetRunResponses = {
 
 export type ExtensionInstallationsGetRunResponse =
   ExtensionInstallationsGetRunResponses[keyof ExtensionInstallationsGetRunResponses];
+
+export type WhatsappGetStatsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    startDate?: string | undefined;
+    endDate?: string | undefined;
+  };
+  url: "/v1/whatsapp/stats";
+};
+
+export type WhatsappGetStatsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappGetStatsError = WhatsappGetStatsErrors[keyof WhatsappGetStatsErrors];
+
+export type WhatsappGetStatsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    totalSent: number;
+    totalDelivered: number;
+    totalRead: number;
+    totalFailed: number;
+    deliveryRate: number;
+    readRate: number;
+    failureRate: number;
+  };
+};
+
+export type WhatsappGetStatsResponse = WhatsappGetStatsResponses[keyof WhatsappGetStatsResponses];
+
+export type WhatsappGetTemplateStatsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    startDate?: string | undefined;
+    endDate?: string | undefined;
+    templateId?: TemplateId | undefined;
+    campaignId?: CampaignId | undefined;
+    journeyId?: JourneyId | undefined;
+  };
+  url: "/v1/whatsapp/templates/stats";
+};
+
+export type WhatsappGetTemplateStatsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappGetTemplateStatsError =
+  WhatsappGetTemplateStatsErrors[keyof WhatsappGetTemplateStatsErrors];
+
+export type WhatsappGetTemplateStatsResponses = {
+  /**
+   * WhatsAppTemplateStats
+   */
+  200: WhatsAppTemplateStats;
+};
+
+export type WhatsappGetTemplateStatsResponse =
+  WhatsappGetTemplateStatsResponses[keyof WhatsappGetTemplateStatsResponses];
+
+export type WhatsappGetServiceWindowStatusData = {
+  body?: never;
+  path?: never;
+  query: {
+    customerPhone: string;
+    businessPhone: string;
+  };
+  url: "/v1/whatsapp/service-window/status";
+};
+
+export type WhatsappGetServiceWindowStatusErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappGetServiceWindowStatusError =
+  WhatsappGetServiceWindowStatusErrors[keyof WhatsappGetServiceWindowStatusErrors];
+
+export type WhatsappGetServiceWindowStatusResponses = {
+  /**
+   * Success
+   */
+  200: {
+    serviceWindowId: WhatsAppServiceWindowId;
+    isServiceWindowActive: boolean;
+    isFreeEntryPointActive: boolean;
+    serviceWindowExpiresAt: string | null;
+    freeEntryPointExpiresAt: string | null;
+  };
+};
+
+export type WhatsappGetServiceWindowStatusResponse =
+  WhatsappGetServiceWindowStatusResponses[keyof WhatsappGetServiceWindowStatusResponses];
+
+export type WhatsappGetServiceWindowBillingData = {
+  body?: never;
+  path?: never;
+  query: {
+    serviceWindowId: WhatsAppServiceWindowId;
+  };
+  url: "/v1/whatsapp/service-window/billing";
+};
+
+export type WhatsappGetServiceWindowBillingErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappGetServiceWindowBillingError =
+  WhatsappGetServiceWindowBillingErrors[keyof WhatsappGetServiceWindowBillingErrors];
+
+export type WhatsappGetServiceWindowBillingResponses = {
+  /**
+   * Success
+   */
+  200: {
+    totalMessages: number;
+    totalFreeMessages: number;
+    totalPaidMessages: number;
+    estimatedProviderCosts: Array<MoneyAmount>;
+  };
+};
+
+export type WhatsappGetServiceWindowBillingResponse =
+  WhatsappGetServiceWindowBillingResponses[keyof WhatsappGetServiceWindowBillingResponses];
+
+export type WhatsappGetMediaDownloadUrlData = {
+  body?: never;
+  path: {
+    deliveryId: MessageDeliveryId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/media/{deliveryId}/download-url";
+};
+
+export type WhatsappGetMediaDownloadUrlErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappGetMediaDownloadUrlError =
+  WhatsappGetMediaDownloadUrlErrors[keyof WhatsappGetMediaDownloadUrlErrors];
+
+export type WhatsappGetMediaDownloadUrlResponses = {
+  /**
+   * Success
+   */
+  200: {
+    url: string;
+    expiresAt: string;
+  };
+};
+
+export type WhatsappGetMediaDownloadUrlResponse =
+  WhatsappGetMediaDownloadUrlResponses[keyof WhatsappGetMediaDownloadUrlResponses];
+
+export type WhatsappListBusinessAccountsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number | null | undefined;
+    limit?: number | null | undefined;
+    isActive?: boolean | null | undefined;
+    verificationStatus?: "pending" | "verified" | "failed" | "suspended" | undefined;
+    namespaceId?: NamespaceId | undefined;
+  };
+  url: "/v1/whatsapp/business-accounts";
+};
+
+export type WhatsappListBusinessAccountsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappListBusinessAccountsError =
+  WhatsappListBusinessAccountsErrors[keyof WhatsappListBusinessAccountsErrors];
+
+export type WhatsappListBusinessAccountsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    items: Array<{
+      id: WhatsAppBusinessAccountId;
+      organizationId: string;
+      namespaceId: NamespaceId | null;
+      phoneNumber: string;
+      phoneNumberId: string;
+      displayName: string;
+      whatsappBusinessAccountId: string;
+      verificationStatus: "pending" | "verified" | "failed" | "suspended";
+      credentialStatus: "active" | "reconnect_required";
+      tokenExpiresAt: string | null;
+      isDefault: boolean;
+      webhookUrl: string | null;
+      qualityRating: "green" | "yellow" | "red" | "unknown";
+      messagingLimit: string | null;
+      currentLimit: number;
+      businessPortfolioId: string | null;
+      businessAppConnectedAt: string | null;
+      businessAppDisconnectedAt: string | null;
+      businessAppDisconnectReason:
+        | "partnerRemoved"
+        | "offboarded"
+        | "accountDisconnected"
+        | "businessDowngrade"
+        | "changeNumber"
+        | "companionInactivity"
+        | "primaryInactivity"
+        | "userReRegistered"
+        | null;
+      contactsSyncRequestedAt: string | null;
+      historySyncStatus: "requested" | "importing" | "completed" | "declined" | null;
+      historySyncProgress: number | null;
+      isActive: boolean;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+    pagination: PaginationMeta;
+  };
+};
+
+export type WhatsappListBusinessAccountsResponse =
+  WhatsappListBusinessAccountsResponses[keyof WhatsappListBusinessAccountsResponses];
+
+export type WhatsappConnectBusinessAccountData = {
+  body: {
+    code: string;
+    wabaId: string;
+    phoneNumberId: string;
+    namespaceId?: NamespaceId | null | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/whatsapp/business-accounts";
+};
+
+export type WhatsappConnectBusinessAccountErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError | CredentialsError
+   */
+  500: InternalError | CredentialsError;
+  /**
+   * WhatsAppChannelError | BillingProviderError
+   */
+  502: WhatsAppChannelError | BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappConnectBusinessAccountError =
+  WhatsappConnectBusinessAccountErrors[keyof WhatsappConnectBusinessAccountErrors];
+
+export type WhatsappConnectBusinessAccountResponses = {
+  /**
+   * Success
+   */
+  201: {
+    id: WhatsAppBusinessAccountId;
+    organizationId: string;
+    namespaceId: NamespaceId | null;
+    phoneNumber: string;
+    phoneNumberId: string;
+    displayName: string;
+    whatsappBusinessAccountId: string;
+    verificationStatus: "pending" | "verified" | "failed" | "suspended";
+    credentialStatus: "active" | "reconnect_required";
+    tokenExpiresAt: string | null;
+    isDefault: boolean;
+    webhookUrl: string | null;
+    qualityRating: "green" | "yellow" | "red" | "unknown";
+    messagingLimit: string | null;
+    currentLimit: number;
+    businessPortfolioId: string | null;
+    businessAppConnectedAt: string | null;
+    businessAppDisconnectedAt: string | null;
+    businessAppDisconnectReason:
+      | "partnerRemoved"
+      | "offboarded"
+      | "accountDisconnected"
+      | "businessDowngrade"
+      | "changeNumber"
+      | "companionInactivity"
+      | "primaryInactivity"
+      | "userReRegistered"
+      | null;
+    contactsSyncRequestedAt: string | null;
+    historySyncStatus: "requested" | "importing" | "completed" | "declined" | null;
+    historySyncProgress: number | null;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type WhatsappConnectBusinessAccountResponse =
+  WhatsappConnectBusinessAccountResponses[keyof WhatsappConnectBusinessAccountResponses];
+
+export type WhatsappDisconnectBusinessAccountData = {
+  body?: never;
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/business-accounts/{accountId}";
+};
+
+export type WhatsappDisconnectBusinessAccountErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappDisconnectBusinessAccountError =
+  WhatsappDisconnectBusinessAccountErrors[keyof WhatsappDisconnectBusinessAccountErrors];
+
+export type WhatsappDisconnectBusinessAccountResponses = {
+  /**
+   * Success
+   */
+  200: {
+    success: true;
+  };
+};
+
+export type WhatsappDisconnectBusinessAccountResponse =
+  WhatsappDisconnectBusinessAccountResponses[keyof WhatsappDisconnectBusinessAccountResponses];
+
+export type WhatsappGetBusinessAccountData = {
+  body?: never;
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/business-accounts/{accountId}";
+};
+
+export type WhatsappGetBusinessAccountErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappGetBusinessAccountError =
+  WhatsappGetBusinessAccountErrors[keyof WhatsappGetBusinessAccountErrors];
+
+export type WhatsappGetBusinessAccountResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: WhatsAppBusinessAccountId;
+    organizationId: string;
+    namespaceId: NamespaceId | null;
+    phoneNumber: string;
+    phoneNumberId: string;
+    displayName: string;
+    whatsappBusinessAccountId: string;
+    verificationStatus: "pending" | "verified" | "failed" | "suspended";
+    credentialStatus: "active" | "reconnect_required";
+    tokenExpiresAt: string | null;
+    isDefault: boolean;
+    webhookUrl: string | null;
+    qualityRating: "green" | "yellow" | "red" | "unknown";
+    messagingLimit: string | null;
+    currentLimit: number;
+    businessPortfolioId: string | null;
+    businessAppConnectedAt: string | null;
+    businessAppDisconnectedAt: string | null;
+    businessAppDisconnectReason:
+      | "partnerRemoved"
+      | "offboarded"
+      | "accountDisconnected"
+      | "businessDowngrade"
+      | "changeNumber"
+      | "companionInactivity"
+      | "primaryInactivity"
+      | "userReRegistered"
+      | null;
+    contactsSyncRequestedAt: string | null;
+    historySyncStatus: "requested" | "importing" | "completed" | "declined" | null;
+    historySyncProgress: number | null;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type WhatsappGetBusinessAccountResponse =
+  WhatsappGetBusinessAccountResponses[keyof WhatsappGetBusinessAccountResponses];
+
+export type WhatsappUpdateBusinessAccountData = {
+  body: {
+    displayName?: string | null | undefined;
+    webhookUrl?: string | null | undefined;
+  };
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/business-accounts/{accountId}";
+};
+
+export type WhatsappUpdateBusinessAccountErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappUpdateBusinessAccountError =
+  WhatsappUpdateBusinessAccountErrors[keyof WhatsappUpdateBusinessAccountErrors];
+
+export type WhatsappUpdateBusinessAccountResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: WhatsAppBusinessAccountId;
+    organizationId: string;
+    namespaceId: NamespaceId | null;
+    phoneNumber: string;
+    phoneNumberId: string;
+    displayName: string;
+    whatsappBusinessAccountId: string;
+    verificationStatus: "pending" | "verified" | "failed" | "suspended";
+    credentialStatus: "active" | "reconnect_required";
+    tokenExpiresAt: string | null;
+    isDefault: boolean;
+    webhookUrl: string | null;
+    qualityRating: "green" | "yellow" | "red" | "unknown";
+    messagingLimit: string | null;
+    currentLimit: number;
+    businessPortfolioId: string | null;
+    businessAppConnectedAt: string | null;
+    businessAppDisconnectedAt: string | null;
+    businessAppDisconnectReason:
+      | "partnerRemoved"
+      | "offboarded"
+      | "accountDisconnected"
+      | "businessDowngrade"
+      | "changeNumber"
+      | "companionInactivity"
+      | "primaryInactivity"
+      | "userReRegistered"
+      | null;
+    contactsSyncRequestedAt: string | null;
+    historySyncStatus: "requested" | "importing" | "completed" | "declined" | null;
+    historySyncProgress: number | null;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type WhatsappUpdateBusinessAccountResponse =
+  WhatsappUpdateBusinessAccountResponses[keyof WhatsappUpdateBusinessAccountResponses];
+
+export type WhatsappSetDefaultBusinessAccountData = {
+  body?: never;
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/business-accounts/{accountId}/set-default";
+};
+
+export type WhatsappSetDefaultBusinessAccountErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappSetDefaultBusinessAccountError =
+  WhatsappSetDefaultBusinessAccountErrors[keyof WhatsappSetDefaultBusinessAccountErrors];
+
+export type WhatsappSetDefaultBusinessAccountResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: WhatsAppBusinessAccountId;
+    organizationId: string;
+    namespaceId: NamespaceId | null;
+    phoneNumber: string;
+    phoneNumberId: string;
+    displayName: string;
+    whatsappBusinessAccountId: string;
+    verificationStatus: "pending" | "verified" | "failed" | "suspended";
+    credentialStatus: "active" | "reconnect_required";
+    tokenExpiresAt: string | null;
+    isDefault: boolean;
+    webhookUrl: string | null;
+    qualityRating: "green" | "yellow" | "red" | "unknown";
+    messagingLimit: string | null;
+    currentLimit: number;
+    businessPortfolioId: string | null;
+    businessAppConnectedAt: string | null;
+    businessAppDisconnectedAt: string | null;
+    businessAppDisconnectReason:
+      | "partnerRemoved"
+      | "offboarded"
+      | "accountDisconnected"
+      | "businessDowngrade"
+      | "changeNumber"
+      | "companionInactivity"
+      | "primaryInactivity"
+      | "userReRegistered"
+      | null;
+    contactsSyncRequestedAt: string | null;
+    historySyncStatus: "requested" | "importing" | "completed" | "declined" | null;
+    historySyncProgress: number | null;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type WhatsappSetDefaultBusinessAccountResponse =
+  WhatsappSetDefaultBusinessAccountResponses[keyof WhatsappSetDefaultBusinessAccountResponses];
+
+export type WhatsappSyncAccountStatusData = {
+  body?: never;
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/business-accounts/{accountId}/sync";
+};
+
+export type WhatsappSyncAccountStatusErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError | CredentialsError
+   */
+  500: InternalError | CredentialsError;
+  /**
+   * WhatsAppChannelError
+   */
+  502: WhatsAppChannelError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappSyncAccountStatusError =
+  WhatsappSyncAccountStatusErrors[keyof WhatsappSyncAccountStatusErrors];
+
+export type WhatsappSyncAccountStatusResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: WhatsAppBusinessAccountId;
+    qualityRating: "green" | "yellow" | "red" | "unknown";
+    messagingLimit: string | null;
+    currentLimit: number;
+    businessPortfolioId: string | null;
+    verificationStatus: "pending" | "verified" | "failed" | "suspended";
+    syncedAt: string;
+  };
+};
+
+export type WhatsappSyncAccountStatusResponse =
+  WhatsappSyncAccountStatusResponses[keyof WhatsappSyncAccountStatusResponses];
+
+export type WhatsappFlowsListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/whatsapp/flows";
+};
+
+export type WhatsappFlowsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsListError = WhatsappFlowsListErrors[keyof WhatsappFlowsListErrors];
+
+export type WhatsappFlowsListResponses = {
+  /**
+   * WhatsAppFlowList
+   */
+  200: WhatsAppFlowList;
+};
+
+export type WhatsappFlowsListResponse =
+  WhatsappFlowsListResponses[keyof WhatsappFlowsListResponses];
+
+export type WhatsappFlowsCreateData = {
+  body: {
+    projectId: TemplateProjectId;
+    handle: string;
+    categories: Array<
+      | "SIGN_UP"
+      | "SIGN_IN"
+      | "APPOINTMENT_BOOKING"
+      | "LEAD_GENERATION"
+      | "CONTACT_US"
+      | "CUSTOMER_SUPPORT"
+      | "SURVEY"
+      | "OTHER"
+    >;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/whatsapp/flows";
+};
+
+export type WhatsappFlowsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsCreateError = WhatsappFlowsCreateErrors[keyof WhatsappFlowsCreateErrors];
+
+export type WhatsappFlowsCreateResponses = {
+  /**
+   * WhatsAppFlow
+   */
+  201: WhatsAppFlow;
+};
+
+export type WhatsappFlowsCreateResponse =
+  WhatsappFlowsCreateResponses[keyof WhatsappFlowsCreateResponses];
+
+export type WhatsappFlowsGetData = {
+  body?: never;
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}";
+};
+
+export type WhatsappFlowsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsGetError = WhatsappFlowsGetErrors[keyof WhatsappFlowsGetErrors];
+
+export type WhatsappFlowsGetResponses = {
+  /**
+   * WhatsAppFlow
+   */
+  200: WhatsAppFlow;
+};
+
+export type WhatsappFlowsGetResponse = WhatsappFlowsGetResponses[keyof WhatsappFlowsGetResponses];
+
+export type WhatsappFlowsListVersionsData = {
+  body?: never;
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}/versions";
+};
+
+export type WhatsappFlowsListVersionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsListVersionsError =
+  WhatsappFlowsListVersionsErrors[keyof WhatsappFlowsListVersionsErrors];
+
+export type WhatsappFlowsListVersionsResponses = {
+  /**
+   * WhatsAppFlowVersionList
+   */
+  200: WhatsAppFlowVersionList;
+};
+
+export type WhatsappFlowsListVersionsResponse =
+  WhatsappFlowsListVersionsResponses[keyof WhatsappFlowsListVersionsResponses];
+
+export type WhatsappFlowsRecordVersionData = {
+  body: {
+    commitSha: string;
+    expectedWorkspaceRevision: string;
+  };
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}/versions";
+};
+
+export type WhatsappFlowsRecordVersionErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsRecordVersionError =
+  WhatsappFlowsRecordVersionErrors[keyof WhatsappFlowsRecordVersionErrors];
+
+export type WhatsappFlowsRecordVersionResponses = {
+  /**
+   * WhatsAppFlowVersion
+   */
+  201: WhatsAppFlowVersion;
+};
+
+export type WhatsappFlowsRecordVersionResponse =
+  WhatsappFlowsRecordVersionResponses[keyof WhatsappFlowsRecordVersionResponses];
+
+export type WhatsappFlowsListRegistrationsData = {
+  body?: never;
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}/registrations";
+};
+
+export type WhatsappFlowsListRegistrationsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsListRegistrationsError =
+  WhatsappFlowsListRegistrationsErrors[keyof WhatsappFlowsListRegistrationsErrors];
+
+export type WhatsappFlowsListRegistrationsResponses = {
+  /**
+   * WhatsAppFlowRegistrationList
+   */
+  200: WhatsAppFlowRegistrationList;
+};
+
+export type WhatsappFlowsListRegistrationsResponse =
+  WhatsappFlowsListRegistrationsResponses[keyof WhatsappFlowsListRegistrationsResponses];
+
+export type WhatsappFlowsRegisterData = {
+  body: {
+    businessAccountId?: WhatsAppBusinessAccountId | undefined;
+  };
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}/registrations";
+};
+
+export type WhatsappFlowsRegisterErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * CredentialsError | InternalError
+   */
+  500: CredentialsError | InternalError;
+  /**
+   * WhatsAppChannelError
+   */
+  502: WhatsAppChannelError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsRegisterError =
+  WhatsappFlowsRegisterErrors[keyof WhatsappFlowsRegisterErrors];
+
+export type WhatsappFlowsRegisterResponses = {
+  /**
+   * WhatsAppFlowRegistration
+   */
+  201: WhatsAppFlowRegistration;
+};
+
+export type WhatsappFlowsRegisterResponse =
+  WhatsappFlowsRegisterResponses[keyof WhatsappFlowsRegisterResponses];
+
+export type WhatsappFlowsRotateEncryptionKeyData = {
+  body: {
+    businessAccountId?: WhatsAppBusinessAccountId | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/whatsapp/flows/encryption-key/rotate";
+};
+
+export type WhatsappFlowsRotateEncryptionKeyErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * CredentialsError | InternalError
+   */
+  500: CredentialsError | InternalError;
+  /**
+   * WhatsAppChannelError
+   */
+  502: WhatsAppChannelError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsRotateEncryptionKeyError =
+  WhatsappFlowsRotateEncryptionKeyErrors[keyof WhatsappFlowsRotateEncryptionKeyErrors];
+
+export type WhatsappFlowsRotateEncryptionKeyResponses = {
+  /**
+   * WhatsAppFlowEncryptionKey
+   */
+  200: WhatsAppFlowEncryptionKey;
+};
+
+export type WhatsappFlowsRotateEncryptionKeyResponse =
+  WhatsappFlowsRotateEncryptionKeyResponses[keyof WhatsappFlowsRotateEncryptionKeyResponses];
+
+export type WhatsappFlowsSetEndpointData = {
+  body: {
+    url: string;
+  };
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}/endpoint";
+};
+
+export type WhatsappFlowsSetEndpointErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * CredentialsError | InternalError
+   */
+  500: CredentialsError | InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsSetEndpointError =
+  WhatsappFlowsSetEndpointErrors[keyof WhatsappFlowsSetEndpointErrors];
+
+export type WhatsappFlowsSetEndpointResponses = {
+  /**
+   * WhatsAppFlowEndpointSettings
+   */
+  200: WhatsAppFlowEndpointSettings;
+};
+
+export type WhatsappFlowsSetEndpointResponse =
+  WhatsappFlowsSetEndpointResponses[keyof WhatsappFlowsSetEndpointResponses];
+
+export type WhatsappFlowsRotateEndpointSecretData = {
+  body?: never;
+  path: {
+    id: WhatsAppFlowId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/flows/{id}/endpoint/rotate-secret";
+};
+
+export type WhatsappFlowsRotateEndpointSecretErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * CredentialsError | InternalError
+   */
+  500: CredentialsError | InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappFlowsRotateEndpointSecretError =
+  WhatsappFlowsRotateEndpointSecretErrors[keyof WhatsappFlowsRotateEndpointSecretErrors];
+
+export type WhatsappFlowsRotateEndpointSecretResponses = {
+  /**
+   * WhatsAppFlowEndpointSettings
+   */
+  200: WhatsAppFlowEndpointSettings;
+};
+
+export type WhatsappFlowsRotateEndpointSecretResponse =
+  WhatsappFlowsRotateEndpointSecretResponses[keyof WhatsappFlowsRotateEndpointSecretResponses];
+
+export type WhatsappSetupLinksListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
+    namespaceId?: NamespaceId | undefined;
+    status?: WhatsAppSetupLinkStatus | undefined;
+  };
+  url: "/v1/whatsapp/setup-links";
+};
+
+export type WhatsappSetupLinksListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappSetupLinksListError =
+  WhatsappSetupLinksListErrors[keyof WhatsappSetupLinksListErrors];
+
+export type WhatsappSetupLinksListResponses = {
+  /**
+   * WhatsAppSetupLinkPage
+   */
+  200: WhatsAppSetupLinkPage;
+};
+
+export type WhatsappSetupLinksListResponse =
+  WhatsappSetupLinksListResponses[keyof WhatsappSetupLinksListResponses];
+
+export type WhatsappSetupLinksCreateData = {
+  body: {
+    namespaceId: NamespaceId;
+    redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
+    metadata?: WhatsAppSetupLinkMetadataWritable | null | undefined;
+    expiresAt?: string | null | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/whatsapp/setup-links";
+};
+
+export type WhatsappSetupLinksCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappSetupLinksCreateError =
+  WhatsappSetupLinksCreateErrors[keyof WhatsappSetupLinksCreateErrors];
+
+export type WhatsappSetupLinksCreateResponses = {
+  /**
+   * CreatedWhatsAppSetupLink
+   */
+  201: CreatedWhatsAppSetupLink;
+};
+
+export type WhatsappSetupLinksCreateResponse =
+  WhatsappSetupLinksCreateResponses[keyof WhatsappSetupLinksCreateResponses];
+
+export type WhatsappSetupLinksGetData = {
+  body?: never;
+  path: {
+    linkId: WhatsAppSetupLinkId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/setup-links/{linkId}";
+};
+
+export type WhatsappSetupLinksGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappSetupLinksGetError =
+  WhatsappSetupLinksGetErrors[keyof WhatsappSetupLinksGetErrors];
+
+export type WhatsappSetupLinksGetResponses = {
+  /**
+   * WhatsAppSetupLink
+   */
+  200: WhatsAppSetupLink;
+};
+
+export type WhatsappSetupLinksGetResponse =
+  WhatsappSetupLinksGetResponses[keyof WhatsappSetupLinksGetResponses];
+
+export type WhatsappSetupLinksRevokeData = {
+  body?: never;
+  path: {
+    linkId: WhatsAppSetupLinkId;
+  };
+  query?: never;
+  url: "/v1/whatsapp/setup-links/{linkId}/revoke";
+};
+
+export type WhatsappSetupLinksRevokeErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * WhatsAppSetupLinkUnavailableError
+   */
+  410: WhatsAppSetupLinkUnavailableError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type WhatsappSetupLinksRevokeError =
+  WhatsappSetupLinksRevokeErrors[keyof WhatsappSetupLinksRevokeErrors];
+
+export type WhatsappSetupLinksRevokeResponses = {
+  /**
+   * WhatsAppSetupLink
+   */
+  200: WhatsAppSetupLink;
+};
+
+export type WhatsappSetupLinksRevokeResponse =
+  WhatsappSetupLinksRevokeResponses[keyof WhatsappSetupLinksRevokeResponses];
+
+export type TemplateRegistrationsListData = {
+  body?: never;
+  path: {
+    id: TemplateId;
+  };
+  query?: never;
+  url: "/v1/templates/{id}/registrations";
+};
+
+export type TemplateRegistrationsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateRegistrationsListError =
+  TemplateRegistrationsListErrors[keyof TemplateRegistrationsListErrors];
+
+export type TemplateRegistrationsListResponses = {
+  /**
+   * TemplateRegistrationList
+   */
+  200: TemplateRegistrationList;
+};
+
+export type TemplateRegistrationsListResponse =
+  TemplateRegistrationsListResponses[keyof TemplateRegistrationsListResponses];
+
+export type TemplateRegistrationsSubmitData = {
+  body: {
+    provider: "whatsapp";
+    businessAccountId?: WhatsAppBusinessAccountId | undefined;
+  };
+  path: {
+    id: TemplateId;
+  };
+  query?: never;
+  url: "/v1/templates/{id}/registrations";
+};
+
+export type TemplateRegistrationsSubmitErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * CredentialsError | InternalError
+   */
+  500: CredentialsError | InternalError;
+  /**
+   * WhatsAppChannelError
+   */
+  502: WhatsAppChannelError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateRegistrationsSubmitError =
+  TemplateRegistrationsSubmitErrors[keyof TemplateRegistrationsSubmitErrors];
+
+export type TemplateRegistrationsSubmitResponses = {
+  /**
+   * TemplateRegistration
+   */
+  201: TemplateRegistration;
+};
+
+export type TemplateRegistrationsSubmitResponse =
+  TemplateRegistrationsSubmitResponses[keyof TemplateRegistrationsSubmitResponses];
+
+export type TemplateRegistrationsGetData = {
+  body?: never;
+  path: {
+    id: TemplateId;
+    registrationId: TemplateRegistrationId;
+  };
+  query?: never;
+  url: "/v1/templates/{id}/registrations/{registrationId}";
+};
+
+export type TemplateRegistrationsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * FlagDisabledError | ForbiddenError
+   */
+  403: FlagDisabledError | ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateRegistrationsGetError =
+  TemplateRegistrationsGetErrors[keyof TemplateRegistrationsGetErrors];
+
+export type TemplateRegistrationsGetResponses = {
+  /**
+   * TemplateRegistration
+   */
+  200: TemplateRegistration;
+};
+
+export type TemplateRegistrationsGetResponse =
+  TemplateRegistrationsGetResponses[keyof TemplateRegistrationsGetResponses];

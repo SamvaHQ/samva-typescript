@@ -14,6 +14,7 @@ import {
   GatewayTimeoutError,
   InternalError,
   JourneyDefinition,
+  JourneyId,
   JourneyName,
   JourneyNodeId,
   JsonObject,
@@ -33,14 +34,6 @@ export const JourneyStatus = /* @__PURE__ */ (() =>
     Schema.Literal("paused"),
     Schema.Literal("archived"),
   ]).annotate({ identifier: "JourneyStatus" }))();
-export type JourneyId = string & EffectBrand.Brand<"JourneyId">;
-export const JourneyId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^jrny_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "JourneyId",
-    }),
-  ).pipe(Schema.brand("JourneyId")))();
 export type JourneyRunStatus = "active" | "paused" | "exited" | "failed";
 export const JourneyRunStatus = /* @__PURE__ */ (() =>
   Schema.Union([

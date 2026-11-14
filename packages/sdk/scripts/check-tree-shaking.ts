@@ -1,5 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 
+import { SDK_EFFECT_MODULES } from "../src/service-map";
+
 const dist = process.argv[2] ?? `${import.meta.dir}/../dist`;
 
 const MAX_HELPER_BYTES = 4_000;
@@ -16,12 +18,6 @@ const EXTRA_GROUPS: Readonly<Record<string, ReadonlyArray<string>>> = {
   email: SEND_GROUPS,
   messages: SEND_GROUPS,
 };
-// Groups whose operations another domain entry exposes; they have no entry of their own.
-const HOSTED_GROUPS = new Set(
-  Object.values(EXTRA_GROUPS)
-    .flat()
-    .filter((group) => !SEND_GROUPS.includes(group)),
-);
 
 const assertWithinCeiling = (label: string, bytes: number, ceiling: number): void => {
   if (bytes > ceiling) throw new Error(`${label} bundle is ${bytes} bytes (limit ${ceiling})`);
@@ -166,12 +162,17 @@ try {
 if (!rejectedLeak) throw new Error("Error-entry isolation accepted a seeded group leak");
 
 const sizes: Array<readonly [string, number]> = [];
-for (const domain of groupPaths.keys()) {
-  if (HOSTED_GROUPS.has(domain)) continue;
+for (const domain of Object.keys(SDK_EFFECT_MODULES)) {
+  const source = readFileSync(`${import.meta.dir}/../src/effect/${domain}.ts`, "utf8");
+  const groups = [...source.matchAll(/import \{ \w+Group \} from "\.\/generated\/([^"]+)"/g)].map(
+    (match) => match[1]!,
+  );
+  if (groups.length === 0 || groups.some((group) => !groupPaths.has(group)))
+    throw new Error(`Missing generated group for ${domain}`);
   const domainBundle = await bundle(
     `export * from ${JSON.stringify(`${dist}/effect/${domain}.js`)}`,
   );
-  const expected = [...new Set([domain, ...(EXTRA_GROUPS[domain] ?? [])])].sort();
+  const expected = [...new Set([...groups, ...(EXTRA_GROUPS[domain] ?? [])])].sort();
   const actual = bundledGroups(domainBundle.code);
   if (actual.join() !== expected.join()) {
     throw new Error(`samva/effect/${domain} bundles groups [${actual}]; expected [${expected}]`);

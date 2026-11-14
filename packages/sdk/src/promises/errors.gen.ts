@@ -9,6 +9,7 @@ export type SamvaApiErrorTag =
   | "BrandAddressRequiredError"
   | "CampaignFooterRequiredError"
   | "ConflictError"
+  | "CredentialsError"
   | "DeliveryUnavailableError"
   | "EmailChannelError"
   | "ExternalServiceError"
@@ -30,7 +31,9 @@ export type SamvaApiErrorTag =
   | "TemplateSourceError"
   | "UnauthorizedError"
   | "ValidationError"
-  | "WhatsAppServiceWindowClosedError";
+  | "WhatsAppChannelError"
+  | "WhatsAppServiceWindowClosedError"
+  | "WhatsAppSetupLinkUnavailableError";
 
 export interface SamvaApiErrorContext {
   readonly request?: Request | undefined;
@@ -167,6 +170,22 @@ export class ConflictError extends SamvaApiError<"ConflictError"> {
 
   constructor(payload: Omit<ConflictErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("ConflictError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
+type CredentialsErrorPayload = {
+  readonly _tag: "CredentialsError";
+  readonly message: string;
+  readonly retryable: boolean;
+};
+
+export class CredentialsError extends SamvaApiError<"CredentialsError"> {
+  readonly _tag = "CredentialsError" as const;
+  declare readonly "retryable": boolean;
+
+  constructor(payload: Omit<CredentialsErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
+    super(messageOf("CredentialsError", payload), context);
     Object.assign(this, payload);
   }
 }
@@ -647,6 +666,31 @@ export class ValidationError extends SamvaApiError<"ValidationError"> {
   }
 }
 
+type WhatsAppChannelErrorPayload = {
+  readonly _tag: "WhatsAppChannelError";
+  readonly message: string;
+  readonly provider: string;
+  readonly providerCode?: string | null;
+  readonly reason: "transport" | "rejected" | "rate_limited" | "auth" | "unsupported";
+  readonly statusCode?: number | null;
+};
+
+export class WhatsAppChannelError extends SamvaApiError<"WhatsAppChannelError"> {
+  readonly _tag = "WhatsAppChannelError" as const;
+  declare readonly "provider": string;
+  declare readonly "providerCode"?: string | null;
+  declare readonly "reason": "transport" | "rejected" | "rate_limited" | "auth" | "unsupported";
+  declare readonly "statusCode"?: number | null;
+
+  constructor(
+    payload: Omit<WhatsAppChannelErrorPayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("WhatsAppChannelError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 type WhatsAppServiceWindowClosedErrorPayload = {
   readonly _tag: "WhatsAppServiceWindowClosedError";
   readonly closedAt: string | null;
@@ -666,12 +710,32 @@ export class WhatsAppServiceWindowClosedError extends SamvaApiError<"WhatsAppSer
   }
 }
 
+type WhatsAppSetupLinkUnavailableErrorPayload = {
+  readonly _tag: "WhatsAppSetupLinkUnavailableError";
+  readonly message: string;
+  readonly reason: "completed" | "revoked" | "expired";
+};
+
+export class WhatsAppSetupLinkUnavailableError extends SamvaApiError<"WhatsAppSetupLinkUnavailableError"> {
+  readonly _tag = "WhatsAppSetupLinkUnavailableError" as const;
+  declare readonly "reason": "completed" | "revoked" | "expired";
+
+  constructor(
+    payload: Omit<WhatsAppSetupLinkUnavailableErrorPayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("WhatsAppSetupLinkUnavailableError", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 export type AnySamvaApiError =
   | AnalyticsQueryError
   | BillingProviderError
   | BrandAddressRequiredError
   | CampaignFooterRequiredError
   | ConflictError
+  | CredentialsError
   | DeliveryUnavailableError
   | EmailChannelError
   | ExternalServiceError
@@ -693,7 +757,9 @@ export type AnySamvaApiError =
   | TemplateSourceError
   | UnauthorizedError
   | ValidationError
-  | WhatsAppServiceWindowClosedError;
+  | WhatsAppChannelError
+  | WhatsAppServiceWindowClosedError
+  | WhatsAppSetupLinkUnavailableError;
 
 type ErrorConstructor = new (payload: never, context?: SamvaApiErrorContext) => AnySamvaApiError;
 
@@ -703,6 +769,7 @@ const constructors = {
   BrandAddressRequiredError: BrandAddressRequiredError,
   CampaignFooterRequiredError: CampaignFooterRequiredError,
   ConflictError: ConflictError,
+  CredentialsError: CredentialsError,
   DeliveryUnavailableError: DeliveryUnavailableError,
   EmailChannelError: EmailChannelError,
   ExternalServiceError: ExternalServiceError,
@@ -724,7 +791,9 @@ const constructors = {
   TemplateSourceError: TemplateSourceError,
   UnauthorizedError: UnauthorizedError,
   ValidationError: ValidationError,
+  WhatsAppChannelError: WhatsAppChannelError,
   WhatsAppServiceWindowClosedError: WhatsAppServiceWindowClosedError,
+  WhatsAppSetupLinkUnavailableError: WhatsAppSetupLinkUnavailableError,
 } as const satisfies Record<SamvaApiErrorTag, ErrorConstructor>;
 
 type RuntimeSchema = {
@@ -791,6 +860,24 @@ const payloadSchemas = {
     "x-category": ["conflict"],
     "x-retryable": false,
   },
+  CredentialsError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["CredentialsError"] },
+      message: { type: "string" },
+      retryable: { type: "boolean" },
+    },
+    required: ["_tag", "message", "retryable"],
+    additionalProperties: false,
+    "x-retryable": false,
+    "x-category-rules": {
+      field: "retryable",
+      cases: {
+        true: { categories: ["transient"], retryable: true },
+        false: { categories: [], retryable: false },
+      },
+    },
+  },
   DeliveryUnavailableError: {
     type: "object",
     properties: {
@@ -813,6 +900,16 @@ const payloadSchemas = {
     },
     required: ["_tag", "reason", "message"],
     additionalProperties: false,
+    "x-retryable": false,
+    "x-category-rules": {
+      field: "reason",
+      cases: {
+        transport: { categories: ["transient"], retryable: true },
+        rejected: { categories: ["validation"], retryable: false },
+        rate_limited: { categories: ["throttling", "transient"], retryable: true },
+        auth: { categories: ["auth"], retryable: false },
+      },
+    },
   },
   ExternalServiceError: {
     type: "object",
@@ -1950,6 +2047,33 @@ const payloadSchemas = {
     "x-category": ["validation"],
     "x-retryable": false,
   },
+  WhatsAppChannelError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["WhatsAppChannelError"] },
+      reason: {
+        type: "string",
+        enum: ["transport", "rejected", "rate_limited", "auth", "unsupported"],
+      },
+      message: { type: "string" },
+      provider: { type: "string" },
+      providerCode: { anyOf: [{ type: "string" }, { type: "null" }] },
+      statusCode: { anyOf: [{ type: "number" }, { type: "null" }] },
+    },
+    required: ["_tag", "reason", "message", "provider"],
+    additionalProperties: false,
+    "x-retryable": false,
+    "x-category-rules": {
+      field: "reason",
+      cases: {
+        transport: { categories: ["transient"], retryable: true },
+        rejected: { categories: ["validation"], retryable: false },
+        rate_limited: { categories: ["throttling", "transient"], retryable: true },
+        auth: { categories: ["auth"], retryable: false },
+        unsupported: { categories: [], retryable: false },
+      },
+    },
+  },
   WhatsAppServiceWindowClosedError: {
     type: "object",
     properties: {
@@ -1958,6 +2082,16 @@ const payloadSchemas = {
       closedAt: { anyOf: [{ type: "string" }, { type: "null" }] },
     },
     required: ["_tag", "message", "closedAt"],
+    additionalProperties: false,
+  },
+  WhatsAppSetupLinkUnavailableError: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["WhatsAppSetupLinkUnavailableError"] },
+      reason: { type: "string", enum: ["completed", "revoked", "expired"] },
+      message: { type: "string" },
+    },
+    required: ["_tag", "reason", "message"],
     additionalProperties: false,
   },
 } as const satisfies Record<SamvaApiErrorTag, RuntimeSchema>;

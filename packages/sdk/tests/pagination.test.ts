@@ -3,6 +3,7 @@ import { Duration, Effect, Fiber, Layer, Schema, Stream } from "effect";
 import { FetchHttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
 
+import { WhatsApp, WhatsAppFlows, WhatsAppSetupLinks, TemplateRegistrations } from "../src/effect";
 import {
   Agents,
   Analytics,
@@ -40,6 +41,7 @@ import {
 } from "../src/effect";
 import * as Client from "../src/effect/client";
 import * as Api from "../src/effect/generated";
+import { SamvaOperations } from "../src/effect/generated-metadata";
 import {
   type CursorPageEnvelope,
   streamCursorItems,
@@ -161,6 +163,10 @@ const pageOf = (cursor: string | undefined): number =>
 
 const effectModules = {
   agents: Agents,
+  whatsapp: WhatsApp,
+  whatsappFlows: WhatsAppFlows,
+  whatsappSetupLinks: WhatsAppSetupLinks,
+  templateRegistrations: TemplateRegistrations,
   analytics: Analytics,
   apiKeys: ApiKeys,
   attachments: Attachments,
@@ -198,59 +204,22 @@ const effectModules = {
 describe("facade pagination wiring", () => {
   it.effect("every uniform-envelope list op exposes .pages()/.items(); non-list ops do not", () =>
     Effect.sync(() => {
-      const listMethods: ReadonlyArray<readonly [keyof typeof SDK_SERVICE_OPERATIONS, string]> = [
-        ["messages", "list"],
-        ["scheduledMessages", "list"],
-        ["campaigns", "list"],
-        ["contacts", "list"],
-        ["contactGroups", "list"],
-        ["contactGroups", "getMembers"],
-        ["topics", "listSubscriptions"],
-        ["operations", "list"],
-        ["apiKeys", "list"],
-        ["apiKeys", "getActivity"],
-        ["webhooks", "getLogs"],
-        ["campaigns", "listRuns"],
-        ["email", "listSuppressions"],
-        ["conversations", "list"],
-        ["conversations", "listMessages"],
-        ["templates", "list"],
-        ["webhooks", "list"],
-        ["email", "listDomains"],
-        ["email", "listSenders"],
-      ];
-      for (const [service, method] of listMethods) {
-        const target = (effectModules[service] as Record<string, unknown>)[method] as Record<
+      const metadata: Readonly<Record<string, { readonly paginated: boolean }>> = SamvaOperations;
+      for (const [service, operations] of Object.entries(SDK_SERVICE_OPERATIONS)) {
+        const domain = effectModules[service as keyof typeof effectModules] as Record<
           string,
           unknown
         >;
-        expect(typeof target.pages, `${service}.${method}.pages`).toBe("function");
-        expect(typeof target.items, `${service}.${method}.items`).toBe("function");
-      }
-
-      // A non-list read (envelope-less) carries no pagination companions, and neither does a
-      // list bounded by design, which answers every item at once.
-      expect("pages" in Messages.get).toBe(false);
-      expect("items" in Messages.get).toBe(false);
-      expect("pages" in CustomFields.list).toBe(false);
-      expect("pages" in Topics.list).toBe(false);
-
-      // Every op the runtime marks paginated matches the service-map list set.
-      const paginatedServices = new Set<string>();
-      const services = Object.keys(SDK_SERVICE_OPERATIONS) as ReadonlyArray<
-        keyof typeof SDK_SERVICE_OPERATIONS
-      >;
-      for (const service of services) {
-        for (const method of Object.keys(SDK_SERVICE_OPERATIONS[service])) {
-          const target = (effectModules[service] as Record<string, unknown>)[method] as
-            | Record<string, unknown>
-            | undefined;
-          if (target && typeof target.items === "function") paginatedServices.add(service);
+        for (const [method, id] of Object.entries(operations)) {
+          const target = domain[method] as Record<string, unknown>;
+          expect(typeof target.pages === "function", `${service}.${method}.pages`).toBe(
+            metadata[id]?.paginated,
+          );
+          expect(typeof target.items === "function", `${service}.${method}.items`).toBe(
+            metadata[id]?.paginated,
+          );
         }
       }
-      // Sanity: the list-bearing services are all represented.
-      expect(paginatedServices.has("messages")).toBe(true);
-      expect(paginatedServices.has("email")).toBe(true);
     }),
   );
 

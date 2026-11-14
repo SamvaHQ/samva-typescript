@@ -31,10 +31,14 @@ import { OrganizationsGroup } from "./organizations";
 import { PoliciesGroup } from "./policies";
 import { ScheduledMessagesGroup } from "./scheduled-messages";
 import { SubscriptionsGroup } from "./subscriptions";
+import { TemplateRegistrationsGroup } from "./template-registrations";
 import { TemplatesGroup } from "./templates";
 import { TopicFormsGroup } from "./topic-forms";
 import { TopicsGroup } from "./topics";
 import { WebhooksGroup } from "./webhooks";
+import { WhatsAppGroup } from "./whats-app";
+import { WhatsAppFlowsGroup } from "./whats-app-flows";
+import { WhatsAppSetupLinksGroup } from "./whats-app-setup-links";
 import { WhoamiGroup } from "./whoami";
 
 export * from "./shared";
@@ -99,11 +103,19 @@ export * from "./subscriptions";
 
 export * from "./templates";
 
+export * from "./template-registrations";
+
 export * from "./topics";
 
 export * from "./topic-forms";
 
 export * from "./webhooks";
+
+export * from "./whats-app";
+
+export * from "./whats-app-flows";
+
+export * from "./whats-app-setup-links";
 
 export * from "./whoami";
 
@@ -146,8 +158,12 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     PoliciesGroup,
     SubscriptionsGroup,
     TemplatesGroup,
+    TemplateRegistrationsGroup,
     TopicsGroup,
     TopicFormsGroup,
     WebhooksGroup,
+    WhatsAppGroup,
+    WhatsAppFlowsGroup,
+    WhatsAppSetupLinksGroup,
     WhoamiGroup,
   ) {}
