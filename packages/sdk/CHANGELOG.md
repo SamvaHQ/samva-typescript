@@ -1,3 +1,11 @@
+## samva@0.45.1
+
+### Analytics reports failed email per day and sends by weekday
+
+`analytics.getStats` adds `emailFailed` to each volume bucket: the bucket's emails that bounced or
+failed, a subset of `email`. `analytics.getHourlyDistribution` adds `weekdays` to each hour: its
+`count` split by organization-local weekday, seven entries starting Monday.
+
 ## samva@0.45.0
 
 ### Manage WhatsApp accounts, flows, setup links, and template registrations

@@ -21602,6 +21602,10 @@ export type AnalyticsGetStatsResponses = {
       email: number;
       whatsapp: number;
       sms: number;
+      /**
+       * Emails in this bucket that bounced or failed. A subset of `email`.
+       */
+      emailFailed: number;
     }>;
   };
 };
@@ -21792,6 +21796,10 @@ export type AnalyticsGetHourlyDistributionResponses = {
   200: Array<{
     hour: string;
     count: number;
+    /**
+     * `count` split by organization-local weekday: seven entries, Monday first, summing to `count`.
+     */
+    weekdays: Array<number>;
   }>;
 };
 

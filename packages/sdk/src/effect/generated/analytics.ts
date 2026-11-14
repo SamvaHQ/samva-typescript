@@ -300,6 +300,7 @@ export const AnalyticsGetHourlyDistributionQuery = /* @__PURE__ */ (() =>
 export type AnalyticsGetHourlyDistribution200 = ReadonlyArray<{
   readonly hour: string;
   readonly count: number;
+  readonly weekdays: ReadonlyArray<number>;
 }>;
 export const AnalyticsGetHourlyDistribution200 = /* @__PURE__ */ (() =>
   Schema.Array(
@@ -316,6 +317,22 @@ export const AnalyticsGetHourlyDistribution200 = /* @__PURE__ */ (() =>
             expected: "a value less than or equal to 9007199254740991",
           }),
         ),
+      weekdays: Schema.Array(
+        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+      ).annotate({
+        description:
+          "`count` split by organization-local weekday: seven entries, Monday first, summing to `count`.",
+      }),
     }),
   ))();
 export type AnalyticsGetHourlyDistribution400 = AnalyticsQueryError | MalformedRequestError;
@@ -356,6 +373,7 @@ export type AnalyticsGetStats200 = {
     readonly email: number;
     readonly whatsapp: number;
     readonly sms: number;
+    readonly emailFailed: number;
   }>;
 };
 export const AnalyticsGetStats200 = /* @__PURE__ */ (() =>
@@ -386,6 +404,20 @@ export const AnalyticsGetStats200 = /* @__PURE__ */ (() =>
             }),
           ),
         sms: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(0).annotate({
+              expected: "a value greater than or equal to 0",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+        emailFailed: Schema.Finite.annotate({
+          description: "Emails in this bucket that bounced or failed. A subset of `email`.",
+        })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
           .check(
             Schema.isGreaterThanOrEqualTo(0).annotate({
               expected: "a value greater than or equal to 0",
