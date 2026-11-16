@@ -24,7 +24,7 @@ export const facadeExpressions: Readonly<Record<string, string>> = {
   messagesSend: "sendMessage",
   emailAddSender: "addEmailSender",
   contactEventsListEvents:
-    '/* @__PURE__ */ forGroup(ContactEventsGroup)("contactEventsListEvents")',
+    '/* @__PURE__ */ forGroup(ContactEventsGroup, contactsOperations)("contactEventsListEvents")',
 };
 
 export const callKindOverrides: Readonly<Record<string, string>> = {

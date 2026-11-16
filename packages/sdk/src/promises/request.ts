@@ -93,7 +93,7 @@ export async function requestWithPolicy<Result>(
       options?.idempotencyKey ?? policy?.idempotency?.(operation) ?? crypto.randomUUID();
   }
   const maxRetries = validateRetries(options?.maxRetries ?? policy?.maxRetries ?? 3);
-  const safe = isRetrySafe(operation, input);
+  const safe = isRetrySafe(metadata, input);
   // oxlint-disable no-await-in-loop -- Retry attempts are sequential and reuse the logical call's key.
   for (let retry = 0; ; retry++) {
     let failure: unknown;

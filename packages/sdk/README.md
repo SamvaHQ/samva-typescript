@@ -363,7 +363,7 @@ Promise lists expose lazy async iterators: `samva.contacts.list.pages(params)` y
 
 Effect pagination uses Streams:
 
-Every list answers `{ items, nextCursor }`: pass `nextCursor` back as `cursor` for the next page, and stop when it is null. Every list operation that pages carries two `Stream` companions, so you traverse pages without hand-rolling a cursor loop:
+Cursor-paginated lists answer `{ items, nextCursor }`: pass `nextCursor` back as `cursor` for the next page, and stop when it is null. Every list operation that pages carries two `Stream` companions, so you traverse pages without hand-rolling a cursor loop:
 
 - **`list.items(input?)`**: a `Stream` of individual items across all pages.
 - **`list.pages(input?)`**: a `Stream` of raw page envelopes.

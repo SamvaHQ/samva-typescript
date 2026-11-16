@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.46.0",
+  "version": "0.46.1",
   "description": "TypeScript SDK for the Samva email and WhatsApp API",
   "keywords": [
     "api-client",
@@ -258,7 +258,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "slot --all 'NODE_OPTIONS=\"$NODE_OPTIONS --max-old-space-size=8192\" tsdown && tsc --project tsconfig.build.json \"$@\"'",
+    "build": "slot --all 'NODE_OPTIONS=\"$NODE_OPTIONS --max-old-space-size=8192\" tsdown && tsc --project tsconfig.build.json \"$@\" && bun run scripts/rewrite-declaration-specifiers.ts'",
     "prepack": "bun run build",
     "generate:openapi": "bun run scripts/openapi.ts",
     "generate:promises": "bun run codegen/generate-promises.ts && bun run scripts/generate-promise-errors.ts && oxfmt --config=../../oxfmt.config.ts src/client src/promises/errors.gen.ts src/promises/types.gen.ts",
@@ -273,7 +273,7 @@
     "typecheck": "slot 'effect-tsgo tsrs --noEmit && effect-tsgo tsrs --noEmit -p codegen/tsconfig.json && effect-tsgo tsrs --noEmit -p tests/tsconfig.json && effect-tsgo tsrs --noEmit --project tests/parity/tsconfig.json \"$@\"'"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.46.0"
+    "@samva/webhooks": "workspace:0.46.1"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",

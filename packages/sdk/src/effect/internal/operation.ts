@@ -2,8 +2,7 @@ import { type Brand, Effect, Predicate, Redacted, Stream } from "effect";
 import type { HttpApiGroup } from "effect/http-api";
 
 import { isRetrySafe } from "../../request-policy";
-import { SDK_OPERATION_CALLS } from "../../service-map";
-import { SamvaOperations } from "../generated-metadata";
+import type { SDK_OPERATION_CALLS } from "../../service-map";
 import { type CursorPageEnvelope, streamCursorItems, streamCursorPages } from "../pagination";
 import { generateIdempotencyKey, withRetry } from "../retry";
 import {
@@ -58,6 +57,21 @@ export interface OperationOptions {
   readonly idempotencyKey?: string | undefined;
 }
 
+/**
+ * What one operation wrapper reads at runtime. `codegen/generate-registry.ts` emits a table of these
+ * beside each domain, so a focused entry carries its own operations' descriptors and not the API's.
+ */
+export interface OperationDescriptor {
+  readonly group: string;
+  readonly method: string;
+  readonly idempotent: boolean;
+  readonly idempotentWhen?: { readonly field: string; readonly equals: string } | undefined;
+  readonly paginated: boolean;
+  readonly call: { readonly kind: string; readonly paths?: ReadonlyArray<string> | undefined };
+}
+
+export type OperationDescriptors = Readonly<Record<string, OperationDescriptor>>;
+
 export type OperationResult<Name extends SdkOperation> = Effect.Effect<
   OperationSuccess<Name>,
   Effect.Error<MethodReturn<FlatRaw[Name]>>,
@@ -97,8 +111,8 @@ type WithPagination<Method> = Method extends (
     : Method
   : Method;
 
-const traceName = (operationName: SdkOperation): string => {
-  const moduleName = SamvaOperations[operationName].group
+const traceName = (descriptor: OperationDescriptor, operationName: SdkOperation): string => {
+  const moduleName = descriptor.group
     .split(" ")
     .map((word) => word[0]!.toUpperCase() + word.slice(1).toLowerCase())
     .join("");
@@ -122,25 +136,26 @@ export const stripUndefined = <Value>(input: Value): Value => {
 type PathDescriptor = { readonly kind: string; readonly paths: ReadonlyArray<string> };
 
 const adapt = (
+  descriptor: OperationDescriptor,
   operationName: SdkOperation,
   rawCall: RawCall,
   input: unknown,
   idempotencyKey: string | undefined,
 ): Effect.Effect<unknown, unknown> => {
-  const descriptor = SDK_OPERATION_CALLS[operationName];
+  const callDescriptor = descriptor.call;
   const call = (request: Record<string, unknown> = {}) => {
     const operation = rawCall({
       ...request,
       ...(idempotencyKey === undefined ? {} : { headers: { "idempotency-key": idempotencyKey } }),
     });
-    return isRetrySafe(operationName, input) ? withRetry(operation) : operation;
+    return isRetrySafe(descriptor, input) ? withRetry(operation) : operation;
   };
 
-  if (descriptor.kind === "none") return call();
-  if (descriptor.kind === "params") return call({ query: stripUndefined(input ?? {}) });
-  if (descriptor.kind === "payload") return call({ payload: stripUndefined(input ?? {}) });
+  if (callDescriptor.kind === "none") return call();
+  if (callDescriptor.kind === "params") return call({ query: stripUndefined(input ?? {}) });
+  if (callDescriptor.kind === "payload") return call({ payload: stripUndefined(input ?? {}) });
 
-  const pathDescriptor = descriptor as PathDescriptor;
+  const pathDescriptor = callDescriptor as PathDescriptor;
   const inputRecord = (input ?? {}) as Readonly<Record<string, unknown>>;
   const params: Record<string, unknown> = {};
   for (const path of pathDescriptor.paths) {
@@ -168,16 +183,20 @@ const isCursorPageEnvelope = (value: unknown): value is CursorPageEnvelope<unkno
   (value.nextCursor === null || typeof value.nextCursor === "string");
 
 /**
- * Operation factory for one API group. Each domain module binds its own group, so importing it
- * loads that group's schemas and nothing else.
+ * Operation factory for one API group. Each domain module binds its own group and descriptor table,
+ * so importing it loads that group's schemas and metadata and nothing else.
  */
 export const forGroup =
-  (group: HttpApiGroup.Constraint) =>
+  (group: HttpApiGroup.Constraint, descriptors: OperationDescriptors) =>
   <Name extends SdkOperation>(operationName: Name): WithPagination<OperationFunction<Name>> => {
-    if (SamvaOperations[operationName].group !== group.identifier) {
+    const descriptor = descriptors[operationName];
+    if (descriptor === undefined) {
+      throw new Error(`${operationName} has no descriptor in this entry`);
+    }
+    if (descriptor.group !== group.identifier) {
       throw new Error(`${operationName} is not an endpoint of ${group.identifier}`);
     }
-    return make(group, operationName);
+    return make(group, operationName, descriptor);
   };
 
 /** Call one endpoint with an already-shaped request, outside the direct-operation adapter. */
@@ -193,23 +212,24 @@ export const callEndpoint = (
 const make = <Name extends SdkOperation>(
   group: HttpApiGroup.Constraint,
   operationName: Name,
+  descriptor: OperationDescriptor,
 ): WithPagination<OperationFunction<Name>> => {
-  const call = Effect.fn(traceName(operationName))(function* (
+  const call = Effect.fn(traceName(descriptor, operationName))(function* (
     input?: unknown,
     options?: OperationOptions,
   ) {
     const client = yield* Service;
     const rawCall = yield* client.endpoint(group, operationName);
-    const idempotencyKey = SamvaOperations[operationName].idempotent
+    const idempotencyKey = descriptor.idempotent
       ? (options?.idempotencyKey ??
         client.idempotency?.(operationName) ??
         (yield* generateIdempotencyKey))
       : undefined;
-    return yield* adapt(operationName, rawCall, input, idempotencyKey);
+    return yield* adapt(descriptor, operationName, rawCall, input, idempotencyKey);
   });
   const operation = call as OperationFunction<Name>;
 
-  if (SamvaOperations[operationName].paginated) {
+  if (descriptor.paginated) {
     const list = (input: unknown): Effect.Effect<CursorPageEnvelope<unknown>, unknown, Service> =>
       Effect.filterOrElse(call(input), isCursorPageEnvelope, () =>
         Effect.die(new Error(`${operationName} did not return a cursor page envelope`)),

@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 
+import { SamvaOperations } from "../src/effect/generated-metadata";
 import { SDK_EFFECT_MODULES } from "../src/service-map";
 
 const dist = process.argv[2] ?? `${import.meta.dir}/../dist`;
@@ -123,10 +124,54 @@ const assertGroups = (label: string, code: string, expected: ReadonlyArray<strin
   }
 };
 
+// Operation metadata is per domain. A focused entry carries its own operations' descriptors, so an
+// operation id from a group the bundle does not contain means a shared table retained it. A bundled
+// group's own module repeats its ids as endpoint names, which is why the check allows those.
+const groupTags = new Map<string, string>();
+for (const file of readdirSync(generatedDir)) {
+  if (file === "index.ts" || file === "shared.ts") continue;
+  const tag = /HttpApiGroup\.make\(\s*"([^"]+)"/.exec(
+    readFileSync(`${generatedDir}/${file}`, "utf8"),
+  )?.[1];
+  if (tag === undefined) throw new Error(`No group tag found in generated/${file}`);
+  groupTags.set(file.replace(/\.ts$/, ""), tag);
+}
+
+const operationGroups = new Map(
+  Object.entries(SamvaOperations).map(([id, metadata]) => [id, metadata.group] as const),
+);
+
+const foreignOperationIds = (
+  code: string,
+  groups: ReadonlyArray<string>,
+): ReadonlyArray<string> => {
+  const tags = new Set(groups.map((group) => groupTags.get(group)));
+  // Minification removes quotes from identifier-shaped object keys. Match whole tokens so a
+  // global metadata table is detected even when no operation wrapper keeps a quoted name.
+  const identifiers = new Set(code.match(/[A-Za-z_$][\w$]*/g) ?? []);
+  return [...operationGroups]
+    .filter(([id, tag]) => !tags.has(tag) && identifiers.has(id))
+    .map(([id]) => id);
+};
+
+const assertNoForeignMetadata = (
+  label: string,
+  code: string,
+  groups: ReadonlyArray<string>,
+): void => {
+  const foreign = foreignOperationIds(code, groups);
+  if (foreign.length > 0) {
+    throw new Error(`${label} retains metadata for [${foreign.join(", ")}]`);
+  }
+};
+
 assertGroups("Email.send", email.code, SEND_GROUPS);
+assertNoForeignMetadata("Email.send", email.code, SEND_GROUPS);
 const contactsPath = `${dist}/effect/contacts.js`;
 const findOrCreate = await bundle(`export { findOrCreate } from ${JSON.stringify(contactsPath)}`);
 assertGroups("Contacts.findOrCreate", findOrCreate.code, ["contacts"]);
+// Contacts exposes contact events in the same facade, so its descriptor table owns both groups.
+assertNoForeignMetadata("Contacts.findOrCreate", findOrCreate.code, ["contacts", "contact-events"]);
 const seededContactEvents = await bundle(
   `export { findOrCreate, listEvents } from ${JSON.stringify(contactsPath)}`,
 );
@@ -144,6 +189,7 @@ for (const [label, result, ceiling] of [
   assertSeededBreach(label, ceiling);
   assertWithinCeiling(label, result.bytes, ceiling);
   assertGroups(label, result.code, []);
+  assertNoForeignMetadata(label, result.code, []);
   process.stdout.write(`${label}: ${result.bytes} bytes\n`);
 }
 
@@ -161,7 +207,22 @@ try {
 }
 if (!rejectedLeak) throw new Error("Error-entry isolation accepted a seeded group leak");
 
+const seededMetadataLeak = await bundle(
+  `export * from ${JSON.stringify(`${dist}/effect/feedback.js`)}; export * as M from ${JSON.stringify(mailboxesPath)}`,
+);
+if (foreignOperationIds(seededMetadataLeak.code, ["feedback"]).length === 0) {
+  throw new Error("Metadata isolation missed a seeded Mailboxes import");
+}
+
+const seededGlobalMetadata = await bundle(
+  `export * from ${JSON.stringify(`${dist}/effect/feedback.js`)}; export { SamvaOperations as metadata } from ${JSON.stringify(`${dist}/effect/generated-metadata.js`)}`,
+);
+if (foreignOperationIds(seededGlobalMetadata.code, ["feedback"]).length === 0) {
+  throw new Error("Metadata isolation missed a seeded global operation table");
+}
+
 const sizes: Array<readonly [string, number]> = [];
+const domainBundles = new Map<string, string>();
 for (const domain of Object.keys(SDK_EFFECT_MODULES)) {
   const source = readFileSync(`${import.meta.dir}/../src/effect/${domain}.ts`, "utf8");
   const groups = [...source.matchAll(/import \{ \w+Group \} from "\.\/generated\/([^"]+)"/g)].map(
@@ -177,12 +238,25 @@ for (const domain of Object.keys(SDK_EFFECT_MODULES)) {
   if (actual.join() !== expected.join()) {
     throw new Error(`samva/effect/${domain} bundles groups [${actual}]; expected [${expected}]`);
   }
+  assertNoForeignMetadata(`samva/effect/${domain}`, domainBundle.code, expected);
+  domainBundles.set(domain, domainBundle.code);
   sizes.push([domain, domainBundle.bytes]);
 }
 
 assertSeededBreach("Feedback domain", MAX_FEEDBACK_BYTES);
 const feedbackBytes = sizes.find(([domain]) => domain === "feedback")![1];
 assertWithinCeiling("Feedback domain", feedbackBytes, MAX_FEEDBACK_BYTES);
+
+// The budget alone cannot tell a real split from a partial one: a bundle that keeps the whole
+// metadata table still fits once one lookup moves. Name a foreign operation explicitly.
+for (const domain of ["feedback", "contacts"] as const) {
+  const identifiers = new Set(domainBundles.get(domain)!.match(/[A-Za-z_$][\w$]*/g) ?? []);
+  for (const foreign of ["mailboxesList", "campaignsScheduleRun"]) {
+    if (identifiers.has(foreign)) {
+      throw new Error(`samva/effect/${domain} retains the foreign operation ${foreign}`);
+    }
+  }
+}
 
 process.stdout.write(`Tree-shaken category helper: ${helper.bytes} bytes\n`);
 process.stdout.write(`Tree-shaken Email domain: ${email.bytes} bytes\n`);

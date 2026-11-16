@@ -1,6 +1,9 @@
-import { mkdtemp, mkdir, readFile, readdir, rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+
+import { declarationSpecifiers, declarationTarget } from "./declaration-specifiers";
 
 interface Artifact {
   readonly path: string;
@@ -41,20 +44,12 @@ const transpiler = new Bun.Transpiler({ loader: "js" });
 const importSpecifiers = (source: string): ReadonlyArray<string> =>
   transpiler.scanImports(source).map((item) => item.path);
 
-const declarationImportSpecifiers = (source: string): ReadonlyArray<string> => {
-  const specifiers: string[] = [];
-  for (const line of source.split(/\r?\n/)) {
-    const declaration = line.match(/^\s*(?:import|export)\b.*?\bfrom\s*["']([^"']+)["']/);
-    const sideEffect = line.match(/^\s*import\s*["']([^"']+)["']/);
-    const reference = line.match(/^\s*\/\/\/\s*<reference\s+(?:path|types|lib)=["']([^"']+)["']/);
-    const specifier = declaration?.[1] ?? sideEffect?.[1] ?? reference?.[1];
-    if (specifier !== undefined) specifiers.push(specifier);
-  }
-  for (const match of source.matchAll(/(?<!["'\w])import\s*\(\s*["']([^"']+)["']/g)) {
-    specifiers.push(match[1]!);
-  }
-  return specifiers;
-};
+// Triple-slash directives are not module specifiers, so the emission rewriter
+// leaves them alone; the boundary gate still has to see the package they name.
+const declarationReferenceSpecifiers = (source: string): ReadonlyArray<string> =>
+  [...source.matchAll(/^\s*\/\/\/\s*<reference\s+(?:path|types|lib)=["']([^"']+)["']/gm)].map(
+    (match) => match[1]!,
+  );
 
 const isAllowedBareImport = (specifier: string): boolean =>
   specifier === "samva" ||
@@ -76,12 +71,25 @@ const violationsOf = (
   const violations: Array<string> = [];
   for (const artifact of artifacts) {
     if (artifact.path.endsWith(".js") || artifact.path.endsWith(".d.ts")) {
+      const declared = artifact.path.endsWith(".d.ts")
+        ? declarationSpecifiers(artifact.source)
+        : [];
       const specifiers = artifact.path.endsWith(".d.ts")
-        ? declarationImportSpecifiers(artifact.source)
+        ? [
+            ...declared.map(({ specifier }) => specifier),
+            ...declarationReferenceSpecifiers(artifact.source),
+          ]
         : importSpecifiers(artifact.source);
       for (const specifier of specifiers) {
         if (!specifier.startsWith(".") && !isAllowedBareImport(specifier)) {
           violations.push(`${artifact.path}: bare import ${specifier}`);
+        }
+      }
+      for (const { specifier } of declared) {
+        if (specifier.startsWith(".") && !/\.(?:js|json)$/.test(specifier)) {
+          violations.push(
+            `${artifact.path}: declaration specifier without an extension ${specifier}`,
+          );
         }
       }
       if (/@samva\/(?!webhooks(?:\/|["']))/.test(artifact.source)) {
@@ -124,6 +132,35 @@ const assertSeededViolationRejected = (label: string, artifact: Artifact): void 
   if (!rejected) throw new Error(`Tarball boundary gate accepted seeded ${label} violation`);
 };
 
+const assertSeededArtifactClean = (label: string, artifact: Artifact): void => {
+  const violations = violationsOf("/package", [artifact]);
+  if (violations.length > 0) {
+    throw new Error(
+      `Tarball boundary gate flagged clean seeded ${label}: ${violations.join(", ")}`,
+    );
+  }
+};
+
+const assertDeclarationTargetsResolve = (
+  packageRoot: string,
+  artifacts: ReadonlyArray<Artifact>,
+): void => {
+  const unresolved: Array<string> = [];
+  for (const artifact of artifacts) {
+    if (!artifact.path.endsWith(".d.ts")) continue;
+    for (const { specifier } of declarationSpecifiers(artifact.source, artifact.path)) {
+      if (!specifier.startsWith(".")) continue;
+      const target = resolve(dirname(artifact.path), declarationTarget(specifier));
+      if (!isContained(packageRoot, target) || !existsSync(target)) {
+        unresolved.push(`${artifact.path}: ${specifier}`);
+      }
+    }
+  }
+  if (unresolved.length > 0) {
+    throw new Error(`Packed declarations reference missing targets:\n${unresolved.join("\n")}`);
+  }
+};
+
 // Prove every published artifact kind bites before trusting the real archive.
 assertSeededViolationRejected("JavaScript", {
   path: "/package/dist/effect.js",
@@ -132,6 +169,26 @@ assertSeededViolationRejected("JavaScript", {
 assertSeededViolationRejected("declaration", {
   path: "/package/dist/effect.d.ts",
   source: 'import type { Email } from "@samva/private"',
+});
+assertSeededViolationRejected("extensionless declaration", {
+  path: "/package/dist/effect.d.ts",
+  source: 'export * from "./promises/index"',
+});
+assertSeededViolationRejected("extensionless import() declaration", {
+  path: "/package/dist/effect.d.ts",
+  source: 'export declare const send: typeof import("./promises/index")',
+});
+assertSeededViolationRejected("reference types directive", {
+  path: "/package/dist/effect.d.ts",
+  source: '/// <reference types="unallowed-package" />',
+});
+assertSeededViolationRejected("reference lib directive", {
+  path: "/package/dist/effect.d.ts",
+  source: '/// <reference lib="unallowed-lib" />',
+});
+assertSeededArtifactClean("relative reference path", {
+  path: "/package/dist/effect.d.ts",
+  source: '/// <reference path="./promises/index.d.ts" />\nexport * from "./promises/index.js";',
 });
 assertSeededViolationRejected("sourcemap", {
   path: "/package/dist/effect.js.map",
@@ -143,6 +200,22 @@ const packDirectory = join(temporaryRoot, "pack");
 const extractDirectory = join(temporaryRoot, "extract");
 await mkdir(packDirectory);
 await mkdir(extractDirectory);
+
+const seededRoot = join(temporaryRoot, "seeded");
+const seededDeclaration = join(seededRoot, "dist/effect.d.ts");
+await mkdir(dirname(seededDeclaration), { recursive: true });
+await writeFile(seededDeclaration, 'export * from "./missing.js";\n');
+let seededTargetRejected = false;
+try {
+  assertDeclarationTargetsResolve(seededRoot, [
+    { path: seededDeclaration, source: 'export * from "./missing.js";\n' },
+  ]);
+} catch {
+  seededTargetRejected = true;
+}
+if (!seededTargetRejected) {
+  throw new Error("Packed declaration gate accepted a seeded missing module target");
+}
 
 run(["bun", "pm", "pack", "--ignore-scripts", "--destination", packDirectory, "--quiet"], sdkRoot);
 const tarball = (await readdir(packDirectory)).find((entry) => entry.endsWith(".tgz"));
@@ -172,6 +245,9 @@ const artifacts = await Promise.all(
   })),
 );
 assertClean(violationsOf(packageRoot, artifacts));
+assertDeclarationTargetsResolve(packageRoot, artifacts);
 
 await rm(temporaryRoot, { recursive: true, force: true });
-process.stdout.write(`Packed SDK boundary is clean (${artifacts.length} artifacts inspected)\n`);
+process.stdout.write(
+  `Packed SDK boundary is clean and declarations resolve (${artifacts.length} artifacts inspected)\n`,
+);

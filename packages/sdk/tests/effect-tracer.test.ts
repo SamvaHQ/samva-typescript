@@ -1,10 +1,17 @@
 import { describe, expect, expectTypeOf, it } from "@effect/vitest";
-import { Effect, Layer, Schema } from "effect";
+import { Effect, Layer, Schema, Tracer } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
 import * as Email from "../src/effect/email";
-import { SamvaApi, MessageId, RateLimitedError, InternalError } from "../src/effect/generated";
+import * as Feedback from "../src/effect/feedback";
+import {
+  SamvaApi,
+  MessageId,
+  FeedbackId,
+  RateLimitedError,
+  InternalError,
+} from "../src/effect/generated";
 import type { MessagesSend201 } from "../src/effect/generated/messages";
 import * as Messages from "../src/effect/messages";
 import * as Retry from "../src/effect/retry";
@@ -136,5 +143,37 @@ describe("messages tracer through HttpApiClient", () => {
     expectTypeOf<SendSuccess["id"]>().toExtend<string>();
     expectTypeOf<SendSuccess["id"]>().not.toEqualTypeOf<string>();
     expectTypeOf<SendSuccess["createdAt"]>().toEqualTypeOf<string>();
+  });
+
+  it.effect("names the span after the operation's group and method", () => {
+    // The span name comes from the operation's own descriptor, so a domain that lost its group
+    // metadata would silently rename every trace.
+    const names: Array<string> = [];
+    const tracer = Tracer.make({
+      span(options) {
+        names.push(options.name);
+        return new Tracer.NativeSpan(options);
+      },
+    });
+    const receipt = {
+      id: Schema.decodeSync(FeedbackId)("fdbk_7q2xk9mvt4znw8rh"),
+      createdAt: "2026-01-01T00:00:00.000Z",
+    };
+    const fake = fakeSamvaApi(SamvaApi)({
+      Feedback: { feedbackSend: () => Effect.succeed(receipt) },
+    });
+    return Effect.gen(function* () {
+      yield* Feedback.send({ message: "The docs were confusing." });
+      expect(names).toContain("Feedback.send");
+      fake.assertComplete();
+    }).pipe(
+      Effect.provideService(Tracer.Tracer, tracer),
+      Effect.provide(
+        Layer.provide(
+          Client.layer({ apiKey: "samva_sk_tracer" }),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
+        ),
+      ),
+    );
   });
 });

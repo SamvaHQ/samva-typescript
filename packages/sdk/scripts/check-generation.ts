@@ -15,6 +15,7 @@ const generatedRoots = async () => [
     .filter((name) => name.endsWith(".ts"))
     .map((name) => resolve(sdkRoot, `src/effect/${name}`)),
   resolve(sdkRoot, "src/effect/generated"),
+  resolve(sdkRoot, "src/effect/descriptors"),
   resolve(sdkRoot, "src/effect/generated-metadata.ts"),
   resolve(sdkRoot, "src/promises/errors.gen.ts"),
   resolve(sdkRoot, "src/promises/types.gen.ts"),

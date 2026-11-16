@@ -95,7 +95,9 @@ describe("operation registry generation guards", () => {
     const handwritten = join(root, "handwritten.ts");
     try {
       await Promise.all([
-        writeFile(removed, registry.moduleSources.contacts!),
+        // Import sorting moves a smaller specifier above the marker, which is the shape the
+        // cleanup has to recognize.
+        writeFile(removed, `import { a } from "./a";\n${registry.moduleSources.contacts!}`),
         writeFile(produced, registry.moduleSources.agents!),
         writeFile(handwritten, "export const handwritten = true;\n"),
       ]);

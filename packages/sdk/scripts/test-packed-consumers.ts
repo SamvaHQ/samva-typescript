@@ -59,6 +59,67 @@ const writeConsumer = async (directory: string, source: string): Promise<void> =
   await writeFile(join(directory, "consumer.ts"), source);
 };
 
+/**
+ * Typechecks every declared subpath of the installed tarballs under the module
+ * resolutions a consumer can choose. `node16` and `nodenext` read declaration
+ * specifiers literally, so an extensionless relative import in the packed
+ * `.d.ts` tree fails here even when the JavaScript output is correct.
+ */
+const writeDeclarationProbe = async (directory: string): Promise<number> => {
+  const declaredSubpaths = async (name: string): Promise<ReadonlyArray<string>> => {
+    const manifest = JSON.parse(
+      await readFile(join(directory, "node_modules", name, "package.json"), "utf8"),
+    ) as { readonly exports: Readonly<Record<string, { readonly types?: string }>> };
+    return Object.keys(manifest.exports)
+      .filter((key) => manifest.exports[key]?.types !== undefined)
+      .map((key) => (key === "." ? name : `${name}/${key.slice(2)}`));
+  };
+
+  const lines = [
+    'import { createClient, MediaUploadError } from "samva";',
+    'import { SamvaApiError } from "samva/promises";',
+    'import { verifyRequest } from "samva/webhooks";',
+    "",
+    "export type NamedImports = [typeof createClient, typeof MediaUploadError, typeof SamvaApiError, typeof verifyRequest];",
+    "",
+  ];
+  let index = 0;
+  for (const name of ["samva", "@samva/webhooks"]) {
+    for (const specifier of await declaredSubpaths(name)) {
+      lines.push(`export type Subpath${index++} = typeof import(${JSON.stringify(specifier)});`);
+    }
+  }
+  await writeFile(join(directory, "declarations.ts"), `${lines.join("\n")}\n`);
+
+  const compilerOptions = {
+    target: "ES2024",
+    lib: ["ES2024", "ESNext.Disposable", "DOM", "DOM.Iterable"],
+    strict: true,
+    skipLibCheck: false,
+    noEmit: true,
+    types: [],
+  };
+  for (const [name, module, moduleResolution] of [
+    ["node16", "node16", "node16"],
+    ["nodenext", "nodenext", "nodenext"],
+    ["bundler", "preserve", "bundler"],
+  ] as const) {
+    await writeFile(
+      join(directory, `tsconfig.declarations.${name}.json`),
+      JSON.stringify(
+        {
+          compilerOptions: { ...compilerOptions, module, moduleResolution },
+          include: ["declarations.ts"],
+        },
+        null,
+        2,
+      ),
+    );
+  }
+
+  return index;
+};
+
 const transitiveJavaScript = async (entrypoint: string): Promise<ReadonlyMap<string, string>> => {
   const sources = new Map<string, string>();
   const visit = async (path: string): Promise<void> => {
@@ -105,6 +166,9 @@ const installPacked = async (directory: string, includeEffect: boolean): Promise
   >;
   manifest.dependencies = {
     samva: `file:${tarball}`,
+    // Bun links a transitive `file:` dependency inside the package's own store
+    // entry, so the declaration probe names the public webhook package directly.
+    "@samva/webhooks": `file:${webhooksTarball}`,
     ...(includeEffect ? { effect: sdkManifest.peerDependencies.effect } : {}),
   };
   manifest.overrides = {
@@ -381,6 +445,7 @@ const domainPage = (page: number) => ({
       id: "dom_7q2xk9mvt4znw8r" + page,
       domain: "example" + page + ".com",
       phase: "ready",
+      shared: false,
       isDefault: page === 1,
       namespaceId: null,
       unknownRecipientMailboxId: null,
@@ -586,6 +651,14 @@ const selectedEffect = JSON.parse(
 process.stdout.write(`Packed selected Effect ${selectedEffect.version}\n`);
 run([tsc, "--project", "tsconfig.json", "--skipLibCheck", "false"], effectDirectory);
 run(["bun", "run", "consumer.ts"], effectDirectory);
+
+const declaredSubpaths = await writeDeclarationProbe(effectDirectory);
+for (const mode of ["node16", "nodenext", "bundler"]) {
+  run([tsc, "--project", `tsconfig.declarations.${mode}.json`], effectDirectory);
+}
+process.stdout.write(
+  `Packed declarations resolve for ${declaredSubpaths} subpaths under node16, nodenext, and bundler\n`,
+);
 
 run(
   [

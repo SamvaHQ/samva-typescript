@@ -1414,9 +1414,19 @@ export const generateEffectSources = (input: SamvaOpenApiDocument): GeneratedEff
   };
 };
 
-/** Generate operation and error metadata without loading the runtime API schemas. */
-export const generateEffectMetadataSource = (input: SamvaOpenApiDocument): string => {
-  const prepared = prepareOpenApi(input);
+/** What an operation wrapper needs at runtime: its group, retry safety, and pagination. */
+export interface EffectOperationMetadata {
+  readonly group: string;
+  readonly method: string;
+  readonly idempotent: boolean;
+  readonly idempotentWhen?: { readonly field: string; readonly equals: string } | undefined;
+  readonly paginated: boolean;
+}
+
+const effectOperationMetadataOf = (
+  input: SamvaOpenApiDocument,
+  prepared: PreparedDocument,
+): Readonly<Record<string, EffectOperationMetadata>> => {
   const registry = new SchemaRegistry(Object.keys(schemasOf(prepared.document)));
   const parsed = parseOpenApi(prepared.document, registry);
   const resolveRef = makeReferenceResolver(prepared.document);
@@ -1446,7 +1456,7 @@ export const generateEffectMetadataSource = (input: SamvaOpenApiDocument): strin
       throw new Error(`Invalid x-idempotent-when on ${method} ${path}`);
     return { idempotent, idempotentWhen: { field: condition.field, equals: condition.equals } };
   };
-  const operations = Object.fromEntries(
+  return Object.fromEntries(
     parsed.operations.map((operation) => [
       operation.id,
       {
@@ -1460,6 +1470,21 @@ export const generateEffectMetadataSource = (input: SamvaOpenApiDocument): strin
       },
     ]),
   );
+};
+
+/**
+ * Per-operation runtime metadata. The registry generator emits it beside each focused domain so a
+ * domain entry carries its own operations' descriptors instead of the whole API's table.
+ */
+export const effectOperationMetadata = (
+  input: SamvaOpenApiDocument,
+): Readonly<Record<string, EffectOperationMetadata>> =>
+  effectOperationMetadataOf(input, prepareOpenApi(input));
+
+/** Generate operation and error metadata without loading the runtime API schemas. */
+export const generateEffectMetadataSource = (input: SamvaOpenApiDocument): string => {
+  const prepared = prepareOpenApi(input);
+  const operations = effectOperationMetadataOf(input, prepared);
   // Endpoints in a group share method/pagination descriptors; keep the lookup table small.
   const descriptors = new Map<string, string>();
   const entries = Object.entries(operations).map(([name, metadata]) => {

@@ -1,3 +1,15 @@
+## samva@0.46.1
+
+### Resolve SDK types in Node ESM projects
+
+`samva` declarations resolve under TypeScript's `node16` and `nodenext` module-resolution
+settings, including type-only imports. Bundler resolution continues to work.
+
+### Keep focused Effect imports small
+
+Focused `samva/effect/<domain>` imports retain metadata for the operations they expose,
+reducing the JavaScript included in consumer bundles.
+
 ## samva@0.46.0
 
 ### Manage integrations and contact connections from the SDK

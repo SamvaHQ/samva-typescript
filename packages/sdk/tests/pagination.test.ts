@@ -57,6 +57,7 @@ import {
   streamCursorItems,
   streamCursorPages,
 } from "../src/effect/pagination";
+import { createClient as createPromiseClient } from "../src/promises";
 import { SDK_SERVICE_OPERATIONS } from "../src/service-map";
 import { fakeSamvaApi } from "./support/fake-samva-api";
 
@@ -237,6 +238,37 @@ describe("facade pagination wiring", () => {
       }
     }),
   );
+
+  it("attaches the Promise cursor helpers exactly where the operation is paginated", () => {
+    // The Promise client reads the whole-client table when it builds each service, so this is the
+    // guard that a focused Effect split did not take the Promise helpers with it.
+    const client = createPromiseClient({ apiKey: "samva_sk_pagination" });
+    const services = {
+      ...client,
+      newsletterIssues: client.newsletters.issues,
+      newsletterDomains: client.newsletters.domains,
+    };
+    const hasCursorHelper = (target: unknown, helper: "pages" | "items"): boolean =>
+      typeof target === "function" &&
+      typeof (target as { readonly pages?: unknown; readonly items?: unknown })[helper] ===
+        "function";
+    const serviceNames = Object.keys(SDK_SERVICE_OPERATIONS) as ReadonlyArray<
+      keyof typeof SDK_SERVICE_OPERATIONS
+    >;
+    for (const serviceName of serviceNames) {
+      const service = services[serviceName] as Readonly<Record<string, unknown>>;
+      for (const [method, id] of Object.entries(SDK_SERVICE_OPERATIONS[serviceName])) {
+        const target = service[method];
+        const paginated = SamvaOperations[id as keyof typeof SamvaOperations].paginated;
+        expect(hasCursorHelper(target, "pages"), `${serviceName}.${method}.pages`).toBe(paginated);
+        expect(hasCursorHelper(target, "items"), `${serviceName}.${method}.items`).toBe(paginated);
+      }
+    }
+    // Contact events is the one wrapper a hand-written expression builds.
+    const listEvents = (services.contacts as Readonly<Record<string, unknown>>).listEvents;
+    expect(hasCursorHelper(listEvents, "pages")).toBe(true);
+    expect(hasCursorHelper(listEvents, "items")).toBe(true);
+  });
 
   it.effect(
     "streams decoded items across pages through the real client (one request per page)",
