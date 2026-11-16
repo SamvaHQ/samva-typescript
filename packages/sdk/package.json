@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.45.1",
+  "version": "0.46.0",
   "description": "TypeScript SDK for the Samva email and WhatsApp API",
   "keywords": [
     "api-client",
@@ -56,6 +56,18 @@
       "types": "./dist/effect/categories.d.ts",
       "import": "./dist/effect/categories.js"
     },
+    "./effect/accounts": {
+      "types": "./dist/effect/accounts.d.ts",
+      "import": "./dist/effect/accounts.js"
+    },
+    "./effect/integrations-catalog": {
+      "types": "./dist/effect/integrations-catalog.d.ts",
+      "import": "./dist/effect/integrations-catalog.js"
+    },
+    "./effect/integrations": {
+      "types": "./dist/effect/integrations.d.ts",
+      "import": "./dist/effect/integrations.js"
+    },
     "./effect/agents": {
       "types": "./dist/effect/agents.d.ts",
       "import": "./dist/effect/agents.js"
@@ -67,6 +79,10 @@
     "./effect/api-keys": {
       "types": "./dist/effect/api-keys.d.ts",
       "import": "./dist/effect/api-keys.js"
+    },
+    "./effect/approval-requests": {
+      "types": "./dist/effect/approval-requests.d.ts",
+      "import": "./dist/effect/approval-requests.js"
     },
     "./effect/attachments": {
       "types": "./dist/effect/attachments.d.ts",
@@ -232,6 +248,10 @@
     "./effect/template-registrations": {
       "types": "./dist/effect/template-registrations.d.ts",
       "import": "./dist/effect/template-registrations.js"
+    },
+    "./effect/template-share-links": {
+      "types": "./dist/effect/template-share-links.d.ts",
+      "import": "./dist/effect/template-share-links.js"
     }
   },
   "publishConfig": {
@@ -253,7 +273,7 @@
     "typecheck": "slot 'effect-tsgo tsrs --noEmit && effect-tsgo tsrs --noEmit -p codegen/tsconfig.json && effect-tsgo tsrs --noEmit -p tests/tsconfig.json && effect-tsgo tsrs --noEmit --project tests/parity/tsconfig.json \"$@\"'"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.45.1"
+    "@samva/webhooks": "workspace:0.46.0"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",

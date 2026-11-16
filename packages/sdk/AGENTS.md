@@ -81,3 +81,10 @@ DNS and certificate status.
 
 Maintainers: generate `src/service-map.ts` and the Effect domain operation lists with
 `bun run generate`; ergonomic adapters and schema exports belong in `codegen/facade-overrides.ts`.
+
+Use `client.templateShareLinks` (Promise) or `TemplateShareLinks` from
+`samva/effect/template-share-links` to create, update, get, rename, or delete a share link
+for a `projectId`. Create accepts an optional `slug`; update exports the project's latest Save
+at the same link. Rename changes the slug and breaks the old link. Delete removes the link;
+existing guest copies remain independent. Get returns the link, canonicalPath, view/open counts and update time,
+or `null` when the project has no share link.

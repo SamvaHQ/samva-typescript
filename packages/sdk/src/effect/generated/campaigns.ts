@@ -465,6 +465,19 @@ export const CampaignRunReport = /* @__PURE__ */ (() =>
       ),
     skippedReasons: Schema.Array(CampaignRunReportSkippedReason),
   }).annotate({ identifier: "CampaignRunReport" }))();
+export type SmsCampaignContent = {
+  readonly channel: "sms";
+  readonly sms: SmsContent;
+  readonly conversationId?: CampaignConversationRef;
+  readonly metadata?: CampaignContentMetadata;
+};
+export const SmsCampaignContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("sms"),
+    sms: SmsContent,
+    conversationId: Schema.optionalKey(CampaignConversationRef),
+    metadata: Schema.optionalKey(CampaignContentMetadata),
+  }).annotate({ identifier: "SmsCampaignContent" }))();
 export type CampaignEmailContent = {
   readonly subject?: string | null;
   readonly html?: string | null;
@@ -520,19 +533,6 @@ export const CampaignEmailContent = /* @__PURE__ */ (() =>
     headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
     preheader: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }).annotate({ identifier: "CampaignEmailContent" }))();
-export type SmsCampaignContent = {
-  readonly channel: "sms";
-  readonly sms: SmsContent;
-  readonly conversationId?: CampaignConversationRef;
-  readonly metadata?: CampaignContentMetadata;
-};
-export const SmsCampaignContent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Literal("sms"),
-    sms: SmsContent,
-    conversationId: Schema.optionalKey(CampaignConversationRef),
-    metadata: Schema.optionalKey(CampaignContentMetadata),
-  }).annotate({ identifier: "SmsCampaignContent" }))();
 export type EmailCampaignContent = {
   readonly channel: "email";
   readonly email: CampaignEmailContent;

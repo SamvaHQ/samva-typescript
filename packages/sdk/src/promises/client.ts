@@ -36,12 +36,17 @@ import {
 } from "../client/client";
 import {
   Agents as agents,
+  Accounts as accounts,
+  Integrations as integrations,
+  IntegrationCatalog as integrationCatalog,
   Whatsapp as whatsapp,
   WhatsappFlows as whatsappFlows,
   WhatsappSetupLinks as whatsappSetupLinks,
   TemplateRegistrations as templateRegistrations,
+  TemplateShareLinks as templateShareLinks,
   Analytics as analytics,
   ApiKeys as apiKeys,
+  ApprovalRequests as approvalRequests,
   Attachments as attachments,
   Brands as brands,
   Campaigns as campaigns,
@@ -535,6 +540,7 @@ export interface SamvaRawClient {
   readonly whatsappFlows: typeof whatsappFlows;
   readonly whatsappSetupLinks: typeof whatsappSetupLinks;
   readonly templateRegistrations: typeof templateRegistrations;
+  readonly templateShareLinks: typeof templateShareLinks;
 
   readonly campaigns: typeof campaigns;
   readonly email: typeof email;
@@ -546,6 +552,7 @@ export interface SamvaRawClient {
   readonly webhooks: typeof webhooks;
   readonly operations: typeof operations;
   readonly apiKeys: typeof apiKeys;
+  readonly approvalRequests: typeof approvalRequests;
   readonly organizations: typeof organizations;
   readonly policies: typeof policies;
   readonly attachments: typeof attachments;
@@ -556,6 +563,9 @@ export interface SamvaRawClient {
   readonly topicForms: typeof topicForms;
   readonly newsletters: typeof newsletters;
   readonly agents: typeof agents;
+  readonly accounts: typeof accounts;
+  readonly integrations: typeof integrations;
+  readonly integrationCatalog: typeof integrationCatalog;
   readonly analytics: typeof analytics;
   readonly feedback: typeof feedback;
   readonly whoami: typeof whoami;
@@ -585,6 +595,7 @@ export interface SamvaClient {
   readonly whatsappFlows: DirectService<typeof whatsappFlows>;
   readonly whatsappSetupLinks: DirectService<typeof whatsappSetupLinks>;
   readonly templateRegistrations: DirectService<typeof templateRegistrations>;
+  readonly templateShareLinks: DirectService<typeof templateShareLinks>;
 
   readonly campaigns: DirectService<typeof campaigns>;
   readonly email: DirectService<PromiseEmailTransport>;
@@ -596,6 +607,7 @@ export interface SamvaClient {
   readonly webhooks: DirectService<typeof webhooks>;
   readonly operations: DirectService<typeof operations>;
   readonly apiKeys: DirectService<typeof apiKeys>;
+  readonly approvalRequests: DirectService<typeof approvalRequests>;
   readonly organizations: DirectService<typeof organizations>;
   readonly policies: DirectService<typeof policies>;
   readonly attachments: DirectService<typeof attachments>;
@@ -606,6 +618,9 @@ export interface SamvaClient {
   readonly topicForms: DirectService<typeof topicForms>;
   readonly newsletters: DirectService<typeof newsletters>;
   readonly agents: DirectService<typeof agents>;
+  readonly accounts: DirectService<typeof accounts>;
+  readonly integrations: DirectService<typeof integrations>;
+  readonly integrationCatalog: DirectService<typeof integrationCatalog>;
   readonly analytics: DirectService<typeof analytics>;
   readonly feedback: DirectService<typeof feedback>;
   readonly whoami: DirectService<typeof whoami>;
@@ -674,6 +689,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     whatsappFlows: createBoundService(whatsappFlows, clientInstance),
     whatsappSetupLinks: createBoundService(whatsappSetupLinks, clientInstance),
     templateRegistrations: createBoundService(templateRegistrations, clientInstance),
+    templateShareLinks: createBoundService(templateShareLinks, clientInstance),
 
     campaigns: createBoundService(campaigns, clientInstance),
     email: createBoundService(email, clientInstance),
@@ -688,6 +704,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     webhooks: createBoundService(webhooks, clientInstance),
     operations: createBoundService(operations, clientInstance),
     apiKeys: createBoundService(apiKeys, clientInstance),
+    approvalRequests: createBoundService(approvalRequests, clientInstance),
     organizations: createBoundService(organizations, clientInstance),
     policies: createBoundService(policies, clientInstance),
     attachments: createBoundService(attachments, clientInstance),
@@ -698,6 +715,9 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     topicForms: createBoundService(topicForms, clientInstance),
     newsletters: createBoundService(newsletters, clientInstance),
     agents: createBoundService(agents, clientInstance),
+    accounts: createBoundService(accounts, clientInstance),
+    integrations: createBoundService(integrations, clientInstance),
+    integrationCatalog: createBoundService(integrationCatalog, clientInstance),
     analytics: createBoundService(analytics, clientInstance),
     feedback: createBoundService(feedback, clientInstance),
     whoami: createBoundService(whoami, clientInstance),
@@ -730,6 +750,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     whatsappFlows: createDirectService(raw.whatsappFlows),
     whatsappSetupLinks: createDirectService(raw.whatsappSetupLinks),
     templateRegistrations: createDirectService(raw.templateRegistrations),
+    templateShareLinks: createDirectService(raw.templateShareLinks),
 
     campaigns: createDirectService(raw.campaigns),
     email: createDirectService(promiseEmail),
@@ -741,6 +762,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     webhooks: createDirectService(raw.webhooks),
     operations: createDirectService(raw.operations),
     apiKeys: createDirectService(raw.apiKeys),
+    approvalRequests: createDirectService(raw.approvalRequests),
     organizations: createDirectService(raw.organizations),
     policies: createDirectService(raw.policies),
     attachments: createDirectService(raw.attachments),
@@ -751,6 +773,9 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     topicForms: createDirectService(raw.topicForms),
     newsletters: createDirectService(raw.newsletters),
     agents: createDirectService(raw.agents),
+    accounts: createDirectService(raw.accounts),
+    integrations: createDirectService(raw.integrations),
+    integrationCatalog: createDirectService(raw.integrationCatalog),
     analytics: createDirectService(raw.analytics),
     feedback: createDirectService(raw.feedback),
     whoami: createDirectService(raw.whoami),

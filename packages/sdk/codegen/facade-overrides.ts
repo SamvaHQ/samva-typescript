@@ -48,6 +48,7 @@ export const reservedOperationNames: Readonly<Record<string, string>> = {
 };
 
 export const facadeGroupNames: Readonly<Record<string, string>> = {
+  integrationCatalog: "IntegrationsCatalog",
   apiKeys: "APIKeys",
   whatsapp: "WhatsApp",
   whatsappFlows: "WhatsAppFlows",

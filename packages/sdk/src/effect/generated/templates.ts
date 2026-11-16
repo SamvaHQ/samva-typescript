@@ -20,6 +20,7 @@ import {
   RenderTimeZone,
   ResourceNotFoundError,
   ServiceUnavailableError,
+  ShareLinkUnavailable,
   SuccessResponse,
   TemplateFromDefaultInput,
   TemplateId,
@@ -218,6 +219,36 @@ export const TemplateRecreationMatch = /* @__PURE__ */ (() =>
       "The company email the brief named: `exact` when the gallery recreates that kind of email from it, `kind-differs` when it recreates another kind (start from it for the look and adapt the kind), `missing` when the gallery has no recreation of that company.",
     identifier: "TemplateRecreationMatch",
   }))();
+export type TemplateFamilyMember = {
+  readonly id: TemplateId;
+  readonly name: string;
+  readonly slug: string;
+  readonly channel: "sms" | "whatsapp" | "email";
+  readonly status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+export const TemplateFamilyMember = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: TemplateId,
+    name: Schema.String,
+    slug: Schema.String,
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
+    status: Schema.Union([
+      Schema.Literal("draft"),
+      Schema.Literal("pending"),
+      Schema.Literal("approved"),
+      Schema.Literal("published"),
+      Schema.Literal("rejected"),
+      Schema.Literal("archived"),
+    ]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "TemplateFamilyMember" }))();
 export type TemplateInputContractPage = {
   readonly items: ReadonlyArray<{
     readonly id: TemplateInputContractId;
@@ -259,36 +290,6 @@ export const TemplateInputContractPage = /* @__PURE__ */ (() =>
     ),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "TemplateInputContractPage" }))();
-export type TemplateFamilyMember = {
-  readonly id: TemplateId;
-  readonly name: string;
-  readonly slug: string;
-  readonly channel: "sms" | "whatsapp" | "email";
-  readonly status: "draft" | "pending" | "approved" | "published" | "rejected" | "archived";
-  readonly createdAt: string;
-  readonly updatedAt: string;
-};
-export const TemplateFamilyMember = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: TemplateId,
-    name: Schema.String,
-    slug: Schema.String,
-    channel: Schema.Union([
-      Schema.Literal("sms"),
-      Schema.Literal("whatsapp"),
-      Schema.Literal("email"),
-    ]),
-    status: Schema.Union([
-      Schema.Literal("draft"),
-      Schema.Literal("pending"),
-      Schema.Literal("approved"),
-      Schema.Literal("published"),
-      Schema.Literal("rejected"),
-      Schema.Literal("archived"),
-    ]),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-  }).annotate({ identifier: "TemplateFamilyMember" }))();
 export type TemplateSummary = {
   readonly id: TemplateId;
   readonly slug: string;
@@ -762,7 +763,8 @@ export const TemplatesCreateHeaders = /* @__PURE__ */ (() =>
       ),
   }))();
 export type TemplatesCreateRequestJson = {
-  readonly name: string;
+  readonly name?: string | null;
+  readonly shareLinkSlug?: string | null;
   readonly projectName?: string | null;
   readonly slug?: string | null;
   readonly galleryTemplateId?: string | null;
@@ -782,15 +784,38 @@ export type TemplatesCreateRequestJson = {
 };
 export const TemplatesCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
-      ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "Required for a named or gallery project. Omit when copying a share link with shareLinkSlug.",
+      }),
+    ),
+    shareLinkSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9-]{3,60}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9-]{3,60}$",
+          }),
+        ),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "Copy every exported entry into the current organization, or open its existing copy. When supplied, this is the only payload field. The project's name and brand come from the starter snapshot.",
+      }),
+    ),
     projectName: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
@@ -883,6 +908,8 @@ export const TemplatesCreate404 = ResourceNotFoundError;
 export type TemplatesCreate409 = ConflictError | TemplateInUseError;
 export const TemplatesCreate409 = /* @__PURE__ */ (() =>
   Schema.Union([ConflictError, TemplateInUseError]))();
+export type TemplatesCreate410 = ShareLinkUnavailable;
+export const TemplatesCreate410 = ShareLinkUnavailable;
 export type TemplatesCreate422 = TemplateSourceError | ValidationError;
 export const TemplatesCreate422 = /* @__PURE__ */ (() =>
   Schema.Union([TemplateSourceError, ValidationError]))();
@@ -8138,6 +8165,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesCreate403.pipe(HttpApiSchema.status(403)),
         TemplatesCreate404.pipe(HttpApiSchema.status(404)),
         TemplatesCreate409.pipe(HttpApiSchema.status(409)),
+        TemplatesCreate410.pipe(HttpApiSchema.status(410)),
         TemplatesCreate422.pipe(HttpApiSchema.status(422)),
         TemplatesCreate500,
         TemplatesCreate503.pipe(HttpApiSchema.status(503)),
@@ -8149,7 +8177,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(OpenApi.Summary, "Create a template")
       .annotate(
         OpenApi.Description,
-        "Creates an email template project from Samva's canonical TSX starter and returns its template entry with status 201.",
+        "Creates a named or gallery template project. With only shareLinkSlug, copies every exported email into the caller's organization and returns the first template with its projectId. Repeated opens reuse that organization's existing copy; an unavailable share link returns 410.",
       ),
     HttpApiEndpoint.get("templatesGetById", "/v1/templates/:id", {
       params: TemplatesGetByIdPathParams,

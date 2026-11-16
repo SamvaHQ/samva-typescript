@@ -3,11 +3,21 @@ import { Duration, Effect, Fiber, Layer, Schema, Stream } from "effect";
 import { FetchHttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
 
-import { WhatsApp, WhatsAppFlows, WhatsAppSetupLinks, TemplateRegistrations } from "../src/effect";
 import {
+  WhatsApp,
+  WhatsAppFlows,
+  WhatsAppSetupLinks,
+  TemplateRegistrations,
+  TemplateShareLinks,
+} from "../src/effect";
+import {
+  Accounts,
+  Integrations,
+  IntegrationCatalog,
   Agents,
   Analytics,
   ApiKeys,
+  ApprovalRequests,
   Attachments,
   Brands,
   Campaigns,
@@ -162,13 +172,18 @@ const pageOf = (cursor: string | undefined): number =>
   cursor ? Number(cursor.slice("page-".length)) : 1;
 
 const effectModules = {
+  accounts: Accounts,
+  integrations: Integrations,
+  integrationCatalog: IntegrationCatalog,
   agents: Agents,
   whatsapp: WhatsApp,
   whatsappFlows: WhatsAppFlows,
   whatsappSetupLinks: WhatsAppSetupLinks,
   templateRegistrations: TemplateRegistrations,
+  templateShareLinks: TemplateShareLinks,
   analytics: Analytics,
   apiKeys: ApiKeys,
+  approvalRequests: ApprovalRequests,
   attachments: Attachments,
   brands: Brands,
   campaigns: Campaigns,

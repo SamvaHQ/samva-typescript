@@ -458,6 +458,7 @@ export const AgentsCreateRequestJson = /* @__PURE__ */ (() =>
           knowledgeSourceIds: [],
           endpointIds: [],
           integrations: [],
+          eventTriggers: [],
           policy: {
             presets: ["samva/auto"],
             rules: [

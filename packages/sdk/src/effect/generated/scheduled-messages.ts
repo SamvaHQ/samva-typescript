@@ -82,6 +82,42 @@ export const SavedPhoneRecipient = /* @__PURE__ */ (() =>
       displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     }),
   ]).annotate({ identifier: "SavedPhoneRecipient" }))();
+export type StoredSmsSendMessage = {
+  readonly conversationId?: ConversationId | null;
+  readonly metadata?: MessageMetadata;
+  readonly channel: "sms";
+  readonly to: ReadonlyArray<SavedPhoneRecipient>;
+  readonly sms: SmsContent;
+};
+export const StoredSmsSendMessage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("sms"),
+    to: Schema.Array(SavedPhoneRecipient)
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(Schema.isMaxLength(1).annotate({ expected: "a value with a length of at most 1" })),
+    sms: SmsContent,
+  }).annotate({ identifier: "StoredSmsSendMessage" }))();
+export type SmsDispatchSendMessagePayload = {
+  readonly conversationId?: ConversationId | null;
+  readonly metadata?: MessageMetadata;
+  readonly channel: "sms";
+  readonly to: SmsRecipients;
+  readonly sms: SmsDispatchContent;
+};
+export const SmsDispatchSendMessagePayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("sms"),
+    to: SmsRecipients,
+    sms: SmsDispatchContent,
+  }).annotate({
+    description:
+      "The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.",
+    identifier: "SmsDispatchSendMessagePayload",
+  }))();
 export type StoredEmailContent = {
   readonly subject?: string | null;
   readonly html?: string | null;
@@ -188,42 +224,6 @@ export const EmailDispatchContent = /* @__PURE__ */ (() =>
     footer: Schema.optionalKey(EmailFooterOverride),
     headers: Schema.optionalKey(Schema.Union([EmailCustomHeaders, Schema.Null])),
   }).annotate({ identifier: "EmailDispatchContent" }))();
-export type StoredSmsSendMessage = {
-  readonly conversationId?: ConversationId | null;
-  readonly metadata?: MessageMetadata;
-  readonly channel: "sms";
-  readonly to: ReadonlyArray<SavedPhoneRecipient>;
-  readonly sms: SmsContent;
-};
-export const StoredSmsSendMessage = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    metadata: Schema.optionalKey(MessageMetadata),
-    channel: Schema.Literal("sms"),
-    to: Schema.Array(SavedPhoneRecipient)
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(Schema.isMaxLength(1).annotate({ expected: "a value with a length of at most 1" })),
-    sms: SmsContent,
-  }).annotate({ identifier: "StoredSmsSendMessage" }))();
-export type SmsDispatchSendMessagePayload = {
-  readonly conversationId?: ConversationId | null;
-  readonly metadata?: MessageMetadata;
-  readonly channel: "sms";
-  readonly to: SmsRecipients;
-  readonly sms: SmsDispatchContent;
-};
-export const SmsDispatchSendMessagePayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    metadata: Schema.optionalKey(MessageMetadata),
-    channel: Schema.Literal("sms"),
-    to: SmsRecipients,
-    sms: SmsDispatchContent,
-  }).annotate({
-    description:
-      "The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.",
-    identifier: "SmsDispatchSendMessagePayload",
-  }))();
 export type StoredEmailSendMessage = {
   readonly conversationId?: ConversationId | null;
   readonly metadata?: MessageMetadata;

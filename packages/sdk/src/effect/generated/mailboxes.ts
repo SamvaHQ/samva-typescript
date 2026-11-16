@@ -67,6 +67,7 @@ import {
   ValidationError,
   WhatsAppBusinessAccountId,
   WhatsAppServiceWindowClosedError,
+  __SamvaRuntimeSensitiveString,
 } from "./shared";
 
 export type MailboxKind = "personal" | "shared";
@@ -365,6 +366,63 @@ export const MailboxDraftState = /* @__PURE__ */ (() =>
     Schema.Literal("locked"),
     Schema.Literal("sent"),
   ]).annotate({ identifier: "MailboxDraftState" }))();
+export type MailSyncPosition = { readonly epoch: string; readonly seq: number };
+export const MailSyncPosition = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    epoch: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{1,64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    seq: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "MailSyncPosition" }))();
+export type MailCommandConflict = {
+  readonly code: "draftChanged" | "outboxChanged";
+  readonly message: string;
+  readonly currentRevision: number | null;
+};
+export const MailCommandConflict = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    code: Schema.Union([Schema.Literal("draftChanged"), Schema.Literal("outboxChanged")]),
+    message: Schema.String,
+    currentRevision: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(1).annotate({
+            expected: "a value greater than or equal to 1",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+  }).annotate({ identifier: "MailCommandConflict" }))();
+export type MailOutboxItemId = string & EffectBrand.Brand<"MailOutboxItemId">;
+export const MailOutboxItemId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^mout_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^mout_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "MailOutboxItemId",
+    }),
+  ).pipe(Schema.brand("MailOutboxItemId")))();
+export type MailOutboxProblem = { readonly code: string; readonly message: string };
+export const MailOutboxProblem = /* @__PURE__ */ (() =>
+  Schema.Struct({ code: Schema.String, message: Schema.String }).annotate({
+    identifier: "MailOutboxProblem",
+  }))();
 export type MailboxEventId = string & EffectBrand.Brand<"MailboxEventId">;
 export const MailboxEventId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -564,6 +622,77 @@ export const MailboxEmailEndpoint = /* @__PURE__ */ (() =>
         "Sending readiness. Pending means sending setup is incomplete. Send only when ready. If setup fails, contact support to recover the sending address.",
     }),
   }).annotate({ identifier: "MailboxEmailEndpoint" }))();
+export type MailHistoryImportJob = {
+  readonly id: string;
+  readonly mailboxId: MailboxId;
+  readonly status: "queued" | "running" | "done" | "failed";
+  readonly imported: number;
+  readonly skippedDuplicate: number;
+  readonly skippedSpamTrash: number;
+  readonly failed: number;
+  readonly failures: ReadonlyArray<{ readonly offset: number; readonly message: string }>;
+};
+export const MailHistoryImportJob = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    mailboxId: MailboxId,
+    status: Schema.Union([
+      Schema.Literal("queued"),
+      Schema.Literal("running"),
+      Schema.Literal("done"),
+      Schema.Literal("failed"),
+    ]),
+    imported: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    skippedDuplicate: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    skippedSpamTrash: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    failed: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    failures: Schema.Array(
+      Schema.Struct({
+        offset: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
+        message: Schema.String,
+      }),
+    ),
+  }).annotate({ identifier: "MailHistoryImportJob" }))();
 export type MailboxThreadMailbox = {
   readonly id: MailboxId;
   readonly address: string | null;
@@ -575,27 +704,6 @@ export const MailboxThreadMailbox = /* @__PURE__ */ (() =>
     address: Schema.Union([Schema.String, Schema.Null]),
     kind: Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")]),
   }).annotate({ identifier: "MailboxThreadMailbox" }))();
-export type MailboxCopiedAttachment = {
-  readonly filename: string;
-  readonly content?: string | null;
-  readonly mediaId?: MediaId | null;
-  readonly contentType: string;
-  readonly size: number;
-};
-export const MailboxCopiedAttachment = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    filename: Schema.String,
-    content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
-    contentType: Schema.String,
-    size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isLessThanOrEqualTo(26214400).annotate({
-          expected: "a value less than or equal to 26214400",
-        }),
-      )
-      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-  }).annotate({ identifier: "MailboxCopiedAttachment" }))();
 export type PolicyAction =
   | {
       readonly effect: PolicyEffect;
@@ -707,6 +815,27 @@ export const PolicyAction = /* @__PURE__ */ (() =>
       }),
     }),
   ]).annotate({ identifier: "PolicyAction" }))();
+export type MailboxCopiedAttachment = {
+  readonly filename: string;
+  readonly content?: string | null;
+  readonly mediaId?: MediaId | null;
+  readonly contentType: string;
+  readonly size: number;
+};
+export const MailboxCopiedAttachment = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    filename: Schema.String,
+    content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
+    contentType: Schema.String,
+    size: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(26214400).annotate({
+          expected: "a value less than or equal to 26214400",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+  }).annotate({ identifier: "MailboxCopiedAttachment" }))();
 export type MailboxWhatsAppEndpoint = {
   readonly id: MailboxEndpointId;
   readonly address: string;
@@ -908,6 +1037,94 @@ export const MailboxChatDraft = /* @__PURE__ */ (() =>
       ),
     text: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxChatDraft" }))();
+export type MailOutboxItem = {
+  readonly id: MailOutboxItemId;
+  readonly mailboxId: MailboxId;
+  readonly threadId: MailboxThreadId | null;
+  readonly draftId: MailboxDraftId;
+  readonly draftRevision: number;
+  readonly draftSummary?: { readonly to: ReadonlyArray<string>; readonly subject: string };
+  readonly status: "queued" | "held" | "dispatched" | "cancelled" | "failed";
+  readonly scheduledFor?: string | null;
+  readonly holdReason: "threadChanged" | null;
+  readonly revision: number;
+  readonly baseSeq: number;
+  readonly heldAtSeq: number | null;
+  readonly actionId: MailboxActionId | null;
+  readonly problem: MailOutboxProblem | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+export const MailOutboxItem = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailOutboxItemId,
+    mailboxId: MailboxId,
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    draftId: MailboxDraftId,
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    draftSummary: Schema.optionalKey(
+      Schema.Struct({ to: Schema.Array(Schema.String), subject: Schema.String }),
+    ),
+    status: Schema.Union([
+      Schema.Literal("queued"),
+      Schema.Literal("held"),
+      Schema.Literal("dispatched"),
+      Schema.Literal("cancelled"),
+      Schema.Literal("failed"),
+    ]),
+    scheduledFor: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    holdReason: Schema.Union([Schema.Literal("threadChanged"), Schema.Null]),
+    revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    baseSeq: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    heldAtSeq: Schema.Union([
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      Schema.Null,
+    ]),
+    actionId: Schema.Union([MailboxActionId, Schema.Null]),
+    problem: Schema.Union([MailOutboxProblem, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+  }).annotate({ identifier: "MailOutboxItem" }))();
 export type MailboxEvent = {
   readonly id: MailboxEventId;
   readonly type:
@@ -1280,6 +1497,8 @@ export type MailboxThreadSummary = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly reminderSetAt?: string | null;
+  readonly reminderInboxAt?: string | null;
   readonly doneAt: string | null;
   readonly closedAt: string | null;
   readonly closedBy: {
@@ -1316,6 +1535,8 @@ export const MailboxThreadSummary = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    reminderSetAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    reminderInboxAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     doneAt: Schema.Union([Schema.String, Schema.Null]),
     closedAt: Schema.Union([Schema.String, Schema.Null]),
     closedBy: Schema.Union([
@@ -1343,6 +1564,8 @@ export type MailboxThreadState = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly reminderSetAt?: string | null;
+  readonly reminderInboxAt?: string | null;
   readonly doneAt: string | null;
   readonly closedAt: string | null;
   readonly closedBy: {
@@ -1360,6 +1583,8 @@ export const MailboxThreadState = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    reminderSetAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    reminderInboxAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     doneAt: Schema.Union([Schema.String, Schema.Null]),
     closedAt: Schema.Union([Schema.String, Schema.Null]),
     closedBy: Schema.Union([
@@ -1394,6 +1619,8 @@ export type MailboxThread = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly reminderSetAt?: string | null;
+  readonly reminderInboxAt?: string | null;
   readonly doneAt: string | null;
   readonly closedAt: string | null;
   readonly closedBy: {
@@ -1434,6 +1661,8 @@ export const MailboxThread = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    reminderSetAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    reminderInboxAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     doneAt: Schema.Union([Schema.String, Schema.Null]),
     closedAt: Schema.Union([Schema.String, Schema.Null]),
     closedBy: Schema.Union([
@@ -1534,6 +1763,8 @@ export type OrganizationMailboxThreadSummary = {
   readonly read: boolean;
   readonly starred: boolean;
   readonly snoozedUntil: string | null;
+  readonly reminderSetAt?: string | null;
+  readonly reminderInboxAt?: string | null;
   readonly doneAt: string | null;
   readonly closedAt: string | null;
   readonly closedBy: {
@@ -1571,6 +1802,8 @@ export const OrganizationMailboxThreadSummary = /* @__PURE__ */ (() =>
     read: Schema.Boolean,
     starred: Schema.Boolean,
     snoozedUntil: Schema.Union([Schema.String, Schema.Null]),
+    reminderSetAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    reminderInboxAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     doneAt: Schema.Union([Schema.String, Schema.Null]),
     closedAt: Schema.Union([Schema.String, Schema.Null]),
     closedBy: Schema.Union([
@@ -1591,102 +1824,6 @@ export const OrganizationMailboxThreadSummary = /* @__PURE__ */ (() =>
     lastActivityAt: Schema.String,
     mailbox: MailboxThreadMailbox,
   }).annotate({ identifier: "OrganizationMailboxThreadSummary" }))();
-export type MailboxEmailSendSnapshot = {
-  readonly channel: "email";
-  readonly draftRevision: number;
-  readonly from: string;
-  readonly fromName: string | null;
-  readonly to: readonly [string, ...Array<string>];
-  readonly cc: ReadonlyArray<string>;
-  readonly bcc: ReadonlyArray<string>;
-  readonly replyTo: ReadonlyArray<string>;
-  readonly subject: string;
-  readonly text: string | null;
-  readonly html: string | null;
-  readonly attachments: ReadonlyArray<EmailAttachment>;
-  readonly threadId: MailboxThreadId | null;
-  readonly conversationId: ConversationId | null;
-  readonly inReplyToMessageId: MessageId | null;
-};
-export const MailboxEmailSendSnapshot = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Literal("email"),
-    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      )
-      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-    from: Schema.String,
-    fromName: Schema.Union([Schema.String, Schema.Null]),
-    to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
-    cc: Schema.Array(Schema.String),
-    bcc: Schema.Array(Schema.String),
-    replyTo: Schema.Array(Schema.String),
-    subject: Schema.String,
-    text: Schema.Union([Schema.String, Schema.Null]),
-    html: Schema.Union([Schema.String, Schema.Null]),
-    attachments: Schema.Array(EmailAttachment).check(
-      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-    ),
-    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-    conversationId: Schema.Union([ConversationId, Schema.Null]),
-    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-  }).annotate({ identifier: "MailboxEmailSendSnapshot" }))();
-export type MailboxEmailDraft = {
-  readonly id: MailboxDraftId;
-  readonly channel: "email";
-  readonly threadId: MailboxThreadId | null;
-  readonly inReplyToMessageId: MessageId | null;
-  readonly state: MailboxDraftState;
-  readonly lockedByActionId: MailboxActionId | null;
-  readonly to: ReadonlyArray<string>;
-  readonly subject: string | null;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly revision: number;
-  readonly endpointId: MailboxEndpointId | null;
-  readonly cc: ReadonlyArray<string>;
-  readonly bcc: ReadonlyArray<string>;
-  readonly replyTo: ReadonlyArray<string>;
-  readonly html: string | null;
-  readonly text: string | null;
-  readonly attachments: ReadonlyArray<EmailAttachment>;
-};
-export const MailboxEmailDraft = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: MailboxDraftId,
-    channel: Schema.Literal("email"),
-    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-    state: MailboxDraftState,
-    lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
-    to: Schema.Array(Schema.String),
-    subject: Schema.Union([Schema.String, Schema.Null]),
-    createdAt: Schema.String,
-    updatedAt: Schema.String,
-    revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(1).annotate({
-          expected: "a value greater than or equal to 1",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
-    cc: Schema.Array(Schema.String),
-    bcc: Schema.Array(Schema.String),
-    replyTo: Schema.Array(Schema.String),
-    html: Schema.Union([Schema.String, Schema.Null]),
-    text: Schema.Union([Schema.String, Schema.Null]),
-    attachments: Schema.Array(EmailAttachment).check(
-      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
-    ),
-  }).annotate({ identifier: "MailboxEmailDraft" }))();
 export type PolicyDecision = {
   readonly requirement: PolicyRequirement;
   readonly decider: PolicyDecider;
@@ -1877,6 +2014,102 @@ export const PolicyDecision = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "PolicyDecision" }))();
+export type MailboxEmailSendSnapshot = {
+  readonly channel: "email";
+  readonly draftRevision: number;
+  readonly from: string;
+  readonly fromName: string | null;
+  readonly to: readonly [string, ...Array<string>];
+  readonly cc: ReadonlyArray<string>;
+  readonly bcc: ReadonlyArray<string>;
+  readonly replyTo: ReadonlyArray<string>;
+  readonly subject: string;
+  readonly text: string | null;
+  readonly html: string | null;
+  readonly attachments: ReadonlyArray<EmailAttachment>;
+  readonly threadId: MailboxThreadId | null;
+  readonly conversationId: ConversationId | null;
+  readonly inReplyToMessageId: MessageId | null;
+};
+export const MailboxEmailSendSnapshot = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("email"),
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    from: Schema.String,
+    fromName: Schema.Union([Schema.String, Schema.Null]),
+    to: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+    cc: Schema.Array(Schema.String),
+    bcc: Schema.Array(Schema.String),
+    replyTo: Schema.Array(Schema.String),
+    subject: Schema.String,
+    text: Schema.Union([Schema.String, Schema.Null]),
+    html: Schema.Union([Schema.String, Schema.Null]),
+    attachments: Schema.Array(EmailAttachment).check(
+      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+    ),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    conversationId: Schema.Union([ConversationId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+  }).annotate({ identifier: "MailboxEmailSendSnapshot" }))();
+export type MailboxEmailDraft = {
+  readonly id: MailboxDraftId;
+  readonly channel: "email";
+  readonly threadId: MailboxThreadId | null;
+  readonly inReplyToMessageId: MessageId | null;
+  readonly state: MailboxDraftState;
+  readonly lockedByActionId: MailboxActionId | null;
+  readonly to: ReadonlyArray<string>;
+  readonly subject: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly revision: number;
+  readonly endpointId: MailboxEndpointId | null;
+  readonly cc: ReadonlyArray<string>;
+  readonly bcc: ReadonlyArray<string>;
+  readonly replyTo: ReadonlyArray<string>;
+  readonly html: string | null;
+  readonly text: string | null;
+  readonly attachments: ReadonlyArray<EmailAttachment>;
+};
+export const MailboxEmailDraft = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxDraftId,
+    channel: Schema.Literal("email"),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+    state: MailboxDraftState,
+    lockedByActionId: Schema.Union([MailboxActionId, Schema.Null]),
+    to: Schema.Array(Schema.String),
+    subject: Schema.Union([Schema.String, Schema.Null]),
+    createdAt: Schema.String,
+    updatedAt: Schema.String,
+    revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    cc: Schema.Array(Schema.String),
+    bcc: Schema.Array(Schema.String),
+    replyTo: Schema.Array(Schema.String),
+    html: Schema.Union([Schema.String, Schema.Null]),
+    text: Schema.Union([Schema.String, Schema.Null]),
+    attachments: Schema.Array(EmailAttachment).check(
+      Schema.isMaxLength(10).annotate({ expected: "a value with a length of at most 10" }),
+    ),
+  }).annotate({ identifier: "MailboxEmailDraft" }))();
 export type MailboxPage = {
   readonly items: ReadonlyArray<MailboxSummary>;
   readonly nextCursor: string | null;
@@ -2130,6 +2363,15 @@ export const MailboxDraftPage = /* @__PURE__ */ (() =>
     items: Schema.Array(MailboxDraftSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxDraftPage" }))();
+export type MailboxScheduledSendPage = {
+  readonly items: ReadonlyArray<MailOutboxItem>;
+  readonly nextCursor: string | null;
+};
+export const MailboxScheduledSendPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(MailOutboxItem),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MailboxScheduledSendPage" }))();
 export type MailboxEventPage = {
   readonly items: ReadonlyArray<MailboxEvent>;
   readonly nextCursor: string | null;
@@ -2247,6 +2489,75 @@ export const Mailbox = /* @__PURE__ */ (() =>
     endpoints: Schema.Array(MailboxEndpoint),
     updatedAt: Schema.String,
   }).annotate({ identifier: "Mailbox" }))();
+export type MailCommandReceipt = {
+  readonly idempotencyKey: string;
+  readonly type:
+    | "thread.patch"
+    | "thread.labels"
+    | "draft.create"
+    | "draft.update"
+    | "draft.delete"
+    | "send"
+    | "outbox.reschedule"
+    | "outbox.sendNow"
+    | "outbox.review"
+    | "outbox.cancel";
+  readonly outcome: "applied" | "conflict" | "held" | "queued" | "cancelled" | "failed";
+  readonly position: MailSyncPosition | null;
+  readonly conflict: MailCommandConflict | null;
+  readonly draft: { readonly id: MailboxDraftId; readonly revision: number } | null;
+  readonly outbox: MailOutboxItem | null;
+  readonly send: MailboxSendReceipt | null;
+};
+export const MailCommandReceipt = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    type: Schema.Union([
+      Schema.Literal("thread.patch"),
+      Schema.Literal("thread.labels"),
+      Schema.Literal("draft.create"),
+      Schema.Literal("draft.update"),
+      Schema.Literal("draft.delete"),
+      Schema.Literal("send"),
+      Schema.Literal("outbox.reschedule"),
+      Schema.Literal("outbox.sendNow"),
+      Schema.Literal("outbox.review"),
+      Schema.Literal("outbox.cancel"),
+    ]),
+    outcome: Schema.Union([
+      Schema.Literal("applied"),
+      Schema.Literal("conflict"),
+      Schema.Literal("held"),
+      Schema.Literal("queued"),
+      Schema.Literal("cancelled"),
+      Schema.Literal("failed"),
+    ]),
+    position: Schema.Union([MailSyncPosition, Schema.Null]),
+    conflict: Schema.Union([MailCommandConflict, Schema.Null]),
+    draft: Schema.Union([
+      Schema.Struct({
+        id: MailboxDraftId,
+        revision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          ),
+      }),
+      Schema.Null,
+    ]),
+    outbox: Schema.Union([MailOutboxItem, Schema.Null]),
+    send: Schema.Union([MailboxSendReceipt, Schema.Null]),
+  }).annotate({ identifier: "MailCommandReceipt" }))();
 export type MailboxSendSnapshot = MailboxEmailSendSnapshot | MailboxChatSendIntent;
 export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
   Schema.Union([MailboxEmailSendSnapshot, MailboxChatSendIntent]).annotate({
@@ -2995,6 +3306,30 @@ export type MailboxesRetryAction503 = SenderNotReadyError;
 export const MailboxesRetryAction503 = SenderNotReadyError;
 export type MailboxesRetryAction504 = GatewayTimeoutError;
 export const MailboxesRetryAction504 = GatewayTimeoutError;
+export type MailboxesListAddressesPathParams = { readonly id: MailboxId };
+export const MailboxesListAddressesPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesListAddressesQuery = { readonly recipient?: string | ReadonlyArray<string> };
+export const MailboxesListAddressesQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    recipient: Schema.optionalKey(Schema.Union([Schema.String, Schema.Array(Schema.String)])),
+  }))();
+export type MailboxesListAddresses200 = ReadonlyArray<string>;
+export const MailboxesListAddresses200 = /* @__PURE__ */ (() => Schema.Array(Schema.String))();
+export type MailboxesListAddresses400 = MalformedRequestError;
+export const MailboxesListAddresses400 = MalformedRequestError;
+export type MailboxesListAddresses401 = UnauthorizedError;
+export const MailboxesListAddresses401 = UnauthorizedError;
+export type MailboxesListAddresses403 = ForbiddenError;
+export const MailboxesListAddresses403 = ForbiddenError;
+export type MailboxesListAddresses404 = ResourceNotFoundError;
+export const MailboxesListAddresses404 = ResourceNotFoundError;
+export type MailboxesListAddresses422 = ValidationError;
+export const MailboxesListAddresses422 = ValidationError;
+export type MailboxesListAddresses500 = InternalError;
+export const MailboxesListAddresses500 = InternalError;
+export type MailboxesListAddresses504 = GatewayTimeoutError;
+export const MailboxesListAddresses504 = GatewayTimeoutError;
 export type MailboxesGetAgentActivityPathParams = { readonly id: MailboxId };
 export const MailboxesGetAgentActivityPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
@@ -3182,6 +3517,69 @@ export type MailboxesUpdateDraft500 = InternalError;
 export const MailboxesUpdateDraft500 = InternalError;
 export type MailboxesUpdateDraft504 = GatewayTimeoutError;
 export const MailboxesUpdateDraft504 = GatewayTimeoutError;
+export type MailboxesScheduleDraftPathParams = {
+  readonly id: MailboxId;
+  readonly draftId: MailboxDraftId;
+};
+export const MailboxesScheduleDraftPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, draftId: MailboxDraftId }))();
+export type MailboxesScheduleDraftRequestJson = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly draftRevision: number;
+  readonly sendAt: string;
+};
+export const MailboxesScheduleDraftRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    sendAt: Schema.String,
+  }))();
+export type MailboxesScheduleDraft200 = MailCommandReceipt;
+export const MailboxesScheduleDraft200 = MailCommandReceipt;
+export type MailboxesScheduleDraft400 = MalformedRequestError;
+export const MailboxesScheduleDraft400 = MalformedRequestError;
+export type MailboxesScheduleDraft401 = UnauthorizedError;
+export const MailboxesScheduleDraft401 = UnauthorizedError;
+export type MailboxesScheduleDraft403 = ForbiddenError;
+export const MailboxesScheduleDraft403 = ForbiddenError;
+export type MailboxesScheduleDraft404 = ResourceNotFoundError;
+export const MailboxesScheduleDraft404 = ResourceNotFoundError;
+export type MailboxesScheduleDraft409 = ConflictError;
+export const MailboxesScheduleDraft409 = ConflictError;
+export type MailboxesScheduleDraft422 = ValidationError;
+export const MailboxesScheduleDraft422 = ValidationError;
+export type MailboxesScheduleDraft429 = RateLimitedError;
+export const MailboxesScheduleDraft429 = RateLimitedError;
+export type MailboxesScheduleDraft500 = InternalError;
+export const MailboxesScheduleDraft500 = InternalError;
+export type MailboxesScheduleDraft504 = GatewayTimeoutError;
+export const MailboxesScheduleDraft504 = GatewayTimeoutError;
 export type MailboxesSendDraftPathParams = {
   readonly id: MailboxId;
   readonly draftId: MailboxDraftId;
@@ -3528,6 +3926,142 @@ export type MailboxesUpdateGrant500 = InternalError;
 export const MailboxesUpdateGrant500 = InternalError;
 export type MailboxesUpdateGrant504 = GatewayTimeoutError;
 export const MailboxesUpdateGrant504 = GatewayTimeoutError;
+export type MailboxesListImportsPathParams = { readonly id: MailboxId };
+export const MailboxesListImportsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesListImports200 = { readonly items: ReadonlyArray<MailHistoryImportJob> };
+export const MailboxesListImports200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ items: Schema.Array(MailHistoryImportJob) }))();
+export type MailboxesListImports400 = MalformedRequestError;
+export const MailboxesListImports400 = MalformedRequestError;
+export type MailboxesListImports401 = UnauthorizedError;
+export const MailboxesListImports401 = UnauthorizedError;
+export type MailboxesListImports403 = ForbiddenError;
+export const MailboxesListImports403 = ForbiddenError;
+export type MailboxesListImports404 = ResourceNotFoundError;
+export const MailboxesListImports404 = ResourceNotFoundError;
+export type MailboxesListImports422 = ValidationError;
+export const MailboxesListImports422 = ValidationError;
+export type MailboxesListImports500 = InternalError;
+export const MailboxesListImports500 = InternalError;
+export type MailboxesListImports504 = GatewayTimeoutError;
+export const MailboxesListImports504 = GatewayTimeoutError;
+export type MailboxesGetImportPathParams = { readonly id: MailboxId; readonly importId: string };
+export const MailboxesGetImportPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, importId: Schema.String }))();
+export type MailboxesGetImport200 = MailHistoryImportJob;
+export const MailboxesGetImport200 = MailHistoryImportJob;
+export type MailboxesGetImport400 = MalformedRequestError;
+export const MailboxesGetImport400 = MalformedRequestError;
+export type MailboxesGetImport401 = UnauthorizedError;
+export const MailboxesGetImport401 = UnauthorizedError;
+export type MailboxesGetImport403 = ForbiddenError;
+export const MailboxesGetImport403 = ForbiddenError;
+export type MailboxesGetImport404 = ResourceNotFoundError;
+export const MailboxesGetImport404 = ResourceNotFoundError;
+export type MailboxesGetImport422 = ValidationError;
+export const MailboxesGetImport422 = ValidationError;
+export type MailboxesGetImport500 = InternalError;
+export const MailboxesGetImport500 = InternalError;
+export type MailboxesGetImport504 = GatewayTimeoutError;
+export const MailboxesGetImport504 = GatewayTimeoutError;
+export type MailboxesStartImportPathParams = { readonly id: MailboxId; readonly importId: string };
+export const MailboxesStartImportPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, importId: Schema.String }))();
+export type MailboxesStartImport200 = MailHistoryImportJob;
+export const MailboxesStartImport200 = MailHistoryImportJob;
+export type MailboxesStartImport400 = MalformedRequestError;
+export const MailboxesStartImport400 = MalformedRequestError;
+export type MailboxesStartImport401 = UnauthorizedError;
+export const MailboxesStartImport401 = UnauthorizedError;
+export type MailboxesStartImport403 = ForbiddenError;
+export const MailboxesStartImport403 = ForbiddenError;
+export type MailboxesStartImport404 = ResourceNotFoundError;
+export const MailboxesStartImport404 = ResourceNotFoundError;
+export type MailboxesStartImport409 = ConflictError;
+export const MailboxesStartImport409 = ConflictError;
+export type MailboxesStartImport422 = ValidationError;
+export const MailboxesStartImport422 = ValidationError;
+export type MailboxesStartImport500 = InternalError;
+export const MailboxesStartImport500 = InternalError;
+export type MailboxesStartImport504 = GatewayTimeoutError;
+export const MailboxesStartImport504 = GatewayTimeoutError;
+export type MailboxesCreateImportUploadPathParams = { readonly id: MailboxId };
+export const MailboxesCreateImportUploadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesCreateImportUploadRequestJson = {
+  readonly importId?: string | null;
+  readonly filename: string;
+  readonly sizeBytes: number;
+  readonly format: "gmail" | "apple" | "mbox";
+  readonly mailboxPath?: string | null;
+};
+export const MailboxesCreateImportUploadRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    importId: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    filename: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+    sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(5000000000).annotate({
+          expected: "a value less than or equal to 5000000000",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    format: Schema.Union([
+      Schema.Literal("gmail"),
+      Schema.Literal("apple"),
+      Schema.Literal("mbox"),
+    ]),
+    mailboxPath: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }))();
+export type MailboxesCreateImportUpload200 = {
+  readonly id: string;
+  readonly uploadUrl: __SamvaRuntimeSensitiveString;
+};
+export const MailboxesCreateImportUpload200 = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: Schema.String, uploadUrl: __SamvaRuntimeSensitiveString }))();
+export type MailboxesCreateImportUpload400 = MalformedRequestError;
+export const MailboxesCreateImportUpload400 = MalformedRequestError;
+export type MailboxesCreateImportUpload401 = UnauthorizedError;
+export const MailboxesCreateImportUpload401 = UnauthorizedError;
+export type MailboxesCreateImportUpload403 = ForbiddenError;
+export const MailboxesCreateImportUpload403 = ForbiddenError;
+export type MailboxesCreateImportUpload404 = ResourceNotFoundError;
+export const MailboxesCreateImportUpload404 = ResourceNotFoundError;
+export type MailboxesCreateImportUpload409 = ConflictError;
+export const MailboxesCreateImportUpload409 = ConflictError;
+export type MailboxesCreateImportUpload422 = ValidationError;
+export const MailboxesCreateImportUpload422 = ValidationError;
+export type MailboxesCreateImportUpload500 = InternalError;
+export const MailboxesCreateImportUpload500 = InternalError;
+export type MailboxesCreateImportUpload504 = GatewayTimeoutError;
+export const MailboxesCreateImportUpload504 = GatewayTimeoutError;
 export type MailboxesListLabelsPathParams = { readonly id: MailboxId };
 export const MailboxesListLabelsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
@@ -4150,6 +4684,231 @@ export type MailboxesResume500 = InternalError;
 export const MailboxesResume500 = InternalError;
 export type MailboxesResume504 = GatewayTimeoutError;
 export const MailboxesResume504 = GatewayTimeoutError;
+export type MailboxesListScheduledSendsPathParams = { readonly id: MailboxId };
+export const MailboxesListScheduledSendsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesListScheduledSendsQuery = {
+  readonly limit?: number | null;
+  readonly cursor?: string;
+};
+export const MailboxesListScheduledSendsQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.String),
+  }))();
+export type MailboxesListScheduledSends200 = MailboxScheduledSendPage;
+export const MailboxesListScheduledSends200 = MailboxScheduledSendPage;
+export type MailboxesListScheduledSends400 = MalformedRequestError;
+export const MailboxesListScheduledSends400 = MalformedRequestError;
+export type MailboxesListScheduledSends401 = UnauthorizedError;
+export const MailboxesListScheduledSends401 = UnauthorizedError;
+export type MailboxesListScheduledSends403 = ForbiddenError;
+export const MailboxesListScheduledSends403 = ForbiddenError;
+export type MailboxesListScheduledSends404 = ResourceNotFoundError;
+export const MailboxesListScheduledSends404 = ResourceNotFoundError;
+export type MailboxesListScheduledSends422 = ValidationError;
+export const MailboxesListScheduledSends422 = ValidationError;
+export type MailboxesListScheduledSends500 = InternalError;
+export const MailboxesListScheduledSends500 = InternalError;
+export type MailboxesListScheduledSends504 = GatewayTimeoutError;
+export const MailboxesListScheduledSends504 = GatewayTimeoutError;
+export type MailboxesUnscheduleSendPathParams = {
+  readonly id: MailboxId;
+  readonly outboxId: MailOutboxItemId;
+};
+export const MailboxesUnscheduleSendPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, outboxId: MailOutboxItemId }))();
+export type MailboxesUnscheduleSendRequestJson = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly expectedRevision: number;
+};
+export const MailboxesUnscheduleSendRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    expectedRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesUnscheduleSend200 = MailCommandReceipt;
+export const MailboxesUnscheduleSend200 = MailCommandReceipt;
+export type MailboxesUnscheduleSend400 = MalformedRequestError;
+export const MailboxesUnscheduleSend400 = MalformedRequestError;
+export type MailboxesUnscheduleSend401 = UnauthorizedError;
+export const MailboxesUnscheduleSend401 = UnauthorizedError;
+export type MailboxesUnscheduleSend403 = ForbiddenError;
+export const MailboxesUnscheduleSend403 = ForbiddenError;
+export type MailboxesUnscheduleSend404 = ResourceNotFoundError;
+export const MailboxesUnscheduleSend404 = ResourceNotFoundError;
+export type MailboxesUnscheduleSend409 = ConflictError;
+export const MailboxesUnscheduleSend409 = ConflictError;
+export type MailboxesUnscheduleSend422 = ValidationError;
+export const MailboxesUnscheduleSend422 = ValidationError;
+export type MailboxesUnscheduleSend429 = RateLimitedError;
+export const MailboxesUnscheduleSend429 = RateLimitedError;
+export type MailboxesUnscheduleSend500 = InternalError;
+export const MailboxesUnscheduleSend500 = InternalError;
+export type MailboxesUnscheduleSend504 = GatewayTimeoutError;
+export const MailboxesUnscheduleSend504 = GatewayTimeoutError;
+export type MailboxesRescheduleSendPathParams = {
+  readonly id: MailboxId;
+  readonly outboxId: MailOutboxItemId;
+};
+export const MailboxesRescheduleSendPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, outboxId: MailOutboxItemId }))();
+export type MailboxesRescheduleSendRequestJson = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly expectedRevision: number;
+  readonly sendAt: string;
+};
+export const MailboxesRescheduleSendRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    expectedRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    sendAt: Schema.String,
+  }))();
+export type MailboxesRescheduleSend200 = MailCommandReceipt;
+export const MailboxesRescheduleSend200 = MailCommandReceipt;
+export type MailboxesRescheduleSend400 = MalformedRequestError;
+export const MailboxesRescheduleSend400 = MalformedRequestError;
+export type MailboxesRescheduleSend401 = UnauthorizedError;
+export const MailboxesRescheduleSend401 = UnauthorizedError;
+export type MailboxesRescheduleSend403 = ForbiddenError;
+export const MailboxesRescheduleSend403 = ForbiddenError;
+export type MailboxesRescheduleSend404 = ResourceNotFoundError;
+export const MailboxesRescheduleSend404 = ResourceNotFoundError;
+export type MailboxesRescheduleSend409 = ConflictError;
+export const MailboxesRescheduleSend409 = ConflictError;
+export type MailboxesRescheduleSend422 = ValidationError;
+export const MailboxesRescheduleSend422 = ValidationError;
+export type MailboxesRescheduleSend429 = RateLimitedError;
+export const MailboxesRescheduleSend429 = RateLimitedError;
+export type MailboxesRescheduleSend500 = InternalError;
+export const MailboxesRescheduleSend500 = InternalError;
+export type MailboxesRescheduleSend504 = GatewayTimeoutError;
+export const MailboxesRescheduleSend504 = GatewayTimeoutError;
+export type MailboxesSendScheduledNowPathParams = {
+  readonly id: MailboxId;
+  readonly outboxId: MailOutboxItemId;
+};
+export const MailboxesSendScheduledNowPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, outboxId: MailOutboxItemId }))();
+export type MailboxesSendScheduledNowRequestJson = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly expectedRevision: number;
+};
+export const MailboxesSendScheduledNowRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    expectedRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesSendScheduledNow200 = MailCommandReceipt;
+export const MailboxesSendScheduledNow200 = MailCommandReceipt;
+export type MailboxesSendScheduledNow400 = MalformedRequestError;
+export const MailboxesSendScheduledNow400 = MalformedRequestError;
+export type MailboxesSendScheduledNow401 = UnauthorizedError;
+export const MailboxesSendScheduledNow401 = UnauthorizedError;
+export type MailboxesSendScheduledNow403 = ForbiddenError;
+export const MailboxesSendScheduledNow403 = ForbiddenError;
+export type MailboxesSendScheduledNow404 = ResourceNotFoundError;
+export const MailboxesSendScheduledNow404 = ResourceNotFoundError;
+export type MailboxesSendScheduledNow409 = ConflictError;
+export const MailboxesSendScheduledNow409 = ConflictError;
+export type MailboxesSendScheduledNow422 = ValidationError;
+export const MailboxesSendScheduledNow422 = ValidationError;
+export type MailboxesSendScheduledNow429 = RateLimitedError;
+export const MailboxesSendScheduledNow429 = RateLimitedError;
+export type MailboxesSendScheduledNow500 = InternalError;
+export const MailboxesSendScheduledNow500 = InternalError;
+export type MailboxesSendScheduledNow504 = GatewayTimeoutError;
+export const MailboxesSendScheduledNow504 = GatewayTimeoutError;
 export type MailboxesListThreadsPathParams = { readonly id: MailboxId };
 export const MailboxesListThreadsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
@@ -4158,6 +4917,9 @@ export type MailboxesListThreadsQuery = {
   readonly cursor?: string;
   readonly after?: string;
   readonly before?: string;
+  readonly recipient?: string;
+  readonly senders?: string | ReadonlyArray<string>;
+  readonly excludeTrash?: boolean | null;
   readonly q?: string;
   readonly state?: "active" | "done";
   readonly folder?: MailboxThreadFolder;
@@ -4184,6 +4946,9 @@ export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
     cursor: Schema.optionalKey(Schema.String),
     after: Schema.optionalKey(Schema.String),
     before: Schema.optionalKey(Schema.String),
+    recipient: Schema.optionalKey(Schema.String),
+    senders: Schema.optionalKey(Schema.Union([Schema.String, Schema.Array(Schema.String)])),
+    excludeTrash: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     q: Schema.optionalKey(
       Schema.String.annotate({
         description:
@@ -4249,6 +5014,8 @@ export type MailboxesUpdateThreadRequestJson = {
   readonly read?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozedUntil?: string | null;
+  readonly ifNoReply?: boolean;
+  readonly reminderInboxAt?: string | null;
 };
 export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -4259,6 +5026,8 @@ export const MailboxesUpdateThreadRequestJson = /* @__PURE__ */ (() =>
     read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozedUntil: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    ifNoReply: Schema.optionalKey(Schema.Boolean),
+    reminderInboxAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }))();
 export type MailboxesUpdateThread200 = MailboxThreadState;
 export const MailboxesUpdateThread200 = MailboxThreadState;
@@ -4631,11 +5400,397 @@ export type MailboxesGetNeedsYou500 = InternalError;
 export const MailboxesGetNeedsYou500 = InternalError;
 export type MailboxesGetNeedsYou504 = GatewayTimeoutError;
 export const MailboxesGetNeedsYou504 = GatewayTimeoutError;
+export type MailboxesListSplits200 = ReadonlyArray<{
+  readonly id: string;
+  readonly name: string;
+  readonly filter:
+    | { readonly kind: "query"; readonly query: string }
+    | { readonly kind: "address"; readonly address: string }
+    | { readonly kind: "vip"; readonly senders: readonly [string, ...Array<string>] };
+  readonly mailboxId: MailboxId | null;
+  readonly position: number;
+}>;
+export const MailboxesListSplits200 = /* @__PURE__ */ (() =>
+  Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      name: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      )
+        .check(
+          Schema.isMaxCodePoints(100).annotate({
+            expected: "a string with at most 100 code points",
+          }),
+        )
+        .check(
+          Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+        ),
+      filter: Schema.Union([
+        Schema.Struct({
+          kind: Schema.Literal("query"),
+          query: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+        }),
+        Schema.Struct({ kind: Schema.Literal("address"), address: Schema.String }),
+        Schema.Struct({
+          kind: Schema.Literal("vip"),
+          senders: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+        }),
+      ]),
+      mailboxId: Schema.Union([MailboxId, Schema.Null]),
+      position: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+            expected: "a value greater than or equal to -9007199254740991",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+    }),
+  ))();
+export type MailboxesListSplits400 = MalformedRequestError;
+export const MailboxesListSplits400 = MalformedRequestError;
+export type MailboxesListSplits401 = UnauthorizedError;
+export const MailboxesListSplits401 = UnauthorizedError;
+export type MailboxesListSplits403 = ForbiddenError;
+export const MailboxesListSplits403 = ForbiddenError;
+export type MailboxesListSplits422 = ValidationError;
+export const MailboxesListSplits422 = ValidationError;
+export type MailboxesListSplits500 = InternalError;
+export const MailboxesListSplits500 = InternalError;
+export type MailboxesListSplits504 = GatewayTimeoutError;
+export const MailboxesListSplits504 = GatewayTimeoutError;
+export type MailboxesCreateSplitRequestJson = {
+  readonly name: string;
+  readonly filter:
+    | { readonly kind: "query"; readonly query: string }
+    | { readonly kind: "address"; readonly address: string }
+    | { readonly kind: "vip"; readonly senders: readonly [string, ...Array<string>] };
+  readonly mailboxId: MailboxId | null;
+  readonly position: number;
+};
+export const MailboxesCreateSplitRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+      ),
+    filter: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Literal("query"),
+        query: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+      }),
+      Schema.Struct({ kind: Schema.Literal("address"), address: Schema.String }),
+      Schema.Struct({
+        kind: Schema.Literal("vip"),
+        senders: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+      }),
+    ]),
+    mailboxId: Schema.Union([MailboxId, Schema.Null]),
+    position: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesCreateSplit200 = {
+  readonly id: string;
+  readonly name: string;
+  readonly filter:
+    | { readonly kind: "query"; readonly query: string }
+    | { readonly kind: "address"; readonly address: string }
+    | { readonly kind: "vip"; readonly senders: readonly [string, ...Array<string>] };
+  readonly mailboxId: MailboxId | null;
+  readonly position: number;
+};
+export const MailboxesCreateSplit200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+      ),
+    filter: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Literal("query"),
+        query: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+      }),
+      Schema.Struct({ kind: Schema.Literal("address"), address: Schema.String }),
+      Schema.Struct({
+        kind: Schema.Literal("vip"),
+        senders: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+      }),
+    ]),
+    mailboxId: Schema.Union([MailboxId, Schema.Null]),
+    position: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesCreateSplit400 = MalformedRequestError;
+export const MailboxesCreateSplit400 = MalformedRequestError;
+export type MailboxesCreateSplit401 = UnauthorizedError;
+export const MailboxesCreateSplit401 = UnauthorizedError;
+export type MailboxesCreateSplit403 = ForbiddenError;
+export const MailboxesCreateSplit403 = ForbiddenError;
+export type MailboxesCreateSplit404 = ResourceNotFoundError;
+export const MailboxesCreateSplit404 = ResourceNotFoundError;
+export type MailboxesCreateSplit422 = ValidationError;
+export const MailboxesCreateSplit422 = ValidationError;
+export type MailboxesCreateSplit500 = InternalError;
+export const MailboxesCreateSplit500 = InternalError;
+export type MailboxesCreateSplit504 = GatewayTimeoutError;
+export const MailboxesCreateSplit504 = GatewayTimeoutError;
+export type MailboxesUpdateSplitPathParams = { readonly splitId: string };
+export const MailboxesUpdateSplitPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ splitId: Schema.String }))();
+export type MailboxesUpdateSplitRequestJson = {
+  readonly name: string;
+  readonly filter:
+    | { readonly kind: "query"; readonly query: string }
+    | { readonly kind: "address"; readonly address: string }
+    | { readonly kind: "vip"; readonly senders: readonly [string, ...Array<string>] };
+  readonly mailboxId: MailboxId | null;
+  readonly position: number;
+};
+export const MailboxesUpdateSplitRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+      ),
+    filter: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Literal("query"),
+        query: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+      }),
+      Schema.Struct({ kind: Schema.Literal("address"), address: Schema.String }),
+      Schema.Struct({
+        kind: Schema.Literal("vip"),
+        senders: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+      }),
+    ]),
+    mailboxId: Schema.Union([MailboxId, Schema.Null]),
+    position: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesUpdateSplit200 = {
+  readonly id: string;
+  readonly name: string;
+  readonly filter:
+    | { readonly kind: "query"; readonly query: string }
+    | { readonly kind: "address"; readonly address: string }
+    | { readonly kind: "vip"; readonly senders: readonly [string, ...Array<string>] };
+  readonly mailboxId: MailboxId | null;
+  readonly position: number;
+};
+export const MailboxesUpdateSplit200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+      ),
+    filter: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Literal("query"),
+        query: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+      }),
+      Schema.Struct({ kind: Schema.Literal("address"), address: Schema.String }),
+      Schema.Struct({
+        kind: Schema.Literal("vip"),
+        senders: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+      }),
+    ]),
+    mailboxId: Schema.Union([MailboxId, Schema.Null]),
+    position: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesUpdateSplit400 = MalformedRequestError;
+export const MailboxesUpdateSplit400 = MalformedRequestError;
+export type MailboxesUpdateSplit401 = UnauthorizedError;
+export const MailboxesUpdateSplit401 = UnauthorizedError;
+export type MailboxesUpdateSplit403 = ForbiddenError;
+export const MailboxesUpdateSplit403 = ForbiddenError;
+export type MailboxesUpdateSplit404 = ResourceNotFoundError;
+export const MailboxesUpdateSplit404 = ResourceNotFoundError;
+export type MailboxesUpdateSplit422 = ValidationError;
+export const MailboxesUpdateSplit422 = ValidationError;
+export type MailboxesUpdateSplit500 = InternalError;
+export const MailboxesUpdateSplit500 = InternalError;
+export type MailboxesUpdateSplit504 = GatewayTimeoutError;
+export const MailboxesUpdateSplit504 = GatewayTimeoutError;
+export type MailboxesDeleteSplitPathParams = { readonly splitId: string };
+export const MailboxesDeleteSplitPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ splitId: Schema.String }))();
+export type MailboxesDeleteSplit200 = {
+  readonly id: string;
+  readonly name: string;
+  readonly filter:
+    | { readonly kind: "query"; readonly query: string }
+    | { readonly kind: "address"; readonly address: string }
+    | { readonly kind: "vip"; readonly senders: readonly [string, ...Array<string>] };
+  readonly mailboxId: MailboxId | null;
+  readonly position: number;
+};
+export const MailboxesDeleteSplit200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(100).annotate({ expected: "a string with at most 100 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+      ),
+    filter: Schema.Union([
+      Schema.Struct({
+        kind: Schema.Literal("query"),
+        query: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+      }),
+      Schema.Struct({ kind: Schema.Literal("address"), address: Schema.String }),
+      Schema.Struct({
+        kind: Schema.Literal("vip"),
+        senders: Schema.TupleWithRest(Schema.Tuple([Schema.String]), [Schema.String]),
+      }),
+    ]),
+    mailboxId: Schema.Union([MailboxId, Schema.Null]),
+    position: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }))();
+export type MailboxesDeleteSplit400 = MalformedRequestError;
+export const MailboxesDeleteSplit400 = MalformedRequestError;
+export type MailboxesDeleteSplit401 = UnauthorizedError;
+export const MailboxesDeleteSplit401 = UnauthorizedError;
+export type MailboxesDeleteSplit403 = ForbiddenError;
+export const MailboxesDeleteSplit403 = ForbiddenError;
+export type MailboxesDeleteSplit404 = ResourceNotFoundError;
+export const MailboxesDeleteSplit404 = ResourceNotFoundError;
+export type MailboxesDeleteSplit422 = ValidationError;
+export const MailboxesDeleteSplit422 = ValidationError;
+export type MailboxesDeleteSplit500 = InternalError;
+export const MailboxesDeleteSplit500 = InternalError;
+export type MailboxesDeleteSplit504 = GatewayTimeoutError;
+export const MailboxesDeleteSplit504 = GatewayTimeoutError;
+export type MailboxesCountSplits200 = ReadonlyArray<{
+  readonly splitId: string;
+  readonly unread: number;
+  readonly capped: boolean;
+}>;
+export const MailboxesCountSplits200 = /* @__PURE__ */ (() =>
+  Schema.Array(
+    Schema.Struct({
+      splitId: Schema.String,
+      unread: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(0).annotate({
+            expected: "a value greater than or equal to 0",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+            expected: "a value less than or equal to 9007199254740991",
+          }),
+        ),
+      capped: Schema.Boolean,
+    }),
+  ))();
+export type MailboxesCountSplits400 = MalformedRequestError;
+export const MailboxesCountSplits400 = MalformedRequestError;
+export type MailboxesCountSplits401 = UnauthorizedError;
+export const MailboxesCountSplits401 = UnauthorizedError;
+export type MailboxesCountSplits403 = ForbiddenError;
+export const MailboxesCountSplits403 = ForbiddenError;
+export type MailboxesCountSplits422 = ValidationError;
+export const MailboxesCountSplits422 = ValidationError;
+export type MailboxesCountSplits500 = InternalError;
+export const MailboxesCountSplits500 = InternalError;
+export type MailboxesCountSplits504 = GatewayTimeoutError;
+export const MailboxesCountSplits504 = GatewayTimeoutError;
 export type MailboxesListOrganizationThreadsQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
   readonly after?: string;
   readonly before?: string;
+  readonly recipient?: string;
+  readonly senders?: string | ReadonlyArray<string>;
+  readonly excludeTrash?: boolean | null;
   readonly q?: string;
   readonly state?: "active" | "done";
   readonly folder?: MailboxThreadFolder;
@@ -4665,6 +5820,9 @@ export const MailboxesListOrganizationThreadsQuery = /* @__PURE__ */ (() =>
     cursor: Schema.optionalKey(Schema.String),
     after: Schema.optionalKey(Schema.String),
     before: Schema.optionalKey(Schema.String),
+    recipient: Schema.optionalKey(Schema.String),
+    senders: Schema.optionalKey(Schema.Union([Schema.String, Schema.Array(Schema.String)])),
+    excludeTrash: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     q: Schema.optionalKey(
       Schema.String.annotate({
         description:
@@ -4947,6 +6105,27 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         OpenApi.Description,
         "Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.",
       ),
+    HttpApiEndpoint.get("mailboxesListAddresses", "/v1/mailboxes/:id/addresses", {
+      params: MailboxesListAddressesPathParams,
+      query: MailboxesListAddressesQuery,
+      success: MailboxesListAddresses200,
+      error: [
+        MailboxesListAddresses400.pipe(HttpApiSchema.status(400)),
+        MailboxesListAddresses401.pipe(HttpApiSchema.status(401)),
+        MailboxesListAddresses403.pipe(HttpApiSchema.status(403)),
+        MailboxesListAddresses404.pipe(HttpApiSchema.status(404)),
+        MailboxesListAddresses422.pipe(HttpApiSchema.status(422)),
+        MailboxesListAddresses500,
+        MailboxesListAddresses504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listAddresses")
+      .annotate(OpenApi.Summary, "List mailbox addresses")
+      .annotate(
+        OpenApi.Description,
+        "Lists up to 1000 distinct registered and observed email addresses in sorted order, retaining registered endpoints first when the bound applies. With recipient query parameters, resolves only those candidates as this mailbox’s own addresses, including plus fallback but excluding literal tagged endpoints owned by another mailbox. Use this candidate read for reply addressing.",
+      ),
     HttpApiEndpoint.get("mailboxesGetAgentActivity", "/v1/mailboxes/:id/agent-activity", {
       params: MailboxesGetAgentActivityPathParams,
       query: MailboxesGetAgentActivityQuery,
@@ -5068,6 +6247,29 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(
         OpenApi.Description,
         "Updates the fields you name and keeps the rest; `null` clears an optional field. A draft whose send waits for approval cannot change and conflicts.",
+      ),
+    HttpApiEndpoint.post("mailboxesScheduleDraft", "/v1/mailboxes/:id/drafts/:draftId/schedule", {
+      params: MailboxesScheduleDraftPathParams,
+      payload: MailboxesScheduleDraftRequestJson,
+      success: MailboxesScheduleDraft200,
+      error: [
+        MailboxesScheduleDraft400.pipe(HttpApiSchema.status(400)),
+        MailboxesScheduleDraft401.pipe(HttpApiSchema.status(401)),
+        MailboxesScheduleDraft403.pipe(HttpApiSchema.status(403)),
+        MailboxesScheduleDraft404.pipe(HttpApiSchema.status(404)),
+        MailboxesScheduleDraft409.pipe(HttpApiSchema.status(409)),
+        MailboxesScheduleDraft422.pipe(HttpApiSchema.status(422)),
+        MailboxesScheduleDraft429.pipe(HttpApiSchema.status(429)),
+        MailboxesScheduleDraft500,
+        MailboxesScheduleDraft504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.scheduleDraft")
+      .annotate(OpenApi.Summary, "Schedule a mailbox draft")
+      .annotate(
+        OpenApi.Description,
+        "Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.",
       ),
     HttpApiEndpoint.post("mailboxesSendDraft", "/v1/mailboxes/:id/drafts/:draftId/send", {
       params: MailboxesSendDraftPathParams,
@@ -5284,6 +6486,83 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(
         OpenApi.Description,
         "Changes a member's role on a mailbox and returns the updated grant. A field left out keeps its value; naming neither is a validation error. Taking admin from the last grant that can configure the mailbox conflicts, as revoking it does. The change applies to the member's next request on every surface.",
+      ),
+    HttpApiEndpoint.get("mailboxesListImports", "/v1/mailboxes/:id/imports", {
+      params: MailboxesListImportsPathParams,
+      success: MailboxesListImports200,
+      error: [
+        MailboxesListImports400.pipe(HttpApiSchema.status(400)),
+        MailboxesListImports401.pipe(HttpApiSchema.status(401)),
+        MailboxesListImports403.pipe(HttpApiSchema.status(403)),
+        MailboxesListImports404.pipe(HttpApiSchema.status(404)),
+        MailboxesListImports422.pipe(HttpApiSchema.status(422)),
+        MailboxesListImports500,
+        MailboxesListImports504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listImports")
+      .annotate(OpenApi.Summary, "List mail history imports")
+      .annotate(OpenApi.Description, "Lists the most recent history imports for a mailbox."),
+    HttpApiEndpoint.get("mailboxesGetImport", "/v1/mailboxes/:id/imports/:importId", {
+      params: MailboxesGetImportPathParams,
+      success: MailboxesGetImport200,
+      error: [
+        MailboxesGetImport400.pipe(HttpApiSchema.status(400)),
+        MailboxesGetImport401.pipe(HttpApiSchema.status(401)),
+        MailboxesGetImport403.pipe(HttpApiSchema.status(403)),
+        MailboxesGetImport404.pipe(HttpApiSchema.status(404)),
+        MailboxesGetImport422.pipe(HttpApiSchema.status(422)),
+        MailboxesGetImport500,
+        MailboxesGetImport504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.getImport")
+      .annotate(OpenApi.Summary, "Read mail history import progress")
+      .annotate(OpenApi.Description, "Returns import status, counts, and bounded failure reasons."),
+    HttpApiEndpoint.post("mailboxesStartImport", "/v1/mailboxes/:id/imports/:importId/start", {
+      params: MailboxesStartImportPathParams,
+      success: MailboxesStartImport200,
+      error: [
+        MailboxesStartImport400.pipe(HttpApiSchema.status(400)),
+        MailboxesStartImport401.pipe(HttpApiSchema.status(401)),
+        MailboxesStartImport403.pipe(HttpApiSchema.status(403)),
+        MailboxesStartImport404.pipe(HttpApiSchema.status(404)),
+        MailboxesStartImport409.pipe(HttpApiSchema.status(409)),
+        MailboxesStartImport422.pipe(HttpApiSchema.status(422)),
+        MailboxesStartImport500,
+        MailboxesStartImport504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.startImport")
+      .annotate(OpenApi.Summary, "Start or resume a mail history import")
+      .annotate(
+        OpenApi.Description,
+        "Starts all archives uploaded to the job, or resumes a failed job at its committed byte cursor across those archives. History emits no inbound events or agent triggers.",
+      ),
+    HttpApiEndpoint.post("mailboxesCreateImportUpload", "/v1/mailboxes/:id/imports/uploads", {
+      params: MailboxesCreateImportUploadPathParams,
+      payload: MailboxesCreateImportUploadRequestJson,
+      success: MailboxesCreateImportUpload200,
+      error: [
+        MailboxesCreateImportUpload400.pipe(HttpApiSchema.status(400)),
+        MailboxesCreateImportUpload401.pipe(HttpApiSchema.status(401)),
+        MailboxesCreateImportUpload403.pipe(HttpApiSchema.status(403)),
+        MailboxesCreateImportUpload404.pipe(HttpApiSchema.status(404)),
+        MailboxesCreateImportUpload409.pipe(HttpApiSchema.status(409)),
+        MailboxesCreateImportUpload422.pipe(HttpApiSchema.status(422)),
+        MailboxesCreateImportUpload500,
+        MailboxesCreateImportUpload504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.createImportUpload")
+      .annotate(OpenApi.Summary, "Create a mail history upload")
+      .annotate(
+        OpenApi.Description,
+        "Creates a presigned archive upload for an existing mailbox. Pass importId to append another archive to the same queued job; each upload gets its own URL. Upload each URL with Content-Type application/mbox and Content-Length equal to its accepted sizeBytes. Upload every archive before starting the job. Apple Mail package directories are traversed by the CLI into one import.",
       ),
     HttpApiEndpoint.get("mailboxesListLabels", "/v1/mailboxes/:id/labels", {
       params: MailboxesListLabelsPathParams,
@@ -5671,6 +6950,100 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Identifier, "mailboxes.resume")
       .annotate(OpenApi.Summary, "Resume a mailbox")
       .annotate(OpenApi.Description, "Lets a paused mailbox send and receive again."),
+    HttpApiEndpoint.get("mailboxesListScheduledSends", "/v1/mailboxes/:id/scheduled", {
+      params: MailboxesListScheduledSendsPathParams,
+      query: MailboxesListScheduledSendsQuery,
+      success: MailboxesListScheduledSends200,
+      error: [
+        MailboxesListScheduledSends400.pipe(HttpApiSchema.status(400)),
+        MailboxesListScheduledSends401.pipe(HttpApiSchema.status(401)),
+        MailboxesListScheduledSends403.pipe(HttpApiSchema.status(403)),
+        MailboxesListScheduledSends404.pipe(HttpApiSchema.status(404)),
+        MailboxesListScheduledSends422.pipe(HttpApiSchema.status(422)),
+        MailboxesListScheduledSends500,
+        MailboxesListScheduledSends504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listScheduledSends")
+      .annotate(OpenApi.Summary, "List scheduled mailbox sends")
+      .annotate(
+        OpenApi.Description,
+        "Lists the caller's private scheduled sends in this mailbox. Items leave this list when sent, held, failed, or returned to Drafts.",
+      ),
+    HttpApiEndpoint.delete("mailboxesUnscheduleSend", "/v1/mailboxes/:id/scheduled/:outboxId", {
+      params: MailboxesUnscheduleSendPathParams,
+      payload: MailboxesUnscheduleSendRequestJson,
+      success: MailboxesUnscheduleSend200,
+      error: [
+        MailboxesUnscheduleSend400.pipe(HttpApiSchema.status(400)),
+        MailboxesUnscheduleSend401.pipe(HttpApiSchema.status(401)),
+        MailboxesUnscheduleSend403.pipe(HttpApiSchema.status(403)),
+        MailboxesUnscheduleSend404.pipe(HttpApiSchema.status(404)),
+        MailboxesUnscheduleSend409.pipe(HttpApiSchema.status(409)),
+        MailboxesUnscheduleSend422.pipe(HttpApiSchema.status(422)),
+        MailboxesUnscheduleSend429.pipe(HttpApiSchema.status(429)),
+        MailboxesUnscheduleSend500,
+        MailboxesUnscheduleSend504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.unscheduleSend")
+      .annotate(OpenApi.Summary, "Return a scheduled send to Drafts")
+      .annotate(
+        OpenApi.Description,
+        "Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.",
+      ),
+    HttpApiEndpoint.patch("mailboxesRescheduleSend", "/v1/mailboxes/:id/scheduled/:outboxId", {
+      params: MailboxesRescheduleSendPathParams,
+      payload: MailboxesRescheduleSendRequestJson,
+      success: MailboxesRescheduleSend200,
+      error: [
+        MailboxesRescheduleSend400.pipe(HttpApiSchema.status(400)),
+        MailboxesRescheduleSend401.pipe(HttpApiSchema.status(401)),
+        MailboxesRescheduleSend403.pipe(HttpApiSchema.status(403)),
+        MailboxesRescheduleSend404.pipe(HttpApiSchema.status(404)),
+        MailboxesRescheduleSend409.pipe(HttpApiSchema.status(409)),
+        MailboxesRescheduleSend422.pipe(HttpApiSchema.status(422)),
+        MailboxesRescheduleSend429.pipe(HttpApiSchema.status(429)),
+        MailboxesRescheduleSend500,
+        MailboxesRescheduleSend504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.rescheduleSend")
+      .annotate(OpenApi.Summary, "Reschedule a mailbox send")
+      .annotate(
+        OpenApi.Description,
+        "Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.",
+      ),
+    HttpApiEndpoint.post(
+      "mailboxesSendScheduledNow",
+      "/v1/mailboxes/:id/scheduled/:outboxId/send",
+      {
+        params: MailboxesSendScheduledNowPathParams,
+        payload: MailboxesSendScheduledNowRequestJson,
+        success: MailboxesSendScheduledNow200,
+        error: [
+          MailboxesSendScheduledNow400.pipe(HttpApiSchema.status(400)),
+          MailboxesSendScheduledNow401.pipe(HttpApiSchema.status(401)),
+          MailboxesSendScheduledNow403.pipe(HttpApiSchema.status(403)),
+          MailboxesSendScheduledNow404.pipe(HttpApiSchema.status(404)),
+          MailboxesSendScheduledNow409.pipe(HttpApiSchema.status(409)),
+          MailboxesSendScheduledNow422.pipe(HttpApiSchema.status(422)),
+          MailboxesSendScheduledNow429.pipe(HttpApiSchema.status(429)),
+          MailboxesSendScheduledNow500,
+          MailboxesSendScheduledNow504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.sendScheduledNow")
+      .annotate(OpenApi.Summary, "Send a scheduled message now")
+      .annotate(
+        OpenApi.Description,
+        "Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.",
+      ),
     HttpApiEndpoint.get("mailboxesListThreads", "/v1/mailboxes/:id/threads", {
       params: MailboxesListThreadsPathParams,
       query: MailboxesListThreadsQuery,
@@ -5956,6 +7329,103 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         OpenApi.Description,
         "Returns held actions this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.",
       ),
+    HttpApiEndpoint.get("mailboxesListSplits", "/v1/mailboxes/splits", {
+      success: MailboxesListSplits200,
+      error: [
+        MailboxesListSplits400.pipe(HttpApiSchema.status(400)),
+        MailboxesListSplits401.pipe(HttpApiSchema.status(401)),
+        MailboxesListSplits403.pipe(HttpApiSchema.status(403)),
+        MailboxesListSplits422.pipe(HttpApiSchema.status(422)),
+        MailboxesListSplits500,
+        MailboxesListSplits504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listSplits")
+      .annotate(OpenApi.Summary, "List Mail splits")
+      .annotate(
+        OpenApi.Description,
+        "Returns the signed-in reader’s saved filters in sidebar order. Splits are private to this user and organization. Requires a person signed in through Mail or the CLI.",
+      ),
+    HttpApiEndpoint.post("mailboxesCreateSplit", "/v1/mailboxes/splits", {
+      payload: MailboxesCreateSplitRequestJson,
+      success: MailboxesCreateSplit200,
+      error: [
+        MailboxesCreateSplit400.pipe(HttpApiSchema.status(400)),
+        MailboxesCreateSplit401.pipe(HttpApiSchema.status(401)),
+        MailboxesCreateSplit403.pipe(HttpApiSchema.status(403)),
+        MailboxesCreateSplit404.pipe(HttpApiSchema.status(404)),
+        MailboxesCreateSplit422.pipe(HttpApiSchema.status(422)),
+        MailboxesCreateSplit500,
+        MailboxesCreateSplit504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.createSplit")
+      .annotate(OpenApi.Summary, "Create a Mail split")
+      .annotate(
+        OpenApi.Description,
+        "Saves a named query, recipient address, or VIP sender list for the signed-in reader. Requires a person signed in through Mail or the CLI.",
+      ),
+    HttpApiEndpoint.put("mailboxesUpdateSplit", "/v1/mailboxes/splits/:splitId", {
+      params: MailboxesUpdateSplitPathParams,
+      payload: MailboxesUpdateSplitRequestJson,
+      success: MailboxesUpdateSplit200,
+      error: [
+        MailboxesUpdateSplit400.pipe(HttpApiSchema.status(400)),
+        MailboxesUpdateSplit401.pipe(HttpApiSchema.status(401)),
+        MailboxesUpdateSplit403.pipe(HttpApiSchema.status(403)),
+        MailboxesUpdateSplit404.pipe(HttpApiSchema.status(404)),
+        MailboxesUpdateSplit422.pipe(HttpApiSchema.status(422)),
+        MailboxesUpdateSplit500,
+        MailboxesUpdateSplit504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.updateSplit")
+      .annotate(OpenApi.Summary, "Update a Mail split")
+      .annotate(
+        OpenApi.Description,
+        "Replaces the name, filter, mailbox scope and sidebar position of a split owned by the signed-in reader. Requires a person signed in through Mail or the CLI.",
+      ),
+    HttpApiEndpoint.delete("mailboxesDeleteSplit", "/v1/mailboxes/splits/:splitId", {
+      params: MailboxesDeleteSplitPathParams,
+      success: MailboxesDeleteSplit200,
+      error: [
+        MailboxesDeleteSplit400.pipe(HttpApiSchema.status(400)),
+        MailboxesDeleteSplit401.pipe(HttpApiSchema.status(401)),
+        MailboxesDeleteSplit403.pipe(HttpApiSchema.status(403)),
+        MailboxesDeleteSplit404.pipe(HttpApiSchema.status(404)),
+        MailboxesDeleteSplit422.pipe(HttpApiSchema.status(422)),
+        MailboxesDeleteSplit500,
+        MailboxesDeleteSplit504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.deleteSplit")
+      .annotate(OpenApi.Summary, "Delete a Mail split")
+      .annotate(
+        OpenApi.Description,
+        "Deletes the signed-in reader’s saved split and returns it. Requires a person signed in through Mail or the CLI.",
+      ),
+    HttpApiEndpoint.get("mailboxesCountSplits", "/v1/mailboxes/splits/counts", {
+      success: MailboxesCountSplits200,
+      error: [
+        MailboxesCountSplits400.pipe(HttpApiSchema.status(400)),
+        MailboxesCountSplits401.pipe(HttpApiSchema.status(401)),
+        MailboxesCountSplits403.pipe(HttpApiSchema.status(403)),
+        MailboxesCountSplits422.pipe(HttpApiSchema.status(422)),
+        MailboxesCountSplits500,
+        MailboxesCountSplits504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.countSplits")
+      .annotate(OpenApi.Summary, "Count unread Mail split threads")
+      .annotate(
+        OpenApi.Description,
+        "Returns each saved split’s unread actionable Inbox threads: not Done, not snoozed, and not Closed in shared mailboxes. Query splits use bounded search results; capped is true when search reaches its candidate limit, so unread is a lower bound. Requires a person signed in through Mail or the CLI.",
+      ),
     HttpApiEndpoint.get("mailboxesListOrganizationThreads", "/v1/mailboxes/threads", {
       query: MailboxesListOrganizationThreadsQuery,
       success: MailboxesListOrganizationThreads200,
@@ -5974,7 +7444,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "List threads across your mailboxes")
       .annotate(
         OpenApi.Description,
-        "Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes the caller's Done and shared closed threads; state=done selects the caller's Done plus closed shared threads, without duplicates. Other filters and cursor pagination match the per-mailbox list.",
+        "Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes what the caller finished; state=done selects the caller's Done, closed shared threads, and personal-mailbox threads in the archived folder, without duplicates. Other filters and cursor pagination match the per-mailbox list.",
       ),
   )
   .annotate(

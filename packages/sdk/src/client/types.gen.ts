@@ -1536,6 +1536,97 @@ export type MailboxDraftSummary = {
  */
 export type MailboxChannel = "sms" | "whatsapp" | "email";
 
+export type MailboxScheduledSendPage = {
+  items: Array<MailOutboxItem>;
+  nextCursor: string | null;
+};
+
+export type MailOutboxItem = {
+  id: MailOutboxItemId;
+  mailboxId: MailboxId;
+  threadId: MailboxThreadId | null;
+  draftId: MailboxDraftId;
+  draftRevision: number;
+  draftSummary?:
+    | {
+        to: Array<string>;
+        subject: string;
+      }
+    | undefined;
+  status: "queued" | "held" | "dispatched" | "cancelled" | "failed";
+  scheduledFor?: string | null | undefined;
+  holdReason: "threadChanged" | null;
+  revision: number;
+  baseSeq: number;
+  heldAtSeq: number | null;
+  actionId: MailboxActionId | null;
+  problem: MailOutboxProblem | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MailOutboxProblem = {
+  code: string;
+  message: string;
+};
+
+export type MailOutboxItemId = string;
+
+export type MailCommandReceipt = {
+  idempotencyKey: string;
+  type:
+    | "thread.patch"
+    | "thread.labels"
+    | "draft.create"
+    | "draft.update"
+    | "draft.delete"
+    | "send"
+    | "outbox.reschedule"
+    | "outbox.sendNow"
+    | "outbox.review"
+    | "outbox.cancel";
+  outcome: "applied" | "conflict" | "held" | "queued" | "cancelled" | "failed";
+  position: MailSyncPosition | null;
+  conflict: MailCommandConflict | null;
+  draft: {
+    id: MailboxDraftId;
+    revision: number;
+  } | null;
+  outbox: MailOutboxItem | null;
+  send: MailboxSendReceipt | null;
+};
+
+export type MailCommandConflict = {
+  code: "draftChanged" | "outboxChanged";
+  message: string;
+  currentRevision: number | null;
+};
+
+export type MailSyncPosition = {
+  epoch: string;
+  seq: number;
+};
+
+export type ChangeMailboxSchedule = {
+  idempotencyKey: string;
+  base: string;
+  expectedRevision: number;
+};
+
+export type RescheduleMailboxSend = {
+  idempotencyKey: string;
+  base: string;
+  expectedRevision: number;
+  sendAt: string;
+};
+
+export type ScheduleMailboxDraft = {
+  idempotencyKey: string;
+  base: string;
+  draftRevision: number;
+  sendAt: string;
+};
+
 export type MailboxQuarantinedMessage = {
   id: MessageId;
   disposition: "quarantined" | "isolated";
@@ -1824,6 +1915,8 @@ export type MailboxThreadState = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  reminderSetAt?: string | null | undefined;
+  reminderInboxAt?: string | null | undefined;
   doneAt: string | null;
   closedAt: string | null;
   closedBy: {
@@ -1851,6 +1944,8 @@ export type UpdateMailboxThreadPayload = {
   read?: boolean | null | undefined;
   starred?: boolean | null | undefined;
   snoozedUntil?: string | null | undefined;
+  ifNoReply?: boolean | undefined;
+  reminderInboxAt?: string | null | undefined;
 };
 
 export type MailboxThread = {
@@ -1869,6 +1964,8 @@ export type MailboxThread = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  reminderSetAt?: string | null | undefined;
+  reminderInboxAt?: string | null | undefined;
   doneAt: string | null;
   closedAt: string | null;
   closedBy: {
@@ -1924,6 +2021,8 @@ export type MailboxThreadSummary = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  reminderSetAt?: string | null | undefined;
+  reminderInboxAt?: string | null | undefined;
   doneAt: string | null;
   closedAt: string | null;
   closedBy: {
@@ -1955,6 +2054,8 @@ export type OrganizationMailboxThreadSummary = {
   read: boolean;
   starred: boolean;
   snoozedUntil: string | null;
+  reminderSetAt?: string | null | undefined;
+  reminderInboxAt?: string | null | undefined;
   doneAt: string | null;
   closedAt: string | null;
   closedBy: {
@@ -2399,6 +2500,28 @@ export type MailboxSummary = {
   primaryAddress: string | null;
   sendingStatus: "pending" | "ready" | "failed" | null;
   createdAt: string;
+};
+
+export type MailHistoryImportJob = {
+  id: string;
+  mailboxId: MailboxId;
+  status: "queued" | "running" | "done" | "failed";
+  imported: number;
+  skippedDuplicate: number;
+  skippedSpamTrash: number;
+  failed: number;
+  failures: Array<{
+    offset: number;
+    message: string;
+  }>;
+};
+
+export type CreateMailHistoryUpload = {
+  importId?: string | null | undefined;
+  filename: string;
+  sizeBytes: number;
+  format: "gmail" | "apple" | "mbox";
+  mailboxPath?: string | null | undefined;
 };
 
 export type Whoami = {
@@ -3091,6 +3214,13 @@ export type TemplateSourceError = {
   revision?: string | null | undefined;
 };
 
+export type SlugTaken = {
+  _tag: "SlugTaken";
+  slug: string;
+  suggestion: string;
+  message: string;
+};
+
 export type TemplateInUseError = {
   _tag: "TemplateInUseError";
   message: string;
@@ -3475,8 +3605,20 @@ export type SuggestTemplateStartersPayload = {
   brief: string;
 };
 
+export type ShareLinkUnavailable = {
+  _tag: "ShareLinkUnavailable";
+  message: string;
+};
+
 export type CreateTemplatePayload = {
-  name: string;
+  /**
+   * Required for a named or gallery project. Omit when copying a share link with shareLinkSlug.
+   */
+  name?: string | null | undefined;
+  /**
+   * Copy every exported entry into the current organization, or open its existing copy. When supplied, this is the only payload field. The project's name and brand come from the starter snapshot.
+   */
+  shareLinkSlug?: string | null | undefined;
   projectName?: string | null | undefined;
   slug?: string | null | undefined;
   galleryTemplateId?: string | null | undefined;
@@ -4003,6 +4145,263 @@ export type SubscribePayload = {
   consentSource?: string | null | undefined;
 };
 
+export type DeleteIntegrationResponse = {
+  id: IntegrationId;
+  deleted: true;
+};
+
+export type Integration = {
+  app: IntegrationKey;
+  settings: JsonObject;
+  id: IntegrationId;
+  status: IntegrationStatus;
+  accounts: AccountLinks;
+  supportsContactAccounts: boolean;
+  answerWithoutApproval: AnswerWithoutApproval;
+  tools: Array<IntegrationToolView>;
+  toolPage: {
+    nextOffset: number | null;
+    total: number;
+    revision: string;
+  };
+  installedBy: UserId | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IntegrationToolView = {
+  name: IntegrationTool;
+  title: string;
+  kind: IntegrationToolKind;
+  effect: "read" | "write" | "final";
+  guards: Array<"pinnedDestination" | "insideHours">;
+  granted: boolean;
+  unavailableReason?: "input_schema_too_large" | undefined;
+  enabled: boolean;
+  runsWithoutApproval: boolean;
+};
+
+export type IntegrationToolKind = "query" | "mutation";
+
+export type IntegrationTool = string;
+
+export type AnswerWithoutApproval = boolean;
+
+export type AccountLinks = {
+  [key: string]: IntegrationAccountId;
+};
+
+export type AccountLinksWritable = {
+  [key: string]: IntegrationAccountId | undefined;
+};
+
+export type IntegrationAccountId = string;
+
+export type IntegrationStatus = "pending" | "connected" | "needsReconnect";
+
+export type IntegrationKey = string;
+
+export type UpdateIntegrationPayload = {
+  answerWithoutApproval?: AnswerWithoutApproval | undefined;
+  enabledTools?: Array<IntegrationTool> | undefined;
+  tool?:
+    | {
+        name: IntegrationTool;
+        enabled?: boolean | undefined;
+        runsWithoutApproval?: boolean | undefined;
+      }
+    | undefined;
+  settings?: JsonObject | undefined;
+};
+
+export type InstallIntegrationPayload = {
+  app: IntegrationKey;
+  accounts: AccountLinks;
+  settings?: JsonObject | undefined;
+};
+
+export type IntegrationList = {
+  items: Array<Integration>;
+  nextCursor: string | null;
+};
+
+export type IntegrationCatalogResponse = {
+  entries: Array<IntegrationCatalogEntry>;
+};
+
+export type IntegrationCatalogEntry = {
+  id: string;
+  name: string;
+  category:
+    | "commerce"
+    | "payments"
+    | "shipping"
+    | "calendar"
+    | "crm"
+    | "helpdesk"
+    | "knowledge"
+    | "forms"
+    | "accounting"
+    | "reviews"
+    | "productivity"
+    | "dns"
+    | "channel"
+    | "other";
+  blurb: string;
+  connect: "account" | "dns" | "channelLink";
+  inviteOnly?: string | undefined;
+  app?: IntegrationKey | null | undefined;
+  href?: "/whatsapp" | null | undefined;
+  connections: Array<IntegrationCatalogConnection>;
+  usedBy: {
+    agents: number;
+    journeys: number;
+  };
+};
+
+export type IntegrationCatalogConnection = {
+  id: string;
+  account: string | null;
+  status: IntegrationStatus;
+};
+
+export type IntegrationCatalogSearchPage = {
+  items: Array<IntegrationCatalogSearchEntry>;
+  total: number;
+  nextOffset: number | null;
+};
+
+export type IntegrationCatalogSearchEntry = {
+  key: IntegrationKey;
+  kind: "mcp" | "openapi" | "graphql";
+  name: string;
+  description: string;
+  domain: string | null;
+  category:
+    | "commerce"
+    | "payments"
+    | "shipping"
+    | "calendar"
+    | "crm"
+    | "helpdesk"
+    | "knowledge"
+    | "forms"
+    | "accounting"
+    | "reviews"
+    | "productivity"
+    | "dns"
+    | "channel"
+    | "other";
+  icon: string | null;
+  logo?:
+    | {
+        file: string;
+        monochrome?: boolean | undefined;
+      }
+    | undefined;
+  featured: boolean;
+  connectSpec: {
+    provider: IntegrationKey;
+    auth: "discover" | "oauth" | "none" | "apiKey";
+    inputs: {
+      [key: string]: {
+        label: string;
+        description: string;
+        pattern: string;
+        maxLength: number;
+        example: string;
+        default?: string | undefined;
+        kind?: "hostnameLabel" | "httpsUrl" | undefined;
+      };
+    };
+    credentials: {
+      [key: string]: {
+        label: string;
+      };
+    };
+  };
+  connectState: "ready" | "checkedAtConnect" | "unavailable";
+  reason: string | null;
+};
+
+export type DeleteAccountResponse = {
+  id: IntegrationAccountId;
+  deleted: true;
+};
+
+export type ConnectAccountResponse = {
+  accountId: IntegrationAccountId;
+  authorizationUrl: string | null;
+};
+
+export type ConnectAccountPayload = {
+  provider: IntegrationKey;
+  input?: JsonObject | undefined;
+  credentials?:
+    | {
+        [key: string]: string;
+      }
+    | undefined;
+  app?: IntegrationKey | undefined;
+  accountId?: IntegrationAccountId | undefined;
+  expectedHosts?: Array<string> | undefined;
+  returnTo: IntegrationReturnTo;
+};
+
+/**
+ * A dashboard path starting with a single slash, such as /dashboard/acme/agents.
+ */
+export type IntegrationReturnTo = string;
+
+export type IntegrationAccountHealth = {
+  accountId: IntegrationAccountId;
+  status: AccountHealthStatus;
+  checkedAt: string;
+};
+
+export type AccountHealthStatus =
+  | "pending"
+  | "healthy"
+  | "needsReconnect"
+  | "forbidden"
+  | "unavailable";
+
+export type IntegrationAccount = {
+  provider: IntegrationKey;
+  input: JsonObject;
+  id: IntegrationAccountId;
+  webhooks?:
+    | Array<{
+        app: string;
+        url: string;
+        events: Array<string>;
+        signatureHeader: string;
+        deliveryIdHeader: string;
+        secretSetup: string;
+      }>
+    | undefined;
+  status: AccountStatus;
+  info: AccountInfo;
+  grantedScopes: Array<string>;
+  connectedBy: UserId | null;
+  connectedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AccountInfo = {
+  externalId?: string | undefined;
+  displayName?: string | undefined;
+  email?: string | undefined;
+  timeZone?: string | undefined;
+};
+
+export type AccountStatus = "pending" | "connected" | "needsReconnect";
+
+export type IntegrationAccountList = {
+  items: Array<IntegrationAccount>;
+};
+
 export type AgentVersion = {
   agentId: AgentId;
   version: number;
@@ -4100,6 +4499,8 @@ export type AgentDefinition = {
   knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
   endpointIds: Array<MailboxEndpointId>;
   integrations: Array<AgentIntegrationGrant>;
+  eventTriggers?: Array<string> | undefined;
+  followUpTemplate?: TemplateId | string | undefined;
   policy: PolicyConfiguration;
   model: AgentModelChoice;
   reasoning: AgentReasoning;
@@ -4126,6 +4527,7 @@ export type PolicyConfiguration = {
 
 export type AgentIntegrationGrant = {
   integrationId: IntegrationId;
+  subject?: "org" | "contact" | undefined;
   tools: AgentToolScope;
 };
 
@@ -7556,6 +7958,37 @@ export type MessageSender = {
   name: string | null;
 };
 
+export type ApprovalRequest = {
+  id: ApprovalRequestId;
+  organizationId: OrganizationId;
+  namespaceId: NamespaceId | null;
+  clientId: string;
+  requestedBy: UserId;
+  intent: string;
+  calls: Array<ApprovalCall>;
+  status: "pending" | "executing" | "executed" | "rejected" | "failed" | "expired";
+  expiresAt: string;
+  createdAt: string;
+  decidedAt: string | null;
+  decidedBy: UserId | null;
+  reason: string | null;
+  results: Array<unknown> | null;
+  error: string | null;
+  approvalUrl: string;
+};
+
+export type ApprovalCall = {
+  toolName: string;
+  arguments: JsonObject;
+};
+
+export type ApprovalCallWritable = {
+  toolName: string;
+  arguments: JsonObjectWritable;
+};
+
+export type ApprovalRequestId = string;
+
 export type JsonValue =
   | string
   | number
@@ -7575,6 +8008,229 @@ export type JsonValueWritable =
   | {
       [key: string]: JsonValueWritable | undefined;
     };
+
+export type ApprovalRequestsCreateData = {
+  body: {
+    intent: string;
+    calls: Array<ApprovalCallWritable>;
+    idempotencyKey: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/approval-requests";
+};
+
+export type ApprovalRequestsCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type ApprovalRequestsCreateError =
+  ApprovalRequestsCreateErrors[keyof ApprovalRequestsCreateErrors];
+
+export type ApprovalRequestsCreateResponses = {
+  /**
+   * ApprovalRequest
+   */
+  201: ApprovalRequest;
+};
+
+export type ApprovalRequestsCreateResponse =
+  ApprovalRequestsCreateResponses[keyof ApprovalRequestsCreateResponses];
+
+export type ApprovalRequestsGetData = {
+  body?: never;
+  path: {
+    id: ApprovalRequestId;
+  };
+  query?: never;
+  url: "/v1/approval-requests/{id}";
+};
+
+export type ApprovalRequestsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type ApprovalRequestsGetError = ApprovalRequestsGetErrors[keyof ApprovalRequestsGetErrors];
+
+export type ApprovalRequestsGetResponses = {
+  /**
+   * ApprovalRequest
+   */
+  200: ApprovalRequest;
+};
+
+export type ApprovalRequestsGetResponse =
+  ApprovalRequestsGetResponses[keyof ApprovalRequestsGetResponses];
+
+export type ApprovalRequestsApproveData = {
+  body?: never;
+  path: {
+    id: ApprovalRequestId;
+  };
+  query?: never;
+  url: "/v1/approval-requests/{id}/approve";
+};
+
+export type ApprovalRequestsApproveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type ApprovalRequestsApproveError =
+  ApprovalRequestsApproveErrors[keyof ApprovalRequestsApproveErrors];
+
+export type ApprovalRequestsApproveResponses = {
+  /**
+   * ApprovalRequest
+   */
+  200: ApprovalRequest;
+};
+
+export type ApprovalRequestsApproveResponse =
+  ApprovalRequestsApproveResponses[keyof ApprovalRequestsApproveResponses];
+
+export type ApprovalRequestsRejectData = {
+  body: {
+    reason?: string | null | undefined;
+  };
+  path: {
+    id: ApprovalRequestId;
+  };
+  query?: never;
+  url: "/v1/approval-requests/{id}/reject";
+};
+
+export type ApprovalRequestsRejectErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type ApprovalRequestsRejectError =
+  ApprovalRequestsRejectErrors[keyof ApprovalRequestsRejectErrors];
+
+export type ApprovalRequestsRejectResponses = {
+  /**
+   * ApprovalRequest
+   */
+  200: ApprovalRequest;
+};
+
+export type ApprovalRequestsRejectResponse =
+  ApprovalRequestsRejectResponses[keyof ApprovalRequestsRejectResponses];
 
 export type MessagesListData = {
   body?: never;
@@ -17694,6 +18350,924 @@ export type AgentsGetVersionResponses = {
 
 export type AgentsGetVersionResponse = AgentsGetVersionResponses[keyof AgentsGetVersionResponses];
 
+export type AccountsListContactConnectionsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    provider?: IntegrationKey | undefined;
+  };
+  url: "/v1/accounts/contact-connections";
+};
+
+export type AccountsListContactConnectionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AccountsListContactConnectionsError =
+  AccountsListContactConnectionsErrors[keyof AccountsListContactConnectionsErrors];
+
+export type AccountsListContactConnectionsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    items: Array<{
+      organizationId: OrganizationId;
+      integrationId: IntegrationId;
+      contactId: ContactId;
+      accountId: IntegrationAccountId;
+      provider?: IntegrationKey | undefined;
+      info: AccountInfo;
+      lastUsedAt: string;
+      idleExpiresAt: string;
+      createdAt: string;
+    }>;
+  };
+};
+
+export type AccountsListContactConnectionsResponse =
+  AccountsListContactConnectionsResponses[keyof AccountsListContactConnectionsResponses];
+
+export type AccountsListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/accounts";
+};
+
+export type AccountsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AccountsListError = AccountsListErrors[keyof AccountsListErrors];
+
+export type AccountsListResponses = {
+  /**
+   * IntegrationAccountList
+   */
+  200: IntegrationAccountList;
+};
+
+export type AccountsListResponse = AccountsListResponses[keyof AccountsListResponses];
+
+export type AccountsRemoveData = {
+  body?: never;
+  path: {
+    accountId: IntegrationAccountId;
+  };
+  query?: never;
+  url: "/v1/accounts/{accountId}";
+};
+
+export type AccountsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AccountsRemoveError = AccountsRemoveErrors[keyof AccountsRemoveErrors];
+
+export type AccountsRemoveResponses = {
+  /**
+   * DeleteAccountResponse
+   */
+  200: DeleteAccountResponse;
+};
+
+export type AccountsRemoveResponse = AccountsRemoveResponses[keyof AccountsRemoveResponses];
+
+export type AccountsGetData = {
+  body?: never;
+  path: {
+    accountId: IntegrationAccountId;
+  };
+  query?: never;
+  url: "/v1/accounts/{accountId}";
+};
+
+export type AccountsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AccountsGetError = AccountsGetErrors[keyof AccountsGetErrors];
+
+export type AccountsGetResponses = {
+  /**
+   * IntegrationAccount
+   */
+  200: IntegrationAccount;
+};
+
+export type AccountsGetResponse = AccountsGetResponses[keyof AccountsGetResponses];
+
+export type AccountsCheckData = {
+  body?: never;
+  path: {
+    accountId: IntegrationAccountId;
+  };
+  query?: never;
+  url: "/v1/accounts/{accountId}/check";
+};
+
+export type AccountsCheckErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AccountsCheckError = AccountsCheckErrors[keyof AccountsCheckErrors];
+
+export type AccountsCheckResponses = {
+  /**
+   * IntegrationAccountHealth
+   */
+  200: IntegrationAccountHealth;
+};
+
+export type AccountsCheckResponse = AccountsCheckResponses[keyof AccountsCheckResponses];
+
+export type AccountsConnectData = {
+  body: {
+    provider: IntegrationKey;
+    input?: JsonObjectWritable | undefined;
+    credentials?:
+      | {
+          [key: string]: string | undefined;
+        }
+      | undefined;
+    app?: IntegrationKey | undefined;
+    accountId?: IntegrationAccountId | undefined;
+    expectedHosts?: Array<string> | undefined;
+    returnTo: IntegrationReturnTo;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/accounts/connect";
+};
+
+export type AccountsConnectErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AccountsConnectError = AccountsConnectErrors[keyof AccountsConnectErrors];
+
+export type AccountsConnectResponses = {
+  /**
+   * ConnectAccountResponse
+   */
+  201: ConnectAccountResponse;
+};
+
+export type AccountsConnectResponse = AccountsConnectResponses[keyof AccountsConnectResponses];
+
+export type IntegrationCatalogPrepareData = {
+  body: {
+    provider: IntegrationKey;
+    input?: JsonObjectWritable | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/integrations/catalog/prepare";
+};
+
+export type IntegrationCatalogPrepareErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogPrepareError =
+  IntegrationCatalogPrepareErrors[keyof IntegrationCatalogPrepareErrors];
+
+export type IntegrationCatalogPrepareResponses = {
+  /**
+   * Success
+   */
+  200: {
+    connectSpec: {
+      provider: IntegrationKey;
+      auth: "discover" | "oauth" | "none" | "apiKey";
+      inputs: {
+        [key: string]: {
+          label: string;
+          description: string;
+          pattern: string;
+          maxLength: number;
+          example: string;
+          default?: string | undefined;
+          kind?: "hostnameLabel" | "httpsUrl" | undefined;
+        };
+      };
+      credentials: {
+        [key: string]: {
+          label: string;
+        };
+      };
+    };
+    hosts: Array<string>;
+    connectState: "ready" | "checkedAtConnect" | "unavailable";
+    reason: string | null;
+  };
+};
+
+export type IntegrationCatalogPrepareResponse =
+  IntegrationCatalogPrepareResponses[keyof IntegrationCatalogPrepareResponses];
+
+export type IntegrationCatalogSearchData = {
+  body?: never;
+  path?: never;
+  query?: {
+    key?: IntegrationKey | undefined;
+    query?: string | undefined;
+    category?:
+      | "commerce"
+      | "payments"
+      | "shipping"
+      | "calendar"
+      | "crm"
+      | "helpdesk"
+      | "knowledge"
+      | "forms"
+      | "accounting"
+      | "reviews"
+      | "productivity"
+      | "dns"
+      | "channel"
+      | "other"
+      | undefined;
+    offset?: number | undefined;
+    limit?: number | undefined;
+  };
+  url: "/v1/integrations/catalog/search";
+};
+
+export type IntegrationCatalogSearchErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogSearchError =
+  IntegrationCatalogSearchErrors[keyof IntegrationCatalogSearchErrors];
+
+export type IntegrationCatalogSearchResponses = {
+  /**
+   * IntegrationCatalogSearchPage
+   */
+  200: IntegrationCatalogSearchPage;
+};
+
+export type IntegrationCatalogSearchResponse =
+  IntegrationCatalogSearchResponses[keyof IntegrationCatalogSearchResponses];
+
+export type IntegrationCatalogListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/integrations/catalog";
+};
+
+export type IntegrationCatalogListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogListError =
+  IntegrationCatalogListErrors[keyof IntegrationCatalogListErrors];
+
+export type IntegrationCatalogListResponses = {
+  /**
+   * IntegrationCatalogResponse
+   */
+  200: IntegrationCatalogResponse;
+};
+
+export type IntegrationCatalogListResponse =
+  IntegrationCatalogListResponses[keyof IntegrationCatalogListResponses];
+
+export type IntegrationsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
+  };
+  url: "/v1/integrations";
+};
+
+export type IntegrationsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsListError = IntegrationsListErrors[keyof IntegrationsListErrors];
+
+export type IntegrationsListResponses = {
+  /**
+   * IntegrationList
+   */
+  200: IntegrationList;
+};
+
+export type IntegrationsListResponse = IntegrationsListResponses[keyof IntegrationsListResponses];
+
+export type IntegrationsInstallData = {
+  body: {
+    app: IntegrationKey;
+    accounts: AccountLinksWritable;
+    settings?: JsonObjectWritable | undefined;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/integrations";
+};
+
+export type IntegrationsInstallErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsInstallError = IntegrationsInstallErrors[keyof IntegrationsInstallErrors];
+
+export type IntegrationsInstallResponses = {
+  /**
+   * Integration
+   */
+  201: Integration;
+};
+
+export type IntegrationsInstallResponse =
+  IntegrationsInstallResponses[keyof IntegrationsInstallResponses];
+
+export type IntegrationsListToolsData = {
+  body?: never;
+  path: {
+    integrationId: IntegrationId;
+  };
+  query?: {
+    offset?: number | null | undefined;
+    revision?: string | undefined;
+  };
+  url: "/v1/integrations/{integrationId}/tools";
+};
+
+export type IntegrationsListToolsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsListToolsError =
+  IntegrationsListToolsErrors[keyof IntegrationsListToolsErrors];
+
+export type IntegrationsListToolsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    nextOffset: number | null;
+    total: number;
+    revision: string;
+    offset: number;
+    items: Array<IntegrationToolView>;
+  };
+};
+
+export type IntegrationsListToolsResponse =
+  IntegrationsListToolsResponses[keyof IntegrationsListToolsResponses];
+
+export type IntegrationsReadToolData = {
+  body?: never;
+  path: {
+    integrationId: IntegrationId;
+    tool: IntegrationTool;
+  };
+  query?: {
+    offset?: number | null | undefined;
+    revision?: string | undefined;
+  };
+  url: "/v1/integrations/{integrationId}/tools/{tool}";
+};
+
+export type IntegrationsReadToolErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsReadToolError =
+  IntegrationsReadToolErrors[keyof IntegrationsReadToolErrors];
+
+export type IntegrationsReadToolResponses = {
+  /**
+   * Success
+   */
+  200: {
+    data: string;
+    offset: number;
+    nextOffset: number | null;
+    totalCharacters: number;
+    revision: string;
+  };
+};
+
+export type IntegrationsReadToolResponse =
+  IntegrationsReadToolResponses[keyof IntegrationsReadToolResponses];
+
+export type IntegrationsRemoveData = {
+  body?: never;
+  path: {
+    integrationId: IntegrationId;
+  };
+  query?: never;
+  url: "/v1/integrations/{integrationId}";
+};
+
+export type IntegrationsRemoveErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsRemoveError = IntegrationsRemoveErrors[keyof IntegrationsRemoveErrors];
+
+export type IntegrationsRemoveResponses = {
+  /**
+   * DeleteIntegrationResponse
+   */
+  200: DeleteIntegrationResponse;
+};
+
+export type IntegrationsRemoveResponse =
+  IntegrationsRemoveResponses[keyof IntegrationsRemoveResponses];
+
+export type IntegrationsGetData = {
+  body?: never;
+  path: {
+    integrationId: IntegrationId;
+  };
+  query?: never;
+  url: "/v1/integrations/{integrationId}";
+};
+
+export type IntegrationsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsGetError = IntegrationsGetErrors[keyof IntegrationsGetErrors];
+
+export type IntegrationsGetResponses = {
+  /**
+   * Integration
+   */
+  200: Integration;
+};
+
+export type IntegrationsGetResponse = IntegrationsGetResponses[keyof IntegrationsGetResponses];
+
+export type IntegrationsUpdateData = {
+  body: {
+    answerWithoutApproval?: AnswerWithoutApproval | undefined;
+    enabledTools?: Array<IntegrationTool> | undefined;
+    tool?:
+      | {
+          name: IntegrationTool;
+          enabled?: boolean | undefined;
+          runsWithoutApproval?: boolean | undefined;
+        }
+      | undefined;
+    settings?: JsonObjectWritable | undefined;
+  };
+  path: {
+    integrationId: IntegrationId;
+  };
+  query?: never;
+  url: "/v1/integrations/{integrationId}";
+};
+
+export type IntegrationsUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationsUpdateError = IntegrationsUpdateErrors[keyof IntegrationsUpdateErrors];
+
+export type IntegrationsUpdateResponses = {
+  /**
+   * Integration
+   */
+  200: Integration;
+};
+
+export type IntegrationsUpdateResponse =
+  IntegrationsUpdateResponses[keyof IntegrationsUpdateResponses];
+
 export type SubscriptionsSubscribeData = {
   body: {
     email: string;
@@ -21990,7 +23564,14 @@ export type TemplatesListResponse = TemplatesListResponses[keyof TemplatesListRe
 
 export type TemplatesCreateData = {
   body: {
-    name: string;
+    /**
+     * Required for a named or gallery project. Omit when copying a share link with shareLinkSlug.
+     */
+    name?: string | null | undefined;
+    /**
+     * Copy every exported entry into the current organization, or open its existing copy. When supplied, this is the only payload field. The project's name and brand come from the starter snapshot.
+     */
+    shareLinkSlug?: string | null | undefined;
     projectName?: string | null | undefined;
     slug?: string | null | undefined;
     galleryTemplateId?: string | null | undefined;
@@ -22044,6 +23625,10 @@ export type TemplatesCreateErrors = {
    * ConflictError | TemplateInUseError
    */
   409: ConflictError | TemplateInUseError;
+  /**
+   * ShareLinkUnavailable
+   */
+  410: ShareLinkUnavailable;
   /**
    * TemplateSourceError | ValidationError
    */
@@ -25616,6 +27201,345 @@ export type TemplatesRemoveWorkspaceResourceResponses = {
 export type TemplatesRemoveWorkspaceResourceResponse =
   TemplatesRemoveWorkspaceResourceResponses[keyof TemplatesRemoveWorkspaceResourceResponses];
 
+export type TemplateShareLinksDeleteData = {
+  body?: never;
+  path: {
+    projectId: TemplateProjectId;
+  };
+  query?: never;
+  url: "/v1/template-projects/{projectId}/share-link";
+};
+
+export type TemplateShareLinksDeleteErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError | SlugTaken
+   */
+  409: ConflictError | SlugTaken;
+  /**
+   * ValidationError | TemplateSourceError
+   */
+  422: ValidationError | TemplateSourceError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateShareLinksDeleteError =
+  TemplateShareLinksDeleteErrors[keyof TemplateShareLinksDeleteErrors];
+
+export type TemplateShareLinksDeleteResponses = {
+  /**
+   * Success
+   */
+  200: {
+    deleted: boolean;
+  };
+};
+
+export type TemplateShareLinksDeleteResponse =
+  TemplateShareLinksDeleteResponses[keyof TemplateShareLinksDeleteResponses];
+
+export type TemplateShareLinksGetData = {
+  body?: never;
+  path: {
+    projectId: TemplateProjectId;
+  };
+  query?: never;
+  url: "/v1/template-projects/{projectId}/share-link";
+};
+
+export type TemplateShareLinksGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError | SlugTaken
+   */
+  409: ConflictError | SlugTaken;
+  /**
+   * ValidationError | TemplateSourceError
+   */
+  422: ValidationError | TemplateSourceError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateShareLinksGetError =
+  TemplateShareLinksGetErrors[keyof TemplateShareLinksGetErrors];
+
+export type TemplateShareLinksGetResponses = {
+  /**
+   * Success
+   */
+  200: {
+    slug: string;
+    url: string;
+    canonicalPath: string;
+    views: number;
+    opens: number;
+    updatedAt: string;
+  } | null;
+};
+
+export type TemplateShareLinksGetResponse =
+  TemplateShareLinksGetResponses[keyof TemplateShareLinksGetResponses];
+
+export type TemplateShareLinksRenameData = {
+  body: {
+    slug: string;
+  };
+  path: {
+    projectId: TemplateProjectId;
+  };
+  query?: never;
+  url: "/v1/template-projects/{projectId}/share-link";
+};
+
+export type TemplateShareLinksRenameErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError | SlugTaken
+   */
+  409: ConflictError | SlugTaken;
+  /**
+   * ValidationError | TemplateSourceError
+   */
+  422: ValidationError | TemplateSourceError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateShareLinksRenameError =
+  TemplateShareLinksRenameErrors[keyof TemplateShareLinksRenameErrors];
+
+export type TemplateShareLinksRenameResponses = {
+  /**
+   * Success
+   */
+  200: {
+    slug: string;
+    url: string;
+    canonicalPath: string;
+    views: number;
+    opens: number;
+    updatedAt: string;
+  };
+};
+
+export type TemplateShareLinksRenameResponse =
+  TemplateShareLinksRenameResponses[keyof TemplateShareLinksRenameResponses];
+
+export type TemplateShareLinksCreateData = {
+  body: {
+    slug?: string | null | undefined;
+  };
+  path: {
+    projectId: TemplateProjectId;
+  };
+  query?: never;
+  url: "/v1/template-projects/{projectId}/share-link";
+};
+
+export type TemplateShareLinksCreateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError | SlugTaken
+   */
+  409: ConflictError | SlugTaken;
+  /**
+   * ValidationError | TemplateSourceError
+   */
+  422: ValidationError | TemplateSourceError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateShareLinksCreateError =
+  TemplateShareLinksCreateErrors[keyof TemplateShareLinksCreateErrors];
+
+export type TemplateShareLinksCreateResponses = {
+  /**
+   * Success
+   */
+  200: {
+    slug: string;
+    url: string;
+    canonicalPath: string;
+    views: number;
+    opens: number;
+    updatedAt: string;
+  };
+};
+
+export type TemplateShareLinksCreateResponse =
+  TemplateShareLinksCreateResponses[keyof TemplateShareLinksCreateResponses];
+
+export type TemplateShareLinksUpdateData = {
+  body?: never;
+  path: {
+    projectId: TemplateProjectId;
+  };
+  query?: never;
+  url: "/v1/template-projects/{projectId}/share-link/update";
+};
+
+export type TemplateShareLinksUpdateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError | SlugTaken
+   */
+  409: ConflictError | SlugTaken;
+  /**
+   * ValidationError | TemplateSourceError
+   */
+  422: ValidationError | TemplateSourceError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type TemplateShareLinksUpdateError =
+  TemplateShareLinksUpdateErrors[keyof TemplateShareLinksUpdateErrors];
+
+export type TemplateShareLinksUpdateResponses = {
+  /**
+   * Success
+   */
+  200: {
+    slug: string;
+    url: string;
+    canonicalPath: string;
+    views: number;
+    opens: number;
+    updatedAt: string;
+  };
+};
+
+export type TemplateShareLinksUpdateResponse =
+  TemplateShareLinksUpdateResponses[keyof TemplateShareLinksUpdateResponses];
+
 export type BrandsListData = {
   body?: never;
   path?: never;
@@ -27965,6 +29889,238 @@ export type WhoamiGetResponses = {
 
 export type WhoamiGetResponse = WhoamiGetResponses[keyof WhoamiGetResponses];
 
+export type MailboxesCreateImportUploadData = {
+  body: {
+    importId?: string | null | undefined;
+    filename: string;
+    sizeBytes: number;
+    format: "gmail" | "apple" | "mbox";
+    mailboxPath?: string | null | undefined;
+  };
+  path: {
+    id: MailboxId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/uploads";
+};
+
+export type MailboxesCreateImportUploadErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesCreateImportUploadError =
+  MailboxesCreateImportUploadErrors[keyof MailboxesCreateImportUploadErrors];
+
+export type MailboxesCreateImportUploadResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: string;
+    uploadUrl: string;
+  };
+};
+
+export type MailboxesCreateImportUploadResponse =
+  MailboxesCreateImportUploadResponses[keyof MailboxesCreateImportUploadResponses];
+
+export type MailboxesStartImportData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+    importId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}/start";
+};
+
+export type MailboxesStartImportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesStartImportError =
+  MailboxesStartImportErrors[keyof MailboxesStartImportErrors];
+
+export type MailboxesStartImportResponses = {
+  /**
+   * MailHistoryImportJob
+   */
+  200: MailHistoryImportJob;
+};
+
+export type MailboxesStartImportResponse =
+  MailboxesStartImportResponses[keyof MailboxesStartImportResponses];
+
+export type MailboxesGetImportData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+    importId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}";
+};
+
+export type MailboxesGetImportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesGetImportError = MailboxesGetImportErrors[keyof MailboxesGetImportErrors];
+
+export type MailboxesGetImportResponses = {
+  /**
+   * MailHistoryImportJob
+   */
+  200: MailHistoryImportJob;
+};
+
+export type MailboxesGetImportResponse =
+  MailboxesGetImportResponses[keyof MailboxesGetImportResponses];
+
+export type MailboxesListImportsData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports";
+};
+
+export type MailboxesListImportsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesListImportsError =
+  MailboxesListImportsErrors[keyof MailboxesListImportsErrors];
+
+export type MailboxesListImportsResponses = {
+  /**
+   * Success
+   */
+  200: {
+    items: Array<MailHistoryImportJob>;
+  };
+};
+
+export type MailboxesListImportsResponse =
+  MailboxesListImportsResponses[keyof MailboxesListImportsResponses];
+
 export type MailboxesListData = {
   body?: never;
   path?: never;
@@ -29204,6 +31360,9 @@ export type MailboxesListOrganizationThreadsData = {
     cursor?: string | undefined;
     after?: string | undefined;
     before?: string | undefined;
+    recipient?: string | undefined;
+    senders?: string | Array<string> | undefined;
+    excludeTrash?: boolean | null | undefined;
     /**
      * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.
      */
@@ -29275,6 +31434,9 @@ export type MailboxesListThreadsData = {
     cursor?: string | undefined;
     after?: string | undefined;
     before?: string | undefined;
+    recipient?: string | undefined;
+    senders?: string | Array<string> | undefined;
+    excludeTrash?: boolean | null | undefined;
     /**
      * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.
      */
@@ -29395,6 +31557,8 @@ export type MailboxesUpdateThreadData = {
     read?: boolean | null | undefined;
     starred?: boolean | null | undefined;
     snoozedUntil?: string | null | undefined;
+    ifNoReply?: boolean | undefined;
+    reminderInboxAt?: string | null | undefined;
   };
   path: {
     id: MailboxId;
@@ -30636,6 +32800,328 @@ export type MailboxesDiscardMessageResponses = {
 export type MailboxesDiscardMessageResponse =
   MailboxesDiscardMessageResponses[keyof MailboxesDiscardMessageResponses];
 
+export type MailboxesScheduleDraftData = {
+  body: {
+    idempotencyKey: string;
+    base: string;
+    draftRevision: number;
+    sendAt: string;
+  };
+  path: {
+    id: MailboxId;
+    draftId: MailboxDraftId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/drafts/{draftId}/schedule";
+};
+
+export type MailboxesScheduleDraftErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesScheduleDraftError =
+  MailboxesScheduleDraftErrors[keyof MailboxesScheduleDraftErrors];
+
+export type MailboxesScheduleDraftResponses = {
+  /**
+   * MailCommandReceipt
+   */
+  200: MailCommandReceipt;
+};
+
+export type MailboxesScheduleDraftResponse =
+  MailboxesScheduleDraftResponses[keyof MailboxesScheduleDraftResponses];
+
+export type MailboxesUnscheduleSendData = {
+  body: {
+    idempotencyKey: string;
+    base: string;
+    expectedRevision: number;
+  };
+  path: {
+    id: MailboxId;
+    outboxId: MailOutboxItemId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/scheduled/{outboxId}";
+};
+
+export type MailboxesUnscheduleSendErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesUnscheduleSendError =
+  MailboxesUnscheduleSendErrors[keyof MailboxesUnscheduleSendErrors];
+
+export type MailboxesUnscheduleSendResponses = {
+  /**
+   * MailCommandReceipt
+   */
+  200: MailCommandReceipt;
+};
+
+export type MailboxesUnscheduleSendResponse =
+  MailboxesUnscheduleSendResponses[keyof MailboxesUnscheduleSendResponses];
+
+export type MailboxesRescheduleSendData = {
+  body: {
+    idempotencyKey: string;
+    base: string;
+    expectedRevision: number;
+    sendAt: string;
+  };
+  path: {
+    id: MailboxId;
+    outboxId: MailOutboxItemId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/scheduled/{outboxId}";
+};
+
+export type MailboxesRescheduleSendErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesRescheduleSendError =
+  MailboxesRescheduleSendErrors[keyof MailboxesRescheduleSendErrors];
+
+export type MailboxesRescheduleSendResponses = {
+  /**
+   * MailCommandReceipt
+   */
+  200: MailCommandReceipt;
+};
+
+export type MailboxesRescheduleSendResponse =
+  MailboxesRescheduleSendResponses[keyof MailboxesRescheduleSendResponses];
+
+export type MailboxesSendScheduledNowData = {
+  body: {
+    idempotencyKey: string;
+    base: string;
+    expectedRevision: number;
+  };
+  path: {
+    id: MailboxId;
+    outboxId: MailOutboxItemId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/scheduled/{outboxId}/send";
+};
+
+export type MailboxesSendScheduledNowErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesSendScheduledNowError =
+  MailboxesSendScheduledNowErrors[keyof MailboxesSendScheduledNowErrors];
+
+export type MailboxesSendScheduledNowResponses = {
+  /**
+   * MailCommandReceipt
+   */
+  200: MailCommandReceipt;
+};
+
+export type MailboxesSendScheduledNowResponse =
+  MailboxesSendScheduledNowResponses[keyof MailboxesSendScheduledNowResponses];
+
+export type MailboxesListScheduledSendsData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+  };
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
+  };
+  url: "/v1/mailboxes/{id}/scheduled";
+};
+
+export type MailboxesListScheduledSendsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesListScheduledSendsError =
+  MailboxesListScheduledSendsErrors[keyof MailboxesListScheduledSendsErrors];
+
+export type MailboxesListScheduledSendsResponses = {
+  /**
+   * MailboxScheduledSendPage
+   */
+  200: MailboxScheduledSendPage;
+};
+
+export type MailboxesListScheduledSendsResponse =
+  MailboxesListScheduledSendsResponses[keyof MailboxesListScheduledSendsResponses];
+
 export type MailboxesListDraftsData = {
   body?: never;
   path: {
@@ -31490,6 +33976,421 @@ export type MailboxesListEventsResponses = {
 
 export type MailboxesListEventsResponse =
   MailboxesListEventsResponses[keyof MailboxesListEventsResponses];
+
+export type MailboxesCountSplitsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/mailboxes/splits/counts";
+};
+
+export type MailboxesCountSplitsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesCountSplitsError =
+  MailboxesCountSplitsErrors[keyof MailboxesCountSplitsErrors];
+
+export type MailboxesCountSplitsResponses = {
+  /**
+   * Success
+   */
+  200: Array<{
+    splitId: string;
+    unread: number;
+    capped: boolean;
+  }>;
+};
+
+export type MailboxesCountSplitsResponse =
+  MailboxesCountSplitsResponses[keyof MailboxesCountSplitsResponses];
+
+export type MailboxesListSplitsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/mailboxes/splits";
+};
+
+export type MailboxesListSplitsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesListSplitsError = MailboxesListSplitsErrors[keyof MailboxesListSplitsErrors];
+
+export type MailboxesListSplitsResponses = {
+  /**
+   * Success
+   */
+  200: Array<{
+    id: string;
+    name: string;
+    filter:
+      | {
+          kind: "query";
+          query: string;
+        }
+      | {
+          kind: "address";
+          address: string;
+        }
+      | {
+          kind: "vip";
+          senders: [string, ...Array<string>];
+        };
+    mailboxId: MailboxId | null;
+    position: number;
+  }>;
+};
+
+export type MailboxesListSplitsResponse =
+  MailboxesListSplitsResponses[keyof MailboxesListSplitsResponses];
+
+export type MailboxesCreateSplitData = {
+  body: {
+    name: string;
+    filter:
+      | {
+          kind: "query";
+          query: string;
+        }
+      | {
+          kind: "address";
+          address: string;
+        }
+      | {
+          kind: "vip";
+          senders: [string, ...Array<string>];
+        };
+    mailboxId: MailboxId | null;
+    position: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/v1/mailboxes/splits";
+};
+
+export type MailboxesCreateSplitErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesCreateSplitError =
+  MailboxesCreateSplitErrors[keyof MailboxesCreateSplitErrors];
+
+export type MailboxesCreateSplitResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: string;
+    name: string;
+    filter:
+      | {
+          kind: "query";
+          query: string;
+        }
+      | {
+          kind: "address";
+          address: string;
+        }
+      | {
+          kind: "vip";
+          senders: [string, ...Array<string>];
+        };
+    mailboxId: MailboxId | null;
+    position: number;
+  };
+};
+
+export type MailboxesCreateSplitResponse =
+  MailboxesCreateSplitResponses[keyof MailboxesCreateSplitResponses];
+
+export type MailboxesDeleteSplitData = {
+  body?: never;
+  path: {
+    splitId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/splits/{splitId}";
+};
+
+export type MailboxesDeleteSplitErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesDeleteSplitError =
+  MailboxesDeleteSplitErrors[keyof MailboxesDeleteSplitErrors];
+
+export type MailboxesDeleteSplitResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: string;
+    name: string;
+    filter:
+      | {
+          kind: "query";
+          query: string;
+        }
+      | {
+          kind: "address";
+          address: string;
+        }
+      | {
+          kind: "vip";
+          senders: [string, ...Array<string>];
+        };
+    mailboxId: MailboxId | null;
+    position: number;
+  };
+};
+
+export type MailboxesDeleteSplitResponse =
+  MailboxesDeleteSplitResponses[keyof MailboxesDeleteSplitResponses];
+
+export type MailboxesUpdateSplitData = {
+  body: {
+    name: string;
+    filter:
+      | {
+          kind: "query";
+          query: string;
+        }
+      | {
+          kind: "address";
+          address: string;
+        }
+      | {
+          kind: "vip";
+          senders: [string, ...Array<string>];
+        };
+    mailboxId: MailboxId | null;
+    position: number;
+  };
+  path: {
+    splitId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/splits/{splitId}";
+};
+
+export type MailboxesUpdateSplitErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesUpdateSplitError =
+  MailboxesUpdateSplitErrors[keyof MailboxesUpdateSplitErrors];
+
+export type MailboxesUpdateSplitResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: string;
+    name: string;
+    filter:
+      | {
+          kind: "query";
+          query: string;
+        }
+      | {
+          kind: "address";
+          address: string;
+        }
+      | {
+          kind: "vip";
+          senders: [string, ...Array<string>];
+        };
+    mailboxId: MailboxId | null;
+    position: number;
+  };
+};
+
+export type MailboxesUpdateSplitResponse =
+  MailboxesUpdateSplitResponses[keyof MailboxesUpdateSplitResponses];
+
+export type MailboxesListAddressesData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+  };
+  query?: {
+    recipient?: string | Array<string> | undefined;
+  };
+  url: "/v1/mailboxes/{id}/addresses";
+};
+
+export type MailboxesListAddressesErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesListAddressesError =
+  MailboxesListAddressesErrors[keyof MailboxesListAddressesErrors];
+
+export type MailboxesListAddressesResponses = {
+  /**
+   * Success
+   */
+  200: Array<string>;
+};
+
+export type MailboxesListAddressesResponse =
+  MailboxesListAddressesResponses[keyof MailboxesListAddressesResponses];
 
 export type PoliciesDeletePolicyData = {
   body?: never;

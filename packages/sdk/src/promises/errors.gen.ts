@@ -27,6 +27,8 @@ export type SamvaApiErrorTag =
   | "ResourceNotFoundError"
   | "SenderNotReadyError"
   | "ServiceUnavailableError"
+  | "ShareLinkUnavailable"
+  | "SlugTaken"
   | "TemplateInUseError"
   | "TemplateSourceError"
   | "UnauthorizedError"
@@ -548,6 +550,41 @@ export class ServiceUnavailableError extends SamvaApiError<"ServiceUnavailableEr
   }
 }
 
+type ShareLinkUnavailablePayload = {
+  readonly _tag: "ShareLinkUnavailable";
+  readonly message: string;
+};
+
+export class ShareLinkUnavailable extends SamvaApiError<"ShareLinkUnavailable"> {
+  readonly _tag = "ShareLinkUnavailable" as const;
+
+  constructor(
+    payload: Omit<ShareLinkUnavailablePayload, "_tag">,
+    context: SamvaApiErrorContext = {},
+  ) {
+    super(messageOf("ShareLinkUnavailable", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
+type SlugTakenPayload = {
+  readonly _tag: "SlugTaken";
+  readonly message: string;
+  readonly slug: string;
+  readonly suggestion: string;
+};
+
+export class SlugTaken extends SamvaApiError<"SlugTaken"> {
+  readonly _tag = "SlugTaken" as const;
+  declare readonly "slug": string;
+  declare readonly "suggestion": string;
+
+  constructor(payload: Omit<SlugTakenPayload, "_tag">, context: SamvaApiErrorContext = {}) {
+    super(messageOf("SlugTaken", payload), context);
+    Object.assign(this, payload);
+  }
+}
+
 type TemplateInUseErrorPayload = {
   readonly _tag: "TemplateInUseError";
   readonly message: string;
@@ -753,6 +790,8 @@ export type AnySamvaApiError =
   | ResourceNotFoundError
   | SenderNotReadyError
   | ServiceUnavailableError
+  | ShareLinkUnavailable
+  | SlugTaken
   | TemplateInUseError
   | TemplateSourceError
   | UnauthorizedError
@@ -787,6 +826,8 @@ const constructors = {
   ResourceNotFoundError: ResourceNotFoundError,
   SenderNotReadyError: SenderNotReadyError,
   ServiceUnavailableError: ServiceUnavailableError,
+  ShareLinkUnavailable: ShareLinkUnavailable,
+  SlugTaken: SlugTaken,
   TemplateInUseError: TemplateInUseError,
   TemplateSourceError: TemplateSourceError,
   UnauthorizedError: UnauthorizedError,
@@ -1918,6 +1959,26 @@ const payloadSchemas = {
     additionalProperties: false,
     "x-category": ["transient"],
     "x-retryable": true,
+  },
+  ShareLinkUnavailable: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["ShareLinkUnavailable"] },
+      message: { type: "string" },
+    },
+    required: ["_tag", "message"],
+    additionalProperties: false,
+  },
+  SlugTaken: {
+    type: "object",
+    properties: {
+      _tag: { type: "string", enum: ["SlugTaken"] },
+      slug: { type: "string", pattern: "^[a-z0-9-]{3,60}$" },
+      suggestion: { type: "string", pattern: "^[a-z0-9-]{3,60}$" },
+      message: { type: "string" },
+    },
+    required: ["_tag", "slug", "suggestion", "message"],
+    additionalProperties: false,
   },
   TemplateInUseError: {
     type: "object",

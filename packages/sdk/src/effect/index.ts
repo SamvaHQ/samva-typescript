@@ -17,9 +17,13 @@
  * ```
  */
 
+export * as Accounts from "./accounts";
+export * as IntegrationCatalog from "./integrations-catalog";
+export * as Integrations from "./integrations";
 export * as Agents from "./agents";
 export * as Analytics from "./analytics";
 export * as ApiKeys from "./api-keys";
+export * as ApprovalRequests from "./approval-requests";
 export * as Attachments from "./attachments";
 export * as Brands from "./brands";
 export * as Campaigns from "./campaigns";
@@ -85,3 +89,5 @@ export * as WhatsApp from "./whatsapp";
 export * as WhatsAppFlows from "./whatsapp-flows";
 export * as WhatsAppSetupLinks from "./whatsapp-setup-links";
 export * as TemplateRegistrations from "./template-registrations";
+
+export * as TemplateShareLinks from "./template-share-links";

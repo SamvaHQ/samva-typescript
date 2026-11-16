@@ -25,6 +25,29 @@ import {
 export type UnknownRecord = { readonly [x: string]: JsonValue };
 export const UnknownRecord = /* @__PURE__ */ (() =>
   Schema.Record(Schema.String, JsonValue).annotate({ identifier: "UnknownRecord" }))();
+export type ConversationContact = {
+  readonly id: ContactId;
+  readonly name: string;
+  readonly displayName: string | null;
+  readonly identities: ReadonlyArray<{
+    readonly type: "email" | "phone";
+    readonly identifier: string;
+    readonly verified: boolean;
+  }>;
+};
+export const ConversationContact = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactId,
+    name: Schema.String,
+    displayName: Schema.Union([Schema.String, Schema.Null]),
+    identities: Schema.Array(
+      Schema.Struct({
+        type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
+        identifier: Schema.String,
+        verified: Schema.Boolean,
+      }),
+    ),
+  }).annotate({ identifier: "ConversationContact" }))();
 export type ConversationSummary = {
   readonly id: ConversationId;
   readonly namespaceId: NamespaceId | null;
@@ -95,29 +118,6 @@ export const ConversationSummary = /* @__PURE__ */ (() =>
     lastActivityAt: Schema.String,
     createdAt: Schema.String,
   }).annotate({ identifier: "ConversationSummary" }))();
-export type ConversationContact = {
-  readonly id: ContactId;
-  readonly name: string;
-  readonly displayName: string | null;
-  readonly identities: ReadonlyArray<{
-    readonly type: "email" | "phone";
-    readonly identifier: string;
-    readonly verified: boolean;
-  }>;
-};
-export const ConversationContact = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: ContactId,
-    name: Schema.String,
-    displayName: Schema.Union([Schema.String, Schema.Null]),
-    identities: Schema.Array(
-      Schema.Struct({
-        type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
-        identifier: Schema.String,
-        verified: Schema.Boolean,
-      }),
-    ),
-  }).annotate({ identifier: "ConversationContact" }))();
 export type ConversationContext = {
   readonly customerData?: UnknownRecord | null;
   readonly previousConversations?: ReadonlyArray<string> | null;

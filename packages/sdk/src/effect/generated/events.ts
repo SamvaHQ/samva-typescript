@@ -120,6 +120,11 @@ export const EventsCreateRequestJson = /* @__PURE__ */ (() =>
       )
       .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
       .check(
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z][A-Za-z0-9_.-]*$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z][A-Za-z0-9_.-]*$",
+        }),
+      )
+      .check(
         Schema.isPattern(
           new globalThis.RegExp(
             "^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",

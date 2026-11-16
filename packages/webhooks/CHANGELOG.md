@@ -1,3 +1,51 @@
+## @samva/webhooks@0.46.0
+
+### Manage integrations and contact connections from the SDK
+
+The SDK adds the `accounts`, `integrations`, and `integrationCatalog` Promise namespaces and
+matching Effect modules. Owners can list contacts' connections with
+`accounts.listContactConnections()` and revoke one with `accounts.remove({ accountId })`.
+Agent integration grants accept `subject: "contact"`, so a hosted agent can request authorization
+and act through each contact's own OAuth account.
+
+### Approve OAuth actions before they run
+
+`approvalRequests.create` asks an owner to approve a batch of tool calls, and
+`approvalRequests.get` reads the outcome. Owners approve or reject in the dashboard, signed in as
+themselves. The Effect SDK exports `ApprovalRequests` from `samva/effect` and
+`samva/effect/approval-requests`.
+
+Over hosted MCP, an OAuth call that needs an owner's decision returns an approval link instead of
+running. Reads and ordinary edits run directly. Approved calls keep the original connection's
+permissions. Rejected and expired requests never run, and an interrupted run is never retried
+automatically.
+
+Tools that return credentials use the dashboard or direct API; approval requests refuse them before
+creating resources.
+
+### Agents follow up on contact events
+
+Agent definitions accept `eventTriggers` for contact events that start a turn on an existing
+conversation, and `followUpTemplate` for an approved WhatsApp template to send outside the service
+window. Configure both through the SDK or the CLI's `agents draft` JSON definition, then publish
+the agent. Inside the window, the agent replies in its own words.
+
+### Create and manage template share links
+
+Use `client.templateShareLinks` to create, update, get, rename, or delete a share link for a
+`projectId`. Effect applications import `TemplateShareLinks` from
+`samva/effect/template-share-links`.
+
+Create accepts an optional slug, defaulting to the slugified project name. Owner responses include
+the canonical URL and `canonicalPath`: `/t/<slug>`, or `/for/<slug>` for the platform organization.
+Update exports the latest Save at the same link. Get includes view/open counts and update time.
+Rename breaks the old link. Delete disables the link while keeping copies people already opened.
+
+Copy every exported email into the current organization with
+`client.templates.create({ shareLinkSlug })`. The response includes `projectId`, and repeated
+opens reuse the organization's copy. An unavailable share link returns `ShareLinkUnavailable`
+(410).
+
 ## @samva/webhooks@0.45.1
 
 ### Analytics reports failed email per day and sends by weekday

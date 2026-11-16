@@ -219,13 +219,34 @@ await samva.email.send({
 A template send omits `subject`, `html`, and `text`; the request fails if `templateData` does not
 match the template's input schema. `samva templates types` generates TypeScript types for that input.
 
+## Copy a Share Link
+
+```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const copy = await samva.templates.create({ shareLinkSlug: "for-context-dev" });
+console.log(copy.projectId);
+```
+
+Pass only `shareLinkSlug` to copy every exported email into the current organization. The response
+is the first template entry and includes the project ID to open in the editor. Repeated opens
+reuse the organization's existing copy. An unavailable share link returns `ShareLinkUnavailable`
+(410); copies already created remain independent.
+
+Effect applications use `Templates.create({ shareLinkSlug })` from `samva/effect/templates`.
+The CLI accepts `samva templates create --data '{"shareLinkSlug":"for-context-dev"}' --json`.
+
 ## Service Surface
 
 The Promise client exposes:
 
+- `accounts`
 - `agents`
 - `analytics`
 - `apiKeys`
+- `approvalRequests`
 - `attachments`
 - `brands`
 - `campaigns`
@@ -238,6 +259,8 @@ The Promise client exposes:
 - `extensionInstallations`
 - `extensions`
 - `feedback`
+- `integrationCatalog`
+- `integrations`
 - `journeys`
 - `mailboxes`
 - `media`
@@ -251,6 +274,7 @@ The Promise client exposes:
 - `subscriptions`
 - `templates`
 - `templateRegistrations`
+- `templateShareLinks`
 - `whatsapp`
 - `whatsappFlows`
 - `whatsappSetupLinks`

@@ -5,11 +5,16 @@ import {
   WhatsAppFlows,
   WhatsAppSetupLinks,
   TemplateRegistrations,
+  TemplateShareLinks,
 } from "../../src/effect";
 import {
+  Accounts,
+  Integrations,
+  IntegrationCatalog,
   Agents,
   Analytics,
   ApiKeys,
+  ApprovalRequests,
   Attachments,
   Brands,
   Campaigns,
@@ -56,13 +61,18 @@ const generatedOperationNames = (): ReadonlyArray<string> => {
 };
 
 const effectModules = {
+  accounts: Accounts,
+  integrations: Integrations,
+  integrationCatalog: IntegrationCatalog,
   agents: Agents,
   whatsapp: WhatsApp,
   whatsappFlows: WhatsAppFlows,
   whatsappSetupLinks: WhatsAppSetupLinks,
   templateRegistrations: TemplateRegistrations,
+  templateShareLinks: TemplateShareLinks,
   analytics: Analytics,
   apiKeys: ApiKeys,
+  approvalRequests: ApprovalRequests,
   attachments: Attachments,
   brands: Brands,
   campaigns: Campaigns,

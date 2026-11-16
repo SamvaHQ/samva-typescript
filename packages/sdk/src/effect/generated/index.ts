@@ -2,9 +2,11 @@
 
 import { HttpApi, OpenApi } from "effect/http-api";
 
+import { AccountsGroup } from "./accounts";
 import { AgentsGroup } from "./agents";
 import { AnalyticsGroup } from "./analytics";
 import { APIKeysGroup } from "./api-keys";
+import { ApprovalRequestsGroup } from "./approval-requests";
 import { AttachmentsGroup } from "./attachments";
 import { BrandsGroup } from "./brands";
 import { CampaignsGroup } from "./campaigns";
@@ -18,6 +20,8 @@ import { EventsGroup } from "./events";
 import { ExtensionInstallationsGroup } from "./extension-installations";
 import { ExtensionsGroup } from "./extensions";
 import { FeedbackGroup } from "./feedback";
+import { IntegrationsGroup } from "./integrations";
+import { IntegrationsCatalogGroup } from "./integrations-catalog";
 import { JourneysGroup } from "./journeys";
 import { MailboxesGroup } from "./mailboxes";
 import { MediaGroup } from "./media";
@@ -32,6 +36,7 @@ import { PoliciesGroup } from "./policies";
 import { ScheduledMessagesGroup } from "./scheduled-messages";
 import { SubscriptionsGroup } from "./subscriptions";
 import { TemplateRegistrationsGroup } from "./template-registrations";
+import { TemplateShareLinksGroup } from "./template-share-links";
 import { TemplatesGroup } from "./templates";
 import { TopicFormsGroup } from "./topic-forms";
 import { TopicsGroup } from "./topics";
@@ -43,11 +48,15 @@ import { WhoamiGroup } from "./whoami";
 
 export * from "./shared";
 
+export * from "./accounts";
+
 export * from "./agents";
 
 export * from "./analytics";
 
 export * from "./api-keys";
+
+export * from "./approval-requests";
 
 export * from "./attachments";
 
@@ -75,6 +84,10 @@ export * from "./extensions";
 
 export * from "./feedback";
 
+export * from "./integrations";
+
+export * from "./integrations-catalog";
+
 export * from "./journeys";
 
 export * from "./mailboxes";
@@ -100,6 +113,8 @@ export * from "./organizations";
 export * from "./policies";
 
 export * from "./subscriptions";
+
+export * from "./template-share-links";
 
 export * from "./templates";
 
@@ -128,9 +143,11 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
   )
   .annotate(OpenApi.Servers, [{ url: "https://api.samva.dev" }])
   .add(
+    AccountsGroup,
     AgentsGroup,
     AnalyticsGroup,
     APIKeysGroup,
+    ApprovalRequestsGroup,
     AttachmentsGroup,
     BrandsGroup,
     CampaignsGroup,
@@ -144,6 +161,8 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     ExtensionInstallationsGroup,
     ExtensionsGroup,
     FeedbackGroup,
+    IntegrationsGroup,
+    IntegrationsCatalogGroup,
     JourneysGroup,
     MailboxesGroup,
     MediaGroup,
@@ -157,6 +176,7 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     OrganizationsGroup,
     PoliciesGroup,
     SubscriptionsGroup,
+    TemplateShareLinksGroup,
     TemplatesGroup,
     TemplateRegistrationsGroup,
     TopicsGroup,

@@ -20,29 +20,33 @@ export type JsonValue =
   | ReadonlyArray<JsonValue>
   | { readonly [x: string]: JsonValue };
 export const JsonValue = Schema.suspend((): Schema.Codec<JsonValue> => __recursive_JsonValue);
-export type NamespaceId = string & EffectBrand.Brand<"NamespaceId">;
-export const NamespaceId = /* @__PURE__ */ (() =>
+export type IntegrationKey = string;
+export const IntegrationKey = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "NamespaceId",
+    Schema.isPattern(new globalThis.RegExp("^[a-z0-9][a-z0-9_-]{0,63}$", "u")).annotate({
+      expected: "a string matching the RegExp ^[a-z0-9][a-z0-9_-]{0,63}$",
+      identifier: "IntegrationKey",
     }),
-  ).pipe(Schema.brand("NamespaceId")))();
-export type AgentId = string & EffectBrand.Brand<"AgentId">;
-export const AgentId = /* @__PURE__ */ (() =>
+  ))();
+export type JsonObject = { readonly [x: string]: JsonValue };
+export const JsonObject = /* @__PURE__ */ (() =>
+  Schema.Record(Schema.String, JsonValue).annotate({ identifier: "JsonObject" }))();
+export type IntegrationAccountId = string & EffectBrand.Brand<"IntegrationAccountId">;
+export const IntegrationAccountId = /* @__PURE__ */ (() =>
   Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^agt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^agt_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "AgentId",
+    Schema.isPattern(new globalThis.RegExp("^intgacct_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^intgacct_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "IntegrationAccountId",
     }),
-  ).pipe(Schema.brand("AgentId")))();
-export type AgentSetupJob = "support" | "store" | "booking";
-export const AgentSetupJob = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Literal("support"),
-    Schema.Literal("store"),
-    Schema.Literal("booking"),
-  ]).annotate({ identifier: "AgentSetupJob" }))();
+  ).pipe(Schema.brand("IntegrationAccountId")))();
+export type UserId = string & EffectBrand.Brand<"UserId">;
+export const UserId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^user_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^user_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "UserId",
+    }),
+  ).pipe(Schema.brand("UserId")))();
 export class MalformedRequestError extends Schema.TaggedError<MalformedRequestError>()(
   "MalformedRequestError",
   Schema.Struct({
@@ -80,6 +84,74 @@ export class GatewayTimeoutError extends Schema.TaggedError<GatewayTimeoutError>
     ),
   }),
 ) {}
+export class ResourceNotFoundError extends Schema.TaggedError<ResourceNotFoundError>()(
+  "ResourceNotFoundError",
+  Schema.Struct({ resource: Schema.String, id: Schema.String, message: Schema.String }),
+) {}
+export type IntegrationReturnTo = string;
+export const IntegrationReturnTo = /* @__PURE__ */ (() =>
+  Schema.String.annotate({
+    description: "A dashboard path starting with a single slash, such as /dashboard/acme/agents.",
+  })
+    .check(
+      Schema.isMaxCodePoints(2048).annotate({ expected: "a string with at most 2048 code points" }),
+    )
+    .check(
+      Schema.isPattern(new globalThis.RegExp("^\\/(?![/\\\\])[\\x21-\\x7e]*$", "u")).annotate({
+        expected: "a string matching the RegExp ^\\/(?![/\\\\])[\\x21-\\x7e]*$",
+        identifier: "IntegrationReturnTo",
+      }),
+    )
+    .check(
+      Schema.isMaxLength(2048).annotate({ expected: "a value with a length of at most 2048" }),
+    ))();
+export type OrganizationId = string & EffectBrand.Brand<"OrganizationId">;
+export const OrganizationId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "OrganizationId",
+    }),
+  ).pipe(Schema.brand("OrganizationId")))();
+export type IntegrationId = string & EffectBrand.Brand<"IntegrationId">;
+export const IntegrationId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^intg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^intg_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "IntegrationId",
+    }),
+  ).pipe(Schema.brand("IntegrationId")))();
+export type ContactId = string & EffectBrand.Brand<"ContactId">;
+export const ContactId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "ContactId",
+    }),
+  ).pipe(Schema.brand("ContactId")))();
+export type NamespaceId = string & EffectBrand.Brand<"NamespaceId">;
+export const NamespaceId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "NamespaceId",
+    }),
+  ).pipe(Schema.brand("NamespaceId")))();
+export type AgentId = string & EffectBrand.Brand<"AgentId">;
+export const AgentId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^agt_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^agt_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "AgentId",
+    }),
+  ).pipe(Schema.brand("AgentId")))();
+export type AgentSetupJob = "support" | "store" | "booking";
+export const AgentSetupJob = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("support"),
+    Schema.Literal("store"),
+    Schema.Literal("booking"),
+  ]).annotate({ identifier: "AgentSetupJob" }))();
 export type AgentName = string;
 export const AgentName = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -113,14 +185,6 @@ export const MailboxEndpointId = /* @__PURE__ */ (() =>
       identifier: "MailboxEndpointId",
     }),
   ).pipe(Schema.brand("MailboxEndpointId")))();
-export type IntegrationId = string & EffectBrand.Brand<"IntegrationId">;
-export const IntegrationId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^intg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^intg_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "IntegrationId",
-    }),
-  ).pipe(Schema.brand("IntegrationId")))();
 export type AgentToolScope =
   | { readonly kind: "all" }
   | { readonly kind: "readOnly" }
@@ -140,6 +204,14 @@ export const AgentToolScope = /* @__PURE__ */ (() =>
       ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
     }),
   ]).annotate({ identifier: "AgentToolScope" }))();
+export type TemplateId = string & EffectBrand.Brand<"TemplateId">;
+export const TemplateId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "TemplateId",
+    }),
+  ).pipe(Schema.brand("TemplateId")))();
 export type PolicyEffect = "read" | "write" | "final";
 export const PolicyEffect = /* @__PURE__ */ (() =>
   Schema.Union([Schema.Literal("read"), Schema.Literal("write"), Schema.Literal("final")]).annotate(
@@ -153,14 +225,6 @@ export const ApiKeyId = /* @__PURE__ */ (() =>
       identifier: "ApiKeyId",
     }),
   ).pipe(Schema.brand("ApiKeyId")))();
-export type UserId = string & EffectBrand.Brand<"UserId">;
-export const UserId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^user_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^user_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "UserId",
-    }),
-  ).pipe(Schema.brand("UserId")))();
 export type ExtensionInstallationId = string & EffectBrand.Brand<"ExtensionInstallationId">;
 export const ExtensionInstallationId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -243,10 +307,6 @@ export class PaymentRequiredError extends Schema.TaggedError<PaymentRequiredErro
     currentUsage: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
     limit: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
   }),
-) {}
-export class ResourceNotFoundError extends Schema.TaggedError<ResourceNotFoundError>()(
-  "ResourceNotFoundError",
-  Schema.Struct({ resource: Schema.String, id: Schema.String, message: Schema.String }),
 ) {}
 export type MonthlySpendCapDollars = number;
 export const MonthlySpendCapDollars = /* @__PURE__ */ (() =>
@@ -383,14 +443,6 @@ export const AttachmentId = /* @__PURE__ */ (() =>
       identifier: "AttachmentId",
     }),
   ).pipe(Schema.brand("AttachmentId")))();
-export type OrganizationId = string & EffectBrand.Brand<"OrganizationId">;
-export const OrganizationId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^org_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^org_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "OrganizationId",
-    }),
-  ).pipe(Schema.brand("OrganizationId")))();
 export type BrandAssets = {
   readonly logoUrl?: string | null;
   readonly logoDarkUrl?: string | null;
@@ -536,17 +588,6 @@ export const TemplateInputContractId = /* @__PURE__ */ (() =>
       identifier: "TemplateInputContractId",
     }),
   ).pipe(Schema.brand("TemplateInputContractId")))();
-export type TemplateId = string & EffectBrand.Brand<"TemplateId">;
-export const TemplateId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "TemplateId",
-    }),
-  ).pipe(Schema.brand("TemplateId")))();
-export type JsonObject = { readonly [x: string]: JsonValue };
-export const JsonObject = /* @__PURE__ */ (() =>
-  Schema.Record(Schema.String, JsonValue).annotate({ identifier: "JsonObject" }))();
 export type RenderLocale = string;
 export const RenderLocale = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -675,14 +716,6 @@ export const WhatsAppBusinessAccountId = /* @__PURE__ */ (() =>
       identifier: "WhatsAppBusinessAccountId",
     }),
   ).pipe(Schema.brand("WhatsAppBusinessAccountId")))();
-export type ContactId = string & EffectBrand.Brand<"ContactId">;
-export const ContactId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^contact_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^contact_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "ContactId",
-    }),
-  ).pipe(Schema.brand("ContactId")))();
 export type ContactGroupId = string & EffectBrand.Brand<"ContactGroupId">;
 export const ContactGroupId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1050,6 +1083,24 @@ export const FeedbackContext = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "FeedbackContext" }))();
+export type IntegrationStatus = "pending" | "connected" | "needsReconnect";
+export const IntegrationStatus = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("pending"),
+    Schema.Literal("connected"),
+    Schema.Literal("needsReconnect"),
+  ]).annotate({ identifier: "IntegrationStatus" }))();
+export type AnswerWithoutApproval = boolean;
+export const AnswerWithoutApproval = /* @__PURE__ */ (() =>
+  Schema.Boolean.annotate({ identifier: "AnswerWithoutApproval" }))();
+export type IntegrationTool = string;
+export const IntegrationTool = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^[a-z][a-z0-9_.]{0,63}$", "u")).annotate({
+      expected: "a string matching the RegExp ^[a-z][a-z0-9_.]{0,63}$",
+      identifier: "IntegrationTool",
+    }),
+  ))();
 export type JourneyId = string & EffectBrand.Brand<"JourneyId">;
 export const JourneyId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1087,6 +1138,11 @@ export const JourneyCustomEventName = /* @__PURE__ */ (() =>
       }),
     )
     .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
+    .check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z][A-Za-z0-9_.-]*$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z][A-Za-z0-9_.-]*$",
+      }),
+    )
     .check(
       Schema.isPattern(
         new globalThis.RegExp(
@@ -2507,6 +2563,22 @@ export const PolicyVersion = /* @__PURE__ */ (() =>
         identifier: "PolicyVersion",
       }),
     ))();
+export class SlugTaken extends Schema.TaggedError<SlugTaken>()(
+  "SlugTaken",
+  Schema.Struct({
+    slug: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[a-z0-9-]{3,60}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9-]{3,60}$",
+      }),
+    ),
+    suggestion: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[a-z0-9-]{3,60}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-z0-9-]{3,60}$",
+      }),
+    ),
+    message: Schema.String,
+  }),
+) {}
 export type TemplateTrackingDefault = {
   readonly opens?: boolean | null;
   readonly clicks?: boolean | null;
@@ -2522,6 +2594,10 @@ export class TemplateInUseError extends Schema.TaggedError<TemplateInUseError>()
     message: Schema.String,
     references: Schema.Array(Schema.Struct({ kind: Schema.String, id: Schema.String })),
   }),
+) {}
+export class ShareLinkUnavailable extends Schema.TaggedError<ShareLinkUnavailable>()(
+  "ShareLinkUnavailable",
+  Schema.Struct({ message: Schema.String }),
 ) {}
 export type TemplateFromDefaultInput = { readonly email: string; readonly name?: string | null };
 export const TemplateFromDefaultInput = /* @__PURE__ */ (() =>
@@ -2660,6 +2736,41 @@ export const AddTemplateEntryPayload = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "AddTemplateEntryPayload" }))();
+export type ChangeMailboxSchedule = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly expectedRevision: number;
+};
+export const ChangeMailboxSchedule = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    expectedRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "ChangeMailboxSchedule" }))();
 export type ContactTags = { readonly tags: readonly [string, ...Array<string>] };
 export const ContactTags = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -2765,6 +2876,57 @@ export const CreateMailboxNotePayload = /* @__PURE__ */ (() =>
     color: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     pinned: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
   }).annotate({ identifier: "CreateMailboxNotePayload" }))();
+export type CreateMailHistoryUpload = {
+  readonly importId?: string | null;
+  readonly filename: string;
+  readonly sizeBytes: number;
+  readonly format: "gmail" | "apple" | "mbox";
+  readonly mailboxPath?: string | null;
+};
+export const CreateMailHistoryUpload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    importId: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    filename: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+      ),
+    sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(5000000000).annotate({
+          expected: "a value less than or equal to 5000000000",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    format: Schema.Union([
+      Schema.Literal("gmail"),
+      Schema.Literal("apple"),
+      Schema.Literal("mbox"),
+    ]),
+    mailboxPath: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMaxCodePoints(1024).annotate({
+            expected: "a string with at most 1024 code points",
+          }),
+        ).check(
+          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "CreateMailHistoryUpload" }))();
 export type CreateMediaPayload = {
   readonly filename: string;
   readonly contentType: string;
@@ -3173,6 +3335,80 @@ export const RecordWhatsAppFlowVersionPayload = /* @__PURE__ */ (() =>
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     ),
   }).annotate({ identifier: "RecordWhatsAppFlowVersionPayload" }))();
+export type RescheduleMailboxSend = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly expectedRevision: number;
+  readonly sendAt: string;
+};
+export const RescheduleMailboxSend = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    expectedRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    sendAt: Schema.String,
+  }).annotate({ identifier: "RescheduleMailboxSend" }))();
+export type ScheduleMailboxDraft = {
+  readonly idempotencyKey: string;
+  readonly base: string;
+  readonly draftRevision: number;
+  readonly sendAt: string;
+};
+export const ScheduleMailboxDraft = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    idempotencyKey: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[A-Za-z0-9_-]{8,128}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[A-Za-z0-9_-]{8,128}$",
+      }),
+    ),
+    base: Schema.String.check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^[A-Za-z0-9_-]{1,64}\\.(0|[1-9]\\d{0,15})\\.[A-Za-z0-9_-]{1,64}$",
+      }),
+    ),
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    sendAt: Schema.String,
+  }).annotate({ identifier: "ScheduleMailboxDraft" }))();
 export type SetWhatsAppFlowEndpointPayload = { readonly url: string };
 export const SetWhatsAppFlowEndpointPayload = /* @__PURE__ */ (() =>
   Schema.Struct({ url: Schema.String }).annotate({
@@ -3545,6 +3781,231 @@ export const UpdateNamespacePayload = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "UpdateNamespacePayload" }))();
+export type TemplateData = JsonObject | null;
+export const TemplateData = /* @__PURE__ */ (() =>
+  Schema.Union([JsonObject, Schema.Null]).annotate({ identifier: "TemplateData" }))();
+export type SmsTemplateData = JsonObject | null;
+export const SmsTemplateData = /* @__PURE__ */ (() =>
+  Schema.Union([JsonObject, Schema.Null]).annotate({ identifier: "SmsTemplateData" }))();
+export type ContactConsent = {
+  readonly status: "opted_in" | "opted_out";
+  readonly source: string;
+  readonly capturedAt: string;
+  readonly proof: JsonObject | null;
+};
+export const ContactConsent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.Union([Schema.Literal("opted_in"), Schema.Literal("opted_out")]),
+    source: Schema.String,
+    capturedAt: Schema.String,
+    proof: Schema.Union([JsonObject, Schema.Null]),
+  }).annotate({ identifier: "ContactConsent" }))();
+export type JourneyWebhookConfig = { readonly data?: JsonObject };
+export const JourneyWebhookConfig = /* @__PURE__ */ (() =>
+  Schema.Struct({ data: Schema.optionalKey(JsonObject) }).annotate({
+    identifier: "JourneyWebhookConfig",
+  }))();
+export type SetContactConsent = {
+  readonly status: "opted_in" | "opted_out";
+  readonly source: string;
+  readonly capturedAt: string;
+  readonly proof?: JsonObject | null;
+};
+export const SetContactConsent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    status: Schema.Union([Schema.Literal("opted_in"), Schema.Literal("opted_out")]),
+    source: Schema.String.annotate({
+      description: "Where the consent was captured, such as a form URL or a checkout step.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+      ),
+    capturedAt: Schema.String,
+    proof: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+  }).annotate({ identifier: "SetContactConsent" }))();
+export type AccountLinks = { readonly [x: string]: IntegrationAccountId };
+export const AccountLinks = /* @__PURE__ */ (() =>
+  Schema.Record(Schema.String, IntegrationAccountId).annotate({ identifier: "AccountLinks" }))();
+export type ConnectAccountPayload = {
+  readonly provider: IntegrationKey;
+  readonly input?: JsonObject;
+  readonly credentials?: { readonly [x: string]: string };
+  readonly app?: IntegrationKey;
+  readonly accountId?: IntegrationAccountId;
+  readonly expectedHosts?: ReadonlyArray<string>;
+  readonly returnTo: IntegrationReturnTo;
+};
+export const ConnectAccountPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    provider: IntegrationKey,
+    input: Schema.optionalKey(JsonObject),
+    credentials: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
+    app: Schema.optionalKey(IntegrationKey),
+    accountId: Schema.optionalKey(IntegrationAccountId),
+    expectedHosts: Schema.optionalKey(Schema.Array(Schema.String)),
+    returnTo: IntegrationReturnTo,
+  }).annotate({ identifier: "ConnectAccountPayload" }))();
+export type ContactEvent = {
+  readonly id: string;
+  readonly contactId: ContactId;
+  readonly name: string;
+  readonly source: "api" | "samva";
+  readonly properties: JsonObject;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+};
+export const ContactEvent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: Schema.String,
+    contactId: ContactId,
+    name: Schema.String,
+    source: Schema.Union([Schema.Literal("api"), Schema.Literal("samva")]),
+    properties: JsonObject,
+    occurredAt: Schema.String,
+    recordedAt: Schema.String,
+  }).annotate({ identifier: "ContactEvent" }))();
+export type ContactEventReference =
+  | { readonly id: ContactId; readonly externalId?: never; readonly email?: never }
+  | { readonly externalId: string; readonly id?: never; readonly email?: never }
+  | { readonly email: string; readonly id?: never; readonly externalId?: never };
+export const ContactEventReference = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      id: ContactId,
+      externalId: Schema.optionalKey(Schema.Never),
+      email: Schema.optionalKey(Schema.Never),
+    }),
+    Schema.Struct({
+      externalId: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+      id: Schema.optionalKey(Schema.Never),
+      email: Schema.optionalKey(Schema.Never),
+    }),
+    Schema.Struct({
+      email: Schema.String,
+      id: Schema.optionalKey(Schema.Never),
+      externalId: Schema.optionalKey(Schema.Never),
+    }),
+  ]).annotate({ identifier: "ContactEventReference" }))();
+export type EmailRecipient =
+  | { readonly contactId: ContactId }
+  | { readonly email: string; readonly name?: string | null; readonly displayName?: string | null };
+export const EmailRecipient = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({ contactId: ContactId }),
+    Schema.Struct({
+      email: Schema.String,
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      displayName: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+    }),
+  ]).annotate({ identifier: "EmailRecipient" }))();
+export type SmsRecipient =
+  | { readonly contactId: ContactId }
+  | { readonly phone: string; readonly name?: string | null; readonly displayName?: string | null };
+export const SmsRecipient = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({ contactId: ContactId }),
+    Schema.Struct({
+      phone: Schema.String,
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      displayName: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+    }),
+  ]).annotate({ identifier: "SmsRecipient" }))();
+export type WhatsAppRecipient =
+  | { readonly contactId: ContactId }
+  | { readonly phone: string; readonly name?: string | null; readonly displayName?: string | null };
+export const WhatsAppRecipient = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({ contactId: ContactId }),
+    Schema.Struct({
+      phone: Schema.String,
+      name: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+      displayName: Schema.optionalKey(
+        Schema.Union([
+          Schema.String.check(
+            Schema.isMaxCodePoints(120).annotate({
+              expected: "a string with at most 120 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
+          ),
+          Schema.Null,
+        ]),
+      ),
+    }),
+  ]).annotate({ identifier: "WhatsAppRecipient" }))();
+export type TopicContactById = { readonly contactId: ContactId };
+export const TopicContactById = /* @__PURE__ */ (() =>
+  Schema.Struct({ contactId: ContactId }).annotate({ identifier: "TopicContactById" }))();
+export type ConversationContacts = {
+  readonly contactIds: readonly [ContactId, ...Array<ContactId>];
+};
+export const ConversationContacts = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
+      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+    ),
+  }).annotate({ identifier: "ConversationContacts" }))();
 export type CreateTemplateFromBriefPayload = {
   readonly brief: string;
   readonly name?: string | null;
@@ -3666,7 +4127,8 @@ export const CreateTemplateFromWebsitePayload = /* @__PURE__ */ (() =>
     ),
   }).annotate({ identifier: "CreateTemplateFromWebsitePayload" }))();
 export type CreateTemplatePayload = {
-  readonly name: string;
+  readonly name?: string | null;
+  readonly shareLinkSlug?: string | null;
   readonly projectName?: string | null;
   readonly slug?: string | null;
   readonly galleryTemplateId?: string | null;
@@ -3686,15 +4148,38 @@ export type CreateTemplatePayload = {
 };
 export const CreateTemplatePayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    name: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
-      ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "Required for a named or gallery project. Omit when copying a share link with shareLinkSlug.",
+      }),
+    ),
+    shareLinkSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9-]{3,60}$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9-]{3,60}$",
+          }),
+        ),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "Copy every exported entry into the current organization, or open its existing copy. When supplied, this is the only payload field. The project's name and brand come from the starter snapshot.",
+      }),
+    ),
     projectName: Schema.optionalKey(
       Schema.Union([
         Schema.String.check(
@@ -3776,12 +4261,57 @@ export const CreateTemplatePayload = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "CreateTemplatePayload" }))();
 export type AgentIntegrationGrant = {
   readonly integrationId: IntegrationId;
+  readonly subject?: "org" | "contact";
   readonly tools: AgentToolScope;
 };
 export const AgentIntegrationGrant = /* @__PURE__ */ (() =>
-  Schema.Struct({ integrationId: IntegrationId, tools: AgentToolScope }).annotate({
-    identifier: "AgentIntegrationGrant",
-  }))();
+  Schema.Struct({
+    integrationId: IntegrationId,
+    subject: Schema.optionalKey(Schema.Union([Schema.Literal("org"), Schema.Literal("contact")])),
+    tools: AgentToolScope,
+  }).annotate({ identifier: "AgentIntegrationGrant" }))();
+export type SendMailboxChatPayload = {
+  readonly channel: "whatsapp" | "sms";
+  readonly to: string;
+  readonly text?: string | null;
+  readonly templateId?: TemplateId | null;
+  readonly templateData?: JsonObject | null;
+};
+export const SendMailboxChatPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
+    to: Schema.String,
+    text: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
+    templateData: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+  }).annotate({ identifier: "SendMailboxChatPayload" }))();
+export type ReplyMailboxChatPayload = {
+  readonly channel: "whatsapp" | "sms";
+  readonly text?: string | null;
+  readonly templateId?: TemplateId | null;
+  readonly templateData?: JsonObject | null;
+};
+export const ReplyMailboxChatPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
+    text: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
+    templateData: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+  }).annotate({ identifier: "ReplyMailboxChatPayload" }))();
 export type PolicySubject =
   | { readonly kind: "agent"; readonly id: AgentId }
   | { readonly kind: "apiKey"; readonly id: ApiKeyId }
@@ -4423,94 +4953,6 @@ export const RespondToOnboardingInformationRequestInput = /* @__PURE__ */ (() =>
       Schema.isMaxLength(3).annotate({ expected: "a value with a length of at most 3" }),
     ),
   }).annotate({ identifier: "RespondToOnboardingInformationRequestInput" }))();
-export type TemplateData = JsonObject | null;
-export const TemplateData = /* @__PURE__ */ (() =>
-  Schema.Union([JsonObject, Schema.Null]).annotate({ identifier: "TemplateData" }))();
-export type SmsTemplateData = JsonObject | null;
-export const SmsTemplateData = /* @__PURE__ */ (() =>
-  Schema.Union([JsonObject, Schema.Null]).annotate({ identifier: "SmsTemplateData" }))();
-export type ContactConsent = {
-  readonly status: "opted_in" | "opted_out";
-  readonly source: string;
-  readonly capturedAt: string;
-  readonly proof: JsonObject | null;
-};
-export const ContactConsent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    status: Schema.Union([Schema.Literal("opted_in"), Schema.Literal("opted_out")]),
-    source: Schema.String,
-    capturedAt: Schema.String,
-    proof: Schema.Union([JsonObject, Schema.Null]),
-  }).annotate({ identifier: "ContactConsent" }))();
-export type JourneyWebhookConfig = { readonly data?: JsonObject };
-export const JourneyWebhookConfig = /* @__PURE__ */ (() =>
-  Schema.Struct({ data: Schema.optionalKey(JsonObject) }).annotate({
-    identifier: "JourneyWebhookConfig",
-  }))();
-export type SendMailboxChatPayload = {
-  readonly channel: "whatsapp" | "sms";
-  readonly to: string;
-  readonly text?: string | null;
-  readonly templateId?: TemplateId | null;
-  readonly templateData?: JsonObject | null;
-};
-export const SendMailboxChatPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
-    to: Schema.String,
-    text: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
-    templateData: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-  }).annotate({ identifier: "SendMailboxChatPayload" }))();
-export type ReplyMailboxChatPayload = {
-  readonly channel: "whatsapp" | "sms";
-  readonly text?: string | null;
-  readonly templateId?: TemplateId | null;
-  readonly templateData?: JsonObject | null;
-};
-export const ReplyMailboxChatPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
-    text: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
-    templateData: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-  }).annotate({ identifier: "ReplyMailboxChatPayload" }))();
-export type SetContactConsent = {
-  readonly status: "opted_in" | "opted_out";
-  readonly source: string;
-  readonly capturedAt: string;
-  readonly proof?: JsonObject | null;
-};
-export const SetContactConsent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    status: Schema.Union([Schema.Literal("opted_in"), Schema.Literal("opted_out")]),
-    source: Schema.String.annotate({
-      description: "Where the consent was captured, such as a form URL or a checkout step.",
-    })
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(
-        Schema.isMaxCodePoints(200).annotate({ expected: "a string with at most 200 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
-      ),
-    capturedAt: Schema.String,
-    proof: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-  }).annotate({ identifier: "SetContactConsent" }))();
 export type RenderTemplatePublicationPayload = {
   readonly data: { readonly [x: string]: JsonValue };
   readonly locale?: RenderLocale;
@@ -4693,163 +5135,6 @@ export const SubmitTemplateRegistrationPayload = /* @__PURE__ */ (() =>
     provider: Schema.Literal("whatsapp"),
     businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
   }).annotate({ identifier: "SubmitTemplateRegistrationPayload" }))();
-export type ContactEvent = {
-  readonly id: string;
-  readonly contactId: ContactId;
-  readonly name: string;
-  readonly source: "api" | "samva";
-  readonly properties: JsonObject;
-  readonly occurredAt: string;
-  readonly recordedAt: string;
-};
-export const ContactEvent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: Schema.String,
-    contactId: ContactId,
-    name: Schema.String,
-    source: Schema.Union([Schema.Literal("api"), Schema.Literal("samva")]),
-    properties: JsonObject,
-    occurredAt: Schema.String,
-    recordedAt: Schema.String,
-  }).annotate({ identifier: "ContactEvent" }))();
-export type ContactEventReference =
-  | { readonly id: ContactId; readonly externalId?: never; readonly email?: never }
-  | { readonly externalId: string; readonly id?: never; readonly email?: never }
-  | { readonly email: string; readonly id?: never; readonly externalId?: never };
-export const ContactEventReference = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Struct({
-      id: ContactId,
-      externalId: Schema.optionalKey(Schema.Never),
-      email: Schema.optionalKey(Schema.Never),
-    }),
-    Schema.Struct({
-      externalId: Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      ),
-      id: Schema.optionalKey(Schema.Never),
-      email: Schema.optionalKey(Schema.Never),
-    }),
-    Schema.Struct({
-      email: Schema.String,
-      id: Schema.optionalKey(Schema.Never),
-      externalId: Schema.optionalKey(Schema.Never),
-    }),
-  ]).annotate({ identifier: "ContactEventReference" }))();
-export type EmailRecipient =
-  | { readonly contactId: ContactId }
-  | { readonly email: string; readonly name?: string | null; readonly displayName?: string | null };
-export const EmailRecipient = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Struct({ contactId: ContactId }),
-    Schema.Struct({
-      email: Schema.String,
-      name: Schema.optionalKey(
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(120).annotate({
-              expected: "a string with at most 120 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      displayName: Schema.optionalKey(
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(120).annotate({
-              expected: "a string with at most 120 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ]).annotate({ identifier: "EmailRecipient" }))();
-export type SmsRecipient =
-  | { readonly contactId: ContactId }
-  | { readonly phone: string; readonly name?: string | null; readonly displayName?: string | null };
-export const SmsRecipient = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Struct({ contactId: ContactId }),
-    Schema.Struct({
-      phone: Schema.String,
-      name: Schema.optionalKey(
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(120).annotate({
-              expected: "a string with at most 120 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      displayName: Schema.optionalKey(
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(120).annotate({
-              expected: "a string with at most 120 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ]).annotate({ identifier: "SmsRecipient" }))();
-export type WhatsAppRecipient =
-  | { readonly contactId: ContactId }
-  | { readonly phone: string; readonly name?: string | null; readonly displayName?: string | null };
-export const WhatsAppRecipient = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Struct({ contactId: ContactId }),
-    Schema.Struct({
-      phone: Schema.String,
-      name: Schema.optionalKey(
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(120).annotate({
-              expected: "a string with at most 120 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-          Schema.Null,
-        ]),
-      ),
-      displayName: Schema.optionalKey(
-        Schema.Union([
-          Schema.String.check(
-            Schema.isMaxCodePoints(120).annotate({
-              expected: "a string with at most 120 code points",
-            }),
-          ).check(
-            Schema.isMaxLength(120).annotate({ expected: "a value with a length of at most 120" }),
-          ),
-          Schema.Null,
-        ]),
-      ),
-    }),
-  ]).annotate({ identifier: "WhatsAppRecipient" }))();
-export type TopicContactById = { readonly contactId: ContactId };
-export const TopicContactById = /* @__PURE__ */ (() =>
-  Schema.Struct({ contactId: ContactId }).annotate({ identifier: "TopicContactById" }))();
-export type ConversationContacts = {
-  readonly contactIds: readonly [ContactId, ...Array<ContactId>];
-};
-export const ConversationContacts = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    contactIds: Schema.TupleWithRest(Schema.Tuple([ContactId]), [ContactId]).check(
-      Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-    ),
-  }).annotate({ identifier: "ConversationContacts" }))();
 export type CampaignAudience = {
   readonly topicId: TopicId;
   readonly includeTags?: ReadonlyArray<string> | null;
@@ -5199,6 +5484,29 @@ export const SendFeedback = /* @__PURE__ */ (() =>
     ),
     context: Schema.optionalKey(Schema.Union([FeedbackContext, Schema.Null])),
   }).annotate({ identifier: "SendFeedback" }))();
+export type UpdateIntegrationPayload = {
+  readonly answerWithoutApproval?: AnswerWithoutApproval;
+  readonly enabledTools?: ReadonlyArray<IntegrationTool>;
+  readonly tool?: {
+    readonly name: IntegrationTool;
+    readonly enabled?: boolean;
+    readonly runsWithoutApproval?: boolean;
+  };
+  readonly settings?: JsonObject;
+};
+export const UpdateIntegrationPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    answerWithoutApproval: Schema.optionalKey(AnswerWithoutApproval),
+    enabledTools: Schema.optionalKey(Schema.Array(IntegrationTool)),
+    tool: Schema.optionalKey(
+      Schema.Struct({
+        name: IntegrationTool,
+        enabled: Schema.optionalKey(Schema.Boolean),
+        runsWithoutApproval: Schema.optionalKey(Schema.Boolean),
+      }),
+    ),
+    settings: Schema.optionalKey(JsonObject),
+  }).annotate({ identifier: "UpdateIntegrationPayload" }))();
 export type UpdateJourneyPayload = { readonly name: JourneyName };
 export const UpdateJourneyPayload = /* @__PURE__ */ (() =>
   Schema.Struct({ name: JourneyName }).annotate({ identifier: "UpdateJourneyPayload" }))();
@@ -5516,6 +5824,8 @@ export type UpdateMailboxThreadPayload = {
   readonly read?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozedUntil?: string | null;
+  readonly ifNoReply?: boolean;
+  readonly reminderInboxAt?: string | null;
 };
 export const UpdateMailboxThreadPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -5526,6 +5836,8 @@ export const UpdateMailboxThreadPayload = /* @__PURE__ */ (() =>
     read: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozedUntil: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    ifNoReply: Schema.optionalKey(Schema.Boolean),
+    reminderInboxAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }).annotate({ identifier: "UpdateMailboxThreadPayload" }))();
 export type WhatsAppTemplateIdContent = {
   readonly templateId: TemplateId;
@@ -6013,6 +6325,157 @@ export const CreateWhatsAppSetupLinkPayload = /* @__PURE__ */ (() =>
     metadata: Schema.optionalKey(Schema.Union([WhatsAppSetupLinkMetadata, Schema.Null])),
     expiresAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }).annotate({ identifier: "CreateWhatsAppSetupLinkPayload" }))();
+export type SmsContent = {
+  readonly text?: string | null;
+  readonly templateId?: TemplateId | null;
+  readonly templateSlug?: string | null;
+  readonly templateData?: SmsTemplateData;
+};
+export const SmsContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
+    templateSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    templateData: Schema.optionalKey(SmsTemplateData),
+  }).annotate({ identifier: "SmsContent" }))();
+export type SmsDispatchContent = {
+  readonly text?: string | null;
+  readonly templateId?: TemplateId | null;
+  readonly templateSlug?: string | null;
+  readonly templateData?: SmsTemplateData;
+};
+export const SmsDispatchContent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
+    templateSlug: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        ),
+        Schema.Null,
+      ]),
+    ),
+    templateData: Schema.optionalKey(SmsTemplateData),
+  }).annotate({ identifier: "SmsDispatchContent" }))();
+export type ContactIdentityChannel = {
+  readonly channel: "sms" | "whatsapp" | "email";
+  readonly reachability: "unknown" | "reachable" | "unreachable";
+  readonly consent: ContactConsent | null;
+};
+export const ContactIdentityChannel = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
+    reachability: Schema.Union([
+      Schema.Literal("unknown"),
+      Schema.Literal("reachable"),
+      Schema.Literal("unreachable"),
+    ]),
+    consent: Schema.Union([ContactConsent, Schema.Null]),
+  }).annotate({ identifier: "ContactIdentityChannel" }))();
+export type InstallIntegrationPayload = {
+  readonly app: IntegrationKey;
+  readonly accounts: AccountLinks;
+  readonly settings?: JsonObject;
+};
+export const InstallIntegrationPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    app: IntegrationKey,
+    accounts: AccountLinks,
+    settings: Schema.optionalKey(JsonObject),
+  }).annotate({ identifier: "InstallIntegrationPayload" }))();
+export type CreateEventPayload = {
+  readonly contact: ContactEventReference;
+  readonly name: string;
+  readonly properties?: JsonObject | null;
+  readonly occurredAt?: string | null;
+};
+export const CreateEventPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contact: ContactEventReference,
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    )
+      .check(
+        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
+      )
+      .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
+      .check(
+        Schema.isPattern(new globalThis.RegExp("^[A-Za-z][A-Za-z0-9_.-]*$", "u")).annotate({
+          expected: "a string matching the RegExp ^[A-Za-z][A-Za-z0-9_.-]*$",
+        }),
+      )
+      .check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
+        }),
+      ),
+    properties: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
+    occurredAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+  }).annotate({ identifier: "CreateEventPayload" }))();
+export type EmailRecipients = ReadonlyArray<EmailRecipient>;
+export const EmailRecipients = /* @__PURE__ */ (() =>
+  Schema.Array(EmailRecipient).check(
+    Schema.isMinLength(1).annotate({
+      expected: "a value with a length of at least 1",
+      identifier: "EmailRecipients",
+    }),
+  ))();
+export type EmailCcRecipients = ReadonlyArray<EmailRecipient> | null;
+export const EmailCcRecipients = /* @__PURE__ */ (() =>
+  Schema.Union([Schema.Array(EmailRecipient), Schema.Null]).annotate({
+    identifier: "EmailCcRecipients",
+  }))();
+export type EmailBccRecipients = ReadonlyArray<EmailRecipient> | null;
+export const EmailBccRecipients = /* @__PURE__ */ (() =>
+  Schema.Union([Schema.Array(EmailRecipient), Schema.Null]).annotate({
+    identifier: "EmailBccRecipients",
+  }))();
+export type SmsRecipients = ReadonlyArray<SmsRecipient>;
+export const SmsRecipients = /* @__PURE__ */ (() =>
+  Schema.Array(SmsRecipient)
+    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+    .check(
+      Schema.isMaxLength(1).annotate({
+        expected: "a value with a length of at most 1",
+        identifier: "SmsRecipients",
+      }),
+    ))();
+export type WhatsAppRecipients = ReadonlyArray<WhatsAppRecipient>;
+export const WhatsAppRecipients = /* @__PURE__ */ (() =>
+  Schema.Array(WhatsAppRecipient)
+    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+    .check(
+      Schema.isMaxLength(1).annotate({
+        expected: "a value with a length of at most 1",
+        identifier: "WhatsAppRecipients",
+      }),
+    ))();
+export type TopicContactRef = TopicContactById | TopicContactByEmail | TopicContactByPhone;
+export const TopicContactRef = /* @__PURE__ */ (() =>
+  Schema.Union([TopicContactById, TopicContactByEmail, TopicContactByPhone]).annotate({
+    identifier: "TopicContactRef",
+  }))();
 export type PolicyRuleMatch = {
   readonly kind?: "send" | "reply" | "toolCall" | "handoff" | null;
   readonly effect?: PolicyEffect | null;
@@ -6413,69 +6876,6 @@ export const WhatsAppDocumentHeader = /* @__PURE__ */ (() =>
   Schema.Union([WhatsAppDocumentHeaderLink, WhatsAppDocumentHeaderUpload]).annotate({
     identifier: "WhatsAppDocumentHeader",
   }))();
-export type SmsContent = {
-  readonly text?: string | null;
-  readonly templateId?: TemplateId | null;
-  readonly templateSlug?: string | null;
-  readonly templateData?: SmsTemplateData;
-};
-export const SmsContent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
-    templateSlug: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    templateData: Schema.optionalKey(SmsTemplateData),
-  }).annotate({ identifier: "SmsContent" }))();
-export type SmsDispatchContent = {
-  readonly text?: string | null;
-  readonly templateId?: TemplateId | null;
-  readonly templateSlug?: string | null;
-  readonly templateData?: SmsTemplateData;
-};
-export const SmsDispatchContent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
-    templateSlug: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
-            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    templateData: Schema.optionalKey(SmsTemplateData),
-  }).annotate({ identifier: "SmsDispatchContent" }))();
-export type ContactIdentityChannel = {
-  readonly channel: "sms" | "whatsapp" | "email";
-  readonly reachability: "unknown" | "reachable" | "unreachable";
-  readonly consent: ContactConsent | null;
-};
-export const ContactIdentityChannel = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Union([
-      Schema.Literal("sms"),
-      Schema.Literal("whatsapp"),
-      Schema.Literal("email"),
-    ]),
-    reachability: Schema.Union([
-      Schema.Literal("unknown"),
-      Schema.Literal("reachable"),
-      Schema.Literal("unreachable"),
-    ]),
-    consent: Schema.Union([ContactConsent, Schema.Null]),
-  }).annotate({ identifier: "ContactIdentityChannel" }))();
 export type WhatsAppTemplateBindings = { readonly [x: string]: WhatsAppTemplateBinding };
 export const WhatsAppTemplateBindings = /* @__PURE__ */ (() =>
   Schema.Record(Schema.String, WhatsAppTemplateBinding)
@@ -6493,78 +6893,6 @@ export const WhatsAppTemplateBindings = /* @__PURE__ */ (() =>
         identifier: "WhatsAppTemplateBindings",
       }),
     ))();
-export type CreateEventPayload = {
-  readonly contact: ContactEventReference;
-  readonly name: string;
-  readonly properties?: JsonObject | null;
-  readonly occurredAt?: string | null;
-};
-export const CreateEventPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    contact: ContactEventReference,
-    name: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(255).annotate({ expected: "a string with at most 255 code points" }),
-      )
-      .check(Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }))
-      .check(
-        Schema.isPattern(
-          new globalThis.RegExp(
-            "^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
-          ),
-        ).annotate({
-          expected:
-            "a string matching the RegExp ^(?!(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]|[Ss][Aa][Mm][Vv][Aa])\\.)[A-Za-z][A-Za-z0-9_.-]*$",
-        }),
-      ),
-    properties: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
-    occurredAt: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-  }).annotate({ identifier: "CreateEventPayload" }))();
-export type EmailRecipients = ReadonlyArray<EmailRecipient>;
-export const EmailRecipients = /* @__PURE__ */ (() =>
-  Schema.Array(EmailRecipient).check(
-    Schema.isMinLength(1).annotate({
-      expected: "a value with a length of at least 1",
-      identifier: "EmailRecipients",
-    }),
-  ))();
-export type EmailCcRecipients = ReadonlyArray<EmailRecipient> | null;
-export const EmailCcRecipients = /* @__PURE__ */ (() =>
-  Schema.Union([Schema.Array(EmailRecipient), Schema.Null]).annotate({
-    identifier: "EmailCcRecipients",
-  }))();
-export type EmailBccRecipients = ReadonlyArray<EmailRecipient> | null;
-export const EmailBccRecipients = /* @__PURE__ */ (() =>
-  Schema.Union([Schema.Array(EmailRecipient), Schema.Null]).annotate({
-    identifier: "EmailBccRecipients",
-  }))();
-export type SmsRecipients = ReadonlyArray<SmsRecipient>;
-export const SmsRecipients = /* @__PURE__ */ (() =>
-  Schema.Array(SmsRecipient)
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxLength(1).annotate({
-        expected: "a value with a length of at most 1",
-        identifier: "SmsRecipients",
-      }),
-    ))();
-export type WhatsAppRecipients = ReadonlyArray<WhatsAppRecipient>;
-export const WhatsAppRecipients = /* @__PURE__ */ (() =>
-  Schema.Array(WhatsAppRecipient)
-    .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-    .check(
-      Schema.isMaxLength(1).annotate({
-        expected: "a value with a length of at most 1",
-        identifier: "WhatsAppRecipients",
-      }),
-    ))();
-export type TopicContactRef = TopicContactById | TopicContactByEmail | TopicContactByPhone;
-export const TopicContactRef = /* @__PURE__ */ (() =>
-  Schema.Union([TopicContactById, TopicContactByEmail, TopicContactByPhone]).annotate({
-    identifier: "TopicContactRef",
-  }))();
 export type MessagePage = {
   readonly items: ReadonlyArray<MessageSummary>;
   readonly nextCursor: string | null;
@@ -6857,6 +7185,98 @@ export const OperationAccepted = /* @__PURE__ */ (() =>
       resource: OperationResourceLink,
     }),
   }).annotate({ identifier: "OperationAccepted" }))();
+export type SmsCampaignContentInput = {
+  readonly channel: "sms";
+  readonly sms: SmsDispatchContent;
+  readonly conversationId?: CampaignConversationRef;
+  readonly metadata?: CampaignContentMetadata;
+};
+export const SmsCampaignContentInput = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Literal("sms"),
+    sms: SmsDispatchContent,
+    conversationId: Schema.optionalKey(CampaignConversationRef),
+    metadata: Schema.optionalKey(CampaignContentMetadata),
+  }).annotate({ identifier: "SmsCampaignContentInput" }))();
+export type ContactIdentity = {
+  readonly id: ContactIdentityId;
+  readonly type: "email" | "phone";
+  readonly identifier: string;
+  readonly verified: boolean;
+  readonly channels: ReadonlyArray<ContactIdentityChannel>;
+};
+export const ContactIdentity = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: ContactIdentityId,
+    type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
+    identifier: Schema.String,
+    verified: Schema.Boolean,
+    channels: Schema.Array(ContactIdentityChannel),
+  }).annotate({ identifier: "ContactIdentity" }))();
+export type BatchEventsPayload = {
+  readonly events: readonly [CreateEventPayload, ...Array<CreateEventPayload>];
+};
+export const BatchEventsPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    events: Schema.TupleWithRest(Schema.Tuple([CreateEventPayload]), [CreateEventPayload]).check(
+      Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+    ),
+  }).annotate({ identifier: "BatchEventsPayload" }))();
+export type SmsSendMessagePayload = {
+  readonly conversationId?: ConversationId | null;
+  readonly metadata?: MessageMetadata;
+  readonly channel: "sms";
+  readonly to: SmsRecipients;
+  readonly sms: SmsContent;
+};
+export const SmsSendMessagePayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
+    metadata: Schema.optionalKey(MessageMetadata),
+    channel: Schema.Literal("sms"),
+    to: SmsRecipients,
+    sms: SmsContent,
+  }).annotate({
+    description:
+      "The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.",
+    identifier: "SmsSendMessagePayload",
+  }))();
+export type TopicSetSubscriptionsPayload = {
+  readonly contacts: ReadonlyArray<TopicContactRef>;
+  readonly channel: "sms" | "whatsapp" | "email";
+  readonly status: "subscribed" | "unsubscribed";
+  readonly source?: string | null;
+};
+export const TopicSetSubscriptionsPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    contacts: Schema.Array(TopicContactRef)
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
+      ),
+    channel: Schema.Union([
+      Schema.Literal("sms"),
+      Schema.Literal("whatsapp"),
+      Schema.Literal("email"),
+    ]),
+    status: Schema.Union([Schema.Literal("subscribed"), Schema.Literal("unsubscribed")]),
+    source: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(512).annotate({
+              expected: "a string with at most 512 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+  }).annotate({ identifier: "TopicSetSubscriptionsPayload" }))();
 export type PolicyRule =
   | {
       readonly match: PolicyRuleMatch;
@@ -7036,34 +7456,6 @@ export const WhatsAppInteractiveHeader = /* @__PURE__ */ (() =>
     WhatsAppVideoHeader,
     WhatsAppDocumentHeader,
   ]).annotate({ identifier: "WhatsAppInteractiveHeader" }))();
-export type SmsCampaignContentInput = {
-  readonly channel: "sms";
-  readonly sms: SmsDispatchContent;
-  readonly conversationId?: CampaignConversationRef;
-  readonly metadata?: CampaignContentMetadata;
-};
-export const SmsCampaignContentInput = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Literal("sms"),
-    sms: SmsDispatchContent,
-    conversationId: Schema.optionalKey(CampaignConversationRef),
-    metadata: Schema.optionalKey(CampaignContentMetadata),
-  }).annotate({ identifier: "SmsCampaignContentInput" }))();
-export type ContactIdentity = {
-  readonly id: ContactIdentityId;
-  readonly type: "email" | "phone";
-  readonly identifier: string;
-  readonly verified: boolean;
-  readonly channels: ReadonlyArray<ContactIdentityChannel>;
-};
-export const ContactIdentity = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    id: ContactIdentityId,
-    type: Schema.Union([Schema.Literal("email"), Schema.Literal("phone")]),
-    identifier: Schema.String,
-    verified: Schema.Boolean,
-    channels: Schema.Array(ContactIdentityChannel),
-  }).annotate({ identifier: "ContactIdentity" }))();
 export type WhatsAppTemplateDispatch = {
   readonly template: TemplateId | string;
   readonly templateData?: WhatsAppTemplateDispatchData;
@@ -7084,70 +7476,6 @@ export const WhatsAppTemplateDispatch = /* @__PURE__ */ (() =>
     bindings: Schema.optionalKey(WhatsAppTemplateBindings),
     businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
   }).annotate({ identifier: "WhatsAppTemplateDispatch" }))();
-export type BatchEventsPayload = {
-  readonly events: readonly [CreateEventPayload, ...Array<CreateEventPayload>];
-};
-export const BatchEventsPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    events: Schema.TupleWithRest(Schema.Tuple([CreateEventPayload]), [CreateEventPayload]).check(
-      Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
-    ),
-  }).annotate({ identifier: "BatchEventsPayload" }))();
-export type SmsSendMessagePayload = {
-  readonly conversationId?: ConversationId | null;
-  readonly metadata?: MessageMetadata;
-  readonly channel: "sms";
-  readonly to: SmsRecipients;
-  readonly sms: SmsContent;
-};
-export const SmsSendMessagePayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    conversationId: Schema.optionalKey(Schema.Union([ConversationId, Schema.Null])),
-    metadata: Schema.optionalKey(MessageMetadata),
-    channel: Schema.Literal("sms"),
-    to: SmsRecipients,
-    sms: SmsContent,
-  }).annotate({
-    description:
-      "The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.",
-    identifier: "SmsSendMessagePayload",
-  }))();
-export type TopicSetSubscriptionsPayload = {
-  readonly contacts: ReadonlyArray<TopicContactRef>;
-  readonly channel: "sms" | "whatsapp" | "email";
-  readonly status: "subscribed" | "unsubscribed";
-  readonly source?: string | null;
-};
-export const TopicSetSubscriptionsPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    contacts: Schema.Array(TopicContactRef)
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(
-        Schema.isMaxLength(1000).annotate({ expected: "a value with a length of at most 1000" }),
-      ),
-    channel: Schema.Union([
-      Schema.Literal("sms"),
-      Schema.Literal("whatsapp"),
-      Schema.Literal("email"),
-    ]),
-    status: Schema.Union([Schema.Literal("subscribed"), Schema.Literal("unsubscribed")]),
-    source: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.check(
-          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-        )
-          .check(
-            Schema.isMaxCodePoints(512).annotate({
-              expected: "a string with at most 512 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(512).annotate({ expected: "a value with a length of at most 512" }),
-          ),
-        Schema.Null,
-      ]),
-    ),
-  }).annotate({ identifier: "TopicSetSubscriptionsPayload" }))();
 export type JourneyWaitForEventNode = {
   readonly type: "wait_for_event";
   readonly config: JourneyWaitForEventConfig;
@@ -7429,6 +7757,8 @@ export type AgentDefinition = {
   readonly knowledgeSourceIds?: ReadonlyArray<KnowledgeSourceId>;
   readonly endpointIds: ReadonlyArray<MailboxEndpointId>;
   readonly integrations: ReadonlyArray<AgentIntegrationGrant>;
+  readonly eventTriggers?: ReadonlyArray<string>;
+  readonly followUpTemplate?: TemplateId | string;
   readonly policy: PolicyConfiguration;
   readonly model: AgentModelChoice;
   readonly reasoning: AgentReasoning;
@@ -7461,6 +7791,36 @@ export const AgentDefinition = /* @__PURE__ */ (() =>
     ),
     integrations: Schema.Array(AgentIntegrationGrant).check(
       Schema.isMaxLength(20).annotate({ expected: "a value with a length of at most 20" }),
+    ),
+    eventTriggers: Schema.optionalKey(
+      Schema.Array(
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(255).annotate({
+              expected: "a string with at most 255 code points",
+            }),
+          )
+          .check(
+            Schema.isPattern(new globalThis.RegExp("^[A-Za-z][A-Za-z0-9_.-]*$", "u")).annotate({
+              expected: "a string matching the RegExp ^[A-Za-z][A-Za-z0-9_.-]*$",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
+          ),
+      ),
+    ),
+    followUpTemplate: Schema.optionalKey(
+      Schema.Union([
+        TemplateId,
+        Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^[a-z0-9]+(?:-[a-z0-9]+)*$", "u")).annotate({
+            expected: "a string matching the RegExp ^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        ),
+      ]),
     ),
     policy: PolicyConfiguration,
     model: AgentModelChoice,
@@ -7590,6 +7950,7 @@ export const CreateAgentPayload = /* @__PURE__ */ (() =>
           knowledgeSourceIds: [],
           endpointIds: [],
           integrations: [],
+          eventTriggers: [],
           policy: {
             presets: ["samva/auto"],
             rules: [

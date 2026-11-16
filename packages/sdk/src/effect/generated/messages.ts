@@ -333,6 +333,12 @@ export const ValidateEmailResponse = /* @__PURE__ */ (() =>
       hasText: Schema.Boolean,
     }),
   }).annotate({ identifier: "ValidateEmailResponse" }))();
+export type MessageAddress = { readonly address: string; readonly contactId: ContactId | null };
+export const MessageAddress = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    address: Schema.String,
+    contactId: Schema.Union([ContactId, Schema.Null]),
+  }).annotate({ identifier: "MessageAddress" }))();
 export type SubmissionCredential =
   | { readonly kind: "api_key"; readonly apiKeyId: ApiKeyId | null }
   | { readonly kind: "oauth"; readonly clientId: string | null }
@@ -429,12 +435,6 @@ export const WhatsAppStoredMedia = /* @__PURE__ */ (() =>
       filename: Schema.optionalKey(Schema.String),
     }),
   ]).annotate({ identifier: "WhatsAppStoredMedia" }))();
-export type MessageAddress = { readonly address: string; readonly contactId: ContactId | null };
-export const MessageAddress = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    address: Schema.String,
-    contactId: Schema.Union([ContactId, Schema.Null]),
-  }).annotate({ identifier: "MessageAddress" }))();
 export type WhatsAppStoredFlowMessage = {
   readonly type: "flow";
   readonly header?: WhatsAppTextHeader;

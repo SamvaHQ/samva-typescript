@@ -12,6 +12,19 @@ import {
 } from "./client";
 import { client } from "./client.gen";
 import type {
+  AccountLinksWritable,
+  AccountsCheckErrors,
+  AccountsCheckResponses,
+  AccountsConnectErrors,
+  AccountsConnectResponses,
+  AccountsGetErrors,
+  AccountsGetResponses,
+  AccountsListContactConnectionsErrors,
+  AccountsListContactConnectionsResponses,
+  AccountsListErrors,
+  AccountsListResponses,
+  AccountsRemoveErrors,
+  AccountsRemoveResponses,
   AgentDefinition,
   AgentId,
   AgentName,
@@ -52,6 +65,7 @@ import type {
   AnalyticsGetStatsResponses,
   AnalyticsGetTopContactsErrors,
   AnalyticsGetTopContactsResponses,
+  AnswerWithoutApproval,
   ApiKeyAccess,
   ApiKeyId,
   ApiKeysCreateErrors,
@@ -70,6 +84,16 @@ import type {
   ApiKeysRotateResponses,
   ApiKeysUpdateErrors,
   ApiKeysUpdateResponses,
+  ApprovalCallWritable,
+  ApprovalRequestId,
+  ApprovalRequestsApproveErrors,
+  ApprovalRequestsApproveResponses,
+  ApprovalRequestsCreateErrors,
+  ApprovalRequestsCreateResponses,
+  ApprovalRequestsGetErrors,
+  ApprovalRequestsGetResponses,
+  ApprovalRequestsRejectErrors,
+  ApprovalRequestsRejectResponses,
   AttachmentId,
   AttachmentsDownloadUrlErrors,
   AttachmentsDownloadUrlResponses,
@@ -421,6 +445,31 @@ import type {
   FeedbackSendResponses,
   ForwardingConditions,
   IanaTimezone,
+  IntegrationAccountId,
+  IntegrationCatalogListErrors,
+  IntegrationCatalogListResponses,
+  IntegrationCatalogPrepareErrors,
+  IntegrationCatalogPrepareResponses,
+  IntegrationCatalogSearchErrors,
+  IntegrationCatalogSearchResponses,
+  IntegrationId,
+  IntegrationKey,
+  IntegrationReturnTo,
+  IntegrationsGetErrors,
+  IntegrationsGetResponses,
+  IntegrationsInstallErrors,
+  IntegrationsInstallResponses,
+  IntegrationsListErrors,
+  IntegrationsListResponses,
+  IntegrationsListToolsErrors,
+  IntegrationsListToolsResponses,
+  IntegrationsReadToolErrors,
+  IntegrationsReadToolResponses,
+  IntegrationsRemoveErrors,
+  IntegrationsRemoveResponses,
+  IntegrationsUpdateErrors,
+  IntegrationsUpdateResponses,
+  IntegrationTool,
   JourneyDefinitionWritable,
   JourneyId,
   JourneyName,
@@ -469,6 +518,8 @@ import type {
   MailboxesCancelActionResponses,
   MailboxesCopyMessageAttachmentErrors,
   MailboxesCopyMessageAttachmentResponses,
+  MailboxesCountSplitsErrors,
+  MailboxesCountSplitsResponses,
   MailboxesCreateDraftErrors,
   MailboxesCreateDraftResponses,
   MailboxesCreateEndpointErrors,
@@ -476,17 +527,23 @@ import type {
   MailboxesCreateErrors,
   MailboxesCreateGrantErrors,
   MailboxesCreateGrantResponses,
+  MailboxesCreateImportUploadErrors,
+  MailboxesCreateImportUploadResponses,
   MailboxesCreateLabelErrors,
   MailboxesCreateLabelResponses,
   MailboxesCreateNoteErrors,
   MailboxesCreateNoteResponses,
   MailboxesCreateResponses,
+  MailboxesCreateSplitErrors,
+  MailboxesCreateSplitResponses,
   MailboxesDeleteDraftErrors,
   MailboxesDeleteDraftResponses,
   MailboxesDeleteLabelErrors,
   MailboxesDeleteLabelResponses,
   MailboxesDeleteNoteErrors,
   MailboxesDeleteNoteResponses,
+  MailboxesDeleteSplitErrors,
+  MailboxesDeleteSplitResponses,
   MailboxesDenyActionErrors,
   MailboxesDenyActionResponses,
   MailboxesDiscardMessageErrors,
@@ -500,6 +557,8 @@ import type {
   MailboxesGetDraftErrors,
   MailboxesGetDraftResponses,
   MailboxesGetErrors,
+  MailboxesGetImportErrors,
+  MailboxesGetImportResponses,
   MailboxesGetMessageAttachmentErrors,
   MailboxesGetMessageAttachmentResponses,
   MailboxesGetMessageErrors,
@@ -515,6 +574,8 @@ import type {
   MailboxesGetThreadResponses,
   MailboxesListActionsErrors,
   MailboxesListActionsResponses,
+  MailboxesListAddressesErrors,
+  MailboxesListAddressesResponses,
   MailboxesListDraftsErrors,
   MailboxesListDraftsResponses,
   MailboxesListErrors,
@@ -524,6 +585,8 @@ import type {
   MailboxesListFoldersResponses,
   MailboxesListGrantsErrors,
   MailboxesListGrantsResponses,
+  MailboxesListImportsErrors,
+  MailboxesListImportsResponses,
   MailboxesListLabelsErrors,
   MailboxesListLabelsResponses,
   MailboxesListOrganizationDraftsErrors,
@@ -533,6 +596,10 @@ import type {
   MailboxesListQuarantineErrors,
   MailboxesListQuarantineResponses,
   MailboxesListResponses,
+  MailboxesListScheduledSendsErrors,
+  MailboxesListScheduledSendsResponses,
+  MailboxesListSplitsErrors,
+  MailboxesListSplitsResponses,
   MailboxesListThreadMessagesErrors,
   MailboxesListThreadMessagesResponses,
   MailboxesListThreadNotesErrors,
@@ -553,16 +620,26 @@ import type {
   MailboxesReplyAllResponses,
   MailboxesReplyErrors,
   MailboxesReplyResponses,
+  MailboxesRescheduleSendErrors,
+  MailboxesRescheduleSendResponses,
   MailboxesResumeErrors,
   MailboxesResumeResponses,
   MailboxesRetryActionErrors,
   MailboxesRetryActionResponses,
   MailboxesRevokeGrantErrors,
   MailboxesRevokeGrantResponses,
+  MailboxesScheduleDraftErrors,
+  MailboxesScheduleDraftResponses,
   MailboxesSendDraftErrors,
   MailboxesSendDraftResponses,
   MailboxesSendMessageErrors,
   MailboxesSendMessageResponses,
+  MailboxesSendScheduledNowErrors,
+  MailboxesSendScheduledNowResponses,
+  MailboxesStartImportErrors,
+  MailboxesStartImportResponses,
+  MailboxesUnscheduleSendErrors,
+  MailboxesUnscheduleSendResponses,
   MailboxesUpdateDraftErrors,
   MailboxesUpdateDraftResponses,
   MailboxesUpdateEndpointErrors,
@@ -575,6 +652,8 @@ import type {
   MailboxesUpdateNoteErrors,
   MailboxesUpdateNoteResponses,
   MailboxesUpdateResponses,
+  MailboxesUpdateSplitErrors,
+  MailboxesUpdateSplitResponses,
   MailboxesUpdateThreadErrors,
   MailboxesUpdateThreadResponses,
   MailboxGrantId,
@@ -587,6 +666,7 @@ import type {
   MailboxThreadFolder,
   MailboxThreadId,
   MailboxThreadPriority,
+  MailOutboxItemId,
   MediaCompleteErrors,
   MediaCompleteResponses,
   MediaCreateErrors,
@@ -804,6 +884,16 @@ import type {
   TemplatesGetInputContractResponses,
   TemplatesGetPublicationErrors,
   TemplatesGetPublicationResponses,
+  TemplateShareLinksCreateErrors,
+  TemplateShareLinksCreateResponses,
+  TemplateShareLinksDeleteErrors,
+  TemplateShareLinksDeleteResponses,
+  TemplateShareLinksGetErrors,
+  TemplateShareLinksGetResponses,
+  TemplateShareLinksRenameErrors,
+  TemplateShareLinksRenameResponses,
+  TemplateShareLinksUpdateErrors,
+  TemplateShareLinksUpdateResponses,
   TemplatesIssueGitCredentialErrors,
   TemplatesIssueGitCredentialResponses,
   TemplatesListErrors,
@@ -980,6 +1070,168 @@ export type Options<
    */
   meta?: (keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta) | undefined;
 };
+
+export class ApprovalRequests {
+  /**
+   * Request approval for an OAuth tool intent
+   *
+   * Creates one immutable batch of up to 20 tool calls for one intent. Only an OAuth access token may create a request. The owner opens approvalUrl and decides in a signed-in owner session. Requests expire after 30 minutes; the original OAuth token must remain valid. Repeating idempotencyKey for the same caller returns the same request; different content conflicts. Credential-bearing arguments are refused.
+   */
+  public static create<ThrowOnError extends boolean = false>(
+    parameters: {
+      intent: string;
+      calls: Array<ApprovalCallWritable>;
+      idempotencyKey: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<ApprovalRequestsCreateResponses, ApprovalRequestsCreateErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "intent" },
+            { in: "body", key: "calls" },
+            { in: "body", key: "idempotencyKey" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "approvalRequestsCreate",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          ApprovalRequestsCreateResponses,
+          ApprovalRequestsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/approval-requests",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Read an approval request
+   *
+   * Returns the exact calls, requester, decision and execution receipt. The original OAuth caller may read its own requests; an organization owner may read them from a signed-in session. A pending request past its deadline reads expired.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: ApprovalRequestId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<ApprovalRequestsGetResponses, ApprovalRequestsGetErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(options?.client ?? client, "approvalRequestsGet", options, (headers) =>
+      (options?.client ?? client).get<
+        ApprovalRequestsGetResponses,
+        ApprovalRequestsGetErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/approval-requests/{id}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Approve and execute an OAuth tool intent
+   *
+   * Only an organization owner in a signed-in session may approve. Claims a pending, unexpired request once, then executes its exact calls with the original OAuth authority. Repeating a decision returns the existing receipt. Execution is never retried automatically; a failed receipt can mean some actions completed, and must be reconciled before another request is created.
+   */
+  public static approve<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: ApprovalRequestId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<ApprovalRequestsApproveResponses, ApprovalRequestsApproveErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "approvalRequestsApprove",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          ApprovalRequestsApproveResponses,
+          ApprovalRequestsApproveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/approval-requests/{id}/approve",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Reject an OAuth tool intent
+   *
+   * Only an organization owner in a signed-in session may reject a pending request. Records the optional reason and destroys the retained execution credential. Repeated decisions return the existing receipt.
+   */
+  public static reject<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: ApprovalRequestId;
+      reason?: string | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<ApprovalRequestsRejectResponses, ApprovalRequestsRejectErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "reason" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "approvalRequestsReject",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          ApprovalRequestsRejectResponses,
+          ApprovalRequestsRejectErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/approval-requests/{id}/reject",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+}
+
+export class ApprovalRequests2 {
+  static approvalRequests = ApprovalRequests;
+}
 
 export class Messages {
   /**
@@ -8070,6 +8322,643 @@ export class Agents2 {
   static agents = Agents;
 }
 
+export class Accounts {
+  /**
+   * List contact connections
+   *
+   * Lists the contact credentials connected for this organization. An administrator can disconnect each account by accountId.
+   */
+  public static listContactConnections<ThrowOnError extends boolean = false>(
+    parameters?: {
+      provider?: IntegrationKey | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    AccountsListContactConnectionsResponses,
+    AccountsListContactConnectionsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "provider" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "accountsListContactConnections",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          AccountsListContactConnectionsResponses,
+          AccountsListContactConnectionsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/accounts/contact-connections",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * List accounts
+   *
+   * Returns the organization's connected provider accounts, newest first.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AccountsListResponses, AccountsListErrors, ThrowOnError> {
+    return requestWithPolicy(options?.client ?? client, "accountsList", options, (headers) =>
+      (options?.client ?? client).get<AccountsListResponses, AccountsListErrors, ThrowOnError>({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/accounts",
+        ...options,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Disconnect an account
+   *
+   * Revokes Samva's access at the provider and deletes the account with the integrations that link it, and their grants from every agent's draft. A published agent version that granted them can no longer use them; publish the agent to drop the grants.
+   */
+  public static remove<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: IntegrationAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AccountsRemoveResponses, AccountsRemoveErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(options?.client ?? client, "accountsRemove", options, (headers) =>
+      (options?.client ?? client).delete<
+        AccountsRemoveResponses,
+        AccountsRemoveErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/accounts/{accountId}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Get an account
+   *
+   * Returns one account with its status and granted scopes. A Shopify account missing requested scopes, including read_products and read_legal_policies, needs reconnecting.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: IntegrationAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AccountsGetResponses, AccountsGetErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(options?.client ?? client, "accountsGet", options, (headers) =>
+      (options?.client ?? client).get<AccountsGetResponses, AccountsGetErrors, ThrowOnError>({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/accounts/{accountId}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Check an account
+   *
+   * Checks the saved credential on demand. A provider outage does not require reconnecting; refused access or missing requested scopes does.
+   */
+  public static check<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: IntegrationAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AccountsCheckResponses, AccountsCheckErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(options?.client ?? client, "accountsCheck", options, (headers) =>
+      (options?.client ?? client).post<AccountsCheckResponses, AccountsCheckErrors, ThrowOnError>({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/accounts/{accountId}/check",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Connect an account
+   *
+   * Connects a provider account. OAuth returns an authorization URL; credential connections return null after validation. Name an app to ask for its scopes and install it when the connection finishes. Pass accountId to reconnect an account for renewed access or additional scopes. Connecting or reconnecting Shopify with read_products and read_legal_policies creates its Shopify store knowledge source.
+   */
+  public static connect<ThrowOnError extends boolean = false>(
+    parameters: {
+      provider: IntegrationKey;
+      input?: JsonObjectWritable | undefined;
+      credentials?:
+        | {
+            [key: string]: string | undefined;
+          }
+        | undefined;
+      app?: IntegrationKey | undefined;
+      accountId?: IntegrationAccountId | undefined;
+      expectedHosts?: Array<string> | undefined;
+      returnTo: IntegrationReturnTo;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AccountsConnectResponses, AccountsConnectErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "provider" },
+            { in: "body", key: "input" },
+            { in: "body", key: "credentials" },
+            { in: "body", key: "app" },
+            { in: "body", key: "accountId" },
+            { in: "body", key: "expectedHosts" },
+            { in: "body", key: "returnTo" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "accountsConnect", options, (headers) =>
+      (options?.client ?? client).post<
+        AccountsConnectResponses,
+        AccountsConnectErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/accounts/connect",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+        headers: { "Content-Type": "application/json", ...headers },
+      }),
+    );
+  }
+}
+
+export class Accounts2 {
+  static accounts = Accounts;
+}
+
+export class IntegrationCatalog {
+  /**
+   * Prepare an integration connection
+   *
+   * Resolves what connecting a catalog provider needs: the inputs and credentials it asks for, the hosts its API and OAuth credentials reach, and whether it can connect. Pass input for server inputs such as an API description URL. An unavailable provider carries a reason.
+   */
+  public static prepare<ThrowOnError extends boolean = false>(
+    parameters: {
+      provider: IntegrationKey;
+      input?: JsonObjectWritable | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogPrepareResponses,
+    IntegrationCatalogPrepareErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "provider" },
+            { in: "body", key: "input" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogPrepare",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          IntegrationCatalogPrepareResponses,
+          IntegrationCatalogPrepareErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/prepare",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Search the integrations catalog
+   *
+   * Searches the providers this organization can connect, by key, text or category. Each entry carries its connection requirements and whether it can connect. Follow nextOffset until it is null.
+   */
+  public static search<ThrowOnError extends boolean = false>(
+    parameters?: {
+      key?: IntegrationKey | undefined;
+      query?: string | undefined;
+      category?:
+        | "commerce"
+        | "payments"
+        | "shipping"
+        | "calendar"
+        | "crm"
+        | "helpdesk"
+        | "knowledge"
+        | "forms"
+        | "accounting"
+        | "reviews"
+        | "productivity"
+        | "dns"
+        | "channel"
+        | "other"
+        | undefined;
+      offset?: number | undefined;
+      limit?: number | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogSearchResponses,
+    IntegrationCatalogSearchErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "key" },
+            { in: "query", key: "query" },
+            { in: "query", key: "category" },
+            { in: "query", key: "offset" },
+            { in: "query", key: "limit" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogSearch",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogSearchResponses,
+          IntegrationCatalogSearchErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/search",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * List the integrations catalog
+   *
+   * Returns the providers this organization can connect, each with its connections and the agents and journeys that use them.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationCatalogListResponses, IntegrationCatalogListErrors, ThrowOnError> {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogList",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogListResponses,
+          IntegrationCatalogListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog",
+          ...options,
+          headers,
+        }),
+    );
+  }
+}
+
+export class IntegrationsCatalog {
+  static integrationCatalog = IntegrationCatalog;
+}
+
+export class Integrations {
+  /**
+   * List integrations
+   *
+   * Returns a bounded page of installed integrations, newest first, with compact tool summaries. Follow nextCursor and each integration's toolPage.nextOffset for the complete inventory.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    parameters?: {
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsListResponses, IntegrationsListErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "integrationsList", options, (headers) =>
+      (options?.client ?? client).get<
+        IntegrationsListResponses,
+        IntegrationsListErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/integrations",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Install an integration
+   *
+   * Installs an app on connected accounts, one for each of the app's account slots. Installing the same app on the same accounts again returns the existing integration.
+   */
+  public static install<ThrowOnError extends boolean = false>(
+    parameters: {
+      app: IntegrationKey;
+      accounts: AccountLinksWritable;
+      settings?: JsonObjectWritable | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsInstallResponses, IntegrationsInstallErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "app" },
+            { in: "body", key: "accounts" },
+            { in: "body", key: "settings" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "integrationsInstall", options, (headers) =>
+      (options?.client ?? client).post<
+        IntegrationsInstallResponses,
+        IntegrationsInstallErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/integrations",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+        headers: { "Content-Type": "application/json", ...headers },
+      }),
+    );
+  }
+
+  /**
+   * List integration tools
+   *
+   * Returns a page of the tools an integration gives agents. Send the first page's revision with each later offset; if the integration's tools change during the read, the request returns 409 and the read restarts at offset zero.
+   */
+  public static listTools<ThrowOnError extends boolean = false>(
+    parameters: {
+      integrationId: IntegrationId;
+      offset?: number | null | undefined;
+      revision?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsListToolsResponses, IntegrationsListToolsErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "integrationId" },
+            { in: "query", key: "offset" },
+            { in: "query", key: "revision" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsListTools",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationsListToolsResponses,
+          IntegrationsListToolsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/{integrationId}/tools",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Read an integration tool descriptor
+   *
+   * Returns one tool's full descriptor. A revision that no longer matches the integration's tools returns 409.
+   */
+  public static readTool<ThrowOnError extends boolean = false>(
+    parameters: {
+      integrationId: IntegrationId;
+      tool: IntegrationTool;
+      offset?: number | null | undefined;
+      revision?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsReadToolResponses, IntegrationsReadToolErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "integrationId" },
+            { in: "path", key: "tool" },
+            { in: "query", key: "offset" },
+            { in: "query", key: "revision" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsReadTool",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationsReadToolResponses,
+          IntegrationsReadToolErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/{integrationId}/tools/{tool}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Remove an integration
+   *
+   * Removes the integration and its grant from every agent's draft. Contact accounts are disconnected; organization accounts stay connected. A published agent version that granted it can no longer use it; publish the agent to drop the grant.
+   */
+  public static remove<ThrowOnError extends boolean = false>(
+    parameters: {
+      integrationId: IntegrationId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsRemoveResponses, IntegrationsRemoveErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "path", key: "integrationId" }] }],
+    );
+    return requestWithPolicy(options?.client ?? client, "integrationsRemove", options, (headers) =>
+      (options?.client ?? client).delete<
+        IntegrationsRemoveResponses,
+        IntegrationsRemoveErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/integrations/{integrationId}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Get an integration
+   *
+   * Returns one integration with its linked accounts, settings and tools. A Shopify integration needs reconnecting when its account has not granted the requested scopes, including read_products and read_legal_policies.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      integrationId: IntegrationId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsGetResponses, IntegrationsGetErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "path", key: "integrationId" }] }],
+    );
+    return requestWithPolicy(options?.client ?? client, "integrationsGet", options, (headers) =>
+      (options?.client ?? client).get<
+        IntegrationsGetResponses,
+        IntegrationsGetErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/integrations/{integrationId}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Update an integration
+   *
+   * Changes an integration's settings, enabled tools, which tools run without approval, and whether replies using its data need approval. Only an organization owner may change answerWithoutApproval or a tool's runsWithoutApproval: false makes a read tool ask first, true lets a tool that changes something run, each for the tool's current effect. Fields not named keep their values. What an agent may do with the integration is the agent's grant.
+   */
+  public static update<ThrowOnError extends boolean = false>(
+    parameters: {
+      integrationId: IntegrationId;
+      answerWithoutApproval?: AnswerWithoutApproval | undefined;
+      enabledTools?: Array<IntegrationTool> | undefined;
+      tool?:
+        | {
+            name: IntegrationTool;
+            enabled?: boolean | undefined;
+            runsWithoutApproval?: boolean | undefined;
+          }
+        | undefined;
+      settings?: JsonObjectWritable | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<IntegrationsUpdateResponses, IntegrationsUpdateErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "integrationId" },
+            { in: "body", key: "answerWithoutApproval" },
+            { in: "body", key: "enabledTools" },
+            { in: "body", key: "tool" },
+            { in: "body", key: "settings" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "integrationsUpdate", options, (headers) =>
+      (options?.client ?? client).patch<
+        IntegrationsUpdateResponses,
+        IntegrationsUpdateErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/integrations/{integrationId}",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+        headers: { "Content-Type": "application/json", ...headers },
+      }),
+    );
+  }
+}
+
+export class Integrations2 {
+  static integrations = Integrations;
+}
+
 export class Subscriptions {
   /**
    * Request subscription confirmation
@@ -10527,11 +11416,12 @@ export class Templates {
   /**
    * Create a template
    *
-   * Creates an email template project from Samva's canonical TSX starter and returns its template entry with status 201.
+   * Creates a named or gallery template project. With only shareLinkSlug, copies every exported email into the caller's organization and returns the first template with its projectId. Repeated opens reuse that organization's existing copy; an unavailable share link returns 410.
    */
   public static create<ThrowOnError extends boolean = false>(
-    parameters: {
-      name: string;
+    parameters?: {
+      name?: string | null | undefined;
+      shareLinkSlug?: string | null | undefined;
       projectName?: string | null | undefined;
       slug?: string | null | undefined;
       galleryTemplateId?: string | null | undefined;
@@ -10558,6 +11448,7 @@ export class Templates {
         {
           args: [
             { in: "body", key: "name" },
+            { in: "body", key: "shareLinkSlug" },
             { in: "body", key: "projectName" },
             { in: "body", key: "slug" },
             { in: "body", key: "galleryTemplateId" },
@@ -12255,6 +13146,217 @@ export class Templates2 {
   static templates = Templates;
 }
 
+export class TemplateShareLinks {
+  /**
+   * Delete a share link
+   *
+   * Disables the public link. Copies already opened remain with their owners.
+   */
+  public static delete<ThrowOnError extends boolean = false>(
+    parameters: {
+      projectId: TemplateProjectId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateShareLinksDeleteResponses,
+    TemplateShareLinksDeleteErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "projectId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateShareLinksDelete",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          TemplateShareLinksDeleteResponses,
+          TemplateShareLinksDeleteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/template-projects/{projectId}/share-link",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Get a project's share link
+   *
+   * Returns the share link and counts, or null when the project has no share link.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      projectId: TemplateProjectId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<TemplateShareLinksGetResponses, TemplateShareLinksGetErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "projectId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateShareLinksGet",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          TemplateShareLinksGetResponses,
+          TemplateShareLinksGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/template-projects/{projectId}/share-link",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Rename a share link
+   *
+   * Changes the slug. The old link immediately stops working, with no redirect.
+   */
+  public static rename<ThrowOnError extends boolean = false>(
+    parameters: {
+      projectId: TemplateProjectId;
+      slug: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateShareLinksRenameResponses,
+    TemplateShareLinksRenameErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "projectId" },
+            { in: "body", key: "slug" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateShareLinksRename",
+      options,
+      (headers) =>
+        (options?.client ?? client).patch<
+          TemplateShareLinksRenameResponses,
+          TemplateShareLinksRenameErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/template-projects/{projectId}/share-link",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Create a share link
+   *
+   * Exports the project's latest Save as a share link. Omit slug to use the slugified project name.
+   */
+  public static create<ThrowOnError extends boolean = false>(
+    parameters: {
+      projectId: TemplateProjectId;
+      slug?: string | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateShareLinksCreateResponses,
+    TemplateShareLinksCreateErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "projectId" },
+            { in: "body", key: "slug" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateShareLinksCreate",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          TemplateShareLinksCreateResponses,
+          TemplateShareLinksCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/template-projects/{projectId}/share-link",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Update a share link
+   *
+   * Replaces the share link snapshot from the latest Save, keeping its link and counts.
+   */
+  public static update<ThrowOnError extends boolean = false>(
+    parameters: {
+      projectId: TemplateProjectId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    TemplateShareLinksUpdateResponses,
+    TemplateShareLinksUpdateErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "projectId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templateShareLinksUpdate",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          TemplateShareLinksUpdateResponses,
+          TemplateShareLinksUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/template-projects/{projectId}/share-link/update",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+}
+
+export class TemplateShareLinks2 {
+  static templateShareLinks = TemplateShareLinks;
+}
+
 export class Brands {
   /**
    * List brands
@@ -13801,6 +14903,177 @@ export class Whoami2 {
 
 export class Mailboxes {
   /**
+   * Create a mail history upload
+   *
+   * Creates a presigned archive upload for an existing mailbox. Pass importId to append another archive to the same queued job; each upload gets its own URL. Upload each URL with Content-Type application/mbox and Content-Length equal to its accepted sizeBytes. Upload every archive before starting the job. Apple Mail package directories are traversed by the CLI into one import.
+   */
+  public static createImportUpload<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId?: string | null | undefined;
+      filename: string;
+      sizeBytes: number;
+      format: "gmail" | "apple" | "mbox";
+      mailboxPath?: string | null | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesCreateImportUploadResponses,
+    MailboxesCreateImportUploadErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "importId" },
+            { in: "body", key: "filename" },
+            { in: "body", key: "sizeBytes" },
+            { in: "body", key: "format" },
+            { in: "body", key: "mailboxPath" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesCreateImportUpload",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesCreateImportUploadResponses,
+          MailboxesCreateImportUploadErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/uploads",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Start or resume a mail history import
+   *
+   * Starts all archives uploaded to the job, or resumes a failed job at its committed byte cursor across those archives. History emits no inbound events or agent triggers.
+   */
+  public static startImport<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesStartImportResponses, MailboxesStartImportErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "importId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesStartImport",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesStartImportResponses,
+          MailboxesStartImportErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/{importId}/start",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Read mail history import progress
+   *
+   * Returns import status, counts, and bounded failure reasons.
+   */
+  public static getImport<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesGetImportResponses, MailboxesGetImportErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "importId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "mailboxesGetImport", options, (headers) =>
+      (options?.client ?? client).get<
+        MailboxesGetImportResponses,
+        MailboxesGetImportErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/mailboxes/{id}/imports/{importId}",
+        ...options,
+        ...params,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * List mail history imports
+   *
+   * Lists the most recent history imports for a mailbox.
+   */
+  public static listImports<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesListImportsResponses, MailboxesListImportsErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListImports",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesListImportsResponses,
+          MailboxesListImportsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
    * List mailboxes
    *
    * Returns summaries of the mailboxes the caller can read, newest first, filterable by namespace (`namespaceId`) and creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read a mailbox's endpoints and metadata with `GET /v1/mailboxes/{id}`.
@@ -14731,7 +16004,7 @@ export class Mailboxes {
   /**
    * List threads across your mailboxes
    *
-   * Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes the caller's Done and shared closed threads; state=done selects the caller's Done plus closed shared threads, without duplicates. Other filters and cursor pagination match the per-mailbox list.
+   * Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes what the caller finished; state=done selects the caller's Done, closed shared threads, and personal-mailbox threads in the archived folder, without duplicates. Other filters and cursor pagination match the per-mailbox list.
    */
   public static listOrganizationThreads<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -14739,6 +16012,9 @@ export class Mailboxes {
       cursor?: string | undefined;
       after?: string | undefined;
       before?: string | undefined;
+      recipient?: string | undefined;
+      senders?: string | Array<string> | undefined;
+      excludeTrash?: boolean | null | undefined;
       q?: string | undefined;
       state?: "active" | "done" | undefined;
       folder?: MailboxThreadFolder | undefined;
@@ -14765,6 +16041,9 @@ export class Mailboxes {
             { in: "query", key: "cursor" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
+            { in: "query", key: "recipient" },
+            { in: "query", key: "senders" },
+            { in: "query", key: "excludeTrash" },
             { in: "query", key: "q" },
             { in: "query", key: "state" },
             { in: "query", key: "folder" },
@@ -14810,6 +16089,9 @@ export class Mailboxes {
       cursor?: string | undefined;
       after?: string | undefined;
       before?: string | undefined;
+      recipient?: string | undefined;
+      senders?: string | Array<string> | undefined;
+      excludeTrash?: boolean | null | undefined;
       q?: string | undefined;
       state?: "active" | "done" | undefined;
       folder?: MailboxThreadFolder | undefined;
@@ -14830,6 +16112,9 @@ export class Mailboxes {
             { in: "query", key: "cursor" },
             { in: "query", key: "after" },
             { in: "query", key: "before" },
+            { in: "query", key: "recipient" },
+            { in: "query", key: "senders" },
+            { in: "query", key: "excludeTrash" },
             { in: "query", key: "q" },
             { in: "query", key: "state" },
             { in: "query", key: "folder" },
@@ -14914,6 +16199,8 @@ export class Mailboxes {
       read?: boolean | null | undefined;
       starred?: boolean | null | undefined;
       snoozedUntil?: string | null | undefined;
+      ifNoReply?: boolean | undefined;
+      reminderInboxAt?: string | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesUpdateThreadResponses, MailboxesUpdateThreadErrors, ThrowOnError> {
@@ -14931,6 +16218,8 @@ export class Mailboxes {
             { in: "body", key: "read" },
             { in: "body", key: "starred" },
             { in: "body", key: "snoozedUntil" },
+            { in: "body", key: "ifNoReply" },
+            { in: "body", key: "reminderInboxAt" },
           ],
         },
       ],
@@ -15854,6 +17143,278 @@ export class Mailboxes {
   }
 
   /**
+   * Schedule a mailbox draft
+   *
+   * Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.
+   */
+  public static scheduleDraft<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      draftId: MailboxDraftId;
+      idempotencyKey: string;
+      base: string;
+      draftRevision: number;
+      sendAt: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesScheduleDraftResponses, MailboxesScheduleDraftErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "draftId" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "base" },
+            { in: "body", key: "draftRevision" },
+            { in: "body", key: "sendAt" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesScheduleDraft",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesScheduleDraftResponses,
+          MailboxesScheduleDraftErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/drafts/{draftId}/schedule",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Return a scheduled send to Drafts
+   *
+   * Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.
+   */
+  public static unscheduleSend<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      outboxId: MailOutboxItemId;
+      idempotencyKey: string;
+      base: string;
+      expectedRevision: number;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesUnscheduleSendResponses, MailboxesUnscheduleSendErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "outboxId" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "base" },
+            { in: "body", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesUnscheduleSend",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          MailboxesUnscheduleSendResponses,
+          MailboxesUnscheduleSendErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/scheduled/{outboxId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Reschedule a mailbox send
+   *
+   * Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.
+   */
+  public static rescheduleSend<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      outboxId: MailOutboxItemId;
+      idempotencyKey: string;
+      base: string;
+      expectedRevision: number;
+      sendAt: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesRescheduleSendResponses, MailboxesRescheduleSendErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "outboxId" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "base" },
+            { in: "body", key: "expectedRevision" },
+            { in: "body", key: "sendAt" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesRescheduleSend",
+      options,
+      (headers) =>
+        (options?.client ?? client).patch<
+          MailboxesRescheduleSendResponses,
+          MailboxesRescheduleSendErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/scheduled/{outboxId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Send a scheduled message now
+   *
+   * Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.
+   */
+  public static sendScheduledNow<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      outboxId: MailOutboxItemId;
+      idempotencyKey: string;
+      base: string;
+      expectedRevision: number;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesSendScheduledNowResponses,
+    MailboxesSendScheduledNowErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "outboxId" },
+            { in: "body", key: "idempotencyKey" },
+            { in: "body", key: "base" },
+            { in: "body", key: "expectedRevision" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesSendScheduledNow",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesSendScheduledNowResponses,
+          MailboxesSendScheduledNowErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/scheduled/{outboxId}/send",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * List scheduled mailbox sends
+   *
+   * Lists the caller's private scheduled sends in this mailbox. Items leave this list when sent, held, failed, or returned to Drafts.
+   */
+  public static listScheduledSends<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesListScheduledSendsResponses,
+    MailboxesListScheduledSendsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListScheduledSends",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesListScheduledSendsResponses,
+          MailboxesListScheduledSendsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/scheduled",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
    * List drafts
    *
    * Returns summaries of the caller's unsent drafts in the mailbox, newest first, optionally for one thread. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read a draft's body with `GET /v1/mailboxes/{id}/drafts/{draftId}`.
@@ -16454,6 +18015,257 @@ export class Mailboxes {
         ...params,
         headers,
       }),
+    );
+  }
+
+  /**
+   * Count unread Mail split threads
+   *
+   * Returns each saved split’s unread actionable Inbox threads: not Done, not snoozed, and not Closed in shared mailboxes. Query splits use bounded search results; capped is true when search reaches its candidate limit, so unread is a lower bound. Requires a person signed in through Mail or the CLI.
+   */
+  public static countSplits<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesCountSplitsResponses, MailboxesCountSplitsErrors, ThrowOnError> {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesCountSplits",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesCountSplitsResponses,
+          MailboxesCountSplitsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/splits/counts",
+          ...options,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * List Mail splits
+   *
+   * Returns the signed-in reader’s saved filters in sidebar order. Splits are private to this user and organization. Requires a person signed in through Mail or the CLI.
+   */
+  public static listSplits<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesListSplitsResponses, MailboxesListSplitsErrors, ThrowOnError> {
+    return requestWithPolicy(options?.client ?? client, "mailboxesListSplits", options, (headers) =>
+      (options?.client ?? client).get<
+        MailboxesListSplitsResponses,
+        MailboxesListSplitsErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/mailboxes/splits",
+        ...options,
+        headers,
+      }),
+    );
+  }
+
+  /**
+   * Create a Mail split
+   *
+   * Saves a named query, recipient address, or VIP sender list for the signed-in reader. Requires a person signed in through Mail or the CLI.
+   */
+  public static createSplit<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string;
+      filter:
+        | {
+            kind: "query";
+            query: string;
+          }
+        | {
+            kind: "address";
+            address: string;
+          }
+        | {
+            kind: "vip";
+            senders: [string, ...Array<string>];
+          };
+      mailboxId: MailboxId | null;
+      position: number;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesCreateSplitResponses, MailboxesCreateSplitErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "name" },
+            { in: "body", key: "filter" },
+            { in: "body", key: "mailboxId" },
+            { in: "body", key: "position" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesCreateSplit",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesCreateSplitResponses,
+          MailboxesCreateSplitErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/splits",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Delete a Mail split
+   *
+   * Deletes the signed-in reader’s saved split and returns it. Requires a person signed in through Mail or the CLI.
+   */
+  public static deleteSplit<ThrowOnError extends boolean = false>(
+    parameters: {
+      splitId: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesDeleteSplitResponses, MailboxesDeleteSplitErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "splitId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesDeleteSplit",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          MailboxesDeleteSplitResponses,
+          MailboxesDeleteSplitErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/splits/{splitId}",
+          ...options,
+          ...params,
+          headers,
+        }),
+    );
+  }
+
+  /**
+   * Update a Mail split
+   *
+   * Replaces the name, filter, mailbox scope and sidebar position of a split owned by the signed-in reader. Requires a person signed in through Mail or the CLI.
+   */
+  public static updateSplit<ThrowOnError extends boolean = false>(
+    parameters: {
+      splitId: string;
+      name: string;
+      filter:
+        | {
+            kind: "query";
+            query: string;
+          }
+        | {
+            kind: "address";
+            address: string;
+          }
+        | {
+            kind: "vip";
+            senders: [string, ...Array<string>];
+          };
+      mailboxId: MailboxId | null;
+      position: number;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesUpdateSplitResponses, MailboxesUpdateSplitErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "splitId" },
+            { in: "body", key: "name" },
+            { in: "body", key: "filter" },
+            { in: "body", key: "mailboxId" },
+            { in: "body", key: "position" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesUpdateSplit",
+      options,
+      (headers) =>
+        (options?.client ?? client).put<
+          MailboxesUpdateSplitResponses,
+          MailboxesUpdateSplitErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/splits/{splitId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+            ...params.headers,
+          },
+          headers: { "Content-Type": "application/json", ...headers },
+        }),
+    );
+  }
+
+  /**
+   * List mailbox addresses
+   *
+   * Lists up to 1000 distinct registered and observed email addresses in sorted order, retaining registered endpoints first when the bound applies. With recipient query parameters, resolves only those candidates as this mailbox’s own addresses, including plus fallback but excluding literal tagged endpoints owned by another mailbox. Use this candidate read for reply addressing.
+   */
+  public static listAddresses<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      recipient?: string | Array<string> | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesListAddressesResponses, MailboxesListAddressesErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "recipient" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListAddresses",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          MailboxesListAddressesResponses,
+          MailboxesListAddressesErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/addresses",
+          ...options,
+          ...params,
+          headers,
+        }),
     );
   }
 }
@@ -18951,6 +20763,14 @@ export class TemplateRegistrations2 {
   static templateRegistrations = TemplateRegistrations;
 }
 
+Object.assign(ApprovalRequests.create, { operation: "approvalRequestsCreate" });
+
+Object.assign(ApprovalRequests.get, { operation: "approvalRequestsGet" });
+
+Object.assign(ApprovalRequests.approve, { operation: "approvalRequestsApprove" });
+
+Object.assign(ApprovalRequests.reject, { operation: "approvalRequestsReject" });
+
 Object.assign(Messages.list, { operation: "messagesList" });
 
 Object.assign(Messages.send, { operation: "messagesSend" });
@@ -19299,6 +21119,38 @@ Object.assign(Agents.listVersions, { operation: "agentsListVersions" });
 
 Object.assign(Agents.getVersion, { operation: "agentsGetVersion" });
 
+Object.assign(Accounts.listContactConnections, { operation: "accountsListContactConnections" });
+
+Object.assign(Accounts.list, { operation: "accountsList" });
+
+Object.assign(Accounts.remove, { operation: "accountsRemove" });
+
+Object.assign(Accounts.get, { operation: "accountsGet" });
+
+Object.assign(Accounts.check, { operation: "accountsCheck" });
+
+Object.assign(Accounts.connect, { operation: "accountsConnect" });
+
+Object.assign(IntegrationCatalog.prepare, { operation: "integrationCatalogPrepare" });
+
+Object.assign(IntegrationCatalog.search, { operation: "integrationCatalogSearch" });
+
+Object.assign(IntegrationCatalog.list, { operation: "integrationCatalogList" });
+
+Object.assign(Integrations.list, { operation: "integrationsList" });
+
+Object.assign(Integrations.install, { operation: "integrationsInstall" });
+
+Object.assign(Integrations.listTools, { operation: "integrationsListTools" });
+
+Object.assign(Integrations.readTool, { operation: "integrationsReadTool" });
+
+Object.assign(Integrations.remove, { operation: "integrationsRemove" });
+
+Object.assign(Integrations.get, { operation: "integrationsGet" });
+
+Object.assign(Integrations.update, { operation: "integrationsUpdate" });
+
 Object.assign(Subscriptions.subscribe, { operation: "subscriptionsSubscribe" });
 
 Object.assign(ContactGroups.list, { operation: "contactGroupsList" });
@@ -19487,6 +21339,16 @@ Object.assign(Templates.attachWorkspaceResource, { operation: "templatesAttachWo
 
 Object.assign(Templates.removeWorkspaceResource, { operation: "templatesRemoveWorkspaceResource" });
 
+Object.assign(TemplateShareLinks.delete, { operation: "templateShareLinksDelete" });
+
+Object.assign(TemplateShareLinks.get, { operation: "templateShareLinksGet" });
+
+Object.assign(TemplateShareLinks.rename, { operation: "templateShareLinksRename" });
+
+Object.assign(TemplateShareLinks.create, { operation: "templateShareLinksCreate" });
+
+Object.assign(TemplateShareLinks.update, { operation: "templateShareLinksUpdate" });
+
 Object.assign(Brands.list, { operation: "brandsList" });
 
 Object.assign(Brands.create, { operation: "brandsCreate" });
@@ -19570,6 +21432,14 @@ Object.assign(ApiKeys.getActivity, { operation: "apiKeysGetActivity" });
 Object.assign(Feedback.send, { operation: "feedbackSend" });
 
 Object.assign(Whoami.get, { operation: "whoamiGet" });
+
+Object.assign(Mailboxes.createImportUpload, { operation: "mailboxesCreateImportUpload" });
+
+Object.assign(Mailboxes.startImport, { operation: "mailboxesStartImport" });
+
+Object.assign(Mailboxes.getImport, { operation: "mailboxesGetImport" });
+
+Object.assign(Mailboxes.listImports, { operation: "mailboxesListImports" });
 
 Object.assign(Mailboxes.list, { operation: "mailboxesList" });
 
@@ -19661,6 +21531,16 @@ Object.assign(Mailboxes.releaseMessage, { operation: "mailboxesReleaseMessage" }
 
 Object.assign(Mailboxes.discardMessage, { operation: "mailboxesDiscardMessage" });
 
+Object.assign(Mailboxes.scheduleDraft, { operation: "mailboxesScheduleDraft" });
+
+Object.assign(Mailboxes.unscheduleSend, { operation: "mailboxesUnscheduleSend" });
+
+Object.assign(Mailboxes.rescheduleSend, { operation: "mailboxesRescheduleSend" });
+
+Object.assign(Mailboxes.sendScheduledNow, { operation: "mailboxesSendScheduledNow" });
+
+Object.assign(Mailboxes.listScheduledSends, { operation: "mailboxesListScheduledSends" });
+
 Object.assign(Mailboxes.listDrafts, { operation: "mailboxesListDrafts" });
 
 Object.assign(Mailboxes.createDraft, { operation: "mailboxesCreateDraft" });
@@ -19686,6 +21566,18 @@ Object.assign(Mailboxes.approveAction, { operation: "mailboxesApproveAction" });
 Object.assign(Mailboxes.denyAction, { operation: "mailboxesDenyAction" });
 
 Object.assign(Mailboxes.listEvents, { operation: "mailboxesListEvents" });
+
+Object.assign(Mailboxes.countSplits, { operation: "mailboxesCountSplits" });
+
+Object.assign(Mailboxes.listSplits, { operation: "mailboxesListSplits" });
+
+Object.assign(Mailboxes.createSplit, { operation: "mailboxesCreateSplit" });
+
+Object.assign(Mailboxes.deleteSplit, { operation: "mailboxesDeleteSplit" });
+
+Object.assign(Mailboxes.updateSplit, { operation: "mailboxesUpdateSplit" });
+
+Object.assign(Mailboxes.listAddresses, { operation: "mailboxesListAddresses" });
 
 Object.assign(Policies.deletePolicy, { operation: "policiesDeletePolicy" });
 
