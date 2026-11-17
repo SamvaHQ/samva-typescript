@@ -33,8 +33,6 @@ export * as Contacts from "./contacts";
 export * as Conversations from "./conversations";
 export * as CustomFields from "./custom-fields";
 export * as Email from "./email";
-export * as ExtensionInstallations from "./extension-installations";
-export * as Extensions from "./extensions";
 export * as Events from "./events";
 export * as Feedback from "./feedback";
 export * as Journeys from "./journeys";

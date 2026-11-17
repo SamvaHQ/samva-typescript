@@ -15,6 +15,7 @@ import {
   ConversationId,
   ForbiddenError,
   GatewayTimeoutError,
+  IntegrationAccountId,
   InternalError,
   JsonObject,
   MalformedRequestError,
@@ -343,6 +344,7 @@ export const ContactPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "ContactPage" }))();
 export type Contact = {
   readonly id: ContactId;
+  readonly mergedInto?: ContactId | null;
   readonly namespaceId: NamespaceId | null;
   readonly name: string;
   readonly displayName: string | null;
@@ -420,6 +422,7 @@ export type Contact = {
 export const Contact = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: ContactId,
+    mergedInto: Schema.optionalKey(Schema.Union([ContactId, Schema.Null])),
     namespaceId: Schema.Union([NamespaceId, Schema.Null]),
     name: Schema.String,
     displayName: Schema.Union([Schema.String, Schema.Null]),
@@ -1178,6 +1181,65 @@ export type ContactsSetConsent500 = InternalError;
 export const ContactsSetConsent500 = InternalError;
 export type ContactsSetConsent504 = GatewayTimeoutError;
 export const ContactsSetConsent504 = GatewayTimeoutError;
+export type ContactsMergePathParams = { readonly id: ContactId };
+export const ContactsMergePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
+export type ContactsMergeHeaders = { readonly "x-samva-conversation-agent-admission"?: string };
+export const ContactsMergeHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({ "x-samva-conversation-agent-admission": Schema.optionalKey(Schema.String) }))();
+export type ContactsMergeRequestJson = { readonly from: ContactId };
+export const ContactsMergeRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ from: ContactId }))();
+export type ContactsMerge200 = Contact;
+export const ContactsMerge200 = Contact;
+export type ContactsMerge400 = MalformedRequestError;
+export const ContactsMerge400 = MalformedRequestError;
+export type ContactsMerge401 = UnauthorizedError;
+export const ContactsMerge401 = UnauthorizedError;
+export type ContactsMerge403 = ForbiddenError;
+export const ContactsMerge403 = ForbiddenError;
+export type ContactsMerge404 = ResourceNotFoundError;
+export const ContactsMerge404 = ResourceNotFoundError;
+export type ContactsMerge409 = ConflictError;
+export const ContactsMerge409 = ConflictError;
+export type ContactsMerge422 = ValidationError;
+export const ContactsMerge422 = ValidationError;
+export type ContactsMerge500 = InternalError;
+export const ContactsMerge500 = InternalError;
+export type ContactsMerge502 = BillingProviderError;
+export const ContactsMerge502 = BillingProviderError;
+export type ContactsMerge504 = GatewayTimeoutError;
+export const ContactsMerge504 = GatewayTimeoutError;
+export type ContactsMergeByConnectionPathParams = { readonly id: ContactId };
+export const ContactsMergeByConnectionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: ContactId }))();
+export type ContactsMergeByConnectionHeaders = {
+  readonly "x-samva-conversation-agent-admission"?: string;
+};
+export const ContactsMergeByConnectionHeaders = /* @__PURE__ */ (() =>
+  Schema.Struct({ "x-samva-conversation-agent-admission": Schema.optionalKey(Schema.String) }))();
+export type ContactsMergeByConnectionRequestJson = { readonly connection: IntegrationAccountId };
+export const ContactsMergeByConnectionRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({ connection: IntegrationAccountId }))();
+export type ContactsMergeByConnection200 = Contact;
+export const ContactsMergeByConnection200 = Contact;
+export type ContactsMergeByConnection400 = MalformedRequestError;
+export const ContactsMergeByConnection400 = MalformedRequestError;
+export type ContactsMergeByConnection401 = UnauthorizedError;
+export const ContactsMergeByConnection401 = UnauthorizedError;
+export type ContactsMergeByConnection403 = ForbiddenError;
+export const ContactsMergeByConnection403 = ForbiddenError;
+export type ContactsMergeByConnection404 = ResourceNotFoundError;
+export const ContactsMergeByConnection404 = ResourceNotFoundError;
+export type ContactsMergeByConnection409 = ConflictError;
+export const ContactsMergeByConnection409 = ConflictError;
+export type ContactsMergeByConnection422 = ValidationError;
+export const ContactsMergeByConnection422 = ValidationError;
+export type ContactsMergeByConnection500 = InternalError;
+export const ContactsMergeByConnection500 = InternalError;
+export type ContactsMergeByConnection502 = BillingProviderError;
+export const ContactsMergeByConnection502 = BillingProviderError;
+export type ContactsMergeByConnection504 = GatewayTimeoutError;
+export const ContactsMergeByConnection504 = GatewayTimeoutError;
 export type ContactsAddTagsPathParams = { readonly id: ContactId };
 export const ContactsAddTagsPathParams = /* @__PURE__ */ (() => Schema.Struct({ id: ContactId }))();
 export type ContactsAddTagsRequestJson = { readonly tags: readonly [string, ...Array<string>] };
@@ -2623,6 +2685,54 @@ export class ContactsGroup extends HttpApiGroup.make("Contacts")
       .annotate(
         OpenApi.Description,
         "Records the contact's consent on one channel at one of its addresses and returns the contact. `opted_out` stops every send on that channel to that address until the contact opts back in; `opted_in` is what channels that require opt-in check for. `source` and `capturedAt` say where and when the contact decided; `proof` keeps your evidence. A decision captured before the recorded one is ignored. A change publishes `contact.consent_changed`.",
+      ),
+    HttpApiEndpoint.post("contactsMerge", "/v1/contacts/:id/merge", {
+      params: ContactsMergePathParams,
+      headers: ContactsMergeHeaders,
+      payload: ContactsMergeRequestJson,
+      success: ContactsMerge200,
+      error: [
+        ContactsMerge400.pipe(HttpApiSchema.status(400)),
+        ContactsMerge401.pipe(HttpApiSchema.status(401)),
+        ContactsMerge403.pipe(HttpApiSchema.status(403)),
+        ContactsMerge404.pipe(HttpApiSchema.status(404)),
+        ContactsMerge409.pipe(HttpApiSchema.status(409)),
+        ContactsMerge422.pipe(HttpApiSchema.status(422)),
+        ContactsMerge500,
+        ContactsMerge502.pipe(HttpApiSchema.status(502)),
+        ContactsMerge504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "contacts.merge")
+      .annotate(OpenApi.Summary, "Merge contacts")
+      .annotate(
+        OpenApi.Description,
+        "Merges `from` into the contact in the path, within one organization and namespace. The kept contact wins profile and metadata conflicts, blank fields fill, and an explicit topic unsubscribe wins. The absorbed contact remains a record pointing to the kept contact; duplicate campaign recipients and other conflict history stay available. A merge cannot be undone. Agents use the merge-by-connection operation with their own verified connection instead of choosing a source contact.",
+      ),
+    HttpApiEndpoint.post("contactsMergeByConnection", "/v1/contacts/:id/merge-by-connection", {
+      params: ContactsMergeByConnectionPathParams,
+      headers: ContactsMergeByConnectionHeaders,
+      payload: ContactsMergeByConnectionRequestJson,
+      success: ContactsMergeByConnection200,
+      error: [
+        ContactsMergeByConnection400.pipe(HttpApiSchema.status(400)),
+        ContactsMergeByConnection401.pipe(HttpApiSchema.status(401)),
+        ContactsMergeByConnection403.pipe(HttpApiSchema.status(403)),
+        ContactsMergeByConnection404.pipe(HttpApiSchema.status(404)),
+        ContactsMergeByConnection409.pipe(HttpApiSchema.status(409)),
+        ContactsMergeByConnection422.pipe(HttpApiSchema.status(422)),
+        ContactsMergeByConnection500,
+        ContactsMergeByConnection502.pipe(HttpApiSchema.status(502)),
+        ContactsMergeByConnection504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "contacts.mergeByConnection")
+      .annotate(OpenApi.Summary, "Merge contacts by verified connection")
+      .annotate(
+        OpenApi.Description,
+        "Uses the conversation's active per-contact connection and a current signed conversation admission to derive the contact holding its verified email. Supply the account ID as `connection`; an unverified address, another contact's connection, or a different organization or namespace is refused. If no contact holds the verified email, attaches that identity instead. The conversation contact is kept, and the merge conflict rules are the same as the merge operation.",
       ),
     HttpApiEndpoint.post("contactsAddTags", "/v1/contacts/:id/tags", {
       params: ContactsAddTagsPathParams,

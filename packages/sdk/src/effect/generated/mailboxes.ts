@@ -61,6 +61,7 @@ import {
   SenderNotReadyError,
   SkippedRecipient,
   SuccessResponse,
+  TemplateChannelVariantId,
   TemplateId,
   UnauthorizedError,
   UserId,
@@ -157,14 +158,6 @@ export const MailboxAlwaysAllow = /* @__PURE__ */ (() =>
     }),
     allowed: Schema.Boolean.annotate({ description: "Whether the caller is someone `by` names." }),
   }).annotate({ identifier: "MailboxAlwaysAllow" }))();
-export type TemplateChannelVariantId = string & EffectBrand.Brand<"TemplateChannelVariantId">;
-export const TemplateChannelVariantId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^tvar_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^tvar_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "TemplateChannelVariantId",
-    }),
-  ).pipe(Schema.brand("TemplateChannelVariantId")))();
 export type MailboxToolCall = {
   readonly name: string;
   readonly argumentsHash: string;
@@ -862,6 +855,17 @@ export const MailboxWhatsAppEndpointBinding = /* @__PURE__ */ (() =>
     channel: Schema.Literal("whatsapp"),
     businessAccountId: WhatsAppBusinessAccountId,
   }).annotate({ identifier: "MailboxWhatsAppEndpointBinding" }))();
+export type MailboxChatTemplate = {
+  readonly templateId: TemplateId;
+  readonly templateChannelVariantId: TemplateChannelVariantId;
+  readonly templateData: JsonObject | null;
+};
+export const MailboxChatTemplate = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    templateId: TemplateId,
+    templateChannelVariantId: TemplateChannelVariantId,
+    templateData: Schema.Union([JsonObject, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatTemplate" }))();
 export type MailboxSummary = {
   readonly id: MailboxId;
   readonly kind: MailboxKind;
@@ -962,17 +966,6 @@ export const MailboxQuarantinedMessage = /* @__PURE__ */ (() =>
     threadId: Schema.Union([MailboxThreadId, Schema.Null]),
     discardedAt: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxQuarantinedMessage" }))();
-export type MailboxChatTemplate = {
-  readonly templateId: TemplateId;
-  readonly templateChannelVariantId: TemplateChannelVariantId;
-  readonly templateData: JsonObject | null;
-};
-export const MailboxChatTemplate = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    templateId: TemplateId,
-    templateChannelVariantId: TemplateChannelVariantId,
-    templateData: Schema.Union([JsonObject, Schema.Null]),
-  }).annotate({ identifier: "MailboxChatTemplate" }))();
 export type MailboxDraftSummary = {
   readonly id: MailboxDraftId;
   readonly channel: MailboxChannel;
@@ -2124,6 +2117,39 @@ export const MailboxEndpoint = /* @__PURE__ */ (() =>
   Schema.Union([MailboxEmailEndpoint, MailboxWhatsAppEndpoint, MailboxSmsEndpoint]).annotate({
     identifier: "MailboxEndpoint",
   }))();
+export type MailboxChatSendIntent = {
+  readonly channel: "whatsapp" | "sms";
+  readonly draftRevision: number;
+  readonly endpointId: MailboxEndpointId;
+  readonly sender: MailboxWhatsAppEndpointBinding | MailboxSmsEndpointBinding;
+  readonly from: string;
+  readonly to: string;
+  readonly text: string | null;
+  readonly template: MailboxChatTemplate | null;
+  readonly threadId: MailboxThreadId | null;
+  readonly conversationId: ConversationId | null;
+  readonly inReplyToMessageId: MessageId | null;
+};
+export const MailboxChatSendIntent = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
+    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+    endpointId: MailboxEndpointId,
+    sender: Schema.Union([MailboxWhatsAppEndpointBinding, MailboxSmsEndpointBinding]),
+    from: Schema.String,
+    to: Schema.String,
+    text: Schema.Union([Schema.String, Schema.Null]),
+    template: Schema.Union([MailboxChatTemplate, Schema.Null]),
+    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
+    conversationId: Schema.Union([ConversationId, Schema.Null]),
+    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
+  }).annotate({ identifier: "MailboxChatSendIntent" }))();
 export type MailboxQuarantinePage = {
   readonly items: ReadonlyArray<MailboxQuarantinedMessage>;
   readonly nextCursor: string | null;
@@ -2321,39 +2347,6 @@ export const MailboxPendingSendReceipt = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "MailboxPendingSendReceipt" }))();
-export type MailboxChatSendIntent = {
-  readonly channel: "whatsapp" | "sms";
-  readonly draftRevision: number;
-  readonly endpointId: MailboxEndpointId;
-  readonly sender: MailboxWhatsAppEndpointBinding | MailboxSmsEndpointBinding;
-  readonly from: string;
-  readonly to: string;
-  readonly text: string | null;
-  readonly template: MailboxChatTemplate | null;
-  readonly threadId: MailboxThreadId | null;
-  readonly conversationId: ConversationId | null;
-  readonly inReplyToMessageId: MessageId | null;
-};
-export const MailboxChatSendIntent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    channel: Schema.Union([Schema.Literal("whatsapp"), Schema.Literal("sms")]),
-    draftRevision: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      )
-      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-    endpointId: MailboxEndpointId,
-    sender: Schema.Union([MailboxWhatsAppEndpointBinding, MailboxSmsEndpointBinding]),
-    from: Schema.String,
-    to: Schema.String,
-    text: Schema.Union([Schema.String, Schema.Null]),
-    template: Schema.Union([MailboxChatTemplate, Schema.Null]),
-    threadId: Schema.Union([MailboxThreadId, Schema.Null]),
-    conversationId: Schema.Union([ConversationId, Schema.Null]),
-    inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
-  }).annotate({ identifier: "MailboxChatSendIntent" }))();
 export type MailboxDraftPage = {
   readonly items: ReadonlyArray<MailboxDraftSummary>;
   readonly nextCursor: string | null;
@@ -2489,6 +2482,11 @@ export const Mailbox = /* @__PURE__ */ (() =>
     endpoints: Schema.Array(MailboxEndpoint),
     updatedAt: Schema.String,
   }).annotate({ identifier: "Mailbox" }))();
+export type MailboxSendSnapshot = MailboxEmailSendSnapshot | MailboxChatSendIntent;
+export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
+  Schema.Union([MailboxEmailSendSnapshot, MailboxChatSendIntent]).annotate({
+    identifier: "MailboxSendSnapshot",
+  }))();
 export type MailCommandReceipt = {
   readonly idempotencyKey: string;
   readonly type:
@@ -2558,11 +2556,6 @@ export const MailCommandReceipt = /* @__PURE__ */ (() =>
     outbox: Schema.Union([MailOutboxItem, Schema.Null]),
     send: Schema.Union([MailboxSendReceipt, Schema.Null]),
   }).annotate({ identifier: "MailCommandReceipt" }))();
-export type MailboxSendSnapshot = MailboxEmailSendSnapshot | MailboxChatSendIntent;
-export const MailboxSendSnapshot = /* @__PURE__ */ (() =>
-  Schema.Union([MailboxEmailSendSnapshot, MailboxChatSendIntent]).annotate({
-    identifier: "MailboxSendSnapshot",
-  }))();
 export type MailboxThreadContentPage = {
   readonly items: ReadonlyArray<MailboxMessage>;
   readonly nextCursor: string | null;

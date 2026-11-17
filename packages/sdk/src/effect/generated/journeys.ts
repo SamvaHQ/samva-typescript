@@ -50,12 +50,13 @@ export const JourneyRunId = /* @__PURE__ */ (() =>
       identifier: "JourneyRunId",
     }),
   ).pipe(Schema.brand("JourneyRunId")))();
-export type JourneyRunExitReason = "completed" | "goal" | "archived";
+export type JourneyRunExitReason = "completed" | "goal" | "archived" | "merged";
 export const JourneyRunExitReason = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Literal("completed"),
     Schema.Literal("goal"),
     Schema.Literal("archived"),
+    Schema.Literal("merged"),
   ]).annotate({ identifier: "JourneyRunExitReason" }))();
 export type JourneyRunStepOutcome =
   | "completed"
@@ -63,6 +64,7 @@ export type JourneyRunStepOutcome =
   | "timed_out"
   | "goal"
   | "archived"
+  | "merged"
   | "failed";
 export const JourneyRunStepOutcome = /* @__PURE__ */ (() =>
   Schema.Union([
@@ -71,6 +73,7 @@ export const JourneyRunStepOutcome = /* @__PURE__ */ (() =>
     Schema.Literal("timed_out"),
     Schema.Literal("goal"),
     Schema.Literal("archived"),
+    Schema.Literal("merged"),
     Schema.Literal("failed"),
   ]).annotate({ identifier: "JourneyRunStepOutcome" }))();
 export type JourneyRunCounts = {

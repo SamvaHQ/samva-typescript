@@ -183,9 +183,6 @@ await writeConsumer(
   promiseDirectory,
   `import { createClient, type SamvaClient } from "samva";
 import { isKnownEvent, generateWebhookSecret, signWebhook, verifyRequest, type SamvaWebhookEvent, type MessageBouncedPayload } from "samva/webhooks";
-import { defineExtension } from "samva/mailbox";
-import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
-import { createWebhookHandler } from "samva/mailbox/webhook";
 
 const policyConfiguration = { presets: [], rules: [] };
 let requestPath: string | undefined;
@@ -263,34 +260,6 @@ const event = await verifyRequest(
 );
 if (event.id !== "evt_packed" || !isKnownEvent(event.event) || event.event.type !== "webhook.test") {
   await Promise.reject(new Error("Promise packed webhook verification proof failed"));
-}
-const extension = defineExtension({
-  manifest: { name: "packed-ack", displayName: "Packed acknowledgement", version: "1.0.0", runtime: "webhook", events: ["mailbox.message.received"], permissions: ["read", "send"] },
-  on: { "mailbox.message.received": async (received, { samva }) => {
-    const normalClient: SamvaClient = samva;
-    await normalClient.mailboxes.reply({ id: received.data.mailboxId, messageId: received.data.message.id, text: "Thanks" });
-  } },
-});
-const mailboxFixture = mailboxEvent("mailbox.message.received");
-const mailboxClient = createTestClient();
-const firstDispatch = await runExtension(extension, mailboxFixture, { client: mailboxClient });
-const retriedDispatch = await runExtension(extension, mailboxFixture, { client: mailboxClient, attempt: 2 });
-if (!firstDispatch.ok || !retriedDispatch.ok || firstDispatch.calls.length !== 1 || firstDispatch.calls[0]?.idempotencyKey !== mailboxFixture.id + ":reply:1" || firstDispatch.calls[0]?.idempotencyKey !== retriedDispatch.calls[0]?.idempotencyKey) {
-  throw new Error("Packed mailbox deterministic dispatch proof failed");
-}
-const { id: mailboxEventId, ...mailboxEnvelope } = mailboxFixture;
-const mailboxBody = JSON.stringify(mailboxEnvelope);
-const mailboxSignature = await signWebhook({ id: mailboxEventId, timestamp, body: mailboxBody, secret });
-let mailboxAuth: string | null = null;
-const mailboxHandler = createWebhookHandler(extension, { apiKey: "installation-key", webhookSecret: secret, fetch: async (input, init) => {
-  mailboxAuth = new Request(input, init).headers.get("x-api-key");
-  return Response.json({ state: "queued" });
-} });
-const mailboxResponse = await mailboxHandler(new Request("https://extension.test", { method: "POST", body: mailboxBody, headers: {
-  "webhook-id": mailboxEventId, "webhook-timestamp": timestamp, "webhook-signature": mailboxSignature,
-} }));
-if (mailboxResponse.status !== 200 || mailboxAuth !== "installation-key") {
-  throw new Error("Packed mailbox webhook proof failed");
 }
 const futureBody = JSON.stringify({ type: "future.event", timestamp: "2026-01-01T00:00:00.000Z", data: { futureField: true } });
 const futureSignature = await signWebhook({ id: "evt_future", timestamp, body: futureBody, secret });
@@ -377,6 +346,31 @@ import * as NewsletterIssues from "samva/effect/newsletter-issues";
 import * as NewsletterDomains from "samva/effect/newsletter-domains";
 import * as Webhooks from "samva/effect/webhooks";
 import * as Policies from "samva/effect/policies";
+import { defineAgent, type AgentContext } from "samva/agent";
+import { createTestClient, runAgent } from "samva/agent/test";
+
+const agentClient = createTestClient();
+const moduleAgent = defineAgent({
+  manifest: { name: "Packed agent", version: "1.0.0", knowledgeSourceIds: [], endpointIds: [], integrations: [], eventTriggers: [], policy: { presets: [], rules: [] }, model: "standard", reasoning: "auto", workingHours: null, takeoverTimeoutMinutes: 30 },
+  instructions: "Handle mailbox and contact events",
+  events: {
+    "mailbox.message.received": async (received, { samva }) => {
+      await samva.mailboxes.reply({ id: "mbx_0000000000000000", messageId: "msg_0000000000000000", text: received.id }, { idempotencyKey: received.id });
+    },
+    "appointment.confirmed": (received) => received.id,
+  },
+});
+const eventCapability = { callId: "packed-call", organizationId: "org_0000000000000000", agentId: "agt_0000000000000000", versionId: "agtv_0000000000000000", bundleSha256: "a".repeat(64), expiresAt: Date.now() + 30000, trigger: { kind: "event" as const, eventId: "event-packed", eventType: "mailbox.message.received", attempt: 1 } };
+const agentContext: AgentContext = {
+  capability: eventCapability, samva: agentClient,
+  connections: { async call() { throw new Error("Unexpected connection"); } },
+  memory: { async search() { throw new Error("Unexpected memory"); }, async remember() { throw new Error("Unexpected memory"); } },
+  log() {},
+};
+const localAgent = runAgent(moduleAgent, agentContext);
+await localAgent.event({ id: "event-packed", type: "mailbox.message.received", timestamp: "2026-01-01T00:00:00.000Z", data: {} });
+if (agentClient.calls.length !== 1 || agentClient.calls[0]?.idempotencyKey !== "event-packed") throw new Error("Packed agent mailbox handler proof failed");
+if (await localAgent.event({ id: "contact-packed", type: "appointment.confirmed", timestamp: "2026-01-01T00:00:00.000Z", data: {} }) !== "contact-packed") throw new Error("Packed agent contact handler proof failed");
 
 const policyFetch: typeof globalThis.fetch = async () => Response.json({ presets: [], rules: [], version: 1 });
 const policy = await Effect.runPromise(Policies.setPolicy({ kind: "mailbox", id: "mbx_1234567890abcdef", ifVersion: 0, presets: [], rules: [] }).pipe(

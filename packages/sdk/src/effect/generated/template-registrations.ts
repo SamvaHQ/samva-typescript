@@ -1,6 +1,5 @@
 // Auto-generated from OpenAPI; do not edit.
 
-import type * as EffectBrand from "effect/Brand";
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 import * as Schema from "effect/Schema";
 
@@ -16,20 +15,13 @@ import {
   ResourceNotFoundError,
   TemplateId,
   TemplatePublicationId,
+  TemplateRegistrationId,
   UnauthorizedError,
   ValidationError,
   WhatsAppBusinessAccountId,
   WhatsAppChannelError,
 } from "./shared";
 
-export type TemplateRegistrationId = string & EffectBrand.Brand<"TemplateRegistrationId">;
-export const TemplateRegistrationId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^treg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^treg_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "TemplateRegistrationId",
-    }),
-  ).pipe(Schema.brand("TemplateRegistrationId")))();
 export type WhatsAppRegistrationTarget = { readonly provider: "whatsapp"; readonly wabaId: string };
 export const WhatsAppRegistrationTarget = /* @__PURE__ */ (() =>
   Schema.Struct({ provider: Schema.Literal("whatsapp"), wabaId: Schema.String }).annotate({

@@ -146,7 +146,11 @@ const adapt = (
   const call = (request: Record<string, unknown> = {}) => {
     const operation = rawCall({
       ...request,
-      ...(idempotencyKey === undefined ? {} : { headers: { "idempotency-key": idempotencyKey } }),
+      // HttpApi validates a declared headers object even when every header is optional.
+      headers: {
+        ...(request["headers"] as Readonly<Record<string, string>> | undefined),
+        ...(idempotencyKey === undefined ? {} : { "idempotency-key": idempotencyKey }),
+      },
     });
     return isRetrySafe(descriptor, input) ? withRetry(operation) : operation;
   };

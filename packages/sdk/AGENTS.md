@@ -37,8 +37,7 @@ organization, mailbox, or API key's decision rules. Policy writes require a pers
 unset. Replacement requires the observed `ifVersion`; `deletePolicy({ kind, id, ifVersion })`
 clears the configuration. Both return the next snapshot, and clear keeps the counter. On
 `ConflictError` (`409`), reload and review before editing again; never automatically retry stale
-full configuration with a newer version. Agent definitions and extension installations carry
-their own `policy`.
+full configuration with a newer version. Agent definitions carry their own `policy`.
 Read an action with `mailboxes.getAction` or read its decision in `mailboxes.getNeedsYou` before
 reviewing it. Both `approveAction` and `denyAction` require the observed decision's positive
 `reviewRound`. A stale round returns `409`; refresh the action and review its new decision before
@@ -68,11 +67,6 @@ client and call level. `contacts.startImport` retries only `mode: "new"`; a resu
 a generation fence and must be followed by `getImportJob` after an ambiguous response. Promise cursor lists expose lazy `.pages(params)` and `.items(params)`
 async iterators. `orgSlug` selects an organization when paired with `authToken`.
 
-Mailbox extensions import `samva/mailbox`, `samva/mailbox/test`, or `samva/mailbox/webhook`.
-Handlers receive the normal client and use flat calls such as
-`ctx.samva.mailboxes.reply({ id, messageId, text })`. Keep sends in stable order so dispatch
-reuses deterministic event keys.
-
 Use `client.newsletters` for newsletter management and `client.newsletters.domains` for custom archive domains. Effect entrypoints are `samva/effect/newsletters`, `samva/effect/newsletter-issues`, and `samva/effect/newsletter-domains`. A newsletter’s `topicId` names its consent and campaign audience.
 
 `client.newsletters.domains.list({ id, cursor, limit })` returns a hostname-ordered page with
@@ -88,3 +82,15 @@ for a `projectId`. Create accepts an optional `slug`; update exports the project
 at the same link. Rename changes the slug and breaks the old link. Delete removes the link;
 existing guest copies remain independent. Get returns the link, canonicalPath, view/open counts and update time,
 or `null` when the project has no share link.
+
+Hosted agent modules import `defineAgent`, `defineTool`, and `AgentContext` from `samva/agent`;
+offline evals import `defineEval`, `runAgent`, and `runEval` from `samva/agent/test`. These
+entrypoints use the optional `effect` peer for tool input schemas. Register tools, Markdown skills,
+events, and schedules explicitly in the entry module. `defineAgent` derives their manifest
+descriptors; do not maintain a second tool list. `defineTool` decodes unknown input before calling
+`execute`. Every tool declares `replay: "safe" | "unsafe"`; optional tool approval combines with
+policy floors, and stricter requirements win. Keep each call's authority in its supplied `ctx`,
+never in globals shared by a warm module. Event calls expose `eventId`, `eventType`, and
+`attempt` in `ctx.capability.trigger`. SDK idempotent writes derive stable keys from the agent,
+event, operation, and call ordinal; preserve write order across retries, or supply an explicit
+`idempotencyKey`. Eval assertions reject `runEval` on failure.

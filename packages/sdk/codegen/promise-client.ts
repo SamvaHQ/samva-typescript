@@ -875,26 +875,9 @@ const renderMethod = (
   ) {
     request.push(method.signature === undefined ? "body: {}" : "body: params.body ?? {}");
   }
-  if (operation.body !== undefined) {
-    const contentType = operation.parameters.header.find(
-      (parameter) => parameter.name.toLocaleLowerCase() === "content-type",
-    );
-    if (contentType === undefined || !contentType.required) {
-      request.push(
-        `headers: ${objectLiteral(
-          [
-            `${propertyKey(contentType?.name ?? "Content-Type")}: ${JSON.stringify(operation.body.mediaType)}`,
-            "...options?.headers",
-            ...(method.signature === undefined ? [] : ["...params.headers"]),
-          ],
-          true,
-        )}`,
-      );
-    }
-  }
   parameters.push(`options?: ${names.options}<never, ThrowOnError>`);
   statements.push(
-    `return requestWithPolicy(options?.client ?? ${names.client}, ${JSON.stringify(operation.id)}, options, (headers) => (options?.client ?? ${names.client}).${operation.method}<${generics}>(${objectLiteral([...request, operation.body === undefined ? "headers" : `headers: { "Content-Type": ${JSON.stringify(operation.body.mediaType)}, ...headers }`])})${operation.conditionalIdempotency ? ", parameters" : ""});`,
+    `return requestWithPolicy(options?.client ?? ${names.client}, ${JSON.stringify(operation.id)}, options, (headers) => (options?.client ?? ${names.client}).${operation.method}<${generics}>(${objectLiteral([...request, `headers: { ${operation.body === undefined ? "" : `"Content-Type": ${JSON.stringify(operation.body.mediaType)}, `}...headers${method.signature === undefined ? "" : ", ...params.headers"} }`])})${operation.conditionalIdempotency ? ", parameters" : ""});`,
   );
   return [
     `${docComment(doc, "  ")}  public static ${method.name}<ThrowOnError extends boolean = false>(`,

@@ -9,6 +9,8 @@ import {
   AgentId,
   AgentModel,
   AgentModelChoice,
+  AgentModuleBundle,
+  AgentModuleManifest,
   AgentName,
   AgentReasoning,
   AgentSetupJob,
@@ -129,27 +131,6 @@ export const DeleteAgentResponse = /* @__PURE__ */ (() =>
   Schema.Struct({ id: AgentId, deleted: Schema.Literal(true) }).annotate({
     identifier: "DeleteAgentResponse",
   }))();
-export type AgentVersionSummary = {
-  readonly agentId: AgentId;
-  readonly version: number;
-  readonly publishedAt: string;
-};
-export const AgentVersionSummary = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    agentId: AgentId,
-    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
-          expected: "a value greater than or equal to -9007199254740991",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    publishedAt: Schema.String,
-  }).annotate({ identifier: "AgentVersionSummary" }))();
 export type AgentListItem = {
   readonly id: AgentId;
   readonly name: string;
@@ -245,15 +226,6 @@ export const AgentTestRerun = /* @__PURE__ */ (() =>
       }),
     ),
   }).annotate({ identifier: "AgentTestRerun" }))();
-export type AgentVersionPage = {
-  readonly items: ReadonlyArray<AgentVersionSummary>;
-  readonly nextCursor: string | null;
-};
-export const AgentVersionPage = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    items: Schema.Array(AgentVersionSummary),
-    nextCursor: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "AgentVersionPage" }))();
 export type AgentPage = {
   readonly items: ReadonlyArray<AgentListItem>;
   readonly nextCursor: string | null;
@@ -356,10 +328,37 @@ export const Agent = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Agent" }))();
+export type AgentBundle = {
+  readonly sha256: string;
+  readonly sizeBytes: number;
+  readonly manifest: AgentModuleManifest;
+};
+export const AgentBundle = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    sha256: Schema.String.check(
+      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
+        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
+      }),
+    ),
+    sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(1).annotate({
+          expected: "a value greater than or equal to 1",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(1048576).annotate({
+          expected: "a value less than or equal to 1048576",
+        }),
+      ),
+    manifest: AgentModuleManifest,
+  }).annotate({ identifier: "AgentBundle" }))();
 export type AgentVersion = {
   readonly agentId: AgentId;
   readonly version: number;
   readonly definition: AgentDefinition;
+  readonly bundle: AgentBundle;
+  readonly authoring: "builder" | "code";
   readonly publishedAt: string;
   readonly modelFallback: AgentModelFallback | null;
 };
@@ -378,9 +377,36 @@ export const AgentVersion = /* @__PURE__ */ (() =>
         }),
       ),
     definition: AgentDefinition,
+    bundle: AgentBundle,
+    authoring: Schema.Union([Schema.Literal("builder"), Schema.Literal("code")]),
     publishedAt: Schema.String,
     modelFallback: Schema.Union([AgentModelFallback, Schema.Null]),
   }).annotate({ identifier: "AgentVersion" }))();
+export type AgentVersionSummary = {
+  readonly agentId: AgentId;
+  readonly version: number;
+  readonly bundle: AgentBundle;
+  readonly authoring: "builder" | "code";
+  readonly publishedAt: string;
+};
+export const AgentVersionSummary = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    agentId: AgentId,
+    version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(-9007199254740991).annotate({
+          expected: "a value greater than or equal to -9007199254740991",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+    bundle: AgentBundle,
+    authoring: Schema.Union([Schema.Literal("builder"), Schema.Literal("code")]),
+    publishedAt: Schema.String,
+  }).annotate({ identifier: "AgentVersionSummary" }))();
 export type PublishAgentResponse = {
   readonly agent: Agent;
   readonly version: AgentVersion;
@@ -390,6 +416,15 @@ export const PublishAgentResponse = /* @__PURE__ */ (() =>
   Schema.Struct({ agent: Agent, version: AgentVersion, published: Schema.Boolean }).annotate({
     identifier: "PublishAgentResponse",
   }))();
+export type AgentVersionPage = {
+  readonly items: ReadonlyArray<AgentVersionSummary>;
+  readonly nextCursor: string | null;
+};
+export const AgentVersionPage = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    items: Schema.Array(AgentVersionSummary),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "AgentVersionPage" }))();
 export type AgentsListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
@@ -633,6 +668,8 @@ export type AgentsPublish400 = MalformedRequestError;
 export const AgentsPublish400 = MalformedRequestError;
 export type AgentsPublish401 = UnauthorizedError;
 export const AgentsPublish401 = UnauthorizedError;
+export type AgentsPublish402 = PaymentRequiredError;
+export const AgentsPublish402 = PaymentRequiredError;
 export type AgentsPublish403 = ForbiddenError;
 export const AgentsPublish403 = ForbiddenError;
 export type AgentsPublish404 = ResourceNotFoundError;
@@ -706,6 +743,40 @@ export type AgentsListVersions500 = InternalError;
 export const AgentsListVersions500 = InternalError;
 export type AgentsListVersions504 = GatewayTimeoutError;
 export const AgentsListVersions504 = GatewayTimeoutError;
+export type AgentsPublishVersionPathParams = { readonly id: AgentId };
+export const AgentsPublishVersionPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: AgentId }))();
+export type AgentsPublishVersionRequestJson = {
+  readonly revision: string;
+  readonly bundle: AgentModuleBundle;
+};
+export const AgentsPublishVersionRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    revision: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    bundle: AgentModuleBundle,
+  }))();
+export type AgentsPublishVersion200 = PublishAgentResponse;
+export const AgentsPublishVersion200 = PublishAgentResponse;
+export type AgentsPublishVersion400 = MalformedRequestError;
+export const AgentsPublishVersion400 = MalformedRequestError;
+export type AgentsPublishVersion401 = UnauthorizedError;
+export const AgentsPublishVersion401 = UnauthorizedError;
+export type AgentsPublishVersion402 = PaymentRequiredError;
+export const AgentsPublishVersion402 = PaymentRequiredError;
+export type AgentsPublishVersion403 = ForbiddenError;
+export const AgentsPublishVersion403 = ForbiddenError;
+export type AgentsPublishVersion404 = ResourceNotFoundError;
+export const AgentsPublishVersion404 = ResourceNotFoundError;
+export type AgentsPublishVersion409 = ConflictError;
+export const AgentsPublishVersion409 = ConflictError;
+export type AgentsPublishVersion422 = ValidationError;
+export const AgentsPublishVersion422 = ValidationError;
+export type AgentsPublishVersion500 = InternalError;
+export const AgentsPublishVersion500 = InternalError;
+export type AgentsPublishVersion504 = GatewayTimeoutError;
+export const AgentsPublishVersion504 = GatewayTimeoutError;
 export type AgentsGetVersionPathParams = { readonly id: AgentId; readonly version: string };
 export const AgentsGetVersionPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: AgentId, version: Schema.String }))();
@@ -894,6 +965,7 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
       error: [
         AgentsPublish400.pipe(HttpApiSchema.status(400)),
         AgentsPublish401.pipe(HttpApiSchema.status(401)),
+        AgentsPublish402.pipe(HttpApiSchema.status(402)),
         AgentsPublish403.pipe(HttpApiSchema.status(403)),
         AgentsPublish404.pipe(HttpApiSchema.status(404)),
         AgentsPublish409.pipe(HttpApiSchema.status(409)),
@@ -951,6 +1023,29 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
         OpenApi.Description,
         "Returns an agent's published versions, newest first, without their definitions. Pass nextCursor back as cursor for the next page.",
       ),
+    HttpApiEndpoint.post("agentsPublishVersion", "/v1/agents/:id/versions", {
+      params: AgentsPublishVersionPathParams,
+      payload: AgentsPublishVersionRequestJson,
+      success: AgentsPublishVersion200,
+      error: [
+        AgentsPublishVersion400.pipe(HttpApiSchema.status(400)),
+        AgentsPublishVersion401.pipe(HttpApiSchema.status(401)),
+        AgentsPublishVersion402.pipe(HttpApiSchema.status(402)),
+        AgentsPublishVersion403.pipe(HttpApiSchema.status(403)),
+        AgentsPublishVersion404.pipe(HttpApiSchema.status(404)),
+        AgentsPublishVersion409.pipe(HttpApiSchema.status(409)),
+        AgentsPublishVersion422.pipe(HttpApiSchema.status(422)),
+        AgentsPublishVersion500,
+        AgentsPublishVersion504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "agents.publishVersion")
+      .annotate(OpenApi.Summary, "Publish an agent module")
+      .annotate(
+        OpenApi.Description,
+        "Publishes a self-contained JavaScript module and its manifest as the next immutable version. Source is stored by its SHA-256 digest without execution. The revision protects the draft read by the publisher; a stale revision returns 409. Publishing the same manifest, source, and definition again returns published false. The manifest controls the model, endpoints, integration grants, and action policy. Draft instructions and knowledge remain editable builder data; the hosted runtime reads instructions and tools from the published module.",
+      ),
     HttpApiEndpoint.get("agentsGetVersion", "/v1/agents/:id/versions/:version", {
       params: AgentsGetVersionPathParams,
       success: AgentsGetVersion200,
@@ -967,7 +1062,10 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "agents.getVersion")
       .annotate(OpenApi.Summary, "Get a published agent version")
-      .annotate(OpenApi.Description, "Returns the immutable definition of one published version."),
+      .annotate(
+        OpenApi.Description,
+        "Returns the immutable definition and bundle digest, size, and manifest of one published version.",
+      ),
     HttpApiEndpoint.get("agentsListModels", "/v1/agents/models", {
       success: AgentsListModels200,
       error: [

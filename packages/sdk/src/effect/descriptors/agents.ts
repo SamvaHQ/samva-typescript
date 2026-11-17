@@ -63,12 +63,12 @@ export const agentsOperations = {
     paginated: false,
     call: { kind: "pathPayload", paths: ["id"] },
   },
-  agentsContinueOnStandard: {
+  agentsPublishVersion: {
     group: "Agents",
     method: "POST",
     idempotent: false,
     paginated: false,
-    call: { kind: "path", paths: ["id"] },
+    call: { kind: "pathPayload", paths: ["id"] },
   },
   agentsListVersions: {
     group: "Agents",
@@ -76,6 +76,13 @@ export const agentsOperations = {
     idempotent: false,
     paginated: true,
     call: { kind: "pathParams", paths: ["id"] },
+  },
+  agentsContinueOnStandard: {
+    group: "Agents",
+    method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "path", paths: ["id"] },
   },
   agentsGetVersion: {
     group: "Agents",

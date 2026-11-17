@@ -49,6 +49,20 @@ export const contactsOperations = {
     paginated: false,
     call: { kind: "path", paths: ["id"] },
   },
+  contactsMerge: {
+    group: "Contacts",
+    method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "pathPayload", paths: ["id"] },
+  },
+  contactsMergeByConnection: {
+    group: "Contacts",
+    method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "pathPayload", paths: ["id"] },
+  },
   contactsAddIdentity: {
     group: "Contacts",
     method: "POST",

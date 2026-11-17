@@ -33,6 +33,7 @@ export type AccountInfo = {
   readonly externalId?: string;
   readonly displayName?: string;
   readonly email?: string;
+  readonly verifiedEmail?: string;
   readonly timeZone?: string;
 };
 export const AccountInfo = /* @__PURE__ */ (() =>
@@ -76,6 +77,7 @@ export const AccountInfo = /* @__PURE__ */ (() =>
           Schema.isMaxLength(255).annotate({ expected: "a value with a length of at most 255" }),
         ),
     ),
+    verifiedEmail: Schema.optionalKey(Schema.String),
     timeZone: Schema.optionalKey(
       Schema.String.check(
         Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),

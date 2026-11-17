@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.46.1",
+  "version": "0.47.0",
   "description": "TypeScript SDK for the Samva email and WhatsApp API",
   "keywords": [
     "api-client",
@@ -124,14 +124,6 @@
       "types": "./dist/effect/messages.d.ts",
       "import": "./dist/effect/messages.js"
     },
-    "./effect/extension-installations": {
-      "types": "./dist/effect/extension-installations.d.ts",
-      "import": "./dist/effect/extension-installations.js"
-    },
-    "./effect/extensions": {
-      "types": "./dist/effect/extensions.d.ts",
-      "import": "./dist/effect/extensions.js"
-    },
     "./effect/events": {
       "types": "./dist/effect/events.d.ts",
       "import": "./dist/effect/events.js"
@@ -209,18 +201,6 @@
       "import": "./dist/webhooks/effect.js"
     },
     "./package.json": "./package.json",
-    "./mailbox": {
-      "types": "./dist/mailbox/index.d.ts",
-      "import": "./dist/mailbox/index.js"
-    },
-    "./mailbox/test": {
-      "types": "./dist/mailbox/test.d.ts",
-      "import": "./dist/mailbox/test.js"
-    },
-    "./mailbox/webhook": {
-      "types": "./dist/mailbox/webhook.d.ts",
-      "import": "./dist/mailbox/webhook.js"
-    },
     "./effect/newsletter-issues": {
       "types": "./dist/effect/newsletter-issues.d.ts",
       "import": "./dist/effect/newsletter-issues.js"
@@ -252,6 +232,14 @@
     "./effect/template-share-links": {
       "types": "./dist/effect/template-share-links.d.ts",
       "import": "./dist/effect/template-share-links.js"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js"
+    },
+    "./agent/test": {
+      "types": "./dist/agent/test.d.ts",
+      "import": "./dist/agent/test.js"
     }
   },
   "publishConfig": {
@@ -273,7 +261,7 @@
     "typecheck": "slot 'effect-tsgo tsrs --noEmit && effect-tsgo tsrs --noEmit -p codegen/tsconfig.json && effect-tsgo tsrs --noEmit -p tests/tsconfig.json && effect-tsgo tsrs --noEmit --project tests/parity/tsconfig.json \"$@\"'"
   },
   "dependencies": {
-    "@samva/webhooks": "workspace:0.46.1"
+    "@samva/webhooks": "workspace:0.47.0"
   },
   "devDependencies": {
     "@effect/openapi-generator": "catalog:effect",

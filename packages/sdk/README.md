@@ -4,6 +4,103 @@ Samva is email and WhatsApp for AI agents, and the API developers build on. An a
 
 TypeScript SDK for Samva's public customer API.
 
+## Author a hosted agent
+
+Import `defineAgent` and `defineTool` from `samva/agent`, and install the optional `effect` peer
+for tool input schemas. An entry module registers its tools, event handlers, schedules, and
+Markdown skills explicitly. `samva agents init` scaffolds a project; `samva agents build` produces
+one self-contained ES module, and `samva agents publish` publishes an immutable version.
+
+```ts
+import { Schema } from "effect";
+import { defineAgent, defineTool } from "samva/agent";
+
+const instructions = "Help customers manage their appointments.";
+const reschedule = "# Reschedule\nAsk for the appointment id.";
+
+export default defineAgent({
+  manifest: {
+    name: "Front desk",
+    version: "1.0.0",
+    endpointIds: [],
+    integrations: [],
+    eventTriggers: [],
+    policy: { presets: [], rules: [] },
+    model: "standard",
+    reasoning: "auto",
+    workingHours: null,
+    takeoverTimeoutMinutes: 30,
+  },
+  instructions,
+  skills: { reschedule },
+  tools: {
+    appointment: defineTool({
+      description: "Look up an appointment",
+      input: Schema.Struct({ id: Schema.String }),
+      replay: "safe",
+      async execute(input, ctx) {
+        return await ctx.connections.call("intg_yourintegration", "get_appointment", input);
+      },
+    }),
+  },
+  events: {
+    "appointment.confirmed"(event, ctx) {
+      ctx.log(event.type);
+    },
+  },
+  schedules: {
+    "0 9 * * *"(ctx) {
+      ctx.log("Daily check");
+    },
+  },
+});
+```
+
+`defineTool` validates input before calling `execute`, and infers its input type from the Effect
+schema. Declare `replay: "safe"` only when repeating a call is safe; otherwise use `"unsafe"`.
+A tool's optional `approval` (`"run"`, `"model"`, `"person"`, or `"never"`) sets a floor combined
+with Samva's decision rules: stricter requirements win. Each call receives a fresh `ctx` with its
+capability identity, the Samva client, integration calls, memory, and logging. Keep authority in
+that context rather than module globals. Instructions can also be a function of `ctx`; `knowledge`
+can supply static business facts separately. Markdown skills are registered by name and loaded
+when needed. In a project, import instructions and skills from `.md` files as text; the CLI
+bundles those imports into the module.
+
+For a conversation call, `ctx.capability.trigger.target` provides the admitted `mailboxId`,
+`threadId`, and `messageId` for scoped mailbox reads and replies, or `null` when there is no
+mailbox target. Include this field when constructing a fake conversation context for an eval.
+
+Eval files are ordinary TypeScript modules. Import `defineEval`, `runAgent`, and `runEval` from
+`samva/agent/test`. Supply a fake `AgentContext`; the helper runs the registered tool or handler
+without a server and preserves input validation:
+
+```ts
+import type { AgentContext, AgentDefinition } from "samva/agent";
+import { defineEval, runAgent, runEval } from "samva/agent/test";
+
+declare const agent: AgentDefinition;
+declare const ctx: AgentContext;
+
+const evaluation = defineEval({
+  name: "appointment lookup",
+  async run(definition, context) {
+    const local = runAgent(definition, context);
+    await local.tool("appointment", { id: "appointment-1" });
+    await local.event({
+      id: "event-1",
+      type: "appointment.confirmed",
+      timestamp: "2026-01-01T00:00:00.000Z",
+      data: { appointmentId: "appointment-1" },
+    });
+  },
+});
+
+await runEval(agent, evaluation, ctx);
+```
+
+Assertions thrown by an eval reject `runEval`. The runner also exposes `schedule(cron)`,
+`instructions()`, and `skill(name)`; missing registrations fail explicitly.
+
 ## Give an agent a mailbox
 
 Create a mailbox, send from it, and read what comes back. A hosted `samva.email` address needs no DNS setup.
@@ -256,8 +353,6 @@ The Promise client exposes:
 - `customFields`
 - `email`
 - `events`
-- `extensionInstallations`
-- `extensions`
 - `feedback`
 - `integrationCatalog`
 - `integrations`
@@ -562,7 +657,7 @@ is the frozen public email snapshot; inspect the action type before using send-s
 Preserve the original key and body after a timeout. Replaying them reads the same action's current
 phase, and changing the body under that key is a conflict. `getAction` reads progress. A permitted
 person can `cancelAction` before acceptance or `retryAction` when `retryEligible` is true; Retry
-continues the original action and never extends `executeUntil`. API keys and extensions cannot
+continues the original action and never extends `executeUntil`. API keys cannot
 cancel or Retry. `approveAction` returns an action with `202` while the send is pending; accepted,
 completed, and `notSent` replays return `200`. Non-send approvals execute synchronously and return
 `200`, as does `denyAction`.
@@ -675,9 +770,12 @@ const input = {
 const response = await samva.email.send(input);
 ```
 
-## Mailbox extensions
+## Agent event handlers
 
-Import `defineExtension` from `samva/mailbox`, test helpers from `samva/mailbox/test`, and
-`createWebhookHandler` from `samva/mailbox/webhook`. Handlers receive a normal Samva client:
-`ctx.samva.mailboxes.reply({ id, messageId, text })`. Event dispatch supplies deterministic
-idempotency keys through the client hook, preserving the send order across retried events.
+Import `defineAgent` from `samva/agent` and register handlers in `events`. Samva invokes each
+matching handler with the event envelope and a fresh `ctx`; use `ctx.samva` for API calls.
+Mailbox and contact events use the same module. Offline evals use `runAgent` from
+`samva/agent/test`, with an explicitly supplied context. The event trigger includes its id,
+type, and attempt number. Event SDK calls receive deterministic idempotency keys per agent,
+event, operation, and call ordinal; keep writes in stable order across retries. An explicit
+`idempotencyKey` overrides the generated key.

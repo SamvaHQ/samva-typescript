@@ -23,8 +23,6 @@ import {
   Conversations,
   CustomFields,
   Email,
-  ExtensionInstallations,
-  Extensions,
   Events,
   Feedback,
   Journeys,
@@ -60,8 +58,6 @@ import { conversationsOperations } from "../../src/effect/descriptors/conversati
 import { customFieldsOperations } from "../../src/effect/descriptors/custom-fields";
 import { emailOperations } from "../../src/effect/descriptors/email";
 import { eventsOperations } from "../../src/effect/descriptors/events";
-import { extensionInstallationsOperations } from "../../src/effect/descriptors/extension-installations";
-import { extensionsOperations } from "../../src/effect/descriptors/extensions";
 import { feedbackOperations } from "../../src/effect/descriptors/feedback";
 import { integrationsOperations } from "../../src/effect/descriptors/integrations";
 import { integrationCatalogOperations } from "../../src/effect/descriptors/integrations-catalog";
@@ -123,8 +119,6 @@ const effectModules = {
   conversations: Conversations,
   customFields: CustomFields,
   email: Email,
-  extensions: Extensions,
-  extensionInstallations: ExtensionInstallations,
   events: Events,
   feedback: Feedback,
   journeys: Journeys,
@@ -169,8 +163,6 @@ const descriptorTables = {
   conversations: conversationsOperations,
   customFields: customFieldsOperations,
   email: emailOperations,
-  extensions: extensionsOperations,
-  extensionInstallations: extensionInstallationsOperations,
   events: eventsOperations,
   feedback: feedbackOperations,
   journeys: journeysOperations,

@@ -416,339 +416,6 @@ export type JourneyId = string;
 
 export type CampaignId = string;
 
-export type ExtensionRun = {
-  id: string;
-  eventId: string;
-  eventType:
-    | "mailbox.message.received"
-    | "mailbox.message.sent"
-    | "mailbox.action.pending_approval"
-    | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
-    | "mailbox.message.discarded";
-  attempt: number;
-  startedAt: string;
-  durationMs: number;
-  outcome: "succeeded" | "failed" | "timed_out" | "budget_exhausted" | "revoked";
-  error: string | null;
-  logs: Array<string>;
-};
-
-export type ExtensionInstallationId = string;
-
-export type ExtensionRunList = {
-  items: Array<ExtensionRunSummary>;
-};
-
-export type ExtensionRunSummary = {
-  id: string;
-  eventId: string;
-  eventType:
-    | "mailbox.message.received"
-    | "mailbox.message.sent"
-    | "mailbox.action.pending_approval"
-    | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
-    | "mailbox.message.discarded";
-  attempt: number;
-  startedAt: string;
-  durationMs: number;
-  outcome: "succeeded" | "failed" | "timed_out" | "budget_exhausted" | "revoked";
-  error: string | null;
-};
-
-export type ExtensionInstallation = {
-  id: ExtensionInstallationId;
-  extensionId: ExtensionId;
-  name: string;
-  displayName: string;
-  version: ExtensionVersionRef;
-  runtime: "hosted" | "webhook";
-  status: "active" | "disabled";
-  createdAt: string;
-  events: Array<
-    | "mailbox.message.received"
-    | "mailbox.message.sent"
-    | "mailbox.action.pending_approval"
-    | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
-    | "mailbox.message.discarded"
-  >;
-  permissions: Array<"read" | "update" | "send" | "quarantine.read">;
-  policy: PolicyConfiguration;
-  scope: {
-    mailboxIds: Array<MailboxId> | null;
-    namespaceId: NamespaceId | null;
-  };
-  webhook: {
-    endpointId: WebhookEndpointId;
-    url: string;
-  } | null;
-  updatedAt: string;
-  disabledAt: string | null;
-};
-
-export type WebhookEndpointId = string;
-
-export type MailboxId = string;
-
-export type PolicyRule =
-  | {
-      match: PolicyRuleMatch;
-      note?: string | null | undefined;
-      decide: PolicyRequirement;
-      atLeast?: never | null | undefined;
-    }
-  | {
-      match: PolicyRuleMatch;
-      note?: string | null | undefined;
-      decide?: never | null | undefined;
-      atLeast: PolicyRequirement;
-    };
-
-export type PolicyRequirement = "run" | "model" | "person" | "never";
-
-export type PolicyRuleMatch = {
-  kind?: "send" | "reply" | "toolCall" | "handoff" | null | undefined;
-  effect?: PolicyEffect | null | undefined;
-  channel?: "sms" | "whatsapp" | "email" | null | undefined;
-  integration?: string | null | undefined;
-  tool?: string | null | undefined;
-  subject?: "agent" | "apiKey" | "member" | "extension" | PolicySubject | null | undefined;
-};
-
-export type PolicySubject =
-  | {
-      kind: "agent";
-      id: AgentId;
-    }
-  | {
-      kind: "apiKey";
-      id: ApiKeyId;
-    }
-  | {
-      kind: "member";
-      userId: UserId;
-    }
-  | {
-      kind: "extension";
-      id: ExtensionInstallationId;
-    };
-
-export type UserId = string;
-
-export type ApiKeyId = string;
-
-export type AgentId = string;
-
-export type PolicyEffect = "read" | "write" | "final";
-
-export type ExtensionVersionRef = {
-  id: ExtensionVersionId;
-  version: string;
-};
-
-export type ExtensionVersionId = string;
-
-export type ExtensionId = string;
-
-export type UpgradeExtensionResponse = {
-  installation: ExtensionInstallation;
-  fromVersion: ExtensionVersionRef;
-  toVersion: ExtensionVersionRef;
-  permissionDiff: ExtensionPermissionDiff;
-  dryRun: boolean;
-  versionChange: ExtensionVersionChange | null;
-};
-
-export type ExtensionVersionChange = {
-  id: string;
-  organizationId: OrganizationId;
-  installationId: ExtensionInstallationId;
-  extensionId: ExtensionId;
-  fromVersion: ExtensionVersionRef;
-  toVersion: ExtensionVersionRef;
-  permissionDiff: ExtensionPermissionDiff;
-  changedBy: UserId;
-  changedAt: string;
-};
-
-export type ExtensionPermissionDiff = {
-  added: Array<
-    | "permission:read"
-    | "permission:update"
-    | "permission:send"
-    | "permission:quarantine.read"
-    | "event:mailbox.message.received"
-    | "event:mailbox.message.sent"
-    | "event:mailbox.action.pending_approval"
-    | "event:mailbox.action.resolved"
-    | "event:mailbox.message.quarantined"
-    | "event:mailbox.message.released"
-    | "event:mailbox.message.discarded"
-  >;
-  removed: Array<
-    | "permission:read"
-    | "permission:update"
-    | "permission:send"
-    | "permission:quarantine.read"
-    | "event:mailbox.message.received"
-    | "event:mailbox.message.sent"
-    | "event:mailbox.action.pending_approval"
-    | "event:mailbox.action.resolved"
-    | "event:mailbox.message.quarantined"
-    | "event:mailbox.message.released"
-    | "event:mailbox.message.discarded"
-  >;
-};
-
-export type UpgradeExtensionPayload = {
-  version?: string | ExtensionVersionId | null | undefined;
-  acceptPermissions?:
-    | Array<
-        | "permission:read"
-        | "permission:update"
-        | "permission:send"
-        | "permission:quarantine.read"
-        | "event:mailbox.message.received"
-        | "event:mailbox.message.sent"
-        | "event:mailbox.action.pending_approval"
-        | "event:mailbox.action.resolved"
-        | "event:mailbox.message.quarantined"
-        | "event:mailbox.message.released"
-        | "event:mailbox.message.discarded"
-      >
-    | null
-    | undefined;
-  dryRun?: boolean | null | undefined;
-};
-
-export type SuccessResponse = {
-  success: boolean;
-};
-
-export type InstallExtensionResponse = {
-  installation: ExtensionInstallation;
-  credentials: {
-    apiKey: string;
-    webhookSecret: string;
-  } | null;
-};
-
-export type InstallExtensionPayload = {
-  extension: string;
-  version?: string | null | undefined;
-  mailboxIds?: Array<MailboxId> | null | undefined;
-  namespaceId?: NamespaceId | null | undefined;
-  permissions?: Array<"read" | "update" | "send" | "quarantine.read"> | null | undefined;
-  policy?: PolicyConfiguration | null | undefined;
-  webhookUrl?: string | null | undefined;
-};
-
-export type ExtensionInstallationPage = {
-  items: Array<ExtensionInstallationSummary>;
-  nextCursor: string | null;
-};
-
-export type ExtensionInstallationSummary = {
-  id: ExtensionInstallationId;
-  extensionId: ExtensionId;
-  name: string;
-  displayName: string;
-  version: ExtensionVersionRef;
-  runtime: "hosted" | "webhook";
-  status: "active" | "disabled";
-  createdAt: string;
-};
-
-export type ExtensionVersion = {
-  id: ExtensionVersionId;
-  version: string;
-  runtime: "hosted" | "webhook";
-  bundle: ExtensionBundle | null;
-  publishedAt: string;
-  manifest: {
-    name: string;
-    displayName: string;
-    description?: string | null | undefined;
-    version: string;
-    runtime: "hosted" | "webhook";
-    events: Array<
-      | "mailbox.message.received"
-      | "mailbox.message.sent"
-      | "mailbox.action.pending_approval"
-      | "mailbox.action.resolved"
-      | "mailbox.message.quarantined"
-      | "mailbox.message.released"
-      | "mailbox.message.discarded"
-    >;
-    permissions: Array<"read" | "update" | "send" | "quarantine.read">;
-  };
-};
-
-export type ExtensionBundle = {
-  sha256: string;
-  sizeBytes: number;
-};
-
-export type ExtensionVersionPage = {
-  items: Array<ExtensionVersionSummary>;
-  nextCursor: string | null;
-};
-
-export type ExtensionVersionSummary = {
-  id: ExtensionVersionId;
-  version: string;
-  runtime: "hosted" | "webhook";
-  bundle: ExtensionBundle | null;
-  publishedAt: string;
-};
-
-export type Extension = {
-  id: ExtensionId;
-  name: string;
-  displayName: string;
-  description: string | null;
-  runtime: "hosted" | "webhook";
-  latestVersion: ExtensionVersionRef;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type PublishExtensionVersionResponse = {
-  extension: Extension;
-  version: ExtensionVersion;
-};
-
-export type PublishExtensionVersionPayload = {
-  manifest: {
-    name: string;
-    displayName: string;
-    description?: string | null | undefined;
-    version: string;
-    runtime: "hosted" | "webhook";
-    events: Array<
-      | "mailbox.message.received"
-      | "mailbox.message.sent"
-      | "mailbox.action.pending_approval"
-      | "mailbox.action.resolved"
-      | "mailbox.message.quarantined"
-      | "mailbox.message.released"
-      | "mailbox.message.discarded"
-    >;
-    permissions: Array<"read" | "update" | "send" | "quarantine.read">;
-  };
-  bundle?: string | null | undefined;
-};
-
-export type ExtensionPage = {
-  items: Array<Extension>;
-  nextCursor: string | null;
-};
-
 export type NamespaceUsage = {
   namespaceId: NamespaceId;
   periodStart: string;
@@ -778,6 +445,8 @@ export type NamespacePortalLinkMetadata = {
 export type NamespacePortalLinkMetadataWritable = {
   [key: string]: string | undefined;
 };
+
+export type UserId = string;
 
 export type NamespacePortalLinkId = string;
 
@@ -825,6 +494,10 @@ export type AssignNamespaceResourcePayload = {
    * The resource's id, such as `dom_...` for a domain.
    */
   resourceId: string;
+};
+
+export type SuccessResponse = {
+  success: boolean;
 };
 
 export type Namespace = {
@@ -884,12 +557,65 @@ export type PolicySnapshot = {
 
 export type PolicyVersion = number;
 
+export type PolicyRule =
+  | {
+      match: PolicyRuleMatch;
+      note?: string | null | undefined;
+      decide: PolicyRequirement;
+      atLeast?: never | null | undefined;
+    }
+  | {
+      match: PolicyRuleMatch;
+      note?: string | null | undefined;
+      decide?: never | null | undefined;
+      atLeast: PolicyRequirement;
+    };
+
+export type PolicyRequirement = "run" | "model" | "person" | "never";
+
+export type PolicyRuleMatch = {
+  kind?: "send" | "reply" | "toolCall" | "handoff" | null | undefined;
+  effect?: PolicyEffect | null | undefined;
+  channel?: "sms" | "whatsapp" | "email" | null | undefined;
+  integration?: string | null | undefined;
+  tool?: string | null | undefined;
+  subject?: "agent" | "apiKey" | "member" | "extension" | PolicySubject | null | undefined;
+};
+
+export type PolicySubject =
+  | {
+      kind: "agent";
+      id: AgentId;
+    }
+  | {
+      kind: "apiKey";
+      id: ApiKeyId;
+    }
+  | {
+      kind: "member";
+      userId: UserId;
+    }
+  | {
+      kind: "extension";
+      id: ExtensionInstallationId;
+    };
+
+export type ExtensionInstallationId = string;
+
+export type ApiKeyId = string;
+
+export type AgentId = string;
+
+export type PolicyEffect = "read" | "write" | "final";
+
 export type PolicyReplacement = {
   presets: Array<string>;
   rules: Array<PolicyRule>;
   instructions?: string | null | undefined;
   ifVersion: PolicyVersion;
 };
+
+export type MailboxId = string;
 
 export type MailboxEventPage = {
   items: Array<MailboxEvent>;
@@ -2777,6 +2503,8 @@ export type WebhookSigningSecret = {
   previousExpiresAt: string | null;
 };
 
+export type WebhookEndpointId = string;
+
 export type WebhookAttemptId = string;
 
 export type WebhookDeliveryId = string;
@@ -4393,6 +4121,7 @@ export type AccountInfo = {
   externalId?: string | undefined;
   displayName?: string | undefined;
   email?: string | undefined;
+  verifiedEmail?: string | undefined;
   timeZone?: string | undefined;
 };
 
@@ -4406,6 +4135,8 @@ export type AgentVersion = {
   agentId: AgentId;
   version: number;
   definition: AgentDefinition;
+  bundle: AgentBundle;
+  authoring: "builder" | "code";
   publishedAt: string;
   modelFallback: AgentModelFallback | null;
 };
@@ -4422,6 +4153,68 @@ export type ModelFallbackReason = "candidate" | "failed" | "retired" | "blocked"
 export type AgentModel = "standard" | "max";
 
 export type CatalogModelId = string;
+
+export type AgentBundle = {
+  sha256: string;
+  sizeBytes: number;
+  manifest: AgentModuleManifest;
+};
+
+export type AgentModuleManifest = {
+  name: AgentName;
+  version: string;
+  knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
+  endpointIds: Array<MailboxEndpointId>;
+  integrations: Array<AgentIntegrationGrant>;
+  policy: PolicyConfiguration;
+  model: AgentModelChoice;
+  reasoning: AgentReasoning;
+  workingHours: WorkingHours | null;
+  takeoverTimeoutMinutes: number;
+  eventTriggers?: Array<string> | undefined;
+  followUpTemplate?: TemplateId | string | undefined;
+  tools: {
+    [key: string]: AgentModuleTool;
+  };
+  skills: Array<string>;
+  events: Array<string>;
+  schedules: Array<string>;
+};
+
+export type AgentModuleManifestWritable = {
+  name: AgentName;
+  version: string;
+  knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
+  endpointIds: Array<MailboxEndpointId>;
+  integrations: Array<AgentIntegrationGrant>;
+  policy: PolicyConfiguration;
+  model: AgentModelChoice;
+  reasoning: AgentReasoning;
+  workingHours: WorkingHours | null;
+  takeoverTimeoutMinutes: number;
+  eventTriggers?: Array<string> | undefined;
+  followUpTemplate?: TemplateId | string | undefined;
+  tools: {
+    [key: string]: AgentModuleToolWritable | undefined;
+  };
+  skills: Array<string>;
+  events: Array<string>;
+  schedules: Array<string>;
+};
+
+export type AgentModuleTool = {
+  description: string;
+  input: JsonObject;
+  approval?: PolicyRequirement | undefined;
+  replay: "safe" | "unsafe";
+};
+
+export type AgentModuleToolWritable = {
+  description: string;
+  input: JsonObjectWritable;
+  approval?: PolicyRequirement | undefined;
+  replay: "safe" | "unsafe";
+};
 
 export type ClockTime = string;
 
@@ -4442,6 +4235,8 @@ export type AgentModelChoice = AgentModel | CatalogModelId;
 
 export type KnowledgeSourceId = string;
 
+export type AgentName = string;
+
 export type AgentVersionPage = {
   items: Array<AgentVersionSummary>;
   nextCursor: string | null;
@@ -4450,6 +4245,8 @@ export type AgentVersionPage = {
 export type AgentVersionSummary = {
   agentId: AgentId;
   version: number;
+  bundle: AgentBundle;
+  authoring: "builder" | "code";
   publishedAt: string;
 };
 
@@ -4484,28 +4281,14 @@ export type AgentSpend = {
 
 export type AgentSetupJob = "support" | "store" | "booking";
 
-export type PublishAgentPayload = {
+export type PublishAgentVersionPayload = {
   revision: string;
+  bundle: AgentModuleBundle;
 };
 
-export type ReplaceAgentDraftPayload = {
-  revision: string;
-  definition: AgentDefinition;
-};
-
-export type AgentDefinition = {
-  instructions: string;
-  knowledge: string;
-  knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
-  endpointIds: Array<MailboxEndpointId>;
-  integrations: Array<AgentIntegrationGrant>;
-  eventTriggers?: Array<string> | undefined;
-  followUpTemplate?: TemplateId | string | undefined;
-  policy: PolicyConfiguration;
-  model: AgentModelChoice;
-  reasoning: AgentReasoning;
-  workingHours: WorkingHours | null;
-  takeoverTimeoutMinutes: number;
+export type AgentModuleBundle = {
+  source: string;
+  manifest: AgentModuleManifestWritable;
 };
 
 export type WorkingHours = {
@@ -4543,6 +4326,30 @@ export type AgentToolScope =
       names: Array<string>;
     };
 
+export type PublishAgentPayload = {
+  revision: string;
+};
+
+export type ReplaceAgentDraftPayload = {
+  revision: string;
+  definition: AgentDefinition;
+};
+
+export type AgentDefinition = {
+  instructions: string;
+  knowledge: string;
+  knowledgeSourceIds?: Array<KnowledgeSourceId> | undefined;
+  endpointIds: Array<MailboxEndpointId>;
+  integrations: Array<AgentIntegrationGrant>;
+  policy: PolicyConfiguration;
+  model: AgentModelChoice;
+  reasoning: AgentReasoning;
+  workingHours: WorkingHours | null;
+  takeoverTimeoutMinutes: number;
+  eventTriggers?: Array<string> | undefined;
+  followUpTemplate?: TemplateId | string | undefined;
+};
+
 export type DeleteAgentResponse = {
   id: AgentId;
   deleted: true;
@@ -4557,8 +4364,6 @@ export type UpdateAgentPayload = {
 };
 
 export type MonthlySpendCapDollars = number;
-
-export type AgentName = string;
 
 export type CreateAgentPayload = {
   name: AgentName;
@@ -4689,6 +4494,7 @@ export type JourneyRunStepOutcome =
   | "timed_out"
   | "goal"
   | "archived"
+  | "merged"
   | "failed";
 
 export type JourneyRunTrigger = {
@@ -4697,7 +4503,7 @@ export type JourneyRunTrigger = {
   properties: JsonObject;
 };
 
-export type JourneyRunExitReason = "completed" | "goal" | "archived";
+export type JourneyRunExitReason = "completed" | "goal" | "archived" | "merged";
 
 export type JourneyRunStatus = "active" | "paused" | "exited" | "failed";
 
@@ -4759,6 +4565,12 @@ export type JourneyDefinition = {
   };
   goal?: JourneyGoal | undefined;
   reentry?: boolean | undefined;
+  enrollment?:
+    | {
+        type: "shopify_order";
+        shop: ShopifyShop;
+      }
+    | undefined;
 };
 
 export type JourneyDefinitionWritable = {
@@ -4769,7 +4581,15 @@ export type JourneyDefinitionWritable = {
   };
   goal?: JourneyGoal | undefined;
   reentry?: boolean | undefined;
+  enrollment?:
+    | {
+        type: "shopify_order";
+        shop: ShopifyShop;
+      }
+    | undefined;
 };
+
+export type ShopifyShop = string;
 
 export type JourneyGoal = {
   eventName: JourneyEventName;
@@ -4962,14 +4782,50 @@ export type JourneyWaitConfig = {
 
 export type WhatsAppJourneySendNode = {
   type: "send_whatsapp";
-  config: WhatsAppTemplateDispatch;
+  config: JourneySendWhatsAppConfig;
   next: [JourneyNextEdge];
 };
 
 export type WhatsAppJourneySendNodeWritable = {
   type: "send_whatsapp";
-  config: WhatsAppTemplateDispatchWritable;
+  config: JourneySendWhatsAppConfigWritable;
   next: [JourneyNextEdge];
+};
+
+export type JourneySendWhatsAppConfig = {
+  template: TemplateId | string;
+  templateData?: WhatsAppTemplateDispatchData | undefined;
+  bindings?: WhatsAppTemplateBindings | undefined;
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+  pinnedRegistration?:
+    | {
+        registrationId: TemplateRegistrationId;
+        templateChannelVariantId: TemplateChannelVariantId;
+      }
+    | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string;
+      }
+    | undefined;
+};
+
+export type JourneySendWhatsAppConfigWritable = {
+  template: TemplateId | string;
+  templateData?: WhatsAppTemplateDispatchDataWritable | undefined;
+  bindings?: WhatsAppTemplateBindingsWritable | undefined;
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+  pinnedRegistration?:
+    | {
+        registrationId: TemplateRegistrationId;
+        templateChannelVariantId: TemplateChannelVariantId;
+      }
+    | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string | undefined;
+      }
+    | undefined;
 };
 
 export type WhatsAppTemplateDispatchData = {
@@ -4994,12 +4850,14 @@ export type JourneySendEmailNodeWritable = {
 
 export type JourneySendEmailConfig = {
   template: TemplateId | string;
+  publicationId?: TemplatePublicationId | undefined;
   senderId?: EmailSenderId | undefined;
   templateData?: JsonObject | undefined;
 };
 
 export type JourneySendEmailConfigWritable = {
   template: TemplateId | string;
+  publicationId?: TemplatePublicationId | undefined;
   senderId?: EmailSenderId | undefined;
   templateData?: JsonObjectWritable | undefined;
 };
@@ -5173,6 +5031,7 @@ export type ContactImportJobId = string;
 
 export type Contact = {
   id: ContactId;
+  mergedInto?: ContactId | null | undefined;
   namespaceId: NamespaceId | null;
   name: string;
   displayName: string | null;
@@ -5340,6 +5199,14 @@ export type ContactIdentityInput = {
   type: "email" | "phone";
   identifier: string;
   verified?: boolean | null | undefined;
+};
+
+export type MergeContactByConnectionPayload = {
+  connection: IntegrationAccountId;
+};
+
+export type MergeContactPayload = {
+  from: ContactId;
 };
 
 export type ContactProfileUpdate = {
@@ -15708,6 +15575,136 @@ export type ContactsUpdateResponses = {
 
 export type ContactsUpdateResponse = ContactsUpdateResponses[keyof ContactsUpdateResponses];
 
+export type ContactsMergeData = {
+  body: {
+    from: ContactId;
+  };
+  headers?: {
+    "x-samva-conversation-agent-admission"?: string | undefined;
+  };
+  path: {
+    id: ContactId;
+  };
+  query?: never;
+  url: "/v1/contacts/{id}/merge";
+};
+
+export type ContactsMergeErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type ContactsMergeError = ContactsMergeErrors[keyof ContactsMergeErrors];
+
+export type ContactsMergeResponses = {
+  /**
+   * Contact
+   */
+  200: Contact;
+};
+
+export type ContactsMergeResponse = ContactsMergeResponses[keyof ContactsMergeResponses];
+
+export type ContactsMergeByConnectionData = {
+  body: {
+    connection: IntegrationAccountId;
+  };
+  headers?: {
+    "x-samva-conversation-agent-admission"?: string | undefined;
+  };
+  path: {
+    id: ContactId;
+  };
+  query?: never;
+  url: "/v1/contacts/{id}/merge-by-connection";
+};
+
+export type ContactsMergeByConnectionErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type ContactsMergeByConnectionError =
+  ContactsMergeByConnectionErrors[keyof ContactsMergeByConnectionErrors];
+
+export type ContactsMergeByConnectionResponses = {
+  /**
+   * Contact
+   */
+  200: Contact;
+};
+
+export type ContactsMergeByConnectionResponse =
+  ContactsMergeByConnectionResponses[keyof ContactsMergeByConnectionResponses];
+
 export type ContactsAddIdentityData = {
   body: {
     type: "email" | "phone";
@@ -18150,6 +18147,10 @@ export type AgentsPublishErrors = {
    */
   401: UnauthorizedError;
   /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
    * ForbiddenError
    */
   403: ForbiddenError;
@@ -18185,6 +18186,125 @@ export type AgentsPublishResponses = {
 };
 
 export type AgentsPublishResponse = AgentsPublishResponses[keyof AgentsPublishResponses];
+
+export type AgentsListVersionsData = {
+  body?: never;
+  path: {
+    id: AgentId;
+  };
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
+  };
+  url: "/v1/agents/{id}/versions";
+};
+
+export type AgentsListVersionsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AgentsListVersionsError = AgentsListVersionsErrors[keyof AgentsListVersionsErrors];
+
+export type AgentsListVersionsResponses = {
+  /**
+   * AgentVersionPage
+   */
+  200: AgentVersionPage;
+};
+
+export type AgentsListVersionsResponse =
+  AgentsListVersionsResponses[keyof AgentsListVersionsResponses];
+
+export type AgentsPublishVersionData = {
+  body: {
+    revision: string;
+    bundle: AgentModuleBundle;
+  };
+  path: {
+    id: AgentId;
+  };
+  query?: never;
+  url: "/v1/agents/{id}/versions";
+};
+
+export type AgentsPublishVersionErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type AgentsPublishVersionError =
+  AgentsPublishVersionErrors[keyof AgentsPublishVersionErrors];
+
+export type AgentsPublishVersionResponses = {
+  /**
+   * PublishAgentResponse
+   */
+  200: PublishAgentResponse;
+};
+
+export type AgentsPublishVersionResponse =
+  AgentsPublishVersionResponses[keyof AgentsPublishVersionResponses];
 
 export type AgentsContinueOnStandardData = {
   body?: never;
@@ -18242,61 +18362,6 @@ export type AgentsContinueOnStandardResponses = {
 
 export type AgentsContinueOnStandardResponse =
   AgentsContinueOnStandardResponses[keyof AgentsContinueOnStandardResponses];
-
-export type AgentsListVersionsData = {
-  body?: never;
-  path: {
-    id: AgentId;
-  };
-  query?: {
-    limit?: number | null | undefined;
-    cursor?: string | undefined;
-  };
-  url: "/v1/agents/{id}/versions";
-};
-
-export type AgentsListVersionsErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type AgentsListVersionsError = AgentsListVersionsErrors[keyof AgentsListVersionsErrors];
-
-export type AgentsListVersionsResponses = {
-  /**
-   * AgentVersionPage
-   */
-  200: AgentVersionPage;
-};
-
-export type AgentsListVersionsResponse =
-  AgentsListVersionsResponses[keyof AgentsListVersionsResponses];
 
 export type AgentsGetVersionData = {
   body?: never;
@@ -35185,832 +35250,6 @@ export type NamespacesGetUsageResponses = {
 
 export type NamespacesGetUsageResponse =
   NamespacesGetUsageResponses[keyof NamespacesGetUsageResponses];
-
-export type ExtensionsListData = {
-  body?: never;
-  path?: never;
-  query?: {
-    limit?: number | null | undefined;
-    cursor?: string | undefined;
-    after?: string | undefined;
-    before?: string | undefined;
-  };
-  url: "/v1/extensions";
-};
-
-export type ExtensionsListErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionsListError = ExtensionsListErrors[keyof ExtensionsListErrors];
-
-export type ExtensionsListResponses = {
-  /**
-   * ExtensionPage
-   */
-  200: ExtensionPage;
-};
-
-export type ExtensionsListResponse = ExtensionsListResponses[keyof ExtensionsListResponses];
-
-export type ExtensionsPublishData = {
-  body: {
-    manifest: {
-      name: string;
-      displayName: string;
-      description?: string | null | undefined;
-      version: string;
-      runtime: "hosted" | "webhook";
-      events: Array<
-        | "mailbox.message.received"
-        | "mailbox.message.sent"
-        | "mailbox.action.pending_approval"
-        | "mailbox.action.resolved"
-        | "mailbox.message.quarantined"
-        | "mailbox.message.released"
-        | "mailbox.message.discarded"
-      >;
-      permissions: Array<"read" | "update" | "send" | "quarantine.read">;
-    };
-    bundle?: string | null | undefined;
-  };
-  path?: never;
-  query?: never;
-  url: "/v1/extensions";
-};
-
-export type ExtensionsPublishErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionsPublishError = ExtensionsPublishErrors[keyof ExtensionsPublishErrors];
-
-export type ExtensionsPublishResponses = {
-  /**
-   * PublishExtensionVersionResponse
-   */
-  201: PublishExtensionVersionResponse;
-};
-
-export type ExtensionsPublishResponse =
-  ExtensionsPublishResponses[keyof ExtensionsPublishResponses];
-
-export type ExtensionsGetData = {
-  body?: never;
-  path: {
-    /**
-     * The extension's id (`ext_…`) or its name.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/v1/extensions/{id}";
-};
-
-export type ExtensionsGetErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionsGetError = ExtensionsGetErrors[keyof ExtensionsGetErrors];
-
-export type ExtensionsGetResponses = {
-  /**
-   * Extension
-   */
-  200: Extension;
-};
-
-export type ExtensionsGetResponse = ExtensionsGetResponses[keyof ExtensionsGetResponses];
-
-export type ExtensionsListVersionsData = {
-  body?: never;
-  path: {
-    /**
-     * The extension's id (`ext_…`) or its name.
-     */
-    id: string;
-  };
-  query?: {
-    limit?: number | null | undefined;
-    cursor?: string | undefined;
-  };
-  url: "/v1/extensions/{id}/versions";
-};
-
-export type ExtensionsListVersionsErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionsListVersionsError =
-  ExtensionsListVersionsErrors[keyof ExtensionsListVersionsErrors];
-
-export type ExtensionsListVersionsResponses = {
-  /**
-   * ExtensionVersionPage
-   */
-  200: ExtensionVersionPage;
-};
-
-export type ExtensionsListVersionsResponse =
-  ExtensionsListVersionsResponses[keyof ExtensionsListVersionsResponses];
-
-export type ExtensionsGetVersionData = {
-  body?: never;
-  path: {
-    /**
-     * The extension's id (`ext_…`) or its name.
-     */
-    id: string;
-    /**
-     * The version's id (`extver_…`) or its version string, such as `1.0.0`.
-     */
-    versionId: string;
-  };
-  query?: never;
-  url: "/v1/extensions/{id}/versions/{versionId}";
-};
-
-export type ExtensionsGetVersionErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionsGetVersionError =
-  ExtensionsGetVersionErrors[keyof ExtensionsGetVersionErrors];
-
-export type ExtensionsGetVersionResponses = {
-  /**
-   * ExtensionVersion
-   */
-  200: ExtensionVersion;
-};
-
-export type ExtensionsGetVersionResponse =
-  ExtensionsGetVersionResponses[keyof ExtensionsGetVersionResponses];
-
-export type ExtensionInstallationsListData = {
-  body?: never;
-  path?: never;
-  query?: {
-    limit?: number | null | undefined;
-    cursor?: string | undefined;
-    after?: string | undefined;
-    before?: string | undefined;
-  };
-  url: "/v1/extension-installations";
-};
-
-export type ExtensionInstallationsListErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsListError =
-  ExtensionInstallationsListErrors[keyof ExtensionInstallationsListErrors];
-
-export type ExtensionInstallationsListResponses = {
-  /**
-   * ExtensionInstallationPage
-   */
-  200: ExtensionInstallationPage;
-};
-
-export type ExtensionInstallationsListResponse =
-  ExtensionInstallationsListResponses[keyof ExtensionInstallationsListResponses];
-
-export type ExtensionInstallationsInstallData = {
-  body: {
-    extension: string;
-    version?: string | null | undefined;
-    mailboxIds?: Array<MailboxId> | null | undefined;
-    namespaceId?: NamespaceId | null | undefined;
-    permissions?: Array<"read" | "update" | "send" | "quarantine.read"> | null | undefined;
-    policy?: PolicyConfiguration | null | undefined;
-    webhookUrl?: string | null | undefined;
-  };
-  path?: never;
-  query?: never;
-  url: "/v1/extension-installations";
-};
-
-export type ExtensionInstallationsInstallErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsInstallError =
-  ExtensionInstallationsInstallErrors[keyof ExtensionInstallationsInstallErrors];
-
-export type ExtensionInstallationsInstallResponses = {
-  /**
-   * InstallExtensionResponse
-   */
-  201: InstallExtensionResponse;
-};
-
-export type ExtensionInstallationsInstallResponse =
-  ExtensionInstallationsInstallResponses[keyof ExtensionInstallationsInstallResponses];
-
-export type ExtensionInstallationsUninstallData = {
-  body?: never;
-  path: {
-    id: ExtensionInstallationId;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}";
-};
-
-export type ExtensionInstallationsUninstallErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsUninstallError =
-  ExtensionInstallationsUninstallErrors[keyof ExtensionInstallationsUninstallErrors];
-
-export type ExtensionInstallationsUninstallResponses = {
-  /**
-   * SuccessResponse
-   */
-  200: SuccessResponse;
-};
-
-export type ExtensionInstallationsUninstallResponse =
-  ExtensionInstallationsUninstallResponses[keyof ExtensionInstallationsUninstallResponses];
-
-export type ExtensionInstallationsGetData = {
-  body?: never;
-  path: {
-    id: ExtensionInstallationId;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}";
-};
-
-export type ExtensionInstallationsGetErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsGetError =
-  ExtensionInstallationsGetErrors[keyof ExtensionInstallationsGetErrors];
-
-export type ExtensionInstallationsGetResponses = {
-  /**
-   * ExtensionInstallation
-   */
-  200: ExtensionInstallation;
-};
-
-export type ExtensionInstallationsGetResponse =
-  ExtensionInstallationsGetResponses[keyof ExtensionInstallationsGetResponses];
-
-export type ExtensionInstallationsUpgradeData = {
-  body: {
-    version?: string | ExtensionVersionId | null | undefined;
-    acceptPermissions?:
-      | Array<
-          | "permission:read"
-          | "permission:update"
-          | "permission:send"
-          | "permission:quarantine.read"
-          | "event:mailbox.message.received"
-          | "event:mailbox.message.sent"
-          | "event:mailbox.action.pending_approval"
-          | "event:mailbox.action.resolved"
-          | "event:mailbox.message.quarantined"
-          | "event:mailbox.message.released"
-          | "event:mailbox.message.discarded"
-        >
-      | null
-      | undefined;
-    dryRun?: boolean | null | undefined;
-  };
-  path: {
-    id: ExtensionInstallationId;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}/upgrade";
-};
-
-export type ExtensionInstallationsUpgradeErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsUpgradeError =
-  ExtensionInstallationsUpgradeErrors[keyof ExtensionInstallationsUpgradeErrors];
-
-export type ExtensionInstallationsUpgradeResponses = {
-  /**
-   * UpgradeExtensionResponse
-   */
-  200: UpgradeExtensionResponse;
-};
-
-export type ExtensionInstallationsUpgradeResponse =
-  ExtensionInstallationsUpgradeResponses[keyof ExtensionInstallationsUpgradeResponses];
-
-export type ExtensionInstallationsDisableData = {
-  body?: never;
-  path: {
-    id: ExtensionInstallationId;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}/disable";
-};
-
-export type ExtensionInstallationsDisableErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsDisableError =
-  ExtensionInstallationsDisableErrors[keyof ExtensionInstallationsDisableErrors];
-
-export type ExtensionInstallationsDisableResponses = {
-  /**
-   * ExtensionInstallation
-   */
-  200: ExtensionInstallation;
-};
-
-export type ExtensionInstallationsDisableResponse =
-  ExtensionInstallationsDisableResponses[keyof ExtensionInstallationsDisableResponses];
-
-export type ExtensionInstallationsEnableData = {
-  body?: never;
-  path: {
-    id: ExtensionInstallationId;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}/enable";
-};
-
-export type ExtensionInstallationsEnableErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsEnableError =
-  ExtensionInstallationsEnableErrors[keyof ExtensionInstallationsEnableErrors];
-
-export type ExtensionInstallationsEnableResponses = {
-  /**
-   * ExtensionInstallation
-   */
-  200: ExtensionInstallation;
-};
-
-export type ExtensionInstallationsEnableResponse =
-  ExtensionInstallationsEnableResponses[keyof ExtensionInstallationsEnableResponses];
-
-export type ExtensionInstallationsListRunsData = {
-  body?: never;
-  path: {
-    id: ExtensionInstallationId;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}/runs";
-};
-
-export type ExtensionInstallationsListRunsErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsListRunsError =
-  ExtensionInstallationsListRunsErrors[keyof ExtensionInstallationsListRunsErrors];
-
-export type ExtensionInstallationsListRunsResponses = {
-  /**
-   * ExtensionRunList
-   */
-  200: ExtensionRunList;
-};
-
-export type ExtensionInstallationsListRunsResponse =
-  ExtensionInstallationsListRunsResponses[keyof ExtensionInstallationsListRunsResponses];
-
-export type ExtensionInstallationsGetRunData = {
-  body?: never;
-  path: {
-    id: ExtensionInstallationId;
-    runId: string;
-  };
-  query?: never;
-  url: "/v1/extension-installations/{id}/runs/{runId}";
-};
-
-export type ExtensionInstallationsGetRunErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type ExtensionInstallationsGetRunError =
-  ExtensionInstallationsGetRunErrors[keyof ExtensionInstallationsGetRunErrors];
-
-export type ExtensionInstallationsGetRunResponses = {
-  /**
-   * ExtensionRun
-   */
-  200: ExtensionRun;
-};
-
-export type ExtensionInstallationsGetRunResponse =
-  ExtensionInstallationsGetRunResponses[keyof ExtensionInstallationsGetRunResponses];
 
 export type WhatsappGetStatsData = {
   body?: never;

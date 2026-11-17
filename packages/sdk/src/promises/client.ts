@@ -56,8 +56,6 @@ import {
   Conversations as conversations,
   CustomFields as customFields,
   Email as email,
-  ExtensionInstallations as extensionInstallations,
-  Extensions as extensions,
   Events as events,
   Feedback as feedback,
   Journeys as journeys,
@@ -572,8 +570,6 @@ export interface SamvaRawClient {
   readonly journeys: typeof journeys;
   readonly mailboxes: typeof mailboxes;
   readonly namespaces: typeof namespaces;
-  readonly extensions: typeof extensions;
-  readonly extensionInstallations: typeof extensionInstallations;
 }
 
 /** The mailbox operations, plus the mailbox event stream. */
@@ -627,8 +623,6 @@ export interface SamvaClient {
   readonly journeys: DirectService<typeof journeys>;
   readonly mailboxes: PromiseMailboxesService;
   readonly namespaces: DirectService<typeof namespaces>;
-  readonly extensions: DirectService<typeof extensions>;
-  readonly extensionInstallations: DirectService<typeof extensionInstallations>;
 }
 
 /** Create a configured Promise client. */
@@ -724,8 +718,6 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     journeys: createBoundService(journeys, clientInstance),
     mailboxes: createBoundService(mailboxes, clientInstance),
     namespaces: createBoundService(namespaces, clientInstance),
-    extensions: createBoundService(extensions, clientInstance),
-    extensionInstallations: createBoundService(extensionInstallations, clientInstance),
   };
   const streamConnection: MailboxEventStreamConnection = {
     baseUrl: config.baseUrl ?? "https://api.samva.dev",
@@ -785,8 +777,6 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
         new MailboxEventStream(streamConnection, options),
     }),
     namespaces: createDirectService(raw.namespaces),
-    extensions: createDirectService(raw.extensions),
-    extensionInstallations: createDirectService(raw.extensionInstallations),
   };
   clientFactories.set(result, (idempotency) => makeClient({ ...config, idempotency }));
   return result;

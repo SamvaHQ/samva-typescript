@@ -17,8 +17,6 @@ import { ConversationsGroup } from "./conversations";
 import { CustomFieldsGroup } from "./custom-fields";
 import { EmailGroup } from "./email";
 import { EventsGroup } from "./events";
-import { ExtensionInstallationsGroup } from "./extension-installations";
-import { ExtensionsGroup } from "./extensions";
 import { FeedbackGroup } from "./feedback";
 import { IntegrationsGroup } from "./integrations";
 import { IntegrationsCatalogGroup } from "./integrations-catalog";
@@ -77,10 +75,6 @@ export * from "./custom-fields";
 export * from "./email";
 
 export * from "./events";
-
-export * from "./extension-installations";
-
-export * from "./extensions";
 
 export * from "./feedback";
 
@@ -158,8 +152,6 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     CustomFieldsGroup,
     EmailGroup,
     EventsGroup,
-    ExtensionInstallationsGroup,
-    ExtensionsGroup,
     FeedbackGroup,
     IntegrationsGroup,
     IntegrationsCatalogGroup,

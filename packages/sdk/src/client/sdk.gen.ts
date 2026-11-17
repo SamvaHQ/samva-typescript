@@ -27,6 +27,7 @@ import type {
   AccountsRemoveResponses,
   AgentDefinition,
   AgentId,
+  AgentModuleBundle,
   AgentName,
   AgentsContinueOnStandardErrors,
   AgentsContinueOnStandardResponses,
@@ -45,6 +46,8 @@ import type {
   AgentsListVersionsResponses,
   AgentsPublishErrors,
   AgentsPublishResponses,
+  AgentsPublishVersionErrors,
+  AgentsPublishVersionResponses,
   AgentsRemoveErrors,
   AgentsRemoveResponses,
   AgentsReplaceDraftErrors,
@@ -215,6 +218,10 @@ import type {
   ContactsGetResponses,
   ContactsListErrors,
   ContactsListResponses,
+  ContactsMergeByConnectionErrors,
+  ContactsMergeByConnectionResponses,
+  ContactsMergeErrors,
+  ContactsMergeResponses,
   ContactsPlanImportErrors,
   ContactsPlanImportResponses,
   ContactsRemoveErrors,
@@ -410,36 +417,6 @@ import type {
   EventsBatchResponses,
   EventsCreateErrors,
   EventsCreateResponses,
-  ExtensionInstallationId,
-  ExtensionInstallationsDisableErrors,
-  ExtensionInstallationsDisableResponses,
-  ExtensionInstallationsEnableErrors,
-  ExtensionInstallationsEnableResponses,
-  ExtensionInstallationsGetErrors,
-  ExtensionInstallationsGetResponses,
-  ExtensionInstallationsGetRunErrors,
-  ExtensionInstallationsGetRunResponses,
-  ExtensionInstallationsInstallErrors,
-  ExtensionInstallationsInstallResponses,
-  ExtensionInstallationsListErrors,
-  ExtensionInstallationsListResponses,
-  ExtensionInstallationsListRunsErrors,
-  ExtensionInstallationsListRunsResponses,
-  ExtensionInstallationsUninstallErrors,
-  ExtensionInstallationsUninstallResponses,
-  ExtensionInstallationsUpgradeErrors,
-  ExtensionInstallationsUpgradeResponses,
-  ExtensionsGetErrors,
-  ExtensionsGetResponses,
-  ExtensionsGetVersionErrors,
-  ExtensionsGetVersionResponses,
-  ExtensionsListErrors,
-  ExtensionsListResponses,
-  ExtensionsListVersionsErrors,
-  ExtensionsListVersionsResponses,
-  ExtensionsPublishErrors,
-  ExtensionsPublishResponses,
-  ExtensionVersionId,
   FeedbackContext,
   FeedbackSendErrors,
   FeedbackSendResponses,
@@ -808,7 +785,6 @@ import type {
   PoliciesGetPolicyResponses,
   PoliciesSetPolicyErrors,
   PoliciesSetPolicyResponses,
-  PolicyConfiguration,
   PolicyReviewRound,
   PolicyRule,
   PolicyVersion,
@@ -1112,12 +1088,7 @@ export class ApprovalRequests {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -1144,7 +1115,7 @@ export class ApprovalRequests {
         url: "/v1/approval-requests/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1175,7 +1146,7 @@ export class ApprovalRequests {
           url: "/v1/approval-requests/{id}/approve",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -1218,12 +1189,7 @@ export class ApprovalRequests {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -1292,7 +1258,7 @@ export class Messages {
         url: "/v1/messages",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1313,12 +1279,7 @@ export class Messages {
         url: "/v1/messages",
         ...options,
         ...params,
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -1345,7 +1306,7 @@ export class Messages {
         url: "/v1/messages/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1368,7 +1329,7 @@ export class Messages {
         url: "/v1/messages/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1399,7 +1360,7 @@ export class Messages {
           url: "/v1/messages/{id}/deliveries",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -1426,7 +1387,7 @@ export class Messages {
         url: "/v1/messages/{id}/content",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1466,7 +1427,7 @@ export class Messages {
         url: "/v1/messages/{id}/email",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1521,12 +1482,7 @@ export class Messages {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -1553,7 +1509,7 @@ export class Messages {
         url: "/v1/messages/{id}/status",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1593,7 +1549,7 @@ export class Messages {
         url: "/v1/messages/{id}/events",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1637,7 +1593,7 @@ export class Operations {
         url: "/v1/operations",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1660,7 +1616,7 @@ export class Operations {
         url: "/v1/operations/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1687,7 +1643,7 @@ export class Operations {
         url: "/v1/operations/{id}/retry",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -1746,7 +1702,7 @@ export class ScheduledMessages {
           url: "/v1/messages/scheduled",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -1795,12 +1751,7 @@ export class ScheduledMessages {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -1831,7 +1782,7 @@ export class ScheduledMessages {
           url: "/v1/messages/scheduled/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -1862,7 +1813,7 @@ export class ScheduledMessages {
           url: "/v1/messages/scheduled/{id}/cancel",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -1911,12 +1862,7 @@ export class ScheduledMessages {
           url: "/v1/messages/scheduled/{id}/resume",
           ...options,
           ...params,
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -1963,12 +1909,7 @@ export class Campaigns {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -2009,12 +1950,7 @@ export class Campaigns {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -2050,7 +1986,7 @@ export class Campaigns {
         url: "/v1/campaigns",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2095,12 +2031,7 @@ export class Campaigns {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -2123,7 +2054,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2168,12 +2099,7 @@ export class Campaigns {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -2200,7 +2126,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}/archive",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2250,7 +2176,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}/runs",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2293,12 +2219,7 @@ export class Campaigns {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -2336,7 +2257,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}/runs/{runId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2378,7 +2299,7 @@ export class Campaigns {
           url: "/v1/campaigns/{id}/runs/{runId}/report",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -2416,7 +2337,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}/runs/{runId}/pause",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2454,7 +2375,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}/runs/{runId}/resume",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2492,7 +2413,7 @@ export class Campaigns {
         url: "/v1/campaigns/{id}/runs/{runId}/cancel",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2540,7 +2461,7 @@ export class Campaigns {
           url: "/v1/campaigns/{id}/runs/{runId}/recipients",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -2576,7 +2497,7 @@ export class Email {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/email/onboarding-review",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -2615,12 +2536,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -2669,12 +2585,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -2704,7 +2615,7 @@ export class Email {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/email/tracking/defaults",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -2751,12 +2662,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -2791,7 +2697,7 @@ export class Email {
           url: "/v1/email/tracking/recipients",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -2838,12 +2744,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -2887,7 +2788,7 @@ export class Email {
         url: "/v1/email/domains",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -2933,12 +2834,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -2974,7 +2870,7 @@ export class Email {
           url: "/v1/email/domains/{id}/verification",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3005,7 +2901,7 @@ export class Email {
           url: "/v1/email/domains/{id}/rotate-dkim",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3040,7 +2936,7 @@ export class Email {
           url: "/v1/email/domains/{id}/verify",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3067,7 +2963,7 @@ export class Email {
         url: "/v1/email/domains/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -3094,7 +2990,7 @@ export class Email {
         url: "/v1/email/domains/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -3137,12 +3033,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3184,7 +3075,7 @@ export class Email {
           url: "/v1/email/domains/{id}/domain-connect",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3231,12 +3122,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3287,12 +3173,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3341,12 +3222,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3377,7 +3253,7 @@ export class Email {
           url: "/v1/email/domains/{id}/receiving-status",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3408,7 +3284,7 @@ export class Email {
           url: "/v1/email/domains/{id}/default",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3463,12 +3339,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3503,7 +3374,7 @@ export class Email {
           url: "/v1/email/domains/{id}/custom-tracking",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3534,7 +3405,7 @@ export class Email {
           url: "/v1/email/domains/{id}/custom-tracking",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3583,12 +3454,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3623,7 +3489,7 @@ export class Email {
           url: "/v1/email/domains/{id}/custom-tracking/recheck",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3658,7 +3524,7 @@ export class Email {
           url: "/v1/email/domains/{id}/custom-tracking/domain-connect",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3693,7 +3559,7 @@ export class Email {
           url: "/v1/email/domains/{id}/custom-tracking/domain-connect/apply-url",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3744,12 +3610,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -3795,7 +3656,7 @@ export class Email {
         url: "/v1/email/senders",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -3837,12 +3698,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -3878,7 +3734,7 @@ export class Email {
           url: "/v1/email/senders/{id}/verification",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -3905,7 +3761,7 @@ export class Email {
         url: "/v1/email/senders/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -3928,7 +3784,7 @@ export class Email {
         url: "/v1/email/senders/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -3971,12 +3827,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -4010,7 +3861,7 @@ export class Email {
         url: "/v1/email/stats",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -4049,12 +3900,7 @@ export class Email {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -4085,7 +3931,7 @@ export class Email {
           url: "/v1/email/domains/{id}/disable-catch-all",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4116,7 +3962,7 @@ export class Email {
           url: "/v1/email/catch-all/config",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4165,12 +4011,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -4214,7 +4055,7 @@ export class Email {
           url: "/v1/email/catch-all/stats",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4264,7 +4105,7 @@ export class Email {
           url: "/v1/email/suppressions",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4298,7 +4139,7 @@ export class Email {
           url: "/v1/email/suppressions/counts",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4329,7 +4170,7 @@ export class Email {
           url: "/v1/email/suppressions/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4371,7 +4212,7 @@ export class Email {
         url: "/v1/email/blocks",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -4412,12 +4253,7 @@ export class Email {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -4444,7 +4280,7 @@ export class Email {
         url: "/v1/email/blocks/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -4489,12 +4325,7 @@ export class Email {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -4540,7 +4371,7 @@ export class Email {
         url: "/v1/email/blocks/logs",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -4571,12 +4402,7 @@ export class Email {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -4622,7 +4448,7 @@ export class Email {
           url: "/v1/email/forwarding",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4692,12 +4518,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -4732,7 +4553,7 @@ export class Email {
           url: "/v1/email/forwarding/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4804,12 +4625,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -4859,7 +4675,7 @@ export class Email {
           url: "/v1/email/forwarding/logs",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4890,7 +4706,7 @@ export class Email {
           url: "/v1/email/domains/{id}/warming",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -4943,12 +4759,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -4999,12 +4810,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5050,7 +4856,7 @@ export class Email {
           url: "/v1/email/domains/{id}/warming/batches/{batchId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -5093,12 +4899,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5145,12 +4946,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5197,12 +4993,7 @@ export class Email {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5249,12 +5040,7 @@ export class Media {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -5277,7 +5063,7 @@ export class Media {
         url: "/v1/media/{id}/complete",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5300,7 +5086,7 @@ export class Media {
         url: "/v1/media/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5323,7 +5109,7 @@ export class Media {
         url: "/v1/media/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5350,7 +5136,7 @@ export class Media {
         url: "/v1/media/{id}/url",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5383,7 +5169,7 @@ export class Attachments {
         url: "/v1/attachments/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5410,7 +5196,7 @@ export class Attachments {
         url: "/v1/attachments/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5437,7 +5223,7 @@ export class Attachments {
         url: "/v1/attachments",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5479,7 +5265,7 @@ export class Attachments {
           url: "/v1/attachments/{id}/download-url",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -5537,7 +5323,7 @@ export class Conversations {
         url: "/v1/conversations",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -5610,12 +5396,7 @@ export class Conversations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -5646,7 +5427,7 @@ export class Conversations {
           url: "/v1/conversations/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -5713,12 +5494,7 @@ export class Conversations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -5770,7 +5546,7 @@ export class Conversations {
           url: "/v1/conversations/{id}/messages",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -5813,12 +5589,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5861,12 +5632,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5913,12 +5679,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -5965,12 +5726,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -6017,12 +5773,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -6069,12 +5820,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -6121,12 +5867,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -6173,12 +5914,7 @@ export class Conversations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -6234,7 +5970,7 @@ export class Contacts {
         url: "/v1/contacts",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -6290,12 +6026,7 @@ export class Contacts {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -6335,12 +6066,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -6395,12 +6121,7 @@ export class Contacts {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -6427,7 +6148,7 @@ export class Contacts {
         url: "/v1/contacts/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -6450,7 +6171,7 @@ export class Contacts {
         url: "/v1/contacts/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -6505,13 +6226,94 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
+    );
+  }
+
+  /**
+   * Merge contacts
+   *
+   * Merges `from` into the contact in the path, within one organization and namespace. The kept contact wins profile and metadata conflicts, blank fields fill, and an explicit topic unsubscribe wins. The absorbed contact remains a record pointing to the kept contact; duplicate campaign recipients and other conflict history stay available. A merge cannot be undone. Agents use the merge-by-connection operation with their own verified connection instead of choosing a source contact.
+   */
+  public static merge<ThrowOnError extends boolean = false>(
+    parameters: {
+      "x-samva-conversation-agent-admission"?: string | undefined;
+      id: ContactId;
+      from: ContactId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<ContactsMergeResponses, ContactsMergeErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "x-samva-conversation-agent-admission" },
+            { in: "path", key: "id" },
+            { in: "body", key: "from" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "contactsMerge", options, (headers) =>
+      (options?.client ?? client).post<ContactsMergeResponses, ContactsMergeErrors, ThrowOnError>({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/contacts/{id}/merge",
+        ...options,
+        ...params,
+        body: params.body ?? {},
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+      }),
+    );
+  }
+
+  /**
+   * Merge contacts by verified connection
+   *
+   * Uses the conversation's active per-contact connection and a current signed conversation admission to derive the contact holding its verified email. Supply the account ID as `connection`; an unverified address, another contact's connection, or a different organization or namespace is refused. If no contact holds the verified email, attaches that identity instead. The conversation contact is kept, and the merge conflict rules are the same as the merge operation.
+   */
+  public static mergeByConnection<ThrowOnError extends boolean = false>(
+    parameters: {
+      "x-samva-conversation-agent-admission"?: string | undefined;
+      id: ContactId;
+      connection: IntegrationAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    ContactsMergeByConnectionResponses,
+    ContactsMergeByConnectionErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "x-samva-conversation-agent-admission" },
+            { in: "path", key: "id" },
+            { in: "body", key: "connection" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsMergeByConnection",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          ContactsMergeByConnectionResponses,
+          ContactsMergeByConnectionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}/merge-by-connection",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
     );
   }
 
@@ -6553,12 +6355,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -6600,7 +6397,7 @@ export class Contacts {
           url: "/v1/contacts/{id}/identities/{identityId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -6649,12 +6446,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -6693,12 +6485,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -6737,12 +6524,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -6773,7 +6555,7 @@ export class Contacts {
           url: "/v1/contacts/{id}/engagement",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -6845,12 +6627,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -6923,12 +6700,7 @@ export class Contacts {
           url: "/v1/contacts/imports",
           ...options,
           ...params,
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
       parameters,
     );
@@ -6960,7 +6732,7 @@ export class Contacts {
           url: "/v1/contacts/imports/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -6988,12 +6760,7 @@ export class Contacts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -7038,12 +6805,7 @@ export class Contacts {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -7090,12 +6852,7 @@ export class Contacts {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -7141,12 +6898,7 @@ export class Contacts {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -7197,7 +6949,7 @@ export class Contacts {
           url: "/v1/contacts/{id}/activity",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -7245,7 +6997,7 @@ export class Contacts {
           url: "/v1/contacts/{id}/groups",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -7290,12 +7042,7 @@ export class Events {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -7319,12 +7066,7 @@ export class Events {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -7374,7 +7116,7 @@ export class ContactEvents {
           url: "/v1/contacts/{id}/events",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -7416,7 +7158,7 @@ export class Journeys {
         url: "/v1/journeys",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7452,12 +7194,7 @@ export class Journeys {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -7485,7 +7222,7 @@ export class Journeys {
         url: "/v1/journeys/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7508,7 +7245,7 @@ export class Journeys {
         url: "/v1/journeys/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7547,12 +7284,7 @@ export class Journeys {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -7597,12 +7329,7 @@ export class Journeys {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -7641,12 +7368,7 @@ export class Journeys {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -7669,7 +7391,7 @@ export class Journeys {
         url: "/v1/journeys/{id}/pause",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7693,7 +7415,7 @@ export class Journeys {
           url: "/v1/journeys/{id}/resume",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         },
       ),
     );
@@ -7721,7 +7443,7 @@ export class Journeys {
         url: "/v1/journeys/{id}/archive",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7759,7 +7481,7 @@ export class Journeys {
         url: "/v1/journeys/{id}/versions/{version}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7793,7 +7515,7 @@ export class Journeys {
         url: "/v1/journeys/{id}/stats",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7837,7 +7559,7 @@ export class Journeys {
         url: "/v1/journeys/{id}/runs",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7871,7 +7593,7 @@ export class Journeys {
         url: "/v1/journeys/{id}/runs/{runId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7918,12 +7640,7 @@ export class Agents {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -7959,7 +7676,7 @@ export class Agents {
         url: "/v1/agents",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -7998,12 +7715,7 @@ export class Agents {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -8025,7 +7737,7 @@ export class Agents {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/agents/models",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -8048,7 +7760,7 @@ export class Agents {
         url: "/v1/agents/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8071,7 +7783,7 @@ export class Agents {
         url: "/v1/agents/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8108,12 +7820,7 @@ export class Agents {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -8154,12 +7861,7 @@ export class Agents {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -8194,48 +7896,8 @@ export class Agents {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
-    );
-  }
-
-  /**
-   * Continue an agent on Standard
-   *
-   * Publishes the live version again with its model set to standard, as the next immutable version, then removes the monthly spend cap. Use it when the agent pauses at its cap on a pinned model and should keep answering on Standard. The draft is left as it is, so its unpublished changes stay unpublished. The live version's reasoning level is kept when Standard supports it, and is auto otherwise. A live version already on standard publishes nothing and answers published false; the cap is still removed. An agent with no published version returns 422; a version published while the request runs returns 409.
-   */
-  public static continueOnStandard<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: AgentId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    AgentsContinueOnStandardResponses,
-    AgentsContinueOnStandardErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "agentsContinueOnStandard",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          AgentsContinueOnStandardResponses,
-          AgentsContinueOnStandardErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/agents/{id}/continue-on-standard",
-          ...options,
-          ...params,
-          headers,
-        }),
     );
   }
 
@@ -8274,15 +7936,95 @@ export class Agents {
         url: "/v1/agents/{id}/versions",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
+    );
+  }
+
+  /**
+   * Publish an agent module
+   *
+   * Publishes a self-contained JavaScript module and its manifest as the next immutable version. Source is stored by its SHA-256 digest without execution. The revision protects the draft read by the publisher; a stale revision returns 409. Publishing the same manifest, source, and definition again returns published false. The manifest controls the model, endpoints, integration grants, and action policy. Draft instructions and knowledge remain editable builder data; the hosted runtime reads instructions and tools from the published module.
+   */
+  public static publishVersion<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: AgentId;
+      revision: string;
+      bundle: AgentModuleBundle;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<AgentsPublishVersionResponses, AgentsPublishVersionErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "revision" },
+            { in: "body", key: "bundle" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsPublishVersion",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          AgentsPublishVersionResponses,
+          AgentsPublishVersionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/versions",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Continue an agent on Standard
+   *
+   * Publishes the live version again with its model set to standard, as the next immutable version, then removes the monthly spend cap. Use it when the agent pauses at its cap on a pinned model and should keep answering on Standard. The draft is left as it is, so its unpublished changes stay unpublished. The live version's reasoning level is kept when Standard supports it, and is auto otherwise. A live version already on standard publishes nothing and answers published false; the cap is still removed. An agent with no published version returns 422; a version published while the request runs returns 409.
+   */
+  public static continueOnStandard<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: AgentId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    AgentsContinueOnStandardResponses,
+    AgentsContinueOnStandardErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsContinueOnStandard",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          AgentsContinueOnStandardResponses,
+          AgentsContinueOnStandardErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/continue-on-standard",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
     );
   }
 
   /**
    * Get a published agent version
    *
-   * Returns the immutable definition of one published version.
+   * Returns the immutable definition and bundle digest, size, and manifest of one published version.
    */
   public static getVersion<ThrowOnError extends boolean = false>(
     parameters: {
@@ -8312,7 +8054,7 @@ export class Agents {
         url: "/v1/agents/{id}/versions/{version}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8353,7 +8095,7 @@ export class Accounts {
           url: "/v1/accounts/contact-connections",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -8371,7 +8113,7 @@ export class Accounts {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/accounts",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -8398,7 +8140,7 @@ export class Accounts {
         url: "/v1/accounts/{accountId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8421,7 +8163,7 @@ export class Accounts {
         url: "/v1/accounts/{accountId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8444,7 +8186,7 @@ export class Accounts {
         url: "/v1/accounts/{accountId}/check",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8497,12 +8239,7 @@ export class Accounts {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -8555,12 +8292,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -8627,7 +8359,7 @@ export class IntegrationCatalog {
           url: "/v1/integrations/catalog/search",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -8653,7 +8385,7 @@ export class IntegrationCatalog {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/integrations/catalog",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -8697,7 +8429,7 @@ export class Integrations {
         url: "/v1/integrations",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8738,12 +8470,7 @@ export class Integrations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -8787,7 +8514,7 @@ export class Integrations {
           url: "/v1/integrations/{integrationId}/tools",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -8833,7 +8560,7 @@ export class Integrations {
           url: "/v1/integrations/{integrationId}/tools/{tool}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -8863,7 +8590,7 @@ export class Integrations {
         url: "/v1/integrations/{integrationId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8893,7 +8620,7 @@ export class Integrations {
         url: "/v1/integrations/{integrationId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -8944,12 +8671,7 @@ export class Integrations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9009,12 +8731,7 @@ export class Subscriptions {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -9062,7 +8779,7 @@ export class ContactGroups {
         url: "/v1/contact-groups",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9118,12 +8835,7 @@ export class ContactGroups {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9150,7 +8862,7 @@ export class ContactGroups {
         url: "/v1/contact-groups/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9181,7 +8893,7 @@ export class ContactGroups {
           url: "/v1/contact-groups/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -9239,12 +8951,7 @@ export class ContactGroups {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9291,12 +8998,7 @@ export class ContactGroups {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -9340,7 +9042,7 @@ export class ContactGroups {
           url: "/v1/contact-groups/{id}/members",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -9385,12 +9087,7 @@ export class ContactGroups {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -9425,7 +9122,7 @@ export class ContactGroups {
           url: "/v1/contact-groups/{id}/evaluate",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -9469,12 +9166,7 @@ export class ContactGroups {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -9502,7 +9194,7 @@ export class CustomFields {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/custom-fields",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -9551,12 +9243,7 @@ export class CustomFields {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9583,7 +9270,7 @@ export class CustomFields {
         url: "/v1/custom-fields/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9630,12 +9317,7 @@ export class CustomFields {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9667,7 +9349,7 @@ export class Topics {
         url: "/v1/topics",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9712,12 +9394,7 @@ export class Topics {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9767,7 +9444,7 @@ export class Topics {
           url: "/v1/topics/check",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -9790,7 +9467,7 @@ export class Topics {
         url: "/v1/topics/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9813,7 +9490,7 @@ export class Topics {
         url: "/v1/topics/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9858,12 +9535,7 @@ export class Topics {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -9890,7 +9562,7 @@ export class Topics {
         url: "/v1/topics/{id}/default",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -9938,7 +9610,7 @@ export class Topics {
           url: "/v1/topics/{id}/subscriptions",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -9987,12 +9659,7 @@ export class Topics {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10021,7 +9688,7 @@ export class TopicForms {
         url: "/v1/topics/{id}/forms",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -10070,12 +9737,7 @@ export class TopicForms {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -10113,7 +9775,7 @@ export class TopicForms {
         url: "/v1/topics/{id}/forms/{formId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -10147,7 +9809,7 @@ export class TopicForms {
         url: "/v1/topics/{id}/forms/{formId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -10198,12 +9860,7 @@ export class TopicForms {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -10240,7 +9897,7 @@ export class Issues {
           url: "/v1/newsletters/{id}/issues",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10287,12 +9944,7 @@ export class Issues {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10339,12 +9991,7 @@ export class Issues {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10375,7 +10022,7 @@ export class Issues {
           url: "/v1/newsletters/{id}/issues/workspace",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10415,7 +10062,7 @@ export class Issues {
         url: "/v1/newsletters/{id}/issues/document",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -10460,12 +10107,7 @@ export class Issues {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10512,12 +10154,7 @@ export class Issues {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10562,12 +10199,7 @@ export class Issues {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10616,12 +10248,7 @@ export class Issues {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10652,7 +10279,7 @@ export class Issues {
           url: "/v1/newsletters/{id}/issues/head",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10694,7 +10321,7 @@ export class Issues {
           url: "/v1/newsletters/{id}/issues/history",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10740,7 +10367,7 @@ export class Domains {
           url: "/v1/newsletters/{id}/domains",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10783,12 +10410,7 @@ export class Domains {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -10830,7 +10452,7 @@ export class Domains {
           url: "/v1/newsletters/{id}/domains/{hostname}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10872,7 +10494,7 @@ export class Domains {
           url: "/v1/newsletters/{id}/domains/{hostname}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -10904,7 +10526,7 @@ export class Newsletters {
         url: "/v1/newsletters",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -10951,12 +10573,7 @@ export class Newsletters {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -10983,7 +10600,7 @@ export class Newsletters {
         url: "/v1/newsletters/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11006,7 +10623,7 @@ export class Newsletters {
         url: "/v1/newsletters/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11047,12 +10664,7 @@ export class Newsletters {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -11102,7 +10714,7 @@ export class Analytics {
         url: "/v1/analytics/stats",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11150,7 +10762,7 @@ export class Analytics {
           url: "/v1/analytics/channel-stats",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11198,7 +10810,7 @@ export class Analytics {
           url: "/v1/analytics/top-contacts",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11246,7 +10858,7 @@ export class Analytics {
           url: "/v1/analytics/hourly-distribution",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11296,7 +10908,7 @@ export class Analytics {
           url: "/v1/analytics/delivery-metrics",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11341,12 +10953,7 @@ export class Analytics {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -11408,7 +11015,7 @@ export class Templates {
         url: "/v1/templates",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11472,12 +11079,7 @@ export class Templates {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -11519,7 +11121,7 @@ export class Templates {
           url: "/v1/templates/families",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11551,12 +11153,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -11587,7 +11184,7 @@ export class Templates {
           url: "/v1/templates/families/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11614,7 +11211,7 @@ export class Templates {
         url: "/v1/templates/families/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11657,12 +11254,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -11709,12 +11301,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -11760,7 +11347,7 @@ export class Templates {
           url: "/v1/templates/families/{id}/members/{templateId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11806,7 +11393,7 @@ export class Templates {
           url: "/v1/templates/families/{id}/members/{templateId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -11833,7 +11420,7 @@ export class Templates {
         url: "/v1/templates/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11860,7 +11447,7 @@ export class Templates {
         url: "/v1/templates/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -11924,12 +11511,7 @@ export class Templates {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -11965,12 +11547,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12023,12 +11600,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12077,12 +11649,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12138,12 +11705,7 @@ export class Templates {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -12174,7 +11736,7 @@ export class Templates {
           url: "/v1/templates/projects/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -12225,12 +11787,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12261,7 +11818,7 @@ export class Templates {
           url: "/v1/templates/{id}/workspace",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -12304,12 +11861,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12362,12 +11914,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12423,12 +11970,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12475,12 +12017,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12529,12 +12066,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12580,7 +12112,7 @@ export class Templates {
           url: "/v1/templates/{id}/workspace/history",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -12623,12 +12155,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12677,12 +12204,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12729,12 +12251,7 @@ export class Templates {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -12776,7 +12293,7 @@ export class Templates {
           url: "/v1/templates/{id}/publications/{publicationId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -12831,12 +12348,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -12884,7 +12396,7 @@ export class Templates {
           url: "/v1/templates/{id}/input-contracts",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -12930,7 +12442,7 @@ export class Templates {
           url: "/v1/templates/{id}/input-contracts/{inputContractId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -12965,7 +12477,7 @@ export class Templates {
           url: "/v1/templates/{id}/repository",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -13012,12 +12524,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -13077,12 +12584,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -13131,12 +12633,7 @@ export class Templates {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -13177,7 +12674,7 @@ export class TemplateShareLinks {
           url: "/v1/template-projects/{projectId}/share-link",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -13208,7 +12705,7 @@ export class TemplateShareLinks {
           url: "/v1/template-projects/{projectId}/share-link",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -13255,12 +12752,7 @@ export class TemplateShareLinks {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -13307,12 +12799,7 @@ export class TemplateShareLinks {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -13347,7 +12834,7 @@ export class TemplateShareLinks {
           url: "/v1/template-projects/{projectId}/share-link/update",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -13371,7 +12858,7 @@ export class Brands {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/brands",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -13414,12 +12901,7 @@ export class Brands {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -13442,7 +12924,7 @@ export class Brands {
         url: "/v1/brands/{slug}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13465,7 +12947,7 @@ export class Brands {
         url: "/v1/brands/{slug}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13508,12 +12990,7 @@ export class Brands {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -13540,7 +13017,7 @@ export class Brands {
         url: "/v1/brands/{slug}/default",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13586,7 +13063,7 @@ export class Webhooks {
         url: "/v1/webhooks",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13681,12 +13158,7 @@ export class Webhooks {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -13714,7 +13186,7 @@ export class Webhooks {
         url: "/v1/webhooks/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13737,7 +13209,7 @@ export class Webhooks {
         url: "/v1/webhooks/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13840,12 +13312,7 @@ export class Webhooks {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -13885,12 +13352,7 @@ export class Webhooks {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -13930,7 +13392,7 @@ export class Webhooks {
         url: "/v1/webhooks/{id}/logs",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -13970,7 +13432,7 @@ export class Webhooks {
         url: "/v1/webhooks/{id}/stats",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14012,7 +13474,7 @@ export class Webhooks {
           url: "/v1/webhooks/{id}/deliveries/{deliveryId}/redeliver",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -14047,7 +13509,7 @@ export class Webhooks {
           url: "/v1/webhooks/{id}/rotate-secret",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -14074,7 +13536,7 @@ export class Webhooks {
         url: "/v1/webhooks/{id}/secret",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14131,12 +13593,7 @@ export class Organizations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -14164,12 +13621,7 @@ export class Organizations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -14191,7 +13643,7 @@ export class Organizations {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/organizations/current",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -14249,12 +13701,7 @@ export class Organizations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -14280,7 +13727,7 @@ export class Organizations {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/organizations/current/profile",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -14327,12 +13774,7 @@ export class Organizations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -14362,7 +13804,7 @@ export class Organizations {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/organizations/personal-mailboxes/assignments",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -14400,7 +13842,7 @@ export class Organizations {
           url: "/v1/organizations/personal-mailboxes/address-options",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -14430,7 +13872,7 @@ export class Organizations {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/organizations/trust-tier",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -14460,7 +13902,7 @@ export class Organizations {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/organizations/current/avatar-upload",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -14502,7 +13944,7 @@ export class Organizations {
           url: "/v1/organizations/usage",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -14533,12 +13975,7 @@ export class Organizations {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -14584,7 +14021,7 @@ export class ApiKeys {
         url: "/v1/api-keys",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14623,12 +14060,7 @@ export class ApiKeys {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -14651,7 +14083,7 @@ export class ApiKeys {
         url: "/v1/api-keys/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14688,12 +14120,7 @@ export class ApiKeys {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -14716,7 +14143,7 @@ export class ApiKeys {
         url: "/v1/api-keys/{id}/revoke",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14739,7 +14166,7 @@ export class ApiKeys {
         url: "/v1/api-keys/{id}/rotate",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14779,7 +14206,7 @@ export class ApiKeys {
         url: "/v1/api-keys/{id}/stats",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14819,7 +14246,7 @@ export class ApiKeys {
         url: "/v1/api-keys/{id}/activity",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -14862,12 +14289,7 @@ export class Feedback {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -14891,7 +14313,7 @@ export class Whoami {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/whoami",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -14952,12 +14374,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -14999,7 +14416,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/imports/{importId}/start",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15037,7 +14454,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/imports/{importId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15068,7 +14485,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/imports",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15108,7 +14525,7 @@ export class Mailboxes {
         url: "/v1/mailboxes",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15153,12 +14570,7 @@ export class Mailboxes {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -15185,7 +14597,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15208,7 +14620,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15249,12 +14661,7 @@ export class Mailboxes {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -15301,12 +14708,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -15348,7 +14750,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/endpoints/{endpointId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15395,12 +14797,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -15424,7 +14821,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/pause",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         },
       ),
     );
@@ -15452,7 +14849,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/resume",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15500,7 +14897,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/agent-activity",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15540,7 +14937,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/grants",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15585,12 +14982,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -15632,7 +15024,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/grants/{grantId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15677,12 +15069,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -15713,7 +15100,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/folders",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15740,7 +15127,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/labels",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -15795,12 +15182,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -15842,7 +15224,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/labels/{labelId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15897,12 +15279,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -15944,7 +15321,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/needs-you",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -15996,7 +15373,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/drafts",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16072,7 +15449,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/threads",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16140,7 +15517,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/threads",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16178,7 +15555,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/threads/{threadId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -16239,12 +15616,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -16293,12 +15665,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -16347,12 +15714,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -16402,7 +15764,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/threads/{threadId}/messages",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16452,7 +15814,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/threads/{threadId}/content",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16502,7 +15864,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/threads/{threadId}/notes",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16547,12 +15909,7 @@ export class Mailboxes {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -16592,7 +15949,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/threads/{threadId}/notes/{noteId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -16639,12 +15996,7 @@ export class Mailboxes {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -16678,12 +16030,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages",
           ...options,
           ...params,
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -16721,7 +16068,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/messages/{messageId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -16763,7 +16110,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/raw",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16811,7 +16158,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/attachments/{attachmentId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16859,7 +16206,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/attachments/{attachmentId}/copy",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -16897,12 +16244,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/reply",
           ...options,
           ...params,
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         },
       ),
     );
@@ -16944,12 +16286,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/messages/{messageId}/reply-all",
         ...options,
         ...params,
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -17000,12 +16337,7 @@ export class Mailboxes {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -17053,7 +16385,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/quarantine",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17095,7 +16427,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/release",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17137,7 +16469,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/messages/{messageId}/discard",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17188,12 +16520,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17242,12 +16569,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17298,12 +16620,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17356,12 +16673,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17409,7 +16721,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/scheduled",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17451,7 +16763,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/drafts",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -17485,12 +16797,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/drafts",
           ...options,
           ...params,
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17532,7 +16839,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/drafts/{draftId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17570,7 +16877,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/drafts/{draftId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -17629,12 +16936,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17672,7 +16974,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/drafts/{draftId}/send",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -17739,7 +17041,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/actions",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17777,7 +17079,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/actions/{actionId}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -17819,7 +17121,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/actions/{actionId}/cancel",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17861,7 +17163,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/actions/{actionId}/retry",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -17916,12 +17218,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -17964,12 +17261,7 @@ export class Mailboxes {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -18013,7 +17305,7 @@ export class Mailboxes {
         url: "/v1/mailboxes/{id}/events",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -18039,7 +17331,7 @@ export class Mailboxes {
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/mailboxes/splits/counts",
           ...options,
-          headers,
+          headers: { ...headers },
         }),
     );
   }
@@ -18061,7 +17353,7 @@ export class Mailboxes {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/mailboxes/splits",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -18120,12 +17412,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -18156,7 +17443,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/splits/{splitId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -18217,12 +17504,7 @@ export class Mailboxes {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -18264,7 +17546,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/{id}/addresses",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -18314,7 +17596,7 @@ export class Policies {
           url: "/v1/policies/{kind}/{id}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -18352,7 +17634,7 @@ export class Policies {
         url: "/v1/policies/{kind}/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -18399,12 +17681,7 @@ export class Policies {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -18448,7 +17725,7 @@ export class Namespaces {
         url: "/v1/namespaces",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -18487,12 +17764,7 @@ export class Namespaces {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -18519,7 +17791,7 @@ export class Namespaces {
         url: "/v1/namespaces/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -18542,7 +17814,7 @@ export class Namespaces {
         url: "/v1/namespaces/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -18588,12 +17860,7 @@ export class Namespaces {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -18642,12 +17909,7 @@ export class Namespaces {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -18695,7 +17957,7 @@ export class Namespaces {
           url: "/v1/namespaces/{id}/resources/{type}/{resourceId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -18743,7 +18005,7 @@ export class Namespaces {
           url: "/v1/namespaces/{id}/portal-links",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -18794,12 +18056,7 @@ export class Namespaces {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -18845,7 +18102,7 @@ export class Namespaces {
           url: "/v1/namespaces/{id}/portal-links/{linkId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -18885,7 +18142,7 @@ export class Namespaces {
         url: "/v1/namespaces/{id}/usage",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -18893,629 +18150,6 @@ export class Namespaces {
 
 export class Namespaces2 {
   static namespaces = Namespaces;
-}
-
-export class Extensions {
-  /**
-   * List extensions
-   *
-   * Returns the organization's published extensions with their latest version, newest first, filterable by creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page.
-   */
-  public static list<ThrowOnError extends boolean = false>(
-    parameters?: {
-      limit?: number | null | undefined;
-      cursor?: string | undefined;
-      after?: string | undefined;
-      before?: string | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<ExtensionsListResponses, ExtensionsListErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "limit" },
-            { in: "query", key: "cursor" },
-            { in: "query", key: "after" },
-            { in: "query", key: "before" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(options?.client ?? client, "extensionsList", options, (headers) =>
-      (options?.client ?? client).get<ExtensionsListResponses, ExtensionsListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/extensions",
-        ...options,
-        ...params,
-        headers,
-      }),
-    );
-  }
-
-  /**
-   * Publish an extension version
-   *
-   * Publishes one version from its manifest and returns it with status 201, creating the extension named by the manifest on its first version. A hosted manifest carries its bundle. Publishing a version again with the same manifest and bundle returns it; a different one conflicts, so bump the manifest's version. Only a person can publish, not an API key.
-   */
-  public static publish<ThrowOnError extends boolean = false>(
-    parameters: {
-      manifest: {
-        name: string;
-        displayName: string;
-        description?: string | null | undefined;
-        version: string;
-        runtime: "hosted" | "webhook";
-        events: Array<
-          | "mailbox.message.received"
-          | "mailbox.message.sent"
-          | "mailbox.action.pending_approval"
-          | "mailbox.action.resolved"
-          | "mailbox.message.quarantined"
-          | "mailbox.message.released"
-          | "mailbox.message.discarded"
-        >;
-        permissions: Array<"read" | "update" | "send" | "quarantine.read">;
-      };
-      bundle?: string | null | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<ExtensionsPublishResponses, ExtensionsPublishErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "body", key: "manifest" },
-            { in: "body", key: "bundle" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(options?.client ?? client, "extensionsPublish", options, (headers) =>
-      (options?.client ?? client).post<
-        ExtensionsPublishResponses,
-        ExtensionsPublishErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/extensions",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
-      }),
-    );
-  }
-
-  /**
-   * Get an extension
-   *
-   * Returns one extension by its id or name. Its versions are `GET /v1/extensions/{id}/versions`.
-   */
-  public static get<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<ExtensionsGetResponses, ExtensionsGetErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "extensionsGet", options, (headers) =>
-      (options?.client ?? client).get<ExtensionsGetResponses, ExtensionsGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/extensions/{id}",
-        ...options,
-        ...params,
-        headers,
-      }),
-    );
-  }
-
-  /**
-   * List an extension's versions
-   *
-   * Returns summaries of an extension's published versions, newest first. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read a version's manifest with `GET /v1/extensions/{id}/versions/{versionId}`.
-   */
-  public static listVersions<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string;
-      limit?: number | null | undefined;
-      cursor?: string | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<ExtensionsListVersionsResponses, ExtensionsListVersionsErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "query", key: "limit" },
-            { in: "query", key: "cursor" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionsListVersions",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          ExtensionsListVersionsResponses,
-          ExtensionsListVersionsErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extensions/{id}/versions",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Get an extension version
-   *
-   * Returns one version, by its id or version string, with the manifest it was published with.
-   */
-  public static getVersion<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string;
-      versionId: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<ExtensionsGetVersionResponses, ExtensionsGetVersionErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "path", key: "versionId" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionsGetVersion",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          ExtensionsGetVersionResponses,
-          ExtensionsGetVersionErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extensions/{id}/versions/{versionId}",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-}
-
-export class Extensions2 {
-  static extensions = Extensions;
-}
-
-export class ExtensionInstallations {
-  /**
-   * List installations
-   *
-   * Returns summaries of the organization's extension installations, newest first, filterable by creation time (`after`, `before`). Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. Read an installation's permissions, scope, and webhook with `GET /v1/extension-installations/{id}`.
-   */
-  public static list<ThrowOnError extends boolean = false>(
-    parameters?: {
-      limit?: number | null | undefined;
-      cursor?: string | undefined;
-      after?: string | undefined;
-      before?: string | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsListResponses,
-    ExtensionInstallationsListErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "limit" },
-            { in: "query", key: "cursor" },
-            { in: "query", key: "after" },
-            { in: "query", key: "before" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsList",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          ExtensionInstallationsListResponses,
-          ExtensionInstallationsListErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Install an extension
-   *
-   * Installs a published version with a scope, permissions, and an action policy, and returns it with status 201. The installation acts on your grants narrowed to these; a webhook installation's API key and webhook secret are returned once. Only a person can install, not an API key.
-   */
-  public static install<ThrowOnError extends boolean = false>(
-    parameters: {
-      extension: string;
-      version?: string | null | undefined;
-      mailboxIds?: Array<MailboxId> | null | undefined;
-      namespaceId?: NamespaceId | null | undefined;
-      permissions?: Array<"read" | "update" | "send" | "quarantine.read"> | null | undefined;
-      policy?: PolicyConfiguration | null | undefined;
-      webhookUrl?: string | null | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsInstallResponses,
-    ExtensionInstallationsInstallErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "body", key: "extension" },
-            { in: "body", key: "version" },
-            { in: "body", key: "mailboxIds" },
-            { in: "body", key: "namespaceId" },
-            { in: "body", key: "permissions" },
-            { in: "body", key: "policy" },
-            { in: "body", key: "webhookUrl" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsInstall",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          ExtensionInstallationsInstallResponses,
-          ExtensionInstallationsInstallErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations",
-          ...options,
-          ...params,
-          body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
-        }),
-    );
-  }
-
-  /**
-   * Uninstall an extension
-   *
-   * Deletes the installation with its API key and webhook endpoint. Actions it took keep their attribution.
-   */
-  public static uninstall<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsUninstallResponses,
-    ExtensionInstallationsUninstallErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsUninstall",
-      options,
-      (headers) =>
-        (options?.client ?? client).delete<
-          ExtensionInstallationsUninstallResponses,
-          ExtensionInstallationsUninstallErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Get an installation
-   *
-   * Returns one installation with its permissions, scope, action policy, and webhook endpoint.
-   */
-  public static get<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsGetResponses,
-    ExtensionInstallationsGetErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsGet",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          ExtensionInstallationsGetResponses,
-          ExtensionInstallationsGetErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Upgrade or roll back an installation
-   *
-   * Changes the pinned version in place. Omit version for the latest publication, or name a version string or id, including an older version to roll back. Preview with dryRun; changing requires acceptPermissions to list exactly the added permission: and event: grants. Only a person can upgrade. Credentials, owner, scope, policy, and status stay attached to the installation.
-   */
-  public static upgrade<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-      version?: string | ExtensionVersionId | null | undefined;
-      acceptPermissions?:
-        | Array<
-            | "permission:read"
-            | "permission:update"
-            | "permission:send"
-            | "permission:quarantine.read"
-            | "event:mailbox.message.received"
-            | "event:mailbox.message.sent"
-            | "event:mailbox.action.pending_approval"
-            | "event:mailbox.action.resolved"
-            | "event:mailbox.message.quarantined"
-            | "event:mailbox.message.released"
-            | "event:mailbox.message.discarded"
-          >
-        | null
-        | undefined;
-      dryRun?: boolean | null | undefined;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsUpgradeResponses,
-    ExtensionInstallationsUpgradeErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "body", key: "version" },
-            { in: "body", key: "acceptPermissions" },
-            { in: "body", key: "dryRun" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsUpgrade",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          ExtensionInstallationsUpgradeResponses,
-          ExtensionInstallationsUpgradeErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}/upgrade",
-          ...options,
-          ...params,
-          body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
-        }),
-    );
-  }
-
-  /**
-   * Disable an installation
-   *
-   * Stops the installation at once: its events stop, and its credential is refused on every surface until it is enabled again.
-   */
-  public static disable<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsDisableResponses,
-    ExtensionInstallationsDisableErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsDisable",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          ExtensionInstallationsDisableResponses,
-          ExtensionInstallationsDisableErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}/disable",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Enable an installation
-   *
-   * Resumes a disabled installation. Events published while it was disabled are not delivered.
-   */
-  public static enable<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsEnableResponses,
-    ExtensionInstallationsEnableErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsEnable",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          ExtensionInstallationsEnableResponses,
-          ExtensionInstallationsEnableErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}/enable",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * List a hosted installation's runs
-   *
-   * Returns the hosted installation's retained handler runs, newest first: outcome, duration, and error. The host keeps the last 100 runs, so the list is bounded and has no cursor. Read a run's logged lines with `GET /v1/extension-installations/{id}/runs/{runId}`.
-   */
-  public static listRuns<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsListRunsResponses,
-    ExtensionInstallationsListRunsErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsListRuns",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          ExtensionInstallationsListRunsResponses,
-          ExtensionInstallationsListRunsErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}/runs",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-
-  /**
-   * Get a hosted run
-   *
-   * Returns one retained run with the lines its handler logged: at most 50 lines of 500 characters.
-   */
-  public static getRun<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: ExtensionInstallationId;
-      runId: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<
-    ExtensionInstallationsGetRunResponses,
-    ExtensionInstallationsGetRunErrors,
-    ThrowOnError
-  > {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "path", key: "runId" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "extensionInstallationsGetRun",
-      options,
-      (headers) =>
-        (options?.client ?? client).get<
-          ExtensionInstallationsGetRunResponses,
-          ExtensionInstallationsGetRunErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/extension-installations/{id}/runs/{runId}",
-          ...options,
-          ...params,
-          headers,
-        }),
-    );
-  }
-}
-
-export class ExtensionInstallations2 {
-  static extensionInstallations = ExtensionInstallations;
 }
 
 export class Whatsapp {
@@ -19552,7 +18186,7 @@ export class Whatsapp {
         url: "/v1/whatsapp/stats",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -19604,7 +18238,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/templates/stats",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19650,7 +18284,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/service-window/status",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19688,7 +18322,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/service-window/billing",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19723,7 +18357,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/media/{deliveryId}/download-url",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19775,7 +18409,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/business-accounts",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19826,12 +18460,7 @@ export class Whatsapp {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -19866,7 +18495,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/business-accounts/{accountId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19901,7 +18530,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/business-accounts/{accountId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -19950,12 +18579,7 @@ export class Whatsapp {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -19990,7 +18614,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/business-accounts/{accountId}/set-default",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20025,7 +18649,7 @@ export class Whatsapp {
           url: "/v1/whatsapp/business-accounts/{accountId}/sync",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20053,7 +18677,7 @@ export class WhatsappFlows {
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/whatsapp/flows",
         ...options,
-        headers,
+        headers: { ...headers },
       }),
     );
   }
@@ -20103,12 +18727,7 @@ export class WhatsappFlows {
         ...options,
         ...params,
         body: params.body ?? {},
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-          ...params.headers,
-        },
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
       }),
     );
   }
@@ -20135,7 +18754,7 @@ export class WhatsappFlows {
         url: "/v1/whatsapp/flows/{id}",
         ...options,
         ...params,
-        headers,
+        headers: { ...headers, ...params.headers },
       }),
     );
   }
@@ -20170,7 +18789,7 @@ export class WhatsappFlows {
           url: "/v1/whatsapp/flows/{id}/versions",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20219,12 +18838,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -20259,7 +18873,7 @@ export class WhatsappFlows {
           url: "/v1/whatsapp/flows/{id}/registrations",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20302,12 +18916,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -20346,12 +18955,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -20398,12 +19002,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -20438,7 +19037,7 @@ export class WhatsappFlows {
           url: "/v1/whatsapp/flows/{id}/endpoint/rotate-secret",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20490,7 +19089,7 @@ export class WhatsappSetupLinks {
           url: "/v1/whatsapp/setup-links",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20541,12 +19140,7 @@ export class WhatsappSetupLinks {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -20577,7 +19171,7 @@ export class WhatsappSetupLinks {
           url: "/v1/whatsapp/setup-links/{linkId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20612,7 +19206,7 @@ export class WhatsappSetupLinks {
           url: "/v1/whatsapp/setup-links/{linkId}/revoke",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20653,7 +19247,7 @@ export class TemplateRegistrations {
           url: "/v1/templates/{id}/registrations",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -20702,12 +19296,7 @@ export class TemplateRegistrations {
           ...options,
           ...params,
           body: params.body ?? {},
-          headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-            ...params.headers,
-          },
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
     );
   }
@@ -20753,7 +19342,7 @@ export class TemplateRegistrations {
           url: "/v1/templates/{id}/registrations/{registrationId}",
           ...options,
           ...params,
-          headers,
+          headers: { ...headers, ...params.headers },
         }),
     );
   }
@@ -21031,6 +19620,10 @@ Object.assign(Contacts.get, { operation: "contactsGet" });
 
 Object.assign(Contacts.update, { operation: "contactsUpdate" });
 
+Object.assign(Contacts.merge, { operation: "contactsMerge" });
+
+Object.assign(Contacts.mergeByConnection, { operation: "contactsMergeByConnection" });
+
 Object.assign(Contacts.addIdentity, { operation: "contactsAddIdentity" });
 
 Object.assign(Contacts.removeIdentity, { operation: "contactsRemoveIdentity" });
@@ -21113,9 +19706,11 @@ Object.assign(Agents.replaceDraft, { operation: "agentsReplaceDraft" });
 
 Object.assign(Agents.publish, { operation: "agentsPublish" });
 
-Object.assign(Agents.continueOnStandard, { operation: "agentsContinueOnStandard" });
-
 Object.assign(Agents.listVersions, { operation: "agentsListVersions" });
+
+Object.assign(Agents.publishVersion, { operation: "agentsPublishVersion" });
+
+Object.assign(Agents.continueOnStandard, { operation: "agentsContinueOnStandard" });
 
 Object.assign(Agents.getVersion, { operation: "agentsGetVersion" });
 
@@ -21606,34 +20201,6 @@ Object.assign(Namespaces.createPortalLink, { operation: "namespacesCreatePortalL
 Object.assign(Namespaces.revokePortalLink, { operation: "namespacesRevokePortalLink" });
 
 Object.assign(Namespaces.getUsage, { operation: "namespacesGetUsage" });
-
-Object.assign(Extensions.list, { operation: "extensionsList" });
-
-Object.assign(Extensions.publish, { operation: "extensionsPublish" });
-
-Object.assign(Extensions.get, { operation: "extensionsGet" });
-
-Object.assign(Extensions.listVersions, { operation: "extensionsListVersions" });
-
-Object.assign(Extensions.getVersion, { operation: "extensionsGetVersion" });
-
-Object.assign(ExtensionInstallations.list, { operation: "extensionInstallationsList" });
-
-Object.assign(ExtensionInstallations.install, { operation: "extensionInstallationsInstall" });
-
-Object.assign(ExtensionInstallations.uninstall, { operation: "extensionInstallationsUninstall" });
-
-Object.assign(ExtensionInstallations.get, { operation: "extensionInstallationsGet" });
-
-Object.assign(ExtensionInstallations.upgrade, { operation: "extensionInstallationsUpgrade" });
-
-Object.assign(ExtensionInstallations.disable, { operation: "extensionInstallationsDisable" });
-
-Object.assign(ExtensionInstallations.enable, { operation: "extensionInstallationsEnable" });
-
-Object.assign(ExtensionInstallations.listRuns, { operation: "extensionInstallationsListRuns" });
-
-Object.assign(ExtensionInstallations.getRun, { operation: "extensionInstallationsGetRun" });
 
 Object.assign(Whatsapp.getStats, { operation: "whatsappGetStats" });
 
