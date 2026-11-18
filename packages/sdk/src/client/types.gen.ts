@@ -57,14 +57,22 @@ export type ResourceNotFoundError = {
   message: string;
 };
 
+/**
+ * `templateChannelVariantId` identifies the exact content last submitted. A journey step or scheduled send pins it with `id` in `pinnedRegistration` and sends only while this registration holds that content approved.
+ */
 export type TemplateRegistration = {
   id: TemplateRegistrationId;
   templateId: TemplateId;
   publicationId: TemplatePublicationId;
+  templateChannelVariantId: TemplateChannelVariantId;
   target: TemplateRegistrationTarget;
   name: string;
   language: string;
   status: "draft" | "submitted" | "approved" | "rejected" | "paused" | "disabled";
+  /**
+   * Content a submission sent to the provider whose outcome is not yet recorded, because its request failed or is still in flight; the provider may already hold it. While it is set nothing sends from this registration, even when `status` is `approved`. Submitting again settles it.
+   */
+  pendingTemplateChannelVariantId: TemplateChannelVariantId | null;
   category:
     | "marketing"
     | "utility"
@@ -89,6 +97,8 @@ export type TemplateRegistration = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type TemplateChannelVariantId = string;
 
 export type TemplateRegistrationTarget = WhatsAppRegistrationTarget | DltRegistrationTarget;
 
@@ -1016,8 +1026,6 @@ export type JsonObject = {
 export type JsonObjectWritable = {
   [key: string]: JsonValueWritable | undefined;
 };
-
-export type TemplateChannelVariantId = string;
 
 export type MailboxSmsEndpointBinding = {
   channel: "sms";
@@ -2372,6 +2380,7 @@ export type ApiKeyWithSecret = {
   start: string | null;
   end: string | null;
   description?: string | null | undefined;
+  source?: string | null | undefined;
   createdAt: string;
   expiresAt: string | null;
   lastUsedAt: string | null;
@@ -2393,6 +2402,7 @@ export type ApiKey = {
   start: string | null;
   end: string | null;
   description?: string | null | undefined;
+  source?: string | null | undefined;
   createdAt: string;
   expiresAt: string | null;
   lastUsedAt: string | null;
@@ -3276,9 +3286,13 @@ export type TemplateStarterSuggestion = {
    */
   galleryTemplateId: string;
   /**
-   * The design's gallery page, under /templates/.
+   * The channel the design's template sends on.
    */
-  slug: string;
+  channel: "email" | "whatsapp";
+  /**
+   * The design's public gallery page, under /templates/. Null for a design without one, such as a WhatsApp starter.
+   */
+  slug: string | null;
   name: string;
   description: string;
   /**
@@ -3306,16 +3320,24 @@ export type TemplateStarterSuggestion = {
 
 export type CreateTemplateFromBriefPayload = {
   /**
-   * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+   * What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
    */
   brief: string;
+  /**
+   * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+   */
+  channel?: "email" | "whatsapp" | null | undefined;
   name?: string | null | undefined;
   galleryTemplateId?: string | null | undefined;
   useBrand?: boolean | null | undefined;
   /**
-   * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
+   * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace. With `variantOf`, omit it or name the source's namespace.
    */
   namespaceId?: NamespaceId | null | undefined;
+  /**
+   * Make this template another channel's version of an existing template the caller can change: it is created in that template's namespace, holds that template's current draft as a read-only resource the template assistant reads facts from, and joins that template's family (one is made when it has none). The returned `ask` says where the snapshot is mounted; its `variant-source.json` names the source, its entry and the revision taken. A retry with the same idempotency key finishes the same version; the key refuses a different source, or a request without `variantOf`. Refused when `channel` is the source's own or its family already has a template on `channel`. The source's files are mounted whole: a project with more than 31 files, a file over 4 MB, or more than 8 MB in all is refused before anything is created.
+   */
+  variantOf?: TemplateId | null | undefined;
 };
 
 export type TemplateStarterSuggestions = {
@@ -3328,9 +3350,13 @@ export type TemplateStarterSuggestions = {
 
 export type SuggestTemplateStartersPayload = {
   /**
-   * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+   * What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
    */
   brief: string;
+  /**
+   * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+   */
+  channel?: "email" | "whatsapp" | null | undefined;
 };
 
 export type ShareLinkUnavailable = {
@@ -3375,6 +3401,10 @@ export type CreateTemplatePayload = {
 export type TemplateFamily = {
   id: TemplateFamilyId;
   name: string;
+  /**
+   * The namespace the family belongs to, which every member it gains shares. Null at organization level. A namespace-scoped key reaches only its own namespace's families.
+   */
+  namespaceId: NamespaceId | null;
   members: Array<TemplateFamilyMember>;
   createdAt: string;
   updatedAt: string;
@@ -3392,6 +3422,14 @@ export type TemplateFamilyMember = {
 
 export type TemplateFamilyName = {
   name: string;
+};
+
+export type CreateTemplateFamilyPayload = {
+  name: string;
+  /**
+   * The namespace the family belongs to; every member it gains must be in it. Omit for organization level. A namespace-scoped key always creates in its own namespace.
+   */
+  namespaceId?: NamespaceId | null | undefined;
 };
 
 export type TemplateFamilyPage = {
@@ -4599,7 +4637,8 @@ export type JourneyEventName =
   | JourneyCustomEventName
   | "contact.created"
   | "contact.tag_added"
-  | "contact.joined_group";
+  | "contact.joined_group"
+  | "contact.connection_completed";
 
 export type JourneyCustomEventName = string;
 
@@ -23729,6 +23768,10 @@ export type TemplatesListFamiliesData = {
   query?: {
     limit?: number | null | undefined;
     cursor?: string | undefined;
+    /**
+     * Only this namespace's families. A namespace-scoped key always lists its own namespace's.
+     */
+    namespaceId?: NamespaceId | undefined;
   };
   url: "/v1/templates/families";
 };
@@ -23776,6 +23819,10 @@ export type TemplatesListFamiliesResponse =
 export type TemplatesCreateFamilyData = {
   body: {
     name: string;
+    /**
+     * The namespace the family belongs to; every member it gains must be in it. Omit for organization level. A namespace-scoped key always creates in its own namespace.
+     */
+    namespaceId?: NamespaceId | null | undefined;
   };
   path?: never;
   query?: never;
@@ -23795,6 +23842,10 @@ export type TemplatesCreateFamilyErrors = {
    * ForbiddenError
    */
   403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
   /**
    * ValidationError
    */
@@ -24348,9 +24399,13 @@ export type TemplatesUpdateResponse = TemplatesUpdateResponses[keyof TemplatesUp
 export type TemplatesSuggestStartersData = {
   body: {
     /**
-     * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+     * What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
      */
     brief: string;
+    /**
+     * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+     */
+    channel?: "email" | "whatsapp" | null | undefined;
   };
   path?: never;
   query?: never;
@@ -24400,16 +24455,24 @@ export type TemplatesSuggestStartersResponse =
 export type TemplatesCreateFromBriefData = {
   body: {
     /**
-     * What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
+     * What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email ("like the Vercel login email") starts from Samva's recreation of it when the gallery has one.
      */
     brief: string;
+    /**
+     * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+     */
+    channel?: "email" | "whatsapp" | null | undefined;
     name?: string | null | undefined;
     galleryTemplateId?: string | null | undefined;
     useBrand?: boolean | null | undefined;
     /**
-     * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.
+     * The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace. With `variantOf`, omit it or name the source's namespace.
      */
     namespaceId?: NamespaceId | null | undefined;
+    /**
+     * Make this template another channel's version of an existing template the caller can change: it is created in that template's namespace, holds that template's current draft as a read-only resource the template assistant reads facts from, and joins that template's family (one is made when it has none). The returned `ask` says where the snapshot is mounted; its `variant-source.json` names the source, its entry and the revision taken. A retry with the same idempotency key finishes the same version; the key refuses a different source, or a request without `variantOf`. Refused when `channel` is the source's own or its family already has a template on `channel`. The source's files are mounted whole: a project with more than 31 files, a file over 4 MB, or more than 8 MB in all is refused before anything is created.
+     */
+    variantOf?: TemplateId | null | undefined;
   };
   headers: {
     "idempotency-key": string;
@@ -37012,7 +37075,7 @@ export type TemplateRegistrationsSubmitError =
 
 export type TemplateRegistrationsSubmitResponses = {
   /**
-   * TemplateRegistration
+   * `templateChannelVariantId` identifies the exact content last submitted. A journey step or scheduled send pins it with `id` in `pinnedRegistration` and sends only while this registration holds that content approved.
    */
   201: TemplateRegistration;
 };
@@ -37066,7 +37129,7 @@ export type TemplateRegistrationsGetError =
 
 export type TemplateRegistrationsGetResponses = {
   /**
-   * TemplateRegistration
+   * `templateChannelVariantId` identifies the exact content last submitted. A journey step or scheduled send pins it with `id` in `pinnedRegistration` and sends only while this registration holds that content approved.
    */
   200: TemplateRegistration;
 };

@@ -11093,6 +11093,7 @@ export class Templates {
     parameters?: {
       limit?: number | null | undefined;
       cursor?: string | undefined;
+      namespaceId?: NamespaceId | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TemplatesListFamiliesResponses, TemplatesListFamiliesErrors, ThrowOnError> {
@@ -11103,6 +11104,7 @@ export class Templates {
           args: [
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
+            { in: "query", key: "namespaceId" },
           ],
         },
       ],
@@ -11129,15 +11131,26 @@ export class Templates {
   /**
    * Create a template family
    *
-   * Creates an empty template family with the supplied name and returns it with status 201.
+   * Creates an empty template family with the supplied name, in `namespaceId` or at organization level, and returns it with status 201.
    */
   public static createFamily<ThrowOnError extends boolean = false>(
     parameters: {
       name: string;
+      namespaceId?: NamespaceId | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TemplatesCreateFamilyResponses, TemplatesCreateFamilyErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "name" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "name" },
+            { in: "body", key: "namespaceId" },
+          ],
+        },
+      ],
+    );
     return requestWithPolicy(
       options?.client ?? client,
       "templatesCreateFamily",
@@ -11262,7 +11275,7 @@ export class Templates {
   /**
    * Create a family from a template
    *
-   * Creates a template family containing the specified template and returns the new family with status 201.
+   * Creates a template family containing the specified template, in that template's namespace, and returns the new family with status 201.
    */
   public static createFamilyFromTemplate<ThrowOnError extends boolean = false>(
     parameters: {
@@ -11355,7 +11368,7 @@ export class Templates {
   /**
    * Attach a template to a family
    *
-   * Adds an existing template as a channel member of the family and returns the updated family.
+   * Adds an existing template as a channel member of the family and returns the updated family. The template must be in the family's namespace; another namespace's template answers 409.
    */
   public static attachFamilyMember<ThrowOnError extends boolean = false>(
     parameters: {
@@ -11519,11 +11532,12 @@ export class Templates {
   /**
    * Suggest designs for a brief
    *
-   * Ranks Samva's gallery designs for a brief and returns the three to start a new email from, best first, each with the `galleryTemplateId` that creates a template from it. When the brief names a company's email, `recreation` says whether the gallery recreates that kind of email from it, recreates another kind (start from it for the look), or has none. The ranking is deterministic: the same brief returns the same designs.
+   * Ranks Samva's gallery designs for a brief and returns the three to start a new email from (or, with `channel: "whatsapp"`, Samva's WhatsApp starters), best first, each with the `galleryTemplateId` that creates a template from it. When the brief names a company's email, `recreation` says whether the gallery recreates that kind of email from it, recreates another kind (start from it for the look), or has none. The ranking is deterministic: the same brief returns the same designs.
    */
   public static suggestStarters<ThrowOnError extends boolean = false>(
     parameters: {
       brief: string;
+      channel?: "email" | "whatsapp" | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -11531,7 +11545,17 @@ export class Templates {
     TemplatesSuggestStartersErrors,
     ThrowOnError
   > {
-    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "brief" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "brief" },
+            { in: "body", key: "channel" },
+          ],
+        },
+      ],
+    );
     return requestWithPolicy(
       options?.client ?? client,
       "templatesSuggestStarters",
@@ -11555,15 +11579,17 @@ export class Templates {
   /**
    * Create a template from a brief
    *
-   * Creates an email template project from the gallery design that best fits a brief (the first of `POST /v1/templates/suggestions`, or the `galleryTemplateId` you name) and returns it with status 201, the design it started from, the other suggestions, any company email the brief named, and the request that makes the template assistant adapt the design. The assistant runs when that request is sent in the editor; an agent of your own adapts the design through the workspace endpoints instead.
+   * Creates an email template project (or a WhatsApp one, with `channel: "whatsapp"`) from the gallery design that best fits a brief (the first of `POST /v1/templates/suggestions`, or the `galleryTemplateId` you name) and returns it with status 201, the design it started from, the other suggestions, any company email the brief named, and the request that makes the template assistant adapt the design. The assistant runs when that request is sent in the editor; an agent of your own adapts the design through the workspace endpoints instead.
    */
   public static createFromBrief<ThrowOnError extends boolean = false>(
     parameters: {
       brief: string;
+      channel?: "email" | "whatsapp" | null | undefined;
       name?: string | null | undefined;
       galleryTemplateId?: string | null | undefined;
       useBrand?: boolean | null | undefined;
       namespaceId?: NamespaceId | null | undefined;
+      variantOf?: TemplateId | null | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -11577,10 +11603,12 @@ export class Templates {
         {
           args: [
             { in: "body", key: "brief" },
+            { in: "body", key: "channel" },
             { in: "body", key: "name" },
             { in: "body", key: "galleryTemplateId" },
             { in: "body", key: "useBrand" },
             { in: "body", key: "namespaceId" },
+            { in: "body", key: "variantOf" },
           ],
         },
       ],

@@ -5,6 +5,7 @@ import type {
   AgentDefinition,
   AgentModuleAuthority,
   AgentModuleOperation,
+  AgentStateCall,
 } from "./types";
 
 /** The SDK transport carries no credential: only the supplied call-local RPC stub can reach Samva. */
@@ -49,11 +50,27 @@ export async function invokeAgent(
           return `${capability.agentId}:${operation.event.id}:${method}:${count}`;
         })
       : client;
+  const state = (call: AgentStateCall) =>
+    authority.state
+      ? authority.state(call)
+      : Promise.reject(new Error("Agent module state is unavailable"));
   const ctx: AgentContext = {
     capability,
     samva,
     connections: {
       call: (integrationId, tool, input) => authority.connection(integrationId, tool, input),
+    },
+    workflows: {
+      start: (input) =>
+        authority.startWorkflow
+          ? authority.startWorkflow(input)
+          : Promise.reject(new Error("Agent workflows are unavailable")),
+    },
+    state: {
+      agent: { call: (name, input) => state({ scope: "agent", operation: name, input }) },
+      conversation: {
+        call: (name, input) => state({ scope: "conversation", operation: name, input }),
+      },
     },
     memory: {
       search: (query) => authority.searchMemory(query),
@@ -77,6 +94,18 @@ export async function invokeAgent(
         const skill = agent.skills[operation.name];
         if (skill === undefined) throw new Error(`Unknown agent skill: ${operation.name}`);
         return skill;
+      }
+      case "schedule": {
+        if (
+          capability.trigger.kind !== "schedule" ||
+          capability.trigger.cron !== operation.cron ||
+          capability.trigger.scheduledAt !== operation.scheduledAt
+        ) {
+          throw new Error("The agent schedule does not match its call capability");
+        }
+        const handler = agent.schedules[operation.cron];
+        if (handler === undefined) throw new Error("Unknown agent schedule");
+        return (await handler(ctx)) ?? null;
       }
       case "event": {
         if (

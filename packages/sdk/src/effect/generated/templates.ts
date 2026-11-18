@@ -153,7 +153,8 @@ export const TemplatePublicationRender = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "TemplatePublicationRender" }))();
 export type TemplateStarterSuggestion = {
   readonly galleryTemplateId: string;
-  readonly slug: string;
+  readonly channel: "email" | "whatsapp";
+  readonly slug: string | null;
   readonly name: string;
   readonly description: string;
   readonly intent: string;
@@ -169,7 +170,13 @@ export const TemplateStarterSuggestion = /* @__PURE__ */ (() =>
       description:
         "The gallery design to start from. Pass it as `galleryTemplateId` to create a template from it.",
     }),
-    slug: Schema.String.annotate({ description: "The design's gallery page, under /templates/." }),
+    channel: Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]).annotate({
+      description: "The channel the design's template sends on.",
+    }),
+    slug: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The design's public gallery page, under /templates/. Null for a design without one, such as a WhatsApp starter.",
+    }),
     name: Schema.String,
     description: Schema.String,
     intent: Schema.String.annotate({ description: "The brief this design fits, in one sentence." }),
@@ -414,6 +421,7 @@ export const TemplateStarterSuggestions = /* @__PURE__ */ (() =>
 export type TemplateFamily = {
   readonly id: TemplateFamilyId;
   readonly name: string;
+  readonly namespaceId: NamespaceId | null;
   readonly members: ReadonlyArray<TemplateFamilyMember>;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -422,6 +430,10 @@ export const TemplateFamily = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: TemplateFamilyId,
     name: Schema.String,
+    namespaceId: Schema.Union([NamespaceId, Schema.Null]).annotate({
+      description:
+        "The namespace the family belongs to, which every member it gains shares. Null at organization level. A namespace-scoped key reaches only its own namespace's families.",
+    }),
     members: Schema.Array(TemplateFamilyMember),
     createdAt: Schema.String,
     updatedAt: Schema.String,
@@ -7618,6 +7630,7 @@ export const TemplatesSaveWorkspace504 = GatewayTimeoutError;
 export type TemplatesListFamiliesQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
+  readonly namespaceId?: NamespaceId;
 };
 export const TemplatesListFamiliesQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -7635,6 +7648,12 @@ export const TemplatesListFamiliesQuery = /* @__PURE__ */ (() =>
       ]),
     ),
     cursor: Schema.optionalKey(Schema.String),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId]).annotate({
+        description:
+          "Only this namespace's families. A namespace-scoped key always lists its own namespace's.",
+      }),
+    ),
   }))();
 export type TemplatesListFamilies200 = TemplateFamilyPage;
 export const TemplatesListFamilies200 = TemplateFamilyPage;
@@ -7650,11 +7669,20 @@ export type TemplatesListFamilies500 = InternalError;
 export const TemplatesListFamilies500 = InternalError;
 export type TemplatesListFamilies504 = GatewayTimeoutError;
 export const TemplatesListFamilies504 = GatewayTimeoutError;
-export type TemplatesCreateFamilyRequestJson = { readonly name: string };
+export type TemplatesCreateFamilyRequestJson = {
+  readonly name: string;
+  readonly namespaceId?: NamespaceId | null;
+};
 export const TemplatesCreateFamilyRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     name: Schema.String.check(
       Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "The namespace the family belongs to; every member it gains must be in it. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
+      }),
     ),
   }))();
 export type TemplatesCreateFamily201 = TemplateFamily;
@@ -7665,6 +7693,8 @@ export type TemplatesCreateFamily401 = UnauthorizedError;
 export const TemplatesCreateFamily401 = UnauthorizedError;
 export type TemplatesCreateFamily403 = ForbiddenError;
 export const TemplatesCreateFamily403 = ForbiddenError;
+export type TemplatesCreateFamily404 = ResourceNotFoundError;
+export const TemplatesCreateFamily404 = ResourceNotFoundError;
 export type TemplatesCreateFamily422 = ValidationError;
 export const TemplatesCreateFamily422 = ValidationError;
 export type TemplatesCreateFamily500 = InternalError;
@@ -7826,16 +7856,18 @@ export const TemplatesCreateFromBriefHeaders = /* @__PURE__ */ (() =>
   }))();
 export type TemplatesCreateFromBriefRequestJson = {
   readonly brief: string;
+  readonly channel?: "email" | "whatsapp" | null;
   readonly name?: string | null;
   readonly galleryTemplateId?: string | null;
   readonly useBrand?: boolean | null;
   readonly namespaceId?: NamespaceId | null;
+  readonly variantOf?: TemplateId | null;
 };
 export const TemplatesCreateFromBriefRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     brief: Schema.String.annotate({
       description:
-        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+        "What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
     })
       .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
       .check(
@@ -7846,6 +7878,15 @@ export const TemplatesCreateFromBriefRequestJson = /* @__PURE__ */ (() =>
       .check(
         Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
       ),
+    channel: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.",
+      }),
+    ),
     name: Schema.optionalKey(
       Schema.Union([
         Schema.String.annotate({
@@ -7897,7 +7938,13 @@ export const TemplatesCreateFromBriefRequestJson = /* @__PURE__ */ (() =>
     namespaceId: Schema.optionalKey(
       Schema.Union([NamespaceId, Schema.Null]).annotate({
         description:
-          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
+          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace. With `variantOf`, omit it or name the source's namespace.",
+      }),
+    ),
+    variantOf: Schema.optionalKey(
+      Schema.Union([TemplateId, Schema.Null]).annotate({
+        description:
+          "Make this template another channel's version of an existing template the caller can change: it is created in that template's namespace, holds that template's current draft as a read-only resource the template assistant reads facts from, and joins that template's family (one is made when it has none). The returned `ask` says where the snapshot is mounted; its `variant-source.json` names the source, its entry and the revision taken. A retry with the same idempotency key finishes the same version; the key refuses a different source, or a request without `variantOf`. Refused when `channel` is the source's own or its family already has a template on `channel`. The source's files are mounted whole: a project with more than 31 files, a file over 4 MB, or more than 8 MB in all is refused before anything is created.",
       }),
     ),
   }))();
@@ -8102,12 +8149,15 @@ export type TemplatesAddEntry500 = InternalError;
 export const TemplatesAddEntry500 = InternalError;
 export type TemplatesAddEntry504 = GatewayTimeoutError;
 export const TemplatesAddEntry504 = GatewayTimeoutError;
-export type TemplatesSuggestStartersRequestJson = { readonly brief: string };
+export type TemplatesSuggestStartersRequestJson = {
+  readonly brief: string;
+  readonly channel?: "email" | "whatsapp" | null;
+};
 export const TemplatesSuggestStartersRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     brief: Schema.String.annotate({
       description:
-        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+        "What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
     })
       .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
       .check(
@@ -8118,6 +8168,15 @@ export const TemplatesSuggestStartersRequestJson = /* @__PURE__ */ (() =>
       .check(
         Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
       ),
+    channel: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.",
+      }),
+    ),
   }))();
 export type TemplatesSuggestStarters200 = TemplateStarterSuggestions;
 export const TemplatesSuggestStarters200 = TemplateStarterSuggestions;
@@ -8733,6 +8792,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
         TemplatesCreateFamily400.pipe(HttpApiSchema.status(400)),
         TemplatesCreateFamily401.pipe(HttpApiSchema.status(401)),
         TemplatesCreateFamily403.pipe(HttpApiSchema.status(403)),
+        TemplatesCreateFamily404.pipe(HttpApiSchema.status(404)),
         TemplatesCreateFamily422.pipe(HttpApiSchema.status(422)),
         TemplatesCreateFamily500,
         TemplatesCreateFamily504.pipe(HttpApiSchema.status(504)),
@@ -8743,7 +8803,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(OpenApi.Summary, "Create a template family")
       .annotate(
         OpenApi.Description,
-        "Creates an empty template family with the supplied name and returns it with status 201.",
+        "Creates an empty template family with the supplied name, in `namespaceId` or at organization level, and returns it with status 201.",
       ),
     HttpApiEndpoint.get("templatesGetFamily", "/v1/templates/families/:id", {
       params: TemplatesGetFamilyPathParams,
@@ -8829,7 +8889,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(OpenApi.Summary, "Attach a template to a family")
       .annotate(
         OpenApi.Description,
-        "Adds an existing template as a channel member of the family and returns the updated family.",
+        "Adds an existing template as a channel member of the family and returns the updated family. The template must be in the family's namespace; another namespace's template answers 409.",
       ),
     HttpApiEndpoint.delete(
       "templatesDetachFamilyMember",
@@ -8880,7 +8940,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(OpenApi.Summary, "Create a family from a template")
       .annotate(
         OpenApi.Description,
-        "Creates a template family containing the specified template and returns the new family with status 201.",
+        "Creates a template family containing the specified template, in that template's namespace, and returns the new family with status 201.",
       ),
     HttpApiEndpoint.post("templatesCreateFromBrief", "/v1/templates/from-brief", {
       headers: TemplatesCreateFromBriefHeaders,
@@ -8903,7 +8963,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(OpenApi.Summary, "Create a template from a brief")
       .annotate(
         OpenApi.Description,
-        "Creates an email template project from the gallery design that best fits a brief (the first of `POST /v1/templates/suggestions`, or the `galleryTemplateId` you name) and returns it with status 201, the design it started from, the other suggestions, any company email the brief named, and the request that makes the template assistant adapt the design. The assistant runs when that request is sent in the editor; an agent of your own adapts the design through the workspace endpoints instead.",
+        'Creates an email template project (or a WhatsApp one, with `channel: "whatsapp"`) from the gallery design that best fits a brief (the first of `POST /v1/templates/suggestions`, or the `galleryTemplateId` you name) and returns it with status 201, the design it started from, the other suggestions, any company email the brief named, and the request that makes the template assistant adapt the design. The assistant runs when that request is sent in the editor; an agent of your own adapts the design through the workspace endpoints instead.',
       ),
     HttpApiEndpoint.post("templatesCreateFromWebsite", "/v1/templates/from-website", {
       headers: TemplatesCreateFromWebsiteHeaders,
@@ -8988,7 +9048,7 @@ export class TemplatesGroup extends HttpApiGroup.make("Templates")
       .annotate(OpenApi.Summary, "Suggest designs for a brief")
       .annotate(
         OpenApi.Description,
-        "Ranks Samva's gallery designs for a brief and returns the three to start a new email from, best first, each with the `galleryTemplateId` that creates a template from it. When the brief names a company's email, `recreation` says whether the gallery recreates that kind of email from it, recreates another kind (start from it for the look), or has none. The ranking is deterministic: the same brief returns the same designs.",
+        "Ranks Samva's gallery designs for a brief and returns the three to start a new email from (or, with `channel: \"whatsapp\"`, Samva's WhatsApp starters), best first, each with the `galleryTemplateId` that creates a template from it. When the brief names a company's email, `recreation` says whether the gallery recreates that kind of email from it, recreates another kind (start from it for the look), or has none. The ranking is deterministic: the same brief returns the same designs.",
       ),
   )
   .annotate(

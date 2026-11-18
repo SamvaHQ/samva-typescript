@@ -13,6 +13,7 @@ import {
   InternalError,
   MalformedRequestError,
   ResourceNotFoundError,
+  TemplateChannelVariantId,
   TemplateId,
   TemplatePublicationId,
   TemplateRegistrationId,
@@ -47,10 +48,12 @@ export type TemplateRegistration = {
   readonly id: TemplateRegistrationId;
   readonly templateId: TemplateId;
   readonly publicationId: TemplatePublicationId;
+  readonly templateChannelVariantId: TemplateChannelVariantId;
   readonly target: TemplateRegistrationTarget;
   readonly name: string;
   readonly language: string;
   readonly status: "draft" | "submitted" | "approved" | "rejected" | "paused" | "disabled";
+  readonly pendingTemplateChannelVariantId: TemplateChannelVariantId | null;
   readonly category:
     | "marketing"
     | "utility"
@@ -80,6 +83,7 @@ export const TemplateRegistration = /* @__PURE__ */ (() =>
     id: TemplateRegistrationId,
     templateId: TemplateId,
     publicationId: TemplatePublicationId,
+    templateChannelVariantId: TemplateChannelVariantId,
     target: TemplateRegistrationTarget,
     name: Schema.String,
     language: Schema.String,
@@ -91,6 +95,12 @@ export const TemplateRegistration = /* @__PURE__ */ (() =>
       Schema.Literal("paused"),
       Schema.Literal("disabled"),
     ]),
+    pendingTemplateChannelVariantId: Schema.Union([TemplateChannelVariantId, Schema.Null]).annotate(
+      {
+        description:
+          "Content a submission sent to the provider whose outcome is not yet recorded, because its request failed or is still in flight; the provider may already hold it. While it is set nothing sends from this registration, even when `status` is `approved`. Submitting again settles it.",
+      },
+    ),
     category: Schema.Union([
       Schema.Literal("marketing"),
       Schema.Literal("utility"),
@@ -118,7 +128,11 @@ export const TemplateRegistration = /* @__PURE__ */ (() =>
     statusChangedAt: Schema.String,
     createdAt: Schema.String,
     updatedAt: Schema.String,
-  }).annotate({ identifier: "TemplateRegistration" }))();
+  }).annotate({
+    description:
+      "`templateChannelVariantId` identifies the exact content last submitted. A journey step or scheduled send pins it with `id` in `pinnedRegistration` and sends only while this registration holds that content approved.",
+    identifier: "TemplateRegistration",
+  }))();
 export type TemplateRegistrationList = { readonly data: ReadonlyArray<TemplateRegistration> };
 export const TemplateRegistrationList = /* @__PURE__ */ (() =>
   Schema.Struct({ data: Schema.Array(TemplateRegistration) }).annotate({

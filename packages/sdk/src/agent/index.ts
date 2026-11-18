@@ -56,6 +56,7 @@ export function defineAgent<
   readonly tools?: Tools;
   readonly events?: Readonly<Record<string, AgentEventHandler>>;
   readonly schedules?: Readonly<Record<string, AgentScheduleHandler>>;
+  readonly workflows?: ReadonlyArray<string>;
 }): AgentDefinition<Tools>;
 export function defineAgent(definition: {
   readonly manifest: AgentManifest;
@@ -65,6 +66,7 @@ export function defineAgent(definition: {
   readonly tools?: Readonly<Record<string, AgentTool>>;
   readonly events?: Readonly<Record<string, AgentEventHandler>>;
   readonly schedules?: Readonly<Record<string, AgentScheduleHandler>>;
+  readonly workflows?: ReadonlyArray<string>;
 }): AgentDefinition {
   const skills = definition.skills ?? {};
   const tools = definition.tools ?? {};
@@ -88,6 +90,7 @@ export function defineAgent(definition: {
     tools,
     events,
     schedules,
+    workflows: definition.workflows ?? [],
   };
   return agent;
 }

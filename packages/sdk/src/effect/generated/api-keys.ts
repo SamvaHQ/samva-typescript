@@ -75,6 +75,7 @@ export type ApiKey = {
   readonly start: string | null;
   readonly end: string | null;
   readonly description?: string | null;
+  readonly source?: string | null;
   readonly createdAt: string;
   readonly expiresAt: string | null;
   readonly lastUsedAt: string | null;
@@ -90,6 +91,7 @@ export const ApiKey = /* @__PURE__ */ (() =>
     start: Schema.Union([Schema.String, Schema.Null]),
     end: Schema.Union([Schema.String, Schema.Null]),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    source: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     createdAt: Schema.String,
     expiresAt: Schema.Union([Schema.String, Schema.Null]),
     lastUsedAt: Schema.Union([Schema.String, Schema.Null]),
@@ -104,6 +106,7 @@ export type ApiKeyWithSecret = {
   readonly start: string | null;
   readonly end: string | null;
   readonly description?: string | null;
+  readonly source?: string | null;
   readonly createdAt: string;
   readonly expiresAt: string | null;
   readonly lastUsedAt: string | null;
@@ -119,6 +122,7 @@ export const ApiKeyWithSecret = /* @__PURE__ */ (() =>
     start: Schema.Union([Schema.String, Schema.Null]),
     end: Schema.Union([Schema.String, Schema.Null]),
     description: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
+    source: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     createdAt: Schema.String,
     expiresAt: Schema.Union([Schema.String, Schema.Null]),
     lastUsedAt: Schema.Union([Schema.String, Schema.Null]),

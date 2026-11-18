@@ -56,6 +56,41 @@ const authority = (id: string) => {
 };
 
 describe("hosted agent SDK RPC adapter", () => {
+  it("uses call authority for each state scope and for registered workflow starts", async () => {
+    const { stub } = authority("host");
+    const agent = defineAgent({
+      manifest: agentManifest("State and workflow"),
+      workflows: ["Reminder"],
+      async instructions(ctx) {
+        if (!ctx.state || !ctx.workflows) throw new Error("Expected hosted authority");
+        return JSON.stringify({
+          agent: await ctx.state.agent.call("count", null),
+          conversation: await ctx.state.conversation.call("count", 1),
+          run: await ctx.workflows.start({
+            exportName: "Reminder",
+            idempotencyKey: "sample",
+            input: { item: 1 },
+          }),
+        });
+      },
+    });
+    expect(agent.workflows).toEqual(["Reminder"]);
+    await expect(
+      agent.__samvaAgentRuntime({ kind: "instructions" }, capability("new"), {
+        ...stub,
+        state: async ({ scope, operation, input }) => [scope, operation, input],
+        startWorkflow: async ({ exportName, idempotencyKey, input }) =>
+          [exportName, idempotencyKey, JSON.stringify(input)].join(":"),
+      }),
+    ).resolves.toBe(
+      JSON.stringify({
+        agent: ["agent", "count", null],
+        conversation: ["conversation", "count", 1],
+        run: 'Reminder:sample:{"item":1}',
+      }),
+    );
+  });
+
   it("addresses mailbox reads and replies using only the fresh host-provided target", async () => {
     const manifest = agentManifest("Target");
     const agent = defineAgent({

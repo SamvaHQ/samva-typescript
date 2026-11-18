@@ -64,11 +64,32 @@ export interface AgentContext {
       input: Readonly<Record<string, unknown>>,
     ): Promise<unknown>;
   };
+  readonly workflows?: { start(input: AgentWorkflowStart): Promise<string> };
+  readonly state?: {
+    readonly agent: AgentState;
+    readonly conversation: AgentState;
+  };
   readonly memory: {
     search(query: string): Promise<ReadonlyArray<AgentMemoryMatch>>;
     remember(content: string): Promise<void>;
   };
   log(...values: ReadonlyArray<unknown>): void;
+}
+
+export interface AgentWorkflowStart {
+  readonly exportName: string;
+  readonly idempotencyKey: string;
+  readonly input: Schema.Json;
+}
+
+export interface AgentState {
+  call(operation: string, input: Schema.Json): Promise<Schema.Json>;
+}
+
+export interface AgentStateCall {
+  readonly scope: "agent" | "conversation";
+  readonly operation: string;
+  readonly input: Schema.Json;
 }
 
 export interface AgentEvent<Data = unknown> {
@@ -106,6 +127,7 @@ export interface AgentDefinition<
   readonly tools: Tools;
   readonly events: Readonly<Record<string, AgentEventHandler>>;
   readonly schedules: Readonly<Record<string, AgentScheduleHandler>>;
+  readonly workflows?: ReadonlyArray<string>;
 }
 
 /** The host calls one operation with one call-local authority over Workers RPC. */
@@ -115,7 +137,8 @@ export type AgentModuleOperation =
   | { readonly kind: "list-skills" }
   | { readonly kind: "load-skill"; readonly name: string }
   | { readonly kind: "tool"; readonly name: string; readonly input: unknown }
-  | { readonly kind: "event"; readonly event: AgentEvent; readonly attempt: number };
+  | { readonly kind: "event"; readonly event: AgentEvent; readonly attempt: number }
+  | { readonly kind: "schedule"; readonly cron: string; readonly scheduledAt: number };
 
 export interface AgentModuleRequest {
   readonly method: string;
@@ -140,4 +163,6 @@ export interface AgentModuleAuthority {
   searchMemory(query: string): Promise<ReadonlyArray<AgentMemoryMatch>>;
   remember(content: string): Promise<void>;
   log(values: ReadonlyArray<unknown>): Promise<void>;
+  state?(call: AgentStateCall): Promise<Schema.Json>;
+  startWorkflow?(input: AgentWorkflowStart): Promise<string>;
 }

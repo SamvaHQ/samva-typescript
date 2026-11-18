@@ -97,8 +97,11 @@ export const IntegrationReturnTo = /* @__PURE__ */ (() =>
       Schema.isMaxCodePoints(2048).annotate({ expected: "a string with at most 2048 code points" }),
     )
     .check(
-      Schema.isPattern(new globalThis.RegExp("^\\/(?![/\\\\])[\\x21-\\x7e]*$", "u")).annotate({
-        expected: "a string matching the RegExp ^\\/(?![/\\\\])[\\x21-\\x7e]*$",
+      Schema.isPattern(
+        new globalThis.RegExp("^\\/(?:[\\x21-\\x2e\\x30-\\x5b\\x5d-\\x7e][\\x21-\\x7e]*)?$", "u"),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^\\/(?:[\\x21-\\x2e\\x30-\\x5b\\x5d-\\x7e][\\x21-\\x7e]*)?$",
         identifier: "IntegrationReturnTo",
       }),
     )
@@ -1302,9 +1305,9 @@ export const ShopifyShop = /* @__PURE__ */ (() =>
   )
     .check(
       Schema.isPattern(
-        new globalThis.RegExp("^[a-z0-9][a-z0-9-]*\\.myshopify\\.com$(?![\\s\\S])", "u"),
+        new globalThis.RegExp("^[a-z0-9][a-z0-9-]*\\.myshopify\\.com$", "u"),
       ).annotate({
-        expected: "a string matching the RegExp ^[a-z0-9][a-z0-9-]*\\.myshopify\\.com$(?![\\s\\S])",
+        expected: "a string matching the RegExp ^[a-z0-9][a-z0-9-]*\\.myshopify\\.com$",
         identifier: "ShopifyShop",
       }),
     )
@@ -3350,12 +3353,15 @@ export const SetWhatsAppFlowEndpointPayload = /* @__PURE__ */ (() =>
   Schema.Struct({ url: Schema.String }).annotate({
     identifier: "SetWhatsAppFlowEndpointPayload",
   }))();
-export type SuggestTemplateStartersPayload = { readonly brief: string };
+export type SuggestTemplateStartersPayload = {
+  readonly brief: string;
+  readonly channel?: "email" | "whatsapp" | null;
+};
 export const SuggestTemplateStartersPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
     brief: Schema.String.annotate({
       description:
-        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+        "What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
     })
       .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
       .check(
@@ -3366,6 +3372,15 @@ export const SuggestTemplateStartersPayload = /* @__PURE__ */ (() =>
       .check(
         Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
       ),
+    channel: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.",
+      }),
+    ),
   }).annotate({ identifier: "SuggestTemplateStartersPayload" }))();
 export type TemplateFamilyName = { readonly name: string };
 export const TemplateFamilyName = /* @__PURE__ */ (() =>
@@ -3950,83 +3965,22 @@ export const ConversationContacts = /* @__PURE__ */ (() =>
 export type MergeContactPayload = { readonly from: ContactId };
 export const MergeContactPayload = /* @__PURE__ */ (() =>
   Schema.Struct({ from: ContactId }).annotate({ identifier: "MergeContactPayload" }))();
-export type CreateTemplateFromBriefPayload = {
-  readonly brief: string;
-  readonly name?: string | null;
-  readonly galleryTemplateId?: string | null;
-  readonly useBrand?: boolean | null;
+export type CreateTemplateFamilyPayload = {
+  readonly name: string;
   readonly namespaceId?: NamespaceId | null;
 };
-export const CreateTemplateFromBriefPayload = /* @__PURE__ */ (() =>
+export const CreateTemplateFamilyPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
-    brief: Schema.String.annotate({
-      description:
-        "What the email is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
-    })
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(
-        Schema.isMaxCodePoints(4000).annotate({
-          expected: "a string with at most 4000 code points",
-        }),
-      )
-      .check(
-        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
-      ),
-    name: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description: "The template's name. Defaults to the name of the design it starts from.",
-        })
-          .check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-          .check(
-            Schema.isMaxCodePoints(200).annotate({
-              expected: "a string with at most 200 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
-          ),
-        Schema.Null,
-      ]),
-    ),
-    galleryTemplateId: Schema.optionalKey(
-      Schema.Union([
-        Schema.String.annotate({
-          description:
-            "Start from this gallery design instead of the first suggestion, for example another one the suggestions offered.",
-        })
-          .check(
-            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-          )
-          .check(
-            Schema.isMaxCodePoints(128).annotate({
-              expected: "a string with at most 128 code points",
-            }),
-          )
-          .check(
-            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-          ),
-        Schema.Null,
-      ]),
-    ),
-    useBrand: Schema.optionalKey(
-      Schema.Union([
-        Schema.Boolean.annotate({
-          description:
-            "Whether the new project's `theme.css` imports the organization's default brand over the design's look. Defaults to false.",
-        }),
-        Schema.Null,
-      ]),
+    name: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
     ),
     namespaceId: Schema.optionalKey(
       Schema.Union([NamespaceId, Schema.Null]).annotate({
         description:
-          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
+          "The namespace the family belongs to; every member it gains must be in it. Omit for organization level. A namespace-scoped key always creates in its own namespace.",
       }),
     ),
-  }).annotate({ identifier: "CreateTemplateFromBriefPayload" }))();
+  }).annotate({ identifier: "CreateTemplateFamilyPayload" }))();
 export type CreateTemplateFromWebsitePayload = {
   readonly url: string;
   readonly name?: string | null;
@@ -4303,6 +4257,100 @@ export const ReplyMailboxChatPayload = /* @__PURE__ */ (() =>
     templateId: Schema.optionalKey(Schema.Union([TemplateId, Schema.Null])),
     templateData: Schema.optionalKey(Schema.Union([JsonObject, Schema.Null])),
   }).annotate({ identifier: "ReplyMailboxChatPayload" }))();
+export type CreateTemplateFromBriefPayload = {
+  readonly brief: string;
+  readonly channel?: "email" | "whatsapp" | null;
+  readonly name?: string | null;
+  readonly galleryTemplateId?: string | null;
+  readonly useBrand?: boolean | null;
+  readonly namespaceId?: NamespaceId | null;
+  readonly variantOf?: TemplateId | null;
+};
+export const CreateTemplateFromBriefPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    brief: Schema.String.annotate({
+      description:
+        "What the message is for, as a person would ask for it: who sends it, to whom, and why. Naming a company's email (\"like the Vercel login email\") starts from Samva's recreation of it when the gallery has one.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(4000).annotate({
+          expected: "a string with at most 4000 code points",
+        }),
+      )
+      .check(
+        Schema.isMaxLength(4000).annotate({ expected: "a value with a length of at most 4000" }),
+      ),
+    channel: Schema.optionalKey(
+      Schema.Union([
+        Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]),
+        Schema.Null,
+      ]).annotate({
+        description:
+          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.",
+      }),
+    ),
+    name: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description: "The template's name. Defaults to the name of the design it starts from.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(200).annotate({
+              expected: "a string with at most 200 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(200).annotate({ expected: "a value with a length of at most 200" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    galleryTemplateId: Schema.optionalKey(
+      Schema.Union([
+        Schema.String.annotate({
+          description:
+            "Start from this gallery design instead of the first suggestion, for example another one the suggestions offered.",
+        })
+          .check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          )
+          .check(
+            Schema.isMaxCodePoints(128).annotate({
+              expected: "a string with at most 128 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+          ),
+        Schema.Null,
+      ]),
+    ),
+    useBrand: Schema.optionalKey(
+      Schema.Union([
+        Schema.Boolean.annotate({
+          description:
+            "Whether the new project's `theme.css` imports the organization's default brand over the design's look. Defaults to false.",
+        }),
+        Schema.Null,
+      ]),
+    ),
+    namespaceId: Schema.optionalKey(
+      Schema.Union([NamespaceId, Schema.Null]).annotate({
+        description:
+          "The namespace the new template project belongs to. Omit for organization level. A namespace-scoped key always creates in its own namespace. With `variantOf`, omit it or name the source's namespace.",
+      }),
+    ),
+    variantOf: Schema.optionalKey(
+      Schema.Union([TemplateId, Schema.Null]).annotate({
+        description:
+          "Make this template another channel's version of an existing template the caller can change: it is created in that template's namespace, holds that template's current draft as a read-only resource the template assistant reads facts from, and joins that template's family (one is made when it has none). The returned `ask` says where the snapshot is mounted; its `variant-source.json` names the source, its entry and the revision taken. A retry with the same idempotency key finishes the same version; the key refuses a different source, or a request without `variantOf`. Refused when `channel` is the source's own or its family already has a template on `channel`. The source's files are mounted whole: a project with more than 31 files, a file over 4 MB, or more than 8 MB in all is refused before anything is created.",
+      }),
+    ),
+  }).annotate({ identifier: "CreateTemplateFromBriefPayload" }))();
 export type UpdateAgentPayload = {
   readonly name?: AgentName | null;
   readonly monthlySpendCapDollars?: MonthlySpendCapDollars | null;
@@ -5431,7 +5479,8 @@ export type JourneyEventName =
   | JourneyCustomEventName
   | "contact.created"
   | "contact.tag_added"
-  | "contact.joined_group";
+  | "contact.joined_group"
+  | "contact.connection_completed";
 export const JourneyEventName = /* @__PURE__ */ (() =>
   Schema.Union([
     JourneyCustomEventName,
@@ -5439,6 +5488,7 @@ export const JourneyEventName = /* @__PURE__ */ (() =>
       Schema.Literal("contact.created"),
       Schema.Literal("contact.tag_added"),
       Schema.Literal("contact.joined_group"),
+      Schema.Literal("contact.connection_completed"),
     ]),
   ]).annotate({ identifier: "JourneyEventName" }))();
 export type JourneyNextEdge = { readonly nodeId: JourneyNodeId };

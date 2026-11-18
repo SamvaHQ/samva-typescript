@@ -4,6 +4,7 @@
 export type {
   ClientOptions,
   TemplateRegistration,
+  TemplateChannelVariantId,
   TemplateRegistrationTarget,
   DltRegistrationTarget,
   WhatsAppRegistrationTarget,
@@ -114,7 +115,6 @@ export type {
   MailboxChatTemplate,
   JsonObject,
   JsonObjectWritable,
-  TemplateChannelVariantId,
   MailboxSmsEndpointBinding,
   SmsPhoneNumberId,
   MailboxWhatsAppEndpointBinding,
@@ -309,6 +309,7 @@ export type {
   TemplateFamily,
   TemplateFamilyMember,
   TemplateFamilyName,
+  CreateTemplateFamilyPayload,
   TemplateFamilyPage,
   TemplatePage,
   TemplateSummary,
