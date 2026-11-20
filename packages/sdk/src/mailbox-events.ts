@@ -12,7 +12,7 @@
  */
 
 /** The WebSocket path on the events host. */
-export const MAILBOX_EVENT_STREAM_PATH = "/v1/mailboxes/events";
+const MAILBOX_EVENT_STREAM_PATH = "/v1/mailboxes/events";
 
 /** Close codes the events host ends an accepted connection with. */
 export const MailboxEventStreamCloseCode = {
@@ -38,9 +38,9 @@ export type MailboxEventType =
   | "mailbox.message.sent"
   | "mailbox.action.pending_approval"
   | "mailbox.action.resolved"
-  | "mailbox.message.quarantined"
-  | "mailbox.message.released"
+  | "mailbox.message.spam"
   | "mailbox.message.discarded"
+  | "mailbox.thread.deleted"
   | "mailbox.message.delivered"
   | "mailbox.message.read"
   | "mailbox.message.failed";
@@ -115,6 +115,7 @@ export type MailboxEventStreamErrorFields = Readonly<Record<string, ReadonlyArra
  * host, a `408`, a `429`, or a `5xx`. Every other refusal ends it, so a caller never loops on a
  * request the host will keep refusing.
  */
+// @effect-diagnostics-next-line extendsNativeError:off -- Mailbox streams are available from the Promise client without the optional Effect peer.
 export class MailboxEventStreamError<
   Tag extends MailboxEventStreamErrorTag = MailboxEventStreamErrorTag,
 > extends Error {
@@ -247,7 +248,7 @@ const REFUSAL_BODY_LIMIT = 64 * 1024;
 /** The longest the diagnosing request and its body may take before the refusal is treated as retryable. */
 const DIAGNOSE_TIMEOUT_MILLIS = 10_000;
 /** The frame that asks the events host whether the connection is alive; pinned to the host's by a test. */
-export const MAILBOX_EVENT_STREAM_PING_FRAME = '{"kind":"ping"}';
+const MAILBOX_EVENT_STREAM_PING_FRAME = '{"kind":"ping"}';
 /** How often the stream sends a ping; pinned to the host's constant by a test. */
 export const MAILBOX_EVENT_STREAM_PING_MILLIS = 30_000;
 /**
@@ -450,7 +451,7 @@ const refusalOutcome = (refusal: Refusal): Outcome => {
  * accept, so it is read as the narrower constructor the stream calls.
  */
 const globalWebSocket = (): MailboxEventStreamWebSocket | undefined => {
-  const candidate: unknown = Reflect.get(globalThis, "WebSocket");
+  const candidate: unknown = globalThis.WebSocket;
   return typeof candidate === "function" ? (candidate as MailboxEventStreamWebSocket) : undefined;
 };
 

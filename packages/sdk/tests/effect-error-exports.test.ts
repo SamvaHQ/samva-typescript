@@ -64,7 +64,7 @@ describe("samva/effect/errors", () => {
           expect(error).toBeInstanceOf(Errors.InternalError);
           return Effect.succeed(error.message);
         }),
-        Effect.provide(Layer.mergeAll(Retry.layerDisabled, client)),
+        Effect.provide([Retry.layerDisabled, client]),
       );
       expect(failure).toBe("test failure");
     }),

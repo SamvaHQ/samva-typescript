@@ -282,11 +282,11 @@ describe("facade idempotency keys and retry-safety", () => {
       );
 
       yield* Email.send(sendInput).pipe(
-        Effect.provide(Layer.mergeAll(client, Retry.layerDisabled)),
+        Effect.provide([client, Retry.layerDisabled]),
         Effect.ignore,
       );
       yield* Email.send(sendInput).pipe(
-        Effect.provide(Layer.mergeAll(client, Retry.layerDisabled)),
+        Effect.provide([client, Retry.layerDisabled]),
         Effect.ignore,
       );
 
@@ -303,7 +303,7 @@ describe("facade idempotency keys and retry-safety", () => {
       );
 
       yield* Email.send(sendInput, { idempotencyKey: "caller-supplied-key" }).pipe(
-        Effect.provide(Layer.mergeAll(client, Retry.layerDisabled)),
+        Effect.provide([client, Retry.layerDisabled]),
         Effect.ignore,
       );
 

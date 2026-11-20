@@ -276,15 +276,13 @@ const runEffect = <A, E>(
 ) =>
   Effect.runPromise(
     program.pipe(
-      Effect.provide(
-        Layer.mergeAll(
-          Layer.provide(
-            Client.layer({ apiKey: "samva_sk_test" }),
-            Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
-          ),
-          retry,
+      Effect.provide([
+        Layer.provide(
+          Client.layer({ apiKey: "samva_sk_test" }),
+          Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fake.fetch)),
         ),
-      ),
+        retry,
+      ]),
     ),
   );
 

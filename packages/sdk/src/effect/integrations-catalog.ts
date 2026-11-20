@@ -5,6 +5,28 @@ import { forGroup } from "./internal/operation";
 
 const make = /* @__PURE__ */ forGroup(IntegrationsCatalogGroup, integrationCatalogOperations);
 
+export const recipeConnectionHandoff = /* @__PURE__ */ make(
+  "integrationCatalogRecipeConnectionHandoff",
+);
+export const recipeTestHandoff = /* @__PURE__ */ make("integrationCatalogRecipeTestHandoff");
+export const recipeSetupsList = /* @__PURE__ */ make("integrationCatalogRecipeSetupsList");
+export const recipeSetupGet = /* @__PURE__ */ make("integrationCatalogRecipeSetupGet");
+export const recipeSetupReplace = /* @__PURE__ */ make("integrationCatalogRecipeSetupReplace");
+export const recipeSetupActivate = /* @__PURE__ */ make("integrationCatalogRecipeSetupActivate");
+export const recipePreview = /* @__PURE__ */ make("integrationCatalogRecipePreview");
+export const recipeWhatsAppChallengeBegin = /* @__PURE__ */ make(
+  "integrationCatalogRecipeWhatsAppChallengeBegin",
+);
+export const recipeWhatsAppChallengeGet = /* @__PURE__ */ make(
+  "integrationCatalogRecipeWhatsAppChallengeGet",
+);
+export const recipeWhatsAppChallengeConfirm = /* @__PURE__ */ make(
+  "integrationCatalogRecipeWhatsAppChallengeConfirm",
+);
+export const recipeTest = /* @__PURE__ */ make("integrationCatalogRecipeTest");
+export const recipeTestReceipt = /* @__PURE__ */ make("integrationCatalogRecipeTestReceipt");
+export const recipeCatalog = /* @__PURE__ */ make("integrationCatalogRecipeCatalog");
+export const recipeReadiness = /* @__PURE__ */ make("integrationCatalogRecipeReadiness");
 export const prepare = /* @__PURE__ */ make("integrationCatalogPrepare");
 export const search = /* @__PURE__ */ make("integrationCatalogSearch");
 export const list = /* @__PURE__ */ make("integrationCatalogList");

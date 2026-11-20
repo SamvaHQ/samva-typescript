@@ -5,16 +5,11 @@ import { isRetrySafe } from "../../request-policy";
 import type { SDK_OPERATION_CALLS } from "../../service-map";
 import { type CursorPageEnvelope, streamCursorItems, streamCursorPages } from "../pagination";
 import { generateIdempotencyKey, withRetry } from "../retry";
-import {
-  type FlatRaw,
-  type Operation,
-  type OperationSuccess,
-  type RawCall,
-  Service,
-} from "./client";
+import { type FlatRaw, type Operation, type OperationResult, Service } from "./client";
+
+export type { OperationResult };
 
 export type SdkOperation = keyof typeof SDK_OPERATION_CALLS & Operation;
-type MethodReturn<Method> = Method extends (...args: infer _Args) => infer Return ? Return : never;
 
 type Wire<Value> = Value extends string
   ? Value extends Brand.Brand<string>
@@ -53,6 +48,12 @@ type Input<Name extends SdkOperation> = Wire<
   FlattenRequest<NonNullable<RequestArg<FlatRaw[Name]>>>
 >;
 
+/**
+ * The per-call options every exported operation wrapper accepts.
+ *
+ * @public — the exported operation wrappers in `src/effect/*.ts` carry it in their signatures, so
+ * declaration emit names it for the published `samva/effect/*` entrypoints.
+ */
 export interface OperationOptions {
   readonly idempotencyKey?: string | undefined;
 }
@@ -61,7 +62,7 @@ export interface OperationOptions {
  * What one operation wrapper reads at runtime. `codegen/generate-registry.ts` emits a table of these
  * beside each domain, so a focused entry carries its own operations' descriptors and not the API's.
  */
-export interface OperationDescriptor {
+interface OperationDescriptor {
   readonly group: string;
   readonly method: string;
   readonly idempotent: boolean;
@@ -71,12 +72,6 @@ export interface OperationDescriptor {
 }
 
 export type OperationDescriptors = Readonly<Record<string, OperationDescriptor>>;
-
-export type OperationResult<Name extends SdkOperation> = Effect.Effect<
-  OperationSuccess<Name>,
-  Effect.Error<MethodReturn<FlatRaw[Name]>>,
-  Service
->;
 
 type OperationFunction<Name extends SdkOperation> = (typeof SDK_OPERATION_CALLS)[Name] extends {
   readonly kind: "none";
@@ -114,12 +109,12 @@ type WithPagination<Method> = Method extends (
 const traceName = (descriptor: OperationDescriptor, operationName: SdkOperation): string => {
   const moduleName = descriptor.group
     .split(" ")
-    .map((word) => word[0]!.toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join("");
-  const prefix = moduleName[0]!.toLowerCase() + moduleName.slice(1);
+  const prefix = moduleName.charAt(0).toLowerCase() + moduleName.slice(1);
   if (!operationName.startsWith(prefix)) return `Samva.${operationName}`;
   const method = operationName.slice(prefix.length);
-  return `${moduleName}.${method[0]!.toLowerCase()}${method.slice(1)}`;
+  return `${moduleName}.${method.charAt(0).toLowerCase()}${method.slice(1)}`;
 };
 
 export const stripUndefined = <Value>(input: Value): Value => {
@@ -138,10 +133,10 @@ type PathDescriptor = { readonly kind: string; readonly paths: ReadonlyArray<str
 const adapt = (
   descriptor: OperationDescriptor,
   operationName: SdkOperation,
-  rawCall: RawCall,
+  rawCall: (request?: unknown) => Effect.Effect<unknown, unknown, Service>,
   input: unknown,
   idempotencyKey: string | undefined,
-): Effect.Effect<unknown, unknown> => {
+): Effect.Effect<unknown, unknown, Service> => {
   const callDescriptor = descriptor.call;
   const call = (request: Record<string, unknown> = {}) => {
     const operation = rawCall({
@@ -204,11 +199,11 @@ export const forGroup =
   };
 
 /** Call one endpoint with an already-shaped request, outside the direct-operation adapter. */
-export const callEndpoint = (
+export const callEndpoint = <Name extends SdkOperation>(
   group: HttpApiGroup.Constraint,
-  name: SdkOperation,
+  name: Name,
   request: unknown,
-): Effect.Effect<unknown, unknown, Service> =>
+): OperationResult<Name> =>
   Effect.flatMap(Service, (client) =>
     Effect.flatMap(client.endpoint(group, name), (call) => call(request)),
   );

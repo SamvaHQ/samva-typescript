@@ -1,5 +1,5 @@
 // Hand-written schema exports and ergonomic adapters for generated domain facades.
-export const facadePreambles: Readonly<Record<string, string>> = {
+const facadePreambles: Readonly<Record<string, string>> = {
   webhooks:
     'export {\n  CreateWebhookPayload as CreatePayload,\n  TestWebhookPayload as TestPayload,\n  UpdateWebhookPayload as UpdatePayload,\n} from "./generated/shared";',
   messages:
@@ -19,7 +19,7 @@ export const facadePreambles: Readonly<Record<string, string>> = {
   contacts: 'import { ContactEventsGroup } from "./generated/contact-events";',
 };
 
-export const facadeExpressions: Readonly<Record<string, string>> = {
+const facadeExpressions: Readonly<Record<string, string>> = {
   emailSend: "sendEmail",
   messagesSend: "sendMessage",
   emailAddSender: "addEmailSender",
@@ -27,7 +27,7 @@ export const facadeExpressions: Readonly<Record<string, string>> = {
     '/* @__PURE__ */ forGroup(ContactEventsGroup, contactsOperations)("contactEventsListEvents")',
 };
 
-export const callKindOverrides: Readonly<Record<string, string>> = {
+const callKindOverrides: Readonly<Record<string, string>> = {
   newslettersCreate: "optionalIdempotentPathPayload",
   newslettersUpdate: "optionalIdempotentPathPayload",
   newslettersRemove: "optionalIdempotentPath",
@@ -41,13 +41,13 @@ export const callKindOverrides: Readonly<Record<string, string>> = {
   newsletterDomainsRemove: "optionalIdempotentPath",
 };
 
-export const reservedOperationNames: Readonly<Record<string, string>> = {
+const reservedOperationNames: Readonly<Record<string, string>> = {
   contactsExport: "exportContacts",
   organizationsDelete: "deleteOrganization",
   templatesDelete: "deleteTemplate",
 };
 
-export const facadeGroupNames: Readonly<Record<string, string>> = {
+const facadeGroupNames: Readonly<Record<string, string>> = {
   integrationCatalog: "IntegrationsCatalog",
   apiKeys: "APIKeys",
   whatsapp: "WhatsApp",
@@ -55,21 +55,21 @@ export const facadeGroupNames: Readonly<Record<string, string>> = {
   whatsappSetupLinks: "WhatsAppSetupLinks",
 };
 
-export const facadeServiceOverrides: Readonly<Record<string, string>> = {
+const facadeServiceOverrides: Readonly<Record<string, string>> = {
   contactEvents: "contacts",
 };
 
-export const facadeAliases: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+const facadeAliases: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   email: { send: "messagesSend" },
 };
 
-export const facadeModuleNames: Readonly<Record<string, string>> = {
+const facadeModuleNames: Readonly<Record<string, string>> = {
   whatsapp: "whatsapp",
   whatsappFlows: "whatsapp-flows",
   whatsappSetupLinks: "whatsapp-setup-links",
 };
 
-export const facadePromisePaths: Readonly<Record<string, string>> = {
+const facadePromisePaths: Readonly<Record<string, string>> = {
   newsletterIssues: "newsletters.issues",
   newsletterDomains: "newsletters.domains",
 };

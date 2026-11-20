@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import { describe, expect, expectTypeOf, it } from "@effect/vitest";
 import { Effect, Layer, Redacted } from "effect";
 import { FetchHttpClient } from "effect/http";
@@ -63,13 +65,13 @@ describe("Redacted API-key secrets", () => {
             : service.connection.headers;
         expect(headers["x-api-key"]).toBe(PLAINTEXT_KEY);
       }).pipe(Effect.provide(client));
-      expect(String(key)).toBe("<redacted>");
+      expect(inspect(key)).toBe("<redacted>");
       expect(fake.requests[0]?.headers.get("x-api-key")).toBe(PLAINTEXT_KEY);
       fake.assertComplete();
     }),
   );
 
-  it.effect("decodes the key as Redacted: value unwraps, String output is redacted", () =>
+  it.effect("decodes the key as Redacted: value unwraps, inspection output is redacted", () =>
     Effect.gen(function* () {
       const fake = fakeSamvaApi(SamvaApi)({
         "API Keys": { apiKeysCreate: () => Effect.succeed(createdApiKeyBody) },
@@ -86,9 +88,9 @@ describe("Redacted API-key secrets", () => {
       expect(Redacted.isRedacted(result.key)).toBe(true);
       expect(Redacted.value(result.key)).toBe(PLAINTEXT_KEY);
 
-      // But string coercion and interpolation never expose the secret.
-      expect(String(result.key)).toBe("<redacted>");
-      expect(`${result.key}`).not.toContain("supersecret");
+      // But inspection and JSON output never expose the secret.
+      expect(inspect(result.key)).toBe("<redacted>");
+      expect(JSON.stringify(result.key)).not.toContain("supersecret");
       expect(JSON.stringify({ key: result.key })).not.toContain("supersecret");
       fake.assertComplete();
     }),

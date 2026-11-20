@@ -530,6 +530,21 @@ export const MailboxDownloadUrl = /* @__PURE__ */ (() =>
   Schema.Struct({ url: Schema.String, expiresAt: Schema.String }).annotate({
     identifier: "MailboxDownloadUrl",
   }))();
+export type MailboxEmptySpamAccepted = { readonly count: number };
+export const MailboxEmptySpamAccepted = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "MailboxEmptySpamAccepted" }))();
 export type MailboxThreadSender = {
   readonly address: string | null;
   readonly displayName: string | null;
@@ -539,6 +554,40 @@ export const MailboxThreadSender = /* @__PURE__ */ (() =>
     address: Schema.Union([Schema.String, Schema.Null]),
     displayName: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MailboxThreadSender" }))();
+export type MailboxThreadSpam = {
+  readonly reason:
+    | "spam"
+    | "dmarc"
+    | "virus"
+    | "virus_unscanned"
+    | "verdict_missing"
+    | "phishing"
+    | "fraud"
+    | "prompt_injection"
+    | null;
+  readonly source: "receipt" | "classifier" | "reader";
+};
+export const MailboxThreadSpam = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    reason: Schema.Union([
+      Schema.Union([
+        Schema.Literal("spam"),
+        Schema.Literal("dmarc"),
+        Schema.Literal("virus"),
+        Schema.Literal("virus_unscanned"),
+        Schema.Literal("verdict_missing"),
+        Schema.Literal("phishing"),
+        Schema.Literal("fraud"),
+        Schema.Literal("prompt_injection"),
+      ]),
+      Schema.Null,
+    ]),
+    source: Schema.Union([
+      Schema.Literal("receipt"),
+      Schema.Literal("classifier"),
+      Schema.Literal("reader"),
+    ]),
+  }).annotate({ identifier: "MailboxThreadSpam" }))();
 export type MailboxThreadParticipant = {
   readonly actor: {
     readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
@@ -587,6 +636,21 @@ export const MailboxNoteId = /* @__PURE__ */ (() =>
       identifier: "MailboxNoteId",
     }),
   ).pipe(Schema.brand("MailboxNoteId")))();
+export type MailboxEmptyTrashAccepted = { readonly count: number };
+export const MailboxEmptyTrashAccepted = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    count: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isGreaterThanOrEqualTo(0).annotate({
+          expected: "a value greater than or equal to 0",
+        }),
+      )
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      ),
+  }).annotate({ identifier: "MailboxEmptyTrashAccepted" }))();
 export type MailboxEmailEndpoint = {
   readonly id: MailboxEndpointId;
   readonly address: string;
@@ -919,7 +983,7 @@ export const MailboxSmsEndpointBinding = /* @__PURE__ */ (() =>
   Schema.Struct({ channel: Schema.Literal("sms"), phoneNumberId: SmsPhoneNumberId }).annotate({
     identifier: "MailboxSmsEndpointBinding",
   }))();
-export type MailboxQuarantinedMessage = {
+export type MailboxSpamHeldMessage = {
   readonly id: MessageId;
   readonly disposition: "quarantined" | "isolated";
   readonly reason:
@@ -940,7 +1004,7 @@ export type MailboxQuarantinedMessage = {
   readonly threadId: MailboxThreadId | null;
   readonly discardedAt: string | null;
 };
-export const MailboxQuarantinedMessage = /* @__PURE__ */ (() =>
+export const MailboxSpamHeldMessage = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MessageId,
     disposition: Schema.Union([Schema.Literal("quarantined"), Schema.Literal("isolated")]),
@@ -965,7 +1029,7 @@ export const MailboxQuarantinedMessage = /* @__PURE__ */ (() =>
     releasedAt: Schema.Union([Schema.String, Schema.Null]),
     threadId: Schema.Union([MailboxThreadId, Schema.Null]),
     discardedAt: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "MailboxQuarantinedMessage" }))();
+  }).annotate({ identifier: "MailboxSpamHeldMessage" }))();
 export type MailboxDraftSummary = {
   readonly id: MailboxDraftId;
   readonly channel: MailboxChannel;
@@ -1230,8 +1294,8 @@ export type MailboxGrant = {
     | "action:propose"
     | "action:approve"
     | "policy:read"
-    | "quarantine:read"
-    | "quarantine:release"
+    | "spam:read"
+    | "spam:discard"
   >;
   readonly createdAt: string;
 };
@@ -1262,8 +1326,8 @@ export const MailboxGrant = /* @__PURE__ */ (() =>
         Schema.Literal("action:propose"),
         Schema.Literal("action:approve"),
         Schema.Literal("policy:read"),
-        Schema.Literal("quarantine:read"),
-        Schema.Literal("quarantine:release"),
+        Schema.Literal("spam:read"),
+        Schema.Literal("spam:discard"),
       ]),
     ),
     createdAt: Schema.String,
@@ -1478,6 +1542,7 @@ export type MailboxThreadSummary = {
   readonly id: MailboxThreadId;
   readonly channel: MailboxChannel;
   readonly endpointId: MailboxEndpointId | null;
+  readonly deliveredTo: string | null;
   readonly subject: string | null;
   readonly preview: string | null;
   readonly from: MailboxThreadSender | null;
@@ -1485,6 +1550,7 @@ export type MailboxThreadSummary = {
   readonly hasAttachments: boolean;
   readonly hasDraft: boolean;
   readonly folder: MailboxThreadFolder;
+  readonly spam?: MailboxThreadSpam;
   readonly priority: MailboxThreadPriority;
   readonly labels: ReadonlyArray<MailboxLabelId>;
   readonly read: boolean;
@@ -1506,6 +1572,10 @@ export const MailboxThreadSummary = /* @__PURE__ */ (() =>
     id: MailboxThreadId,
     channel: MailboxChannel,
     endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    deliveredTo: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The mailbox address that received the thread's first inbound email, including any plus tag. Null when no receiving address is known.",
+    }),
     subject: Schema.Union([Schema.String, Schema.Null]),
     preview: Schema.Union([Schema.String, Schema.Null]),
     from: Schema.Union([MailboxThreadSender, Schema.Null]),
@@ -1523,6 +1593,7 @@ export const MailboxThreadSummary = /* @__PURE__ */ (() =>
     hasAttachments: Schema.Boolean,
     hasDraft: Schema.Boolean,
     folder: MailboxThreadFolder,
+    spam: Schema.optionalKey(MailboxThreadSpam),
     priority: MailboxThreadPriority,
     labels: Schema.Array(MailboxLabelId),
     read: Schema.Boolean,
@@ -1600,6 +1671,7 @@ export type MailboxThread = {
   readonly id: MailboxThreadId;
   readonly channel: MailboxChannel;
   readonly endpointId: MailboxEndpointId | null;
+  readonly deliveredTo: string | null;
   readonly subject: string | null;
   readonly preview: string | null;
   readonly from: MailboxThreadSender | null;
@@ -1607,6 +1679,7 @@ export type MailboxThread = {
   readonly hasAttachments: boolean;
   readonly hasDraft: boolean;
   readonly folder: MailboxThreadFolder;
+  readonly spam?: MailboxThreadSpam;
   readonly priority: MailboxThreadPriority;
   readonly labels: ReadonlyArray<MailboxLabelId>;
   readonly read: boolean;
@@ -1632,6 +1705,10 @@ export const MailboxThread = /* @__PURE__ */ (() =>
     id: MailboxThreadId,
     channel: MailboxChannel,
     endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    deliveredTo: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The mailbox address that received the thread's first inbound email, including any plus tag. Null when no receiving address is known.",
+    }),
     subject: Schema.Union([Schema.String, Schema.Null]),
     preview: Schema.Union([Schema.String, Schema.Null]),
     from: Schema.Union([MailboxThreadSender, Schema.Null]),
@@ -1649,6 +1726,7 @@ export const MailboxThread = /* @__PURE__ */ (() =>
     hasAttachments: Schema.Boolean,
     hasDraft: Schema.Boolean,
     folder: MailboxThreadFolder,
+    spam: Schema.optionalKey(MailboxThreadSpam),
     priority: MailboxThreadPriority,
     labels: Schema.Array(MailboxLabelId),
     read: Schema.Boolean,
@@ -1744,6 +1822,7 @@ export type OrganizationMailboxThreadSummary = {
   readonly id: MailboxThreadId;
   readonly channel: MailboxChannel;
   readonly endpointId: MailboxEndpointId | null;
+  readonly deliveredTo: string | null;
   readonly subject: string | null;
   readonly preview: string | null;
   readonly from: MailboxThreadSender | null;
@@ -1751,6 +1830,7 @@ export type OrganizationMailboxThreadSummary = {
   readonly hasAttachments: boolean;
   readonly hasDraft: boolean;
   readonly folder: MailboxThreadFolder;
+  readonly spam?: MailboxThreadSpam;
   readonly priority: MailboxThreadPriority;
   readonly labels: ReadonlyArray<MailboxLabelId>;
   readonly read: boolean;
@@ -1773,6 +1853,10 @@ export const OrganizationMailboxThreadSummary = /* @__PURE__ */ (() =>
     id: MailboxThreadId,
     channel: MailboxChannel,
     endpointId: Schema.Union([MailboxEndpointId, Schema.Null]),
+    deliveredTo: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The mailbox address that received the thread's first inbound email, including any plus tag. Null when no receiving address is known.",
+    }),
     subject: Schema.Union([Schema.String, Schema.Null]),
     preview: Schema.Union([Schema.String, Schema.Null]),
     from: Schema.Union([MailboxThreadSender, Schema.Null]),
@@ -1790,6 +1874,7 @@ export const OrganizationMailboxThreadSummary = /* @__PURE__ */ (() =>
     hasAttachments: Schema.Boolean,
     hasDraft: Schema.Boolean,
     folder: MailboxThreadFolder,
+    spam: Schema.optionalKey(MailboxThreadSpam),
     priority: MailboxThreadPriority,
     labels: Schema.Array(MailboxLabelId),
     read: Schema.Boolean,
@@ -2150,15 +2235,15 @@ export const MailboxChatSendIntent = /* @__PURE__ */ (() =>
     conversationId: Schema.Union([ConversationId, Schema.Null]),
     inReplyToMessageId: Schema.Union([MessageId, Schema.Null]),
   }).annotate({ identifier: "MailboxChatSendIntent" }))();
-export type MailboxQuarantinePage = {
-  readonly items: ReadonlyArray<MailboxQuarantinedMessage>;
+export type MailboxSpamHeldPage = {
+  readonly items: ReadonlyArray<MailboxSpamHeldMessage>;
   readonly nextCursor: string | null;
 };
-export const MailboxQuarantinePage = /* @__PURE__ */ (() =>
+export const MailboxSpamHeldPage = /* @__PURE__ */ (() =>
   Schema.Struct({
-    items: Schema.Array(MailboxQuarantinedMessage),
+    items: Schema.Array(MailboxSpamHeldMessage),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "MailboxQuarantinePage" }))();
+  }).annotate({ identifier: "MailboxSpamHeldPage" }))();
 export type MailboxNonSendAction = {
   readonly id: MailboxActionId;
   readonly source:
@@ -4324,32 +4409,6 @@ export type MailboxesCopyMessageAttachment500 = InternalError;
 export const MailboxesCopyMessageAttachment500 = InternalError;
 export type MailboxesCopyMessageAttachment504 = GatewayTimeoutError;
 export const MailboxesCopyMessageAttachment504 = GatewayTimeoutError;
-export type MailboxesDiscardMessagePathParams = {
-  readonly id: MailboxId;
-  readonly messageId: MessageId;
-};
-export const MailboxesDiscardMessagePathParams = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
-export type MailboxesDiscardMessage200 = MailboxQuarantinedMessage;
-export const MailboxesDiscardMessage200 = MailboxQuarantinedMessage;
-export type MailboxesDiscardMessage400 = MalformedRequestError;
-export const MailboxesDiscardMessage400 = MalformedRequestError;
-export type MailboxesDiscardMessage401 = UnauthorizedError;
-export const MailboxesDiscardMessage401 = UnauthorizedError;
-export type MailboxesDiscardMessage403 = ForbiddenError;
-export const MailboxesDiscardMessage403 = ForbiddenError;
-export type MailboxesDiscardMessage404 = ResourceNotFoundError;
-export const MailboxesDiscardMessage404 = ResourceNotFoundError;
-export type MailboxesDiscardMessage409 = ConflictError;
-export const MailboxesDiscardMessage409 = ConflictError;
-export type MailboxesDiscardMessage422 = ValidationError;
-export const MailboxesDiscardMessage422 = ValidationError;
-export type MailboxesDiscardMessage500 = InternalError;
-export const MailboxesDiscardMessage500 = InternalError;
-export type MailboxesDiscardMessage502 = BillingProviderError;
-export const MailboxesDiscardMessage502 = BillingProviderError;
-export type MailboxesDiscardMessage504 = GatewayTimeoutError;
-export const MailboxesDiscardMessage504 = GatewayTimeoutError;
 export type MailboxesForwardPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
 export const MailboxesForwardPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
@@ -4453,30 +4512,6 @@ export type MailboxesGetMessageRaw500 = InternalError;
 export const MailboxesGetMessageRaw500 = InternalError;
 export type MailboxesGetMessageRaw504 = GatewayTimeoutError;
 export const MailboxesGetMessageRaw504 = GatewayTimeoutError;
-export type MailboxesReleaseMessagePathParams = {
-  readonly id: MailboxId;
-  readonly messageId: MessageId;
-};
-export const MailboxesReleaseMessagePathParams = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
-export type MailboxesReleaseMessage200 = MailboxQuarantinedMessage;
-export const MailboxesReleaseMessage200 = MailboxQuarantinedMessage;
-export type MailboxesReleaseMessage400 = MalformedRequestError;
-export const MailboxesReleaseMessage400 = MalformedRequestError;
-export type MailboxesReleaseMessage401 = UnauthorizedError;
-export const MailboxesReleaseMessage401 = UnauthorizedError;
-export type MailboxesReleaseMessage403 = ForbiddenError;
-export const MailboxesReleaseMessage403 = ForbiddenError;
-export type MailboxesReleaseMessage404 = ResourceNotFoundError;
-export const MailboxesReleaseMessage404 = ResourceNotFoundError;
-export type MailboxesReleaseMessage409 = ConflictError;
-export const MailboxesReleaseMessage409 = ConflictError;
-export type MailboxesReleaseMessage422 = ValidationError;
-export const MailboxesReleaseMessage422 = ValidationError;
-export type MailboxesReleaseMessage500 = InternalError;
-export const MailboxesReleaseMessage500 = InternalError;
-export type MailboxesReleaseMessage504 = GatewayTimeoutError;
-export const MailboxesReleaseMessage504 = GatewayTimeoutError;
 export type MailboxesReplyPathParams = { readonly id: MailboxId; readonly messageId: MessageId };
 export const MailboxesReplyPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, messageId: MessageId }))();
@@ -4615,50 +4650,6 @@ export type MailboxesPause500 = InternalError;
 export const MailboxesPause500 = InternalError;
 export type MailboxesPause504 = GatewayTimeoutError;
 export const MailboxesPause504 = GatewayTimeoutError;
-export type MailboxesListQuarantinePathParams = { readonly id: MailboxId };
-export const MailboxesListQuarantinePathParams = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: MailboxId }))();
-export type MailboxesListQuarantineQuery = {
-  readonly limit?: number | null;
-  readonly cursor?: string;
-  readonly after?: string;
-  readonly before?: string;
-};
-export const MailboxesListQuarantineQuery = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    limit: Schema.optionalKey(
-      Schema.Union([
-        Schema.Finite.annotate({ description: "Items per page, at most 100." })
-          .check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isLessThanOrEqualTo(100).annotate({
-              expected: "a value less than or equal to 100",
-            }),
-          )
-          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
-        Schema.Null,
-      ]),
-    ),
-    cursor: Schema.optionalKey(Schema.String),
-    after: Schema.optionalKey(Schema.String),
-    before: Schema.optionalKey(Schema.String),
-  }))();
-export type MailboxesListQuarantine200 = MailboxQuarantinePage;
-export const MailboxesListQuarantine200 = MailboxQuarantinePage;
-export type MailboxesListQuarantine400 = MalformedRequestError;
-export const MailboxesListQuarantine400 = MalformedRequestError;
-export type MailboxesListQuarantine401 = UnauthorizedError;
-export const MailboxesListQuarantine401 = UnauthorizedError;
-export type MailboxesListQuarantine403 = ForbiddenError;
-export const MailboxesListQuarantine403 = ForbiddenError;
-export type MailboxesListQuarantine404 = ResourceNotFoundError;
-export const MailboxesListQuarantine404 = ResourceNotFoundError;
-export type MailboxesListQuarantine422 = ValidationError;
-export const MailboxesListQuarantine422 = ValidationError;
-export type MailboxesListQuarantine500 = InternalError;
-export const MailboxesListQuarantine500 = InternalError;
-export type MailboxesListQuarantine504 = GatewayTimeoutError;
-export const MailboxesListQuarantine504 = GatewayTimeoutError;
 export type MailboxesResumePathParams = { readonly id: MailboxId };
 export const MailboxesResumePathParams = /* @__PURE__ */ (() => Schema.Struct({ id: MailboxId }))();
 export type MailboxesResume200 = Mailbox;
@@ -4902,6 +4893,93 @@ export type MailboxesSendScheduledNow500 = InternalError;
 export const MailboxesSendScheduledNow500 = InternalError;
 export type MailboxesSendScheduledNow504 = GatewayTimeoutError;
 export const MailboxesSendScheduledNow504 = GatewayTimeoutError;
+export type MailboxesEmptySpamPathParams = { readonly id: MailboxId };
+export const MailboxesEmptySpamPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesEmptySpam202 = MailboxEmptySpamAccepted;
+export const MailboxesEmptySpam202 = MailboxEmptySpamAccepted;
+export type MailboxesEmptySpam400 = MalformedRequestError;
+export const MailboxesEmptySpam400 = MalformedRequestError;
+export type MailboxesEmptySpam401 = UnauthorizedError;
+export const MailboxesEmptySpam401 = UnauthorizedError;
+export type MailboxesEmptySpam403 = ForbiddenError;
+export const MailboxesEmptySpam403 = ForbiddenError;
+export type MailboxesEmptySpam404 = ResourceNotFoundError;
+export const MailboxesEmptySpam404 = ResourceNotFoundError;
+export type MailboxesEmptySpam422 = ValidationError;
+export const MailboxesEmptySpam422 = ValidationError;
+export type MailboxesEmptySpam500 = InternalError;
+export const MailboxesEmptySpam500 = InternalError;
+export type MailboxesEmptySpam504 = GatewayTimeoutError;
+export const MailboxesEmptySpam504 = GatewayTimeoutError;
+export type MailboxesListSpamHeldPathParams = { readonly id: MailboxId };
+export const MailboxesListSpamHeldPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesListSpamHeldQuery = {
+  readonly limit?: number | null;
+  readonly cursor?: string;
+  readonly after?: string;
+  readonly before?: string;
+};
+export const MailboxesListSpamHeldQuery = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    limit: Schema.optionalKey(
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
+    ),
+    cursor: Schema.optionalKey(Schema.String),
+    after: Schema.optionalKey(Schema.String),
+    before: Schema.optionalKey(Schema.String),
+  }))();
+export type MailboxesListSpamHeld200 = MailboxSpamHeldPage;
+export const MailboxesListSpamHeld200 = MailboxSpamHeldPage;
+export type MailboxesListSpamHeld400 = MalformedRequestError;
+export const MailboxesListSpamHeld400 = MalformedRequestError;
+export type MailboxesListSpamHeld401 = UnauthorizedError;
+export const MailboxesListSpamHeld401 = UnauthorizedError;
+export type MailboxesListSpamHeld403 = ForbiddenError;
+export const MailboxesListSpamHeld403 = ForbiddenError;
+export type MailboxesListSpamHeld404 = ResourceNotFoundError;
+export const MailboxesListSpamHeld404 = ResourceNotFoundError;
+export type MailboxesListSpamHeld422 = ValidationError;
+export const MailboxesListSpamHeld422 = ValidationError;
+export type MailboxesListSpamHeld500 = InternalError;
+export const MailboxesListSpamHeld500 = InternalError;
+export type MailboxesListSpamHeld504 = GatewayTimeoutError;
+export const MailboxesListSpamHeld504 = GatewayTimeoutError;
+export type MailboxesDiscardSpamHeldPathParams = {
+  readonly id: MailboxId;
+  readonly messageId: MessageId;
+};
+export const MailboxesDiscardSpamHeldPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, messageId: MessageId }))();
+export type MailboxesDiscardSpamHeld200 = MailboxSpamHeldMessage;
+export const MailboxesDiscardSpamHeld200 = MailboxSpamHeldMessage;
+export type MailboxesDiscardSpamHeld400 = MalformedRequestError;
+export const MailboxesDiscardSpamHeld400 = MalformedRequestError;
+export type MailboxesDiscardSpamHeld401 = UnauthorizedError;
+export const MailboxesDiscardSpamHeld401 = UnauthorizedError;
+export type MailboxesDiscardSpamHeld403 = ForbiddenError;
+export const MailboxesDiscardSpamHeld403 = ForbiddenError;
+export type MailboxesDiscardSpamHeld404 = ResourceNotFoundError;
+export const MailboxesDiscardSpamHeld404 = ResourceNotFoundError;
+export type MailboxesDiscardSpamHeld422 = ValidationError;
+export const MailboxesDiscardSpamHeld422 = ValidationError;
+export type MailboxesDiscardSpamHeld500 = InternalError;
+export const MailboxesDiscardSpamHeld500 = InternalError;
+export type MailboxesDiscardSpamHeld502 = BillingProviderError;
+export const MailboxesDiscardSpamHeld502 = BillingProviderError;
+export type MailboxesDiscardSpamHeld504 = GatewayTimeoutError;
+export const MailboxesDiscardSpamHeld504 = GatewayTimeoutError;
 export type MailboxesListThreadsPathParams = { readonly id: MailboxId };
 export const MailboxesListThreadsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
@@ -4993,6 +5071,30 @@ export type MailboxesGetThread500 = InternalError;
 export const MailboxesGetThread500 = InternalError;
 export type MailboxesGetThread504 = GatewayTimeoutError;
 export const MailboxesGetThread504 = GatewayTimeoutError;
+export type MailboxesDeleteThreadPathParams = {
+  readonly id: MailboxId;
+  readonly threadId: MailboxThreadId;
+};
+export const MailboxesDeleteThreadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, threadId: MailboxThreadId }))();
+export type MailboxesDeleteThread200 = SuccessResponse;
+export const MailboxesDeleteThread200 = SuccessResponse;
+export type MailboxesDeleteThread400 = MalformedRequestError;
+export const MailboxesDeleteThread400 = MalformedRequestError;
+export type MailboxesDeleteThread401 = UnauthorizedError;
+export const MailboxesDeleteThread401 = UnauthorizedError;
+export type MailboxesDeleteThread403 = ForbiddenError;
+export const MailboxesDeleteThread403 = ForbiddenError;
+export type MailboxesDeleteThread404 = ResourceNotFoundError;
+export const MailboxesDeleteThread404 = ResourceNotFoundError;
+export type MailboxesDeleteThread409 = ConflictError;
+export const MailboxesDeleteThread409 = ConflictError;
+export type MailboxesDeleteThread422 = ValidationError;
+export const MailboxesDeleteThread422 = ValidationError;
+export type MailboxesDeleteThread500 = InternalError;
+export const MailboxesDeleteThread500 = InternalError;
+export type MailboxesDeleteThread504 = GatewayTimeoutError;
+export const MailboxesDeleteThread504 = GatewayTimeoutError;
 export type MailboxesUpdateThreadPathParams = {
   readonly id: MailboxId;
   readonly threadId: MailboxThreadId;
@@ -5315,6 +5417,25 @@ export type MailboxesUpdateNote500 = InternalError;
 export const MailboxesUpdateNote500 = InternalError;
 export type MailboxesUpdateNote504 = GatewayTimeoutError;
 export const MailboxesUpdateNote504 = GatewayTimeoutError;
+export type MailboxesEmptyTrashPathParams = { readonly id: MailboxId };
+export const MailboxesEmptyTrashPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId }))();
+export type MailboxesEmptyTrash202 = MailboxEmptyTrashAccepted;
+export const MailboxesEmptyTrash202 = MailboxEmptyTrashAccepted;
+export type MailboxesEmptyTrash400 = MalformedRequestError;
+export const MailboxesEmptyTrash400 = MalformedRequestError;
+export type MailboxesEmptyTrash401 = UnauthorizedError;
+export const MailboxesEmptyTrash401 = UnauthorizedError;
+export type MailboxesEmptyTrash403 = ForbiddenError;
+export const MailboxesEmptyTrash403 = ForbiddenError;
+export type MailboxesEmptyTrash404 = ResourceNotFoundError;
+export const MailboxesEmptyTrash404 = ResourceNotFoundError;
+export type MailboxesEmptyTrash422 = ValidationError;
+export const MailboxesEmptyTrash422 = ValidationError;
+export type MailboxesEmptyTrash500 = InternalError;
+export const MailboxesEmptyTrash500 = InternalError;
+export type MailboxesEmptyTrash504 = GatewayTimeoutError;
+export const MailboxesEmptyTrash504 = GatewayTimeoutError;
 export type MailboxesListOrganizationDraftsQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
@@ -6706,7 +6827,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Get a message attachment")
       .annotate(
         OpenApi.Description,
-        "Returns a short-lived download URL for one of the message's attachments.",
+        "Returns a short-lived download URL for one of the message's attachments. Inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`).",
       ),
     HttpApiEndpoint.post(
       "mailboxesCopyMessageAttachment",
@@ -6731,33 +6852,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Copy a message attachment")
       .annotate(
         OpenApi.Description,
-        "Copies one of a received message's attachments into the organization's media and returns it as a draft attachment (`mediaId`), so a draft can carry it. A draft that forwards a message saves each original attachment this way.",
-      ),
-    HttpApiEndpoint.post(
-      "mailboxesDiscardMessage",
-      "/v1/mailboxes/:id/messages/:messageId/discard",
-      {
-        params: MailboxesDiscardMessagePathParams,
-        success: MailboxesDiscardMessage200,
-        error: [
-          MailboxesDiscardMessage400.pipe(HttpApiSchema.status(400)),
-          MailboxesDiscardMessage401.pipe(HttpApiSchema.status(401)),
-          MailboxesDiscardMessage403.pipe(HttpApiSchema.status(403)),
-          MailboxesDiscardMessage404.pipe(HttpApiSchema.status(404)),
-          MailboxesDiscardMessage409.pipe(HttpApiSchema.status(409)),
-          MailboxesDiscardMessage422.pipe(HttpApiSchema.status(422)),
-          MailboxesDiscardMessage500,
-          MailboxesDiscardMessage502.pipe(HttpApiSchema.status(502)),
-          MailboxesDiscardMessage504.pipe(HttpApiSchema.status(504)),
-        ],
-      },
-    )
-      .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "mailboxes.discardMessage")
-      .annotate(OpenApi.Summary, "Discard a quarantined message")
-      .annotate(
-        OpenApi.Description,
-        "Removes a held message from the mailbox's quarantine for good: it leaves the quarantine list, never reaches a thread, and can no longer be released. Quarantined and isolated (malware) messages can both be discarded. Publishes one `mailbox.message.discarded` event; discarding it again returns the same result and publishes nothing. A released message is in its thread and cannot be discarded: 409. Only a person can discard; API keys never hold `quarantine.release`.",
+        "Copies one of a received message's attachments into the organization's media and returns it as a draft attachment (`mediaId`), so a draft can carry it. A draft that forwards a message saves each original attachment this way. Inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`).",
       ),
     HttpApiEndpoint.post("mailboxesForward", "/v1/mailboxes/:id/messages/:messageId/forward", {
       params: MailboxesForwardPathParams,
@@ -6784,7 +6879,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Forward a message")
       .annotate(
         OpenApi.Description,
-        "Forwards an email to new recipients as a new conversation from the thread's endpoint, with the original quoted below the caller's text and its attachments attached ahead of any the caller adds. The combined attachments must fit the email attachment limits.",
+        "Forwards an email to new recipients as a new conversation from the thread's endpoint, with the original quoted below the caller's text and its attachments attached ahead of any the caller adds. The combined attachments must fit the email attachment limits. Forwarding an inbound email with attachments and without a passing malware scan returns 404 (`ResourceNotFoundError`).",
       ),
     HttpApiEndpoint.get("mailboxesGetMessageRaw", "/v1/mailboxes/:id/messages/:messageId/raw", {
       params: MailboxesGetMessageRawPathParams,
@@ -6804,32 +6899,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Get a message's raw MIME")
       .annotate(
         OpenApi.Description,
-        "Returns a short-lived URL for the message exactly as it was received (`message/rfc822`). Sent messages have no stored MIME.",
-      ),
-    HttpApiEndpoint.post(
-      "mailboxesReleaseMessage",
-      "/v1/mailboxes/:id/messages/:messageId/release",
-      {
-        params: MailboxesReleaseMessagePathParams,
-        success: MailboxesReleaseMessage200,
-        error: [
-          MailboxesReleaseMessage400.pipe(HttpApiSchema.status(400)),
-          MailboxesReleaseMessage401.pipe(HttpApiSchema.status(401)),
-          MailboxesReleaseMessage403.pipe(HttpApiSchema.status(403)),
-          MailboxesReleaseMessage404.pipe(HttpApiSchema.status(404)),
-          MailboxesReleaseMessage409.pipe(HttpApiSchema.status(409)),
-          MailboxesReleaseMessage422.pipe(HttpApiSchema.status(422)),
-          MailboxesReleaseMessage500,
-          MailboxesReleaseMessage504.pipe(HttpApiSchema.status(504)),
-        ],
-      },
-    )
-      .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "mailboxes.releaseMessage")
-      .annotate(OpenApi.Summary, "Release a quarantined message")
-      .annotate(
-        OpenApi.Description,
-        "Delivers a quarantined message into the thread it would have joined and publishes one `mailbox.message.released` event. Releasing it again returns the same result and publishes nothing. Only a person can release; API keys never hold `quarantine.release`. Isolated (malware) messages and discarded messages cannot be released: 409.",
+        "Returns a short-lived URL for the message exactly as it was received (`message/rfc822`). Sent messages have no stored MIME. Inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`).",
       ),
     HttpApiEndpoint.post("mailboxesReply", "/v1/mailboxes/:id/messages/:messageId/reply", {
       params: MailboxesReplyPathParams,
@@ -6904,27 +6974,6 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(
         OpenApi.Description,
         "Stops the mailbox sending and stops new inbound mail reaching it. Mail that arrives while it is paused is not added when it resumes. Resume it with `POST /v1/mailboxes/{id}/resume`.",
-      ),
-    HttpApiEndpoint.get("mailboxesListQuarantine", "/v1/mailboxes/:id/quarantine", {
-      params: MailboxesListQuarantinePathParams,
-      query: MailboxesListQuarantineQuery,
-      success: MailboxesListQuarantine200,
-      error: [
-        MailboxesListQuarantine400.pipe(HttpApiSchema.status(400)),
-        MailboxesListQuarantine401.pipe(HttpApiSchema.status(401)),
-        MailboxesListQuarantine403.pipe(HttpApiSchema.status(403)),
-        MailboxesListQuarantine404.pipe(HttpApiSchema.status(404)),
-        MailboxesListQuarantine422.pipe(HttpApiSchema.status(422)),
-        MailboxesListQuarantine500,
-        MailboxesListQuarantine504.pipe(HttpApiSchema.status(504)),
-      ],
-    })
-      .middleware(ApiKeySecurityMiddleware)
-      .annotate(OpenApi.Identifier, "mailboxes.listQuarantine")
-      .annotate(OpenApi.Summary, "List quarantined messages")
-      .annotate(
-        OpenApi.Description,
-        "Returns the messages this mailbox holds instead of delivering, most recently held first: suspected spam, phishing, fraud, or prompt injection (`quarantined`), and malware (`isolated`). Each is metadata only; a held message appears in no thread, search, or `mailbox.message.received` event until a person releases it. `after` and `before` filter by when the message was held. Needs `quarantine.read`.",
       ),
     HttpApiEndpoint.post("mailboxesResume", "/v1/mailboxes/:id/resume", {
       params: MailboxesResumePathParams,
@@ -7037,6 +7086,72 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         OpenApi.Description,
         "Changes the caller's private scheduled sends. The revision and idempotency key protect retries and concurrent changes. Sending uses the mailbox's current permissions and policies.",
       ),
+    HttpApiEndpoint.post("mailboxesEmptySpam", "/v1/mailboxes/:id/spam/empty", {
+      params: MailboxesEmptySpamPathParams,
+      success: MailboxesEmptySpam202.pipe(HttpApiSchema.status(202)),
+      error: [
+        MailboxesEmptySpam400.pipe(HttpApiSchema.status(400)),
+        MailboxesEmptySpam401.pipe(HttpApiSchema.status(401)),
+        MailboxesEmptySpam403.pipe(HttpApiSchema.status(403)),
+        MailboxesEmptySpam404.pipe(HttpApiSchema.status(404)),
+        MailboxesEmptySpam422.pipe(HttpApiSchema.status(422)),
+        MailboxesEmptySpam500,
+        MailboxesEmptySpam504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.emptySpam")
+      .annotate(OpenApi.Summary, "Empty a mailbox's Spam")
+      .annotate(
+        OpenApi.Description,
+        "Queues permanent deletion of the threads currently in Spam and returns their count. Requires thread:write. A thread restored before processing is skipped.",
+      ),
+    HttpApiEndpoint.get("mailboxesListSpamHeld", "/v1/mailboxes/:id/spam/held", {
+      params: MailboxesListSpamHeldPathParams,
+      query: MailboxesListSpamHeldQuery,
+      success: MailboxesListSpamHeld200,
+      error: [
+        MailboxesListSpamHeld400.pipe(HttpApiSchema.status(400)),
+        MailboxesListSpamHeld401.pipe(HttpApiSchema.status(401)),
+        MailboxesListSpamHeld403.pipe(HttpApiSchema.status(403)),
+        MailboxesListSpamHeld404.pipe(HttpApiSchema.status(404)),
+        MailboxesListSpamHeld422.pipe(HttpApiSchema.status(422)),
+        MailboxesListSpamHeld500,
+        MailboxesListSpamHeld504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.listSpamHeld")
+      .annotate(OpenApi.Summary, "List malware held outside Spam threads")
+      .annotate(
+        OpenApi.Description,
+        "Lists isolated messages, newest first. Only metadata is stored. Use the thread list with folder=spam to read Spam. The after and before filters apply to when the message was held.",
+      ),
+    HttpApiEndpoint.post(
+      "mailboxesDiscardSpamHeld",
+      "/v1/mailboxes/:id/spam/held/:messageId/discard",
+      {
+        params: MailboxesDiscardSpamHeldPathParams,
+        success: MailboxesDiscardSpamHeld200,
+        error: [
+          MailboxesDiscardSpamHeld400.pipe(HttpApiSchema.status(400)),
+          MailboxesDiscardSpamHeld401.pipe(HttpApiSchema.status(401)),
+          MailboxesDiscardSpamHeld403.pipe(HttpApiSchema.status(403)),
+          MailboxesDiscardSpamHeld404.pipe(HttpApiSchema.status(404)),
+          MailboxesDiscardSpamHeld422.pipe(HttpApiSchema.status(422)),
+          MailboxesDiscardSpamHeld500,
+          MailboxesDiscardSpamHeld502.pipe(HttpApiSchema.status(502)),
+          MailboxesDiscardSpamHeld504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.discardSpamHeld")
+      .annotate(OpenApi.Summary, "Discard held malware")
+      .annotate(
+        OpenApi.Description,
+        "Permanently removes isolated malware from the mailbox's held list. Publishes one `mailbox.message.discarded` event. Retrying returns the same result and publishes nothing. Delete readable Spam through the thread delete endpoint. Only a person with `spam.discard` can discard held mail.",
+      ),
     HttpApiEndpoint.get("mailboxesListThreads", "/v1/mailboxes/:id/threads", {
       params: MailboxesListThreadsPathParams,
       query: MailboxesListThreadsQuery,
@@ -7077,6 +7192,27 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(
         OpenApi.Description,
         "Returns a thread with its participants and where it stands. Read its messages with `GET .../threads/{threadId}/messages` and their bodies with `GET .../threads/{threadId}/content`.",
+      ),
+    HttpApiEndpoint.delete("mailboxesDeleteThread", "/v1/mailboxes/:id/threads/:threadId", {
+      params: MailboxesDeleteThreadPathParams,
+      success: MailboxesDeleteThread200,
+      error: [
+        MailboxesDeleteThread400.pipe(HttpApiSchema.status(400)),
+        MailboxesDeleteThread401.pipe(HttpApiSchema.status(401)),
+        MailboxesDeleteThread403.pipe(HttpApiSchema.status(403)),
+        MailboxesDeleteThread404.pipe(HttpApiSchema.status(404)),
+        MailboxesDeleteThread409.pipe(HttpApiSchema.status(409)),
+        MailboxesDeleteThread422.pipe(HttpApiSchema.status(422)),
+        MailboxesDeleteThread500,
+        MailboxesDeleteThread504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.deleteThread")
+      .annotate(OpenApi.Summary, "Permanently delete a mailbox thread")
+      .annotate(
+        OpenApi.Description,
+        "Deletes a thread from Trash or Spam. Requires thread:write. Returns 409 if the thread is outside those folders. Publishes mailbox.thread.deleted. Cleanup of stored files runs after the deletion commits.",
       ),
     HttpApiEndpoint.patch("mailboxesUpdateThread", "/v1/mailboxes/:id/threads/:threadId", {
       params: MailboxesUpdateThreadPathParams,
@@ -7282,6 +7418,26 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(
         OpenApi.Description,
         "Updates the fields you name and keeps the rest. Only the note's author may.",
+      ),
+    HttpApiEndpoint.post("mailboxesEmptyTrash", "/v1/mailboxes/:id/trash/empty", {
+      params: MailboxesEmptyTrashPathParams,
+      success: MailboxesEmptyTrash202.pipe(HttpApiSchema.status(202)),
+      error: [
+        MailboxesEmptyTrash400.pipe(HttpApiSchema.status(400)),
+        MailboxesEmptyTrash401.pipe(HttpApiSchema.status(401)),
+        MailboxesEmptyTrash403.pipe(HttpApiSchema.status(403)),
+        MailboxesEmptyTrash404.pipe(HttpApiSchema.status(404)),
+        MailboxesEmptyTrash422.pipe(HttpApiSchema.status(422)),
+        MailboxesEmptyTrash500,
+        MailboxesEmptyTrash504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.emptyTrash")
+      .annotate(OpenApi.Summary, "Empty a mailbox's Trash")
+      .annotate(
+        OpenApi.Description,
+        "Queues permanent deletion of the threads currently in Trash and returns their count. Requires thread:write. A thread restored before processing is skipped.",
       ),
     HttpApiEndpoint.get("mailboxesListOrganizationDrafts", "/v1/mailboxes/drafts", {
       query: MailboxesListOrganizationDraftsQuery,

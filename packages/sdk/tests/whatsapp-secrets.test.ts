@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import { describe, expect, it } from "@effect/vitest";
 import { Predicate, Redacted, Schema } from "effect";
 
@@ -24,7 +26,7 @@ describe("public WhatsApp credential protection", () => {
     expect(Redacted.isRedacted(decoded)).toBe(true);
     if (!Redacted.isRedacted(decoded)) throw new Error("Expected a redacted credential");
     expect(Redacted.value(decoded)).toBe(secret);
-    expect(String(decoded)).toBe("<redacted>");
+    expect(inspect(decoded)).toBe("<redacted>");
     expect(JSON.stringify({ value: decoded })).not.toContain(secret);
     expect(Schema.encodeUnknownSync(schema)(decoded)).toBe(secret);
   });
@@ -75,6 +77,7 @@ describe("public WhatsApp credential protection", () => {
         )
           continue;
         operationCount++;
+        const operationId = operation.operationId;
         const jsonSchema = (body: unknown): unknown => {
           const content = expectRecord(expectRecord(body, "body").content, "content");
           return expectRecord(content["application/json"], "JSON").schema;
@@ -82,7 +85,7 @@ describe("public WhatsApp credential protection", () => {
         if (operation.requestBody !== undefined) {
           observed.push(
             ...sensitivePaths(jsonSchema(operation.requestBody)).map(
-              (path) => `${operation.operationId}.request.${path}`,
+              (path) => `${operationId}.request.${path}`,
             ),
           );
         }
@@ -93,9 +96,7 @@ describe("public WhatsApp credential protection", () => {
           const body = expectRecord(response, status);
           if (body.content !== undefined)
             observed.push(
-              ...sensitivePaths(jsonSchema(body)).map(
-                (path) => `${operation.operationId}.response.${path}`,
-              ),
+              ...sensitivePaths(jsonSchema(body)).map((path) => `${operationId}.response.${path}`),
             );
         }
       }

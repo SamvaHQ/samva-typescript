@@ -13,13 +13,15 @@ import {
   InternalError,
   MalformedRequestError,
   ResourceNotFoundError,
+  ServiceUnavailableError,
   TemplateChannelVariantId,
   TemplateId,
   TemplatePublicationId,
+  TemplateRegistrationApproval,
   TemplateRegistrationId,
   UnauthorizedError,
   ValidationError,
-  WhatsAppBusinessAccountId,
+  WhatsAppBusinessAccountId_1,
   WhatsAppChannelError,
 } from "./shared";
 
@@ -163,12 +165,14 @@ export const TemplateRegistrationsSubmitPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
 export type TemplateRegistrationsSubmitRequestJson = {
   readonly provider: "whatsapp";
-  readonly businessAccountId?: WhatsAppBusinessAccountId;
+  readonly businessAccountId?: WhatsAppBusinessAccountId_1;
+  readonly approval?: TemplateRegistrationApproval;
 };
 export const TemplateRegistrationsSubmitRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     provider: Schema.Literal("whatsapp"),
-    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
+    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId_1),
+    approval: Schema.optionalKey(TemplateRegistrationApproval),
   }))();
 export type TemplateRegistrationsSubmit201 = TemplateRegistration;
 export const TemplateRegistrationsSubmit201 = TemplateRegistration;
@@ -190,6 +194,8 @@ export const TemplateRegistrationsSubmit500 = /* @__PURE__ */ (() =>
   Schema.Union([CredentialsError, InternalError]))();
 export type TemplateRegistrationsSubmit502 = WhatsAppChannelError;
 export const TemplateRegistrationsSubmit502 = WhatsAppChannelError;
+export type TemplateRegistrationsSubmit503 = ServiceUnavailableError;
+export const TemplateRegistrationsSubmit503 = ServiceUnavailableError;
 export type TemplateRegistrationsSubmit504 = GatewayTimeoutError;
 export const TemplateRegistrationsSubmit504 = GatewayTimeoutError;
 export type TemplateRegistrationsGetPathParams = {
@@ -251,6 +257,7 @@ export class TemplateRegistrationsGroup extends HttpApiGroup.make("Template regi
         TemplateRegistrationsSubmit422.pipe(HttpApiSchema.status(422)),
         TemplateRegistrationsSubmit500,
         TemplateRegistrationsSubmit502.pipe(HttpApiSchema.status(502)),
+        TemplateRegistrationsSubmit503.pipe(HttpApiSchema.status(503)),
         TemplateRegistrationsSubmit504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -259,7 +266,7 @@ export class TemplateRegistrationsGroup extends HttpApiGroup.make("Template regi
       .annotate(OpenApi.Summary, "Submit a template registration")
       .annotate(
         OpenApi.Description,
-        "Submits the template's current publication for the provider's review: for WhatsApp, as a message template on the business account of the named number, or of the default number. A first submission creates the provider template; a later one resubmits the newer publication's content to the same template.",
+        "Submits the template's current publication for review on a WhatsApp business account. Pass approval to bind a reviewed submission to the exact publication, workspace revision, connected number and Meta business account. A changed selection returns a conflict. An immediate submission uses the named or default number. A first submission creates the provider template. A later one resubmits through the same registration.",
       ),
     HttpApiEndpoint.get(
       "templateRegistrationsGet",

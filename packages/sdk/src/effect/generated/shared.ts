@@ -39,6 +39,13 @@ export const IntegrationAccountId = /* @__PURE__ */ (() =>
       identifier: "IntegrationAccountId",
     }),
   ).pipe(Schema.brand("IntegrationAccountId")))();
+export type AccountStatus = "pending" | "connected" | "needsReconnect";
+export const AccountStatus = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("pending"),
+    Schema.Literal("connected"),
+    Schema.Literal("needsReconnect"),
+  ]).annotate({ identifier: "AccountStatus" }))();
 export type UserId = string & EffectBrand.Brand<"UserId">;
 export const UserId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1088,6 +1095,22 @@ export const IntegrationTool = /* @__PURE__ */ (() =>
       identifier: "IntegrationTool",
     }),
   ))();
+export type TemplateRegistrationId = string & EffectBrand.Brand<"TemplateRegistrationId">;
+export const TemplateRegistrationId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^treg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^treg_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "TemplateRegistrationId",
+    }),
+  ).pipe(Schema.brand("TemplateRegistrationId")))();
+export type TemplateFamilyId = string & EffectBrand.Brand<"TemplateFamilyId">;
+export const TemplateFamilyId = /* @__PURE__ */ (() =>
+  Schema.String.check(
+    Schema.isPattern(new globalThis.RegExp("^tfam_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^tfam_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "TemplateFamilyId",
+    }),
+  ).pipe(Schema.brand("TemplateFamilyId")))();
 export type JourneyId = string & EffectBrand.Brand<"JourneyId">;
 export const JourneyId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1096,6 +1119,14 @@ export const JourneyId = /* @__PURE__ */ (() =>
       identifier: "JourneyId",
     }),
   ).pipe(Schema.brand("JourneyId")))();
+export type JourneyStatus = "draft" | "active" | "paused" | "archived";
+export const JourneyStatus = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Literal("draft"),
+    Schema.Literal("active"),
+    Schema.Literal("paused"),
+    Schema.Literal("archived"),
+  ]).annotate({ identifier: "JourneyStatus" }))();
 export type JourneyName = string;
 export const JourneyName = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1161,14 +1192,6 @@ export const JourneyNodeId = /* @__PURE__ */ (() =>
       identifier: "JourneyNodeId",
     }),
   ))();
-export type TemplateRegistrationId = string & EffectBrand.Brand<"TemplateRegistrationId">;
-export const TemplateRegistrationId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^treg_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^treg_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "TemplateRegistrationId",
-    }),
-  ).pipe(Schema.brand("TemplateRegistrationId")))();
 export type TemplateChannelVariantId = string & EffectBrand.Brand<"TemplateChannelVariantId">;
 export const TemplateChannelVariantId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -1553,7 +1576,14 @@ export class WhatsAppServiceWindowClosedError extends Schema.TaggedError<WhatsAp
   "WhatsAppServiceWindowClosedError",
   Schema.Struct({ message: Schema.String, closedAt: Schema.Union([Schema.String, Schema.Null]) }),
 ) {}
-export type MailboxThreadFolder = "inbox" | "assigned" | "pending" | "sent" | "archived" | "trash";
+export type MailboxThreadFolder =
+  | "inbox"
+  | "assigned"
+  | "pending"
+  | "sent"
+  | "archived"
+  | "trash"
+  | "spam";
 export const MailboxThreadFolder = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Literal("inbox"),
@@ -1562,6 +1592,7 @@ export const MailboxThreadFolder = /* @__PURE__ */ (() =>
     Schema.Literal("sent"),
     Schema.Literal("archived"),
     Schema.Literal("trash"),
+    Schema.Literal("spam"),
   ]).annotate({ identifier: "MailboxThreadFolder" }))();
 export type MailboxGrantRole = "admin" | "collaborator" | "viewer";
 export const MailboxGrantRole = /* @__PURE__ */ (() =>
@@ -2635,6 +2666,27 @@ export const TemplateFromDefaultInput = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "TemplateFromDefaultInput" }))();
+export type WhatsAppBusinessAccountId_1 = string;
+export const WhatsAppBusinessAccountId_1 = /* @__PURE__ */ (() =>
+  Schema.String.annotate({
+    description:
+      "For an immediate submission, the connected number to register on. Defaults to the number for the template's scope.",
+  }).check(
+    Schema.isPattern(new globalThis.RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^waba_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WhatsAppBusinessAccountId_1",
+    }),
+  ))();
+export type WhatsAppBusinessAccountId_2 = string;
+export const WhatsAppBusinessAccountId_2 = /* @__PURE__ */ (() =>
+  Schema.String.annotate({
+    description: "The connected WhatsApp number selected for this submission.",
+  }).check(
+    Schema.isPattern(new globalThis.RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+      expected: "a string matching the RegExp ^waba_[0-9a-hjkmnp-tv-z]{16,24}$",
+      identifier: "WhatsAppBusinessAccountId_2",
+    }),
+  ))();
 export class CredentialsError extends Schema.TaggedError<CredentialsError>()(
   "CredentialsError",
   Schema.Struct({ message: Schema.String, retryable: Schema.Boolean }),
@@ -4367,8 +4419,8 @@ export const UpdateAgentPayload = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "UpdateAgentPayload" }))();
 export type ApiKeyMailboxAccess = {
   readonly permissions: readonly [
-    "read" | "update" | "send" | "quarantine.read",
-    ...Array<"read" | "update" | "send" | "quarantine.read">,
+    "read" | "update" | "send" | "spam.read",
+    ...Array<"read" | "update" | "send" | "spam.read">,
   ];
   readonly mailboxIds?: readonly [MailboxId, ...Array<MailboxId>] | null;
 };
@@ -4380,7 +4432,7 @@ export const ApiKeyMailboxAccess = /* @__PURE__ */ (() =>
           Schema.Literal("read"),
           Schema.Literal("update"),
           Schema.Literal("send"),
-          Schema.Literal("quarantine.read"),
+          Schema.Literal("spam.read"),
         ]),
       ]),
       [
@@ -4388,12 +4440,12 @@ export const ApiKeyMailboxAccess = /* @__PURE__ */ (() =>
           Schema.Literal("read"),
           Schema.Literal("update"),
           Schema.Literal("send"),
-          Schema.Literal("quarantine.read"),
+          Schema.Literal("spam.read"),
         ]),
       ],
     ).annotate({
       description:
-        "`read` reads mailboxes, threads, and messages; `update` changes thread state, labels, drafts, and notes; `send` sends and replies; `quarantine.read` reads quarantined mail.",
+        "`read` reads mailboxes, threads, and messages; `update` changes thread state, labels, drafts, and notes; `send` sends and replies; `spam.read` reads quarantined mail.",
     }),
     mailboxIds: Schema.optionalKey(
       Schema.Union([
@@ -4449,9 +4501,9 @@ export type CreateWebhookPayload = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -4511,9 +4563,9 @@ export const CreateWebhookPayload = /* @__PURE__ */ (() =>
         Schema.Literal("mailbox.message.sent"),
         Schema.Literal("mailbox.action.pending_approval"),
         Schema.Literal("mailbox.action.resolved"),
-        Schema.Literal("mailbox.message.quarantined"),
-        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.spam"),
         Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.thread.deleted"),
         Schema.Literal("mailbox.message.delivered"),
         Schema.Literal("mailbox.message.read"),
         Schema.Literal("mailbox.message.failed"),
@@ -4586,9 +4638,9 @@ export type UpdateWebhookPayload = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -4657,9 +4709,9 @@ export const UpdateWebhookPayload = /* @__PURE__ */ (() =>
             Schema.Literal("mailbox.message.sent"),
             Schema.Literal("mailbox.action.pending_approval"),
             Schema.Literal("mailbox.action.resolved"),
-            Schema.Literal("mailbox.message.quarantined"),
-            Schema.Literal("mailbox.message.released"),
+            Schema.Literal("mailbox.message.spam"),
             Schema.Literal("mailbox.message.discarded"),
+            Schema.Literal("mailbox.thread.deleted"),
             Schema.Literal("mailbox.message.delivered"),
             Schema.Literal("mailbox.message.read"),
             Schema.Literal("mailbox.message.failed"),
@@ -4968,6 +5020,75 @@ export const RespondToOnboardingInformationRequestInput = /* @__PURE__ */ (() =>
       Schema.isMaxLength(3).annotate({ expected: "a value with a length of at most 3" }),
     ),
   }).annotate({ identifier: "RespondToOnboardingInformationRequestInput" }))();
+export type RecipePreviewPayload =
+  | {
+      readonly templateId: TemplateId;
+      readonly publicationId: TemplatePublicationId;
+      readonly fixture?: string;
+      readonly templateData?: JsonObject;
+      readonly channel: "email";
+    }
+  | {
+      readonly templateId: TemplateId;
+      readonly publicationId: TemplatePublicationId;
+      readonly fixture?: string;
+      readonly templateData?: JsonObject;
+      readonly channel: "whatsapp";
+      readonly eventBindings?: { readonly [x: string]: string };
+    };
+export const RecipePreviewPayload = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      templateId: TemplateId,
+      publicationId: TemplatePublicationId,
+      fixture: Schema.optionalKey(
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(100).annotate({
+              expected: "a string with at most 100 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+          ),
+      ),
+      templateData: Schema.optionalKey(JsonObject),
+      channel: Schema.Literal("email"),
+    }),
+    Schema.Struct({
+      templateId: TemplateId,
+      publicationId: TemplatePublicationId,
+      fixture: Schema.optionalKey(
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(100).annotate({
+              expected: "a string with at most 100 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+          ),
+      ),
+      templateData: Schema.optionalKey(JsonObject),
+      channel: Schema.Literal("whatsapp"),
+      eventBindings: Schema.optionalKey(
+        Schema.Record(
+          Schema.String,
+          Schema.String.check(
+            Schema.isMaxCodePoints(160).annotate({
+              expected: "a string with at most 160 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(160).annotate({ expected: "a value with a length of at most 160" }),
+          ),
+        ),
+      ),
+    }),
+  ]).annotate({ identifier: "RecipePreviewPayload" }))();
 export type RenderTemplatePublicationPayload = {
   readonly data: { readonly [x: string]: JsonValue };
   readonly locale?: RenderLocale;
@@ -5141,15 +5262,6 @@ export const RotateWhatsAppFlowEncryptionKeyPayload = /* @__PURE__ */ (() =>
   Schema.Struct({ businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId) }).annotate({
     identifier: "RotateWhatsAppFlowEncryptionKeyPayload",
   }))();
-export type SubmitTemplateRegistrationPayload = {
-  readonly provider: "whatsapp";
-  readonly businessAccountId?: WhatsAppBusinessAccountId;
-};
-export const SubmitTemplateRegistrationPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    provider: Schema.Literal("whatsapp"),
-    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
-  }).annotate({ identifier: "SubmitTemplateRegistrationPayload" }))();
 export type CampaignAudience = {
   readonly topicId: TopicId;
   readonly includeTags?: ReadonlyArray<string> | null;
@@ -5464,6 +5576,228 @@ export const UpdateIntegrationPayload = /* @__PURE__ */ (() =>
     ),
     settings: Schema.optionalKey(JsonObject),
   }).annotate({ identifier: "UpdateIntegrationPayload" }))();
+export type ActivateRecipeSetup = {
+  readonly revision: string;
+  readonly selection:
+    | {
+        readonly channel: "email";
+        readonly publicationId: TemplatePublicationId;
+        readonly senderId?: EmailSenderId;
+      }
+    | {
+        readonly channel: "whatsapp";
+        readonly whatsappAccountId: WhatsAppBusinessAccountId;
+        readonly registrationId: TemplateRegistrationId;
+        readonly eventBindings: { readonly [x: string]: string };
+      };
+};
+export const ActivateRecipeSetup = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    revision: Schema.String.annotate({ format: "uuid" }).check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+      }),
+    ),
+    selection: Schema.Union([
+      Schema.Struct({
+        channel: Schema.Literal("email"),
+        publicationId: TemplatePublicationId,
+        senderId: Schema.optionalKey(EmailSenderId),
+      }),
+      Schema.Struct({
+        channel: Schema.Literal("whatsapp"),
+        whatsappAccountId: WhatsAppBusinessAccountId,
+        registrationId: TemplateRegistrationId,
+        eventBindings: Schema.Record(
+          Schema.String,
+          Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ).check(
+            Schema.isPattern(
+              new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+            ).annotate({
+              expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+            }),
+          ),
+        ).check(
+          Schema.isPropertyNames(
+            Schema.String.check(
+              Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+            ),
+          ).annotate({ expected: "an object with property names matching the schema" }),
+        ),
+      }),
+    ]),
+  }).annotate({ identifier: "ActivateRecipeSetup" }))();
+export type RecipeTestPayload =
+  | {
+      readonly templateId: TemplateId;
+      readonly publicationId: TemplatePublicationId;
+      readonly fixture?: string;
+      readonly templateData?: JsonObject;
+      readonly channel: "email";
+      readonly requestId: string;
+      readonly mailboxEndpointId: MailboxEndpointId;
+      readonly topicId?: TopicId;
+      readonly senderId?: EmailSenderId;
+    }
+  | {
+      readonly templateId: TemplateId;
+      readonly publicationId: TemplatePublicationId;
+      readonly fixture?: string;
+      readonly templateData?: JsonObject;
+      readonly channel: "whatsapp";
+      readonly eventBindings?: { readonly [x: string]: string };
+      readonly requestId: string;
+      readonly mailboxEndpointId: MailboxEndpointId;
+      readonly topicId?: TopicId;
+      readonly businessAccountId: WhatsAppBusinessAccountId;
+      readonly registrationId: TemplateRegistrationId;
+      readonly challengeId: string;
+    };
+export const RecipeTestPayload = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      templateId: TemplateId,
+      publicationId: TemplatePublicationId,
+      fixture: Schema.optionalKey(
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(100).annotate({
+              expected: "a string with at most 100 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+          ),
+      ),
+      templateData: Schema.optionalKey(JsonObject),
+      channel: Schema.Literal("email"),
+      requestId: Schema.String.annotate({ format: "uuid" }).check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+        }),
+      ),
+      mailboxEndpointId: MailboxEndpointId,
+      topicId: Schema.optionalKey(TopicId),
+      senderId: Schema.optionalKey(EmailSenderId),
+    }),
+    Schema.Struct({
+      templateId: TemplateId,
+      publicationId: TemplatePublicationId,
+      fixture: Schema.optionalKey(
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(100).annotate({
+              expected: "a string with at most 100 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(100).annotate({ expected: "a value with a length of at most 100" }),
+          ),
+      ),
+      templateData: Schema.optionalKey(JsonObject),
+      channel: Schema.Literal("whatsapp"),
+      eventBindings: Schema.optionalKey(
+        Schema.Record(
+          Schema.String,
+          Schema.String.check(
+            Schema.isMaxCodePoints(160).annotate({
+              expected: "a string with at most 160 code points",
+            }),
+          ).check(
+            Schema.isMaxLength(160).annotate({ expected: "a value with a length of at most 160" }),
+          ),
+        ),
+      ),
+      requestId: Schema.String.annotate({ format: "uuid" }).check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+        }),
+      ),
+      mailboxEndpointId: MailboxEndpointId,
+      topicId: Schema.optionalKey(TopicId),
+      businessAccountId: WhatsAppBusinessAccountId,
+      registrationId: TemplateRegistrationId,
+      challengeId: Schema.String.annotate({ format: "uuid" }).check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+        }),
+      ),
+    }),
+  ]).annotate({ identifier: "RecipeTestPayload" }))();
+export type RecipeSetupReferences = {
+  readonly channel: "email" | "whatsapp";
+  readonly templateFamilyId?: TemplateFamilyId;
+  readonly integrationAccountId?: IntegrationAccountId;
+  readonly publicationId?: TemplatePublicationId;
+  readonly senderId?: EmailSenderId;
+  readonly whatsappAccountId?: WhatsAppBusinessAccountId;
+  readonly registrationId?: TemplateRegistrationId;
+  readonly mailboxEndpointId?: MailboxEndpointId;
+  readonly journeyId?: JourneyId;
+  readonly eventBindings?: { readonly [x: string]: string };
+};
+export const RecipeSetupReferences = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    channel: Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]),
+    templateFamilyId: Schema.optionalKey(TemplateFamilyId),
+    integrationAccountId: Schema.optionalKey(IntegrationAccountId),
+    publicationId: Schema.optionalKey(TemplatePublicationId),
+    senderId: Schema.optionalKey(EmailSenderId),
+    whatsappAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
+    registrationId: Schema.optionalKey(TemplateRegistrationId),
+    mailboxEndpointId: Schema.optionalKey(MailboxEndpointId),
+    journeyId: Schema.optionalKey(JourneyId),
+    eventBindings: Schema.optionalKey(
+      Schema.Record(
+        Schema.String,
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ).check(
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+          }),
+        ),
+      ).check(
+        Schema.isPropertyNames(
+          Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+        ).annotate({ expected: "an object with property names matching the schema" }),
+      ),
+    ),
+  }).annotate({ identifier: "RecipeSetupReferences" }))();
 export type UpdateJourneyPayload = { readonly name: JourneyName };
 export const UpdateJourneyPayload = /* @__PURE__ */ (() =>
   Schema.Struct({ name: JourneyName }).annotate({ identifier: "UpdateJourneyPayload" }))();
@@ -6271,6 +6605,41 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
       ),
     }),
   }).annotate({ identifier: "UpdateTemplatePayload" }))();
+export type TemplateRegistrationApproval = {
+  readonly publicationId: TemplatePublicationId;
+  readonly businessAccountId: WhatsAppBusinessAccountId_2;
+  readonly expectedWabaId: string;
+  readonly expectedWorkspaceRevision: string;
+};
+export const TemplateRegistrationApproval = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    publicationId: TemplatePublicationId,
+    businessAccountId: WhatsAppBusinessAccountId_2,
+    expectedWabaId: Schema.String.annotate({
+      description: "The Meta business account ID shown for the selected number before approval.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+    expectedWorkspaceRevision: Schema.String.annotate({
+      description: "The workspace revision reviewed for this submission.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+  }).annotate({
+    description:
+      "For a reviewed submission, the exact publication, workspace revision, number and Meta business account. Omit the separate businessAccountId when supplying approval.",
+    identifier: "TemplateRegistrationApproval",
+  }))();
 export type CreateWhatsAppSetupLinkPayload = {
   readonly namespaceId: NamespaceId;
   readonly redirectUrl?: WhatsAppSetupLinkRedirectUrl | null;
@@ -6864,6 +7233,28 @@ export const MessagePage = /* @__PURE__ */ (() =>
     items: Schema.Array(MessageSummary),
     nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MessagePage" }))();
+export type ReplaceRecipeSetup = {
+  readonly references: RecipeSetupReferences;
+  readonly revision: string | null;
+};
+export const ReplaceRecipeSetup = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    references: RecipeSetupReferences,
+    revision: Schema.Union([
+      Schema.String.annotate({ format: "uuid" }).check(
+        Schema.isPattern(
+          new globalThis.RegExp(
+            "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+            "u",
+          ),
+        ).annotate({
+          expected:
+            "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+        }),
+      ),
+      Schema.Null,
+    ]),
+  }).annotate({ identifier: "ReplaceRecipeSetup" }))();
 export type JourneyTrigger =
   | JourneyCustomEventTrigger
   | JourneyContactCreatedTrigger
@@ -7147,6 +7538,17 @@ export const OperationAccepted = /* @__PURE__ */ (() =>
       resource: OperationResourceLink,
     }),
   }).annotate({ identifier: "OperationAccepted" }))();
+export type SubmitTemplateRegistrationPayload = {
+  readonly provider: "whatsapp";
+  readonly businessAccountId?: WhatsAppBusinessAccountId_1;
+  readonly approval?: TemplateRegistrationApproval;
+};
+export const SubmitTemplateRegistrationPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    provider: Schema.Literal("whatsapp"),
+    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId_1),
+    approval: Schema.optionalKey(TemplateRegistrationApproval),
+  }).annotate({ identifier: "SubmitTemplateRegistrationPayload" }))();
 export type SmsCampaignContentInput = {
   readonly channel: "sms";
   readonly sms: SmsDispatchContent;

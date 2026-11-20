@@ -17,6 +17,7 @@ import {
   JourneyId,
   JourneyName,
   JourneyNodeId,
+  JourneyStatus,
   JsonObject,
   MalformedRequestError,
   MessageId,
@@ -26,14 +27,6 @@ import {
   ValidationError,
 } from "./shared";
 
-export type JourneyStatus = "draft" | "active" | "paused" | "archived";
-export const JourneyStatus = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Literal("draft"),
-    Schema.Literal("active"),
-    Schema.Literal("paused"),
-    Schema.Literal("archived"),
-  ]).annotate({ identifier: "JourneyStatus" }))();
 export type JourneyRunStatus = "active" | "paused" | "exited" | "failed";
 export const JourneyRunStatus = /* @__PURE__ */ (() =>
   Schema.Union([
@@ -140,6 +133,11 @@ export const JourneyRunTrigger = /* @__PURE__ */ (() =>
     eventName: Schema.String,
     properties: JsonObject,
   }).annotate({ identifier: "JourneyRunTrigger" }))();
+export type DeleteJourneyResponse = { readonly id: JourneyId; readonly deleted: true };
+export const DeleteJourneyResponse = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: JourneyId, deleted: Schema.Literal(true) }).annotate({
+    identifier: "DeleteJourneyResponse",
+  }))();
 export type JourneyListItem = {
   readonly id: JourneyId;
   readonly name: string;
@@ -172,11 +170,6 @@ export const JourneyListItem = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "JourneyListItem" }))();
-export type DeleteJourneyResponse = { readonly id: JourneyId; readonly deleted: true };
-export const DeleteJourneyResponse = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: JourneyId, deleted: Schema.Literal(true) }).annotate({
-    identifier: "DeleteJourneyResponse",
-  }))();
 export type JourneyNodeStats = {
   readonly nodeId: JourneyNodeId;
   readonly current: number;

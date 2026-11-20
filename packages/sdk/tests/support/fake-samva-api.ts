@@ -51,6 +51,10 @@ export interface ApiRequest {
   readonly headers: Headers;
 }
 
+/** Render a recorded query value the way the request URL carried it. */
+export const queryText = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? value.join(",") : (value ?? "");
+
 // Reflection erases service requirements; the transport runs scripts and codecs without app services.
 const scriptContext = Context.makeUnsafe<unknown>(new Map());
 const decode = (schema: Schema.Top, input: unknown) =>
@@ -101,16 +105,15 @@ export const fakeSamvaApi =
               body,
               headers: request.headers,
             });
-            const groupScripts: unknown = Reflect.get(scripts, group.identifier);
+            const groupScripts: unknown = Object.getOwnPropertyDescriptor(
+              scripts,
+              group.identifier,
+            )?.value;
             const script: unknown = Predicate.isObject(groupScripts)
-              ? Reflect.get(groupScripts, endpoint.identifier)
+              ? groupScripts[endpoint.identifier]
               : undefined;
-            const handler: unknown = Predicate.isObject(script)
-              ? Reflect.get(script, "handle")
-              : script;
-            const status: unknown = Predicate.isObject(script)
-              ? Reflect.get(script, "status")
-              : undefined;
+            const handler: unknown = Predicate.isObject(script) ? script["handle"] : script;
+            const status: unknown = Predicate.isObject(script) ? script["status"] : undefined;
             if (status !== undefined && typeof status !== "number")
               throw new Error("Script success status must be a number");
             if (typeof handler !== "function") {

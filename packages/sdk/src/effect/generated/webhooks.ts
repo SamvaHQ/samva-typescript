@@ -219,9 +219,9 @@ export type WebhookEndpoint = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -278,9 +278,9 @@ export const WebhookEndpoint = /* @__PURE__ */ (() =>
         Schema.Literal("mailbox.message.sent"),
         Schema.Literal("mailbox.action.pending_approval"),
         Schema.Literal("mailbox.action.resolved"),
-        Schema.Literal("mailbox.message.quarantined"),
-        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.spam"),
         Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.thread.deleted"),
         Schema.Literal("mailbox.message.delivered"),
         Schema.Literal("mailbox.message.read"),
         Schema.Literal("mailbox.message.failed"),
@@ -341,9 +341,9 @@ export type WebhookEndpointListItem = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -401,9 +401,9 @@ export const WebhookEndpointListItem = /* @__PURE__ */ (() =>
         Schema.Literal("mailbox.message.sent"),
         Schema.Literal("mailbox.action.pending_approval"),
         Schema.Literal("mailbox.action.resolved"),
-        Schema.Literal("mailbox.message.quarantined"),
-        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.spam"),
         Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.thread.deleted"),
         Schema.Literal("mailbox.message.delivered"),
         Schema.Literal("mailbox.message.read"),
         Schema.Literal("mailbox.message.failed"),
@@ -724,9 +724,9 @@ export type WebhooksCreateRequestJson = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -786,9 +786,9 @@ export const WebhooksCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Literal("mailbox.message.sent"),
         Schema.Literal("mailbox.action.pending_approval"),
         Schema.Literal("mailbox.action.resolved"),
-        Schema.Literal("mailbox.message.quarantined"),
-        Schema.Literal("mailbox.message.released"),
+        Schema.Literal("mailbox.message.spam"),
         Schema.Literal("mailbox.message.discarded"),
+        Schema.Literal("mailbox.thread.deleted"),
         Schema.Literal("mailbox.message.delivered"),
         Schema.Literal("mailbox.message.read"),
         Schema.Literal("mailbox.message.failed"),
@@ -930,9 +930,9 @@ export type WebhooksUpdateRequestJson = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -1001,9 +1001,9 @@ export const WebhooksUpdateRequestJson = /* @__PURE__ */ (() =>
             Schema.Literal("mailbox.message.sent"),
             Schema.Literal("mailbox.action.pending_approval"),
             Schema.Literal("mailbox.action.resolved"),
-            Schema.Literal("mailbox.message.quarantined"),
-            Schema.Literal("mailbox.message.released"),
+            Schema.Literal("mailbox.message.spam"),
             Schema.Literal("mailbox.message.discarded"),
+            Schema.Literal("mailbox.thread.deleted"),
             Schema.Literal("mailbox.message.delivered"),
             Schema.Literal("mailbox.message.read"),
             Schema.Literal("mailbox.message.failed"),

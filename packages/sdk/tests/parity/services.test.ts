@@ -92,11 +92,10 @@ import { SDK_OPERATION_CALLS, SDK_SERVICE_OPERATIONS } from "../../src/service-m
 const sortedKeys = <Value extends object>(value: Value): ReadonlyArray<string> =>
   Object.keys(value).sort();
 
-const generatedOperationNames = (): ReadonlyArray<string> => {
-  return Object.values(SamvaApi.groups)
+const generatedOperationNames = (): ReadonlyArray<string> =>
+  Object.values(SamvaApi.groups)
     .flatMap((group) => Object.keys(group.endpoints))
     .sort();
-};
 
 const effectModules = {
   accounts: Accounts,
@@ -300,12 +299,8 @@ describe("SDK surface inventory", () => {
       for (const id of ids) {
         covered.add(id);
         const { call, ...metadata } = table[id]!;
-        expect(metadata, `${id} metadata`).toEqual(
-          SamvaOperations[id as keyof typeof SamvaOperations],
-        );
-        expect(call, `${id} call shape`).toEqual(
-          SDK_OPERATION_CALLS[id as keyof typeof SDK_OPERATION_CALLS],
-        );
+        expect(metadata, `${id} metadata`).toEqual(SamvaOperations[id]);
+        expect(call, `${id} call shape`).toEqual(SDK_OPERATION_CALLS[id]);
       }
     }
     expect([...covered].sort()).toEqual(Object.keys(SamvaOperations).sort());
@@ -359,7 +354,7 @@ describe("SDK surface inventory", () => {
         const actual = [...(call.paths ?? [])];
         return actual.join() === expected.join()
           ? []
-          : [`${name}: paths [${actual}], endpoint [${expected}]`];
+          : [`${name}: paths [${actual.join(", ")}], endpoint [${expected.join(", ")}]`];
       }),
     );
     expect(mismatches).toEqual([]);

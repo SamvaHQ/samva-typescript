@@ -79,7 +79,7 @@ function ccBccPayload<Recipient extends object, Key extends "cc" | "bcc">(
     | null
     | undefined,
 ): { readonly [K in Key]?: Array<Recipient> | null } {
-  if (value === undefined) return {} as { readonly [K in Key]?: Array<Recipient> | null };
+  if (value === undefined) return {};
   if (value === null) return { [key]: null } as { readonly [K in Key]?: Array<Recipient> | null };
   return { [key]: normalizeRecipients<Recipient>(value) } as {
     readonly [K in Key]?: Array<Recipient> | null;

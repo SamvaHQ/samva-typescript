@@ -1,6 +1,5 @@
 // Auto-generated from OpenAPI; do not edit.
 
-import type * as EffectBrand from "effect/Brand";
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 import * as Schema from "effect/Schema";
 
@@ -22,6 +21,7 @@ import {
   ServiceUnavailableError,
   ShareLinkUnavailable,
   SuccessResponse,
+  TemplateFamilyId,
   TemplateFromDefaultInput,
   TemplateId,
   TemplateInUseError,
@@ -65,14 +65,6 @@ export const TemplateFromDefault = /* @__PURE__ */ (() =>
     ),
     name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
   }).annotate({ identifier: "TemplateFromDefault" }))();
-export type TemplateFamilyId = string & EffectBrand.Brand<"TemplateFamilyId">;
-export const TemplateFamilyId = /* @__PURE__ */ (() =>
-  Schema.String.check(
-    Schema.isPattern(new globalThis.RegExp("^tfam_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^tfam_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "TemplateFamilyId",
-    }),
-  ).pipe(Schema.brand("TemplateFamilyId")))();
 export type WhatsAppTemplateButton =
   | { readonly type: "QUICK_REPLY"; readonly text: string }
   | {

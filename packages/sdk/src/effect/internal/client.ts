@@ -58,11 +58,23 @@ type ApiEndpoints = HttpApiGroup.Endpoints<
   (typeof SamvaApi)["groups"][keyof (typeof SamvaApi)["groups"]]
 >;
 
-export type OperationSuccess<Name extends Operation> = HttpApiClient.SuccessType<
+type OperationSuccess<Name extends Operation> = HttpApiClient.SuccessType<
   HttpApiEndpoint.Success<Extract<ApiEndpoints, { readonly identifier: Name }>>
 >;
 
-export type RawCall = (request?: unknown) => Effect.Effect<unknown, unknown>;
+type MethodReturn<Method> = Method extends (...args: infer _Args) => infer Return ? Return : never;
+
+/** What one operation wrapper returns: the endpoint's decoded success and typed failure. */
+export type OperationResult<Name extends Operation> = Effect.Effect<
+  OperationSuccess<Name>,
+  Effect.Error<MethodReturn<FlatRaw[Name]>>,
+  Service
+>;
+
+type RawCall = (request?: unknown) => Effect.Effect<unknown, unknown>;
+
+/** The generated call for one endpoint, with its decoded success and typed failure. */
+type OperationCall<Name extends Operation> = (request?: unknown) => OperationResult<Name>;
 
 export interface Interface {
   readonly idempotency?: ((operation: string) => string | undefined) | undefined;
@@ -70,7 +82,10 @@ export interface Interface {
    * The generated call for one endpoint. A group's client is built on the first call to any of its
    * endpoints and reused, so a group the program never calls costs nothing.
    */
-  readonly endpoint: (group: HttpApiGroup.Constraint, name: Operation) => Effect.Effect<RawCall>;
+  readonly endpoint: <Name extends Operation>(
+    group: HttpApiGroup.Constraint,
+    name: Name,
+  ) => Effect.Effect<OperationCall<Name>>;
   /** The origin and headers a connection outside HTTP requests, such as the event stream, uses. */
   readonly connection: MailboxEventStreamConnection;
   /**
@@ -204,7 +219,9 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
           const call = client[name];
           return call === undefined
             ? Effect.die(new Error(`${name} is not an endpoint of ${group.identifier}`))
-            : Effect.succeed(call);
+            : // The group client is a heterogeneous record keyed by endpoint name, so the
+              // lookup erases the endpoint's own success and failure types.
+              Effect.succeed(call as OperationCall<typeof name>);
         }),
       connection: {
         baseUrl,

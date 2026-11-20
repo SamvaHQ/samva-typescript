@@ -135,6 +135,7 @@ const schemaType = (input: JsonSchema): string => {
         ? `Record<string, ${schemaType(schema.additionalProperties)}>`
         : "Record<string, unknown>";
     }
+    case undefined:
     default:
       return "unknown";
   }
@@ -230,6 +231,7 @@ const redactRequest = (request: Request | undefined): Request | undefined =>
       });
 
 /** Base class for failures declared by the public Samva OpenAPI contract. */
+// @effect-diagnostics-next-line extendsNativeError:off -- Public Promise errors keep their native base and require no Effect dependency.
 export abstract class SamvaApiError<Tag extends SamvaApiErrorTag = SamvaApiErrorTag> extends Error {
   abstract readonly _tag: Tag;
   readonly request: Request | undefined;
@@ -246,6 +248,7 @@ export abstract class SamvaApiError<Tag extends SamvaApiErrorTag = SamvaApiError
 }
 
 /** A transport or malformed-response failure that is not part of the API error contract. */
+// @effect-diagnostics-next-line extendsNativeError:off -- Public Promise transport errors retain their native constructor and cause.
 export class SamvaTransportError extends Error {
   readonly _tag = "SamvaTransportError" as const;
   readonly request: Request | undefined;

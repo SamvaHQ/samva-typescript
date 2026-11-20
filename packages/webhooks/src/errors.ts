@@ -12,6 +12,7 @@ export type WebhookHeaderName = "webhook-id" | "webhook-timestamp" | "webhook-si
  * with a `switch` or Effect's `catchTag`. `detail` is a human-readable reason for your logs; do not
  * echo it to the sender, and do not match on its wording.
  */
+// @effect-diagnostics-next-line extendsNativeError:off -- the published verification errors share this native base for customer instanceof checks and subclass constructors.
 export abstract class WebhookVerificationError<Tag extends string = string> extends Error {
   /** Discriminant naming the concrete failure; equal to the subclass name. */
   readonly _tag: Tag;

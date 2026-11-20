@@ -2042,6 +2042,7 @@ export const WebhookEventJsonSchemas: Readonly<
           id: { type: "string", pattern: "^treg_[0-9a-hjkmnp-tv-z]{16,24}$" },
           templateId: { type: "string", pattern: "^tmpl_[0-9a-hjkmnp-tv-z]{16,24}$" },
           publicationId: { type: "string", pattern: "^tpub_[0-9a-hjkmnp-tv-z]{16,24}$" },
+          templateChannelVariantId: { type: "string", pattern: "^tvar_[0-9a-hjkmnp-tv-z]{16,24}$" },
           target: {
             anyOf: [
               {
@@ -2070,6 +2071,14 @@ export const WebhookEventJsonSchemas: Readonly<
           status: {
             type: "string",
             enum: ["draft", "submitted", "approved", "rejected", "paused", "disabled"],
+          },
+          pendingTemplateChannelVariantId: {
+            anyOf: [
+              { type: "string", pattern: "^tvar_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
+            ],
+            description:
+              "Content a submission sent to the provider whose outcome is not yet recorded, because its request failed or is still in flight; the provider may already hold it. While it is set nothing sends from this registration, even when `status` is `approved`. Submitting again settles it.",
           },
           category: {
             type: "string",
@@ -2116,10 +2125,12 @@ export const WebhookEventJsonSchemas: Readonly<
           "id",
           "templateId",
           "publicationId",
+          "templateChannelVariantId",
           "target",
           "name",
           "language",
           "status",
+          "pendingTemplateChannelVariantId",
           "category",
           "providerCategory",
           "providerTemplateId",
@@ -2879,10 +2890,10 @@ export const WebhookEventJsonSchemas: Readonly<
     required: ["type", "timestamp", "data"],
     additionalProperties: true,
   },
-  "mailbox.message.quarantined": {
+  "mailbox.message.spam": {
     type: "object",
     properties: {
-      type: { type: "string", enum: ["mailbox.message.quarantined"] },
+      type: { type: "string", enum: ["mailbox.message.spam"] },
       timestamp: { type: "string" },
       data: {
         type: "object",
@@ -2894,21 +2905,32 @@ export const WebhookEventJsonSchemas: Readonly<
               { type: "null" },
             ],
           },
-          disposition: { type: "string", enum: ["quarantined", "isolated"] },
-          reason: {
-            type: "string",
-            enum: [
-              "spam",
-              "dmarc",
-              "virus",
-              "virus_unscanned",
-              "verdict_missing",
-              "phishing",
-              "fraud",
-              "prompt_injection",
+          disposition: { type: "string", enum: ["spam", "isolated"] },
+          threadId: {
+            anyOf: [
+              { type: "string", pattern: "^thread_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
             ],
           },
-          source: { type: "string", enum: ["receipt", "classifier"] },
+          reason: {
+            anyOf: [
+              {
+                type: "string",
+                enum: [
+                  "spam",
+                  "dmarc",
+                  "virus",
+                  "virus_unscanned",
+                  "verdict_missing",
+                  "phishing",
+                  "fraud",
+                  "prompt_injection",
+                ],
+              },
+              { type: "null" },
+            ],
+          },
+          source: { type: "string", enum: ["receipt", "classifier", "reader"] },
           message: {
             type: "object",
             properties: {
@@ -2929,154 +2951,15 @@ export const WebhookEventJsonSchemas: Readonly<
             additionalProperties: true,
           },
         },
-        required: ["mailboxId", "namespaceId", "disposition", "reason", "source", "message"],
-        additionalProperties: true,
-      },
-    },
-    required: ["type", "timestamp", "data"],
-    additionalProperties: true,
-  },
-  "mailbox.message.released": {
-    type: "object",
-    properties: {
-      type: { type: "string", enum: ["mailbox.message.released"] },
-      timestamp: { type: "string" },
-      data: {
-        type: "object",
-        properties: {
-          mailboxId: { type: "string", pattern: "^mbx_[0-9a-hjkmnp-tv-z]{16,24}$" },
-          namespaceId: {
-            anyOf: [
-              { type: "string", pattern: "^ns_[0-9a-hjkmnp-tv-z]{16,24}$" },
-              { type: "null" },
-            ],
-          },
-          releasedBy: {
-            type: "object",
-            properties: {
-              kind: {
-                type: "string",
-                enum: ["user", "apiKey", "extension", "externalAgent", "samvaAgent", "system"],
-              },
-              id: { type: "string" },
-              displayName: { anyOf: [{ type: "string" }, { type: "null" }] },
-              source: {
-                type: "string",
-                enum: [
-                  "humanUi",
-                  "externalApi",
-                  "externalAgent",
-                  "extension",
-                  "samvaManagedAgent",
-                  "system",
-                ],
-              },
-            },
-            required: ["kind", "id", "source"],
-            additionalProperties: true,
-          },
-          reason: {
-            type: "string",
-            enum: [
-              "spam",
-              "dmarc",
-              "virus",
-              "virus_unscanned",
-              "verdict_missing",
-              "phishing",
-              "fraud",
-              "prompt_injection",
-            ],
-          },
-          message: {
-            type: "object",
-            properties: {
-              id: { type: "string", pattern: "^msg_[0-9a-hjkmnp-tv-z]{16,24}$" },
-              campaign: {
-                anyOf: [
-                  {
-                    type: "object",
-                    properties: {
-                      campaignId: { type: "string", pattern: "^camp_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                      runId: { type: "string", pattern: "^crun_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                    },
-                    required: ["campaignId", "runId"],
-                    additionalProperties: true,
-                  },
-                  { type: "null" },
-                ],
-              },
-              channel: {
-                type: "string",
-                enum: ["sms", "whatsapp", "email"],
-                description:
-                  "Deliveries recorded before this field existed omit it; they are email.",
-              },
-              threadId: { type: "string", pattern: "^thread_[0-9a-hjkmnp-tv-z]{16,24}$" },
-              from: {
-                type: "object",
-                properties: {
-                  address: { type: "string" },
-                  name: { anyOf: [{ type: "string" }, { type: "null" }] },
-                },
-                required: ["address"],
-                additionalProperties: true,
-              },
-              to: { type: "array", items: { type: "string" } },
-              cc: { type: "array", items: { type: "string" } },
-              subject: { anyOf: [{ type: "string" }, { type: "null" }] },
-              text: { anyOf: [{ type: "string" }, { type: "null" }] },
-              replyText: { anyOf: [{ type: "string" }, { type: "null" }] },
-              attachments: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    id: { type: "string", pattern: "^att_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                    filename: { type: "string" },
-                    contentType: { type: "string" },
-                    size: { type: "number" },
-                  },
-                  required: ["id", "filename", "contentType", "size"],
-                  additionalProperties: true,
-                },
-              },
-              occurredAt: { type: "string" },
-            },
-            required: [
-              "id",
-              "threadId",
-              "from",
-              "to",
-              "cc",
-              "subject",
-              "text",
-              "replyText",
-              "attachments",
-              "occurredAt",
-            ],
-            additionalProperties: true,
-          },
-          thread: {
-            type: "object",
-            properties: {
-              id: { type: "string", pattern: "^thread_[0-9a-hjkmnp-tv-z]{16,24}$" },
-              endpointId: {
-                anyOf: [
-                  { type: "string", pattern: "^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$" },
-                  { type: "null" },
-                ],
-                description:
-                  "The endpoint the message arrived at; null once it is removed. Deliveries recorded before this field existed omit it.",
-              },
-              subject: { anyOf: [{ type: "string" }, { type: "null" }] },
-              preview: { anyOf: [{ type: "string" }, { type: "null" }] },
-            },
-            required: ["id", "subject", "preview"],
-            additionalProperties: true,
-          },
-        },
-        required: ["mailboxId", "namespaceId", "releasedBy", "reason", "message", "thread"],
+        required: [
+          "mailboxId",
+          "namespaceId",
+          "disposition",
+          "threadId",
+          "reason",
+          "source",
+          "message",
+        ],
         additionalProperties: true,
       },
     },
@@ -3157,6 +3040,30 @@ export const WebhookEventJsonSchemas: Readonly<
           },
         },
         required: ["mailboxId", "namespaceId", "discardedBy", "disposition", "reason", "message"],
+        additionalProperties: true,
+      },
+    },
+    required: ["type", "timestamp", "data"],
+    additionalProperties: true,
+  },
+  "mailbox.thread.deleted": {
+    type: "object",
+    properties: {
+      type: { type: "string", enum: ["mailbox.thread.deleted"] },
+      timestamp: { type: "string" },
+      data: {
+        type: "object",
+        properties: {
+          mailboxId: { type: "string", pattern: "^mbx_[0-9a-hjkmnp-tv-z]{16,24}$" },
+          namespaceId: {
+            anyOf: [
+              { type: "string", pattern: "^ns_[0-9a-hjkmnp-tv-z]{16,24}$" },
+              { type: "null" },
+            ],
+          },
+          threadId: { type: "string", pattern: "^thread_[0-9a-hjkmnp-tv-z]{16,24}$" },
+        },
+        required: ["mailboxId", "namespaceId", "threadId"],
         additionalProperties: true,
       },
     },

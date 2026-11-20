@@ -20,6 +20,7 @@ import {
   WebhookEventJsonSchemas,
   type MessageBouncedPayload,
   type MailboxMessageSentPayload,
+  type MailboxThreadDeletedPayload,
   type MailboxActionPendingApprovalPayload,
   type MailboxActionResolvedPayload,
   type FlowRegistrationUpdatedPayload,
@@ -75,6 +76,28 @@ describe("typed webhook payload boundary", () => {
       expectTypeOf(event.data.recipient).toEqualTypeOf<string>();
       expect(event.data.recipient).toBe("recipient@example.com");
       expect(event.data.occurredAt).toBe("2026-10-10T23:59:00.000Z");
+    }
+  });
+
+  it("verifies a permanent thread deletion through the Promise and Effect entrypoints", async () => {
+    const candidate = {
+      type: "mailbox.thread.deleted" as const,
+      timestamp,
+      data: {
+        mailboxId: "mbx_1234567890123456",
+        namespaceId: null,
+        threadId: "thread_1234567890123456",
+      },
+    };
+    const { options } = await delivery(candidate);
+    for (const { event } of [
+      await verify(options),
+      await Effect.runPromise(verifyEffect(options)),
+    ]) {
+      if (!isKnownEvent(event) || event.type !== candidate.type)
+        throw new Error("Wrong event type");
+      expectTypeOf(event.data).toEqualTypeOf<MailboxThreadDeletedPayload>();
+      expect(event.data).toEqual(candidate.data);
     }
   });
 
@@ -149,6 +172,8 @@ describe("typed webhook payload boundary", () => {
         id: `treg_${suffix}`,
         templateId: `tmpl_${suffix}`,
         publicationId: `tpub_${suffix}`,
+        templateChannelVariantId: `tvar_${suffix}`,
+        pendingTemplateChannelVariantId: null,
         target: { provider: "whatsapp", wabaId: "102290129340398" },
         name: "order_shipped",
         language: "en_US",

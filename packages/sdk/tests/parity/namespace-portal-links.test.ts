@@ -6,7 +6,7 @@ import * as Client from "../../src/effect/client";
 import * as Api from "../../src/effect/generated";
 import * as Namespaces from "../../src/effect/namespaces";
 import { createClient } from "../../src/promises";
-import { fakeSamvaApi } from "../support/fake-samva-api";
+import { fakeSamvaApi, queryText } from "../support/fake-samva-api";
 
 const id = "ns_aaaaaaaaaaaaaaaa";
 const linkId = "npl_aaaaaaaaaaaaaaaa";
@@ -96,7 +96,7 @@ describe("namespace portal link facades", () => {
     ).toBe(link.createdAt);
     expect(
       api.requests.map(({ path, method, query }) => ({
-        path: query.limit ? `${path}?limit=${query.limit}` : path,
+        path: query.limit ? `${path}?limit=${queryText(query.limit)}` : path,
         method,
       })),
     ).toEqual([

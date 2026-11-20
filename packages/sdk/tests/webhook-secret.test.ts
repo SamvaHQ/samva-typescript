@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Redacted } from "effect";
 import { FetchHttpClient } from "effect/http";
@@ -46,7 +48,7 @@ describe("webhook signing secret read", () => {
         ),
       );
       expect(Redacted.value(result.secret)).toBe(body.secret);
-      expect(String(result.secret)).toBe("<redacted>");
+      expect(inspect(result.secret)).toBe("<redacted>");
       expect(JSON.stringify(result)).not.toContain(body.secret);
       expect(result.createdAt).toBe(body.createdAt);
       expect(result.previousExpiresAt).toBe(body.previousExpiresAt);

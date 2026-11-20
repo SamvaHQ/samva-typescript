@@ -29,6 +29,9 @@ import {
   GatewayTimeoutError,
   InternalError,
   JsonValue,
+  MailboxEndpointId,
+  MailboxId,
+  MailboxThreadId,
   MalformedRequestError,
   MediaId,
   MessageDeliveryId,
@@ -435,6 +438,39 @@ export const WhatsAppStoredMedia = /* @__PURE__ */ (() =>
       filename: Schema.optionalKey(Schema.String),
     }),
   ]).annotate({ identifier: "WhatsAppStoredMedia" }))();
+export type MessageReplyObservation = {
+  readonly endpoints: ReadonlyArray<{
+    readonly mailboxId: MailboxId;
+    readonly endpointId: MailboxEndpointId;
+    readonly address: string;
+  }>;
+  readonly received: {
+    readonly messageId: MessageId;
+    readonly receivedAt: string;
+    readonly thread: { readonly mailboxId: MailboxId; readonly threadId: MailboxThreadId } | null;
+  } | null;
+};
+export const MessageReplyObservation = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    endpoints: Schema.Array(
+      Schema.Struct({
+        mailboxId: MailboxId,
+        endpointId: MailboxEndpointId,
+        address: Schema.String,
+      }),
+    ),
+    received: Schema.Union([
+      Schema.Struct({
+        messageId: MessageId,
+        receivedAt: Schema.String,
+        thread: Schema.Union([
+          Schema.Struct({ mailboxId: MailboxId, threadId: MailboxThreadId }),
+          Schema.Null,
+        ]),
+      }),
+      Schema.Null,
+    ]),
+  }).annotate({ identifier: "MessageReplyObservation" }))();
 export type WhatsAppStoredFlowMessage = {
   readonly type: "flow";
   readonly header?: WhatsAppTextHeader;
@@ -528,7 +564,7 @@ export const WhatsAppStoredFlowMessage = /* @__PURE__ */ (() =>
     flowVersionId: WhatsAppFlowVersionId,
     providerFlowId: Schema.String,
   }).annotate({ identifier: "WhatsAppStoredFlowMessage" }))();
-export type MessageDelivery = {
+export type MessageDeliveryObservation = {
   readonly id: MessageDeliveryId;
   readonly recipient: string | null;
   readonly status:
@@ -565,8 +601,9 @@ export type MessageDelivery = {
   readonly estimatedProviderCost: EstimatedProviderCost | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly queuedAt: string | null;
 };
-export const MessageDelivery = /* @__PURE__ */ (() =>
+export const MessageDeliveryObservation = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: MessageDeliveryId,
     recipient: Schema.Union([Schema.String, Schema.Null]),
@@ -608,7 +645,8 @@ export const MessageDelivery = /* @__PURE__ */ (() =>
     estimatedProviderCost: Schema.Union([EstimatedProviderCost, Schema.Null]),
     createdAt: Schema.String,
     updatedAt: Schema.String,
-  }).annotate({ identifier: "MessageDelivery" }))();
+    queuedAt: Schema.Union([Schema.String, Schema.Null]),
+  }).annotate({ identifier: "MessageDeliveryObservation" }))();
 export type MessageEventPage = {
   readonly items: ReadonlyArray<{
     readonly id: MessageEventId;
@@ -734,11 +772,42 @@ export const MessageReceipt = /* @__PURE__ */ (() =>
     skippedRecipients: Schema.Array(SkippedRecipient),
     createdAt: Schema.String,
   }).annotate({ identifier: "MessageReceipt" }))();
-export type MessageDeliveryList = { readonly items: ReadonlyArray<MessageDelivery> };
+export type MessageDeliveryList = {
+  readonly id: MessageId;
+  readonly status:
+    | "pending"
+    | "scheduled"
+    | "queued"
+    | "processing"
+    | "sent"
+    | "delivered"
+    | "read"
+    | "failed"
+    | "bounced"
+    | "complained";
+  readonly skippedRecipients: ReadonlyArray<SkippedRecipient>;
+  readonly items: ReadonlyArray<MessageDeliveryObservation>;
+  readonly reply: MessageReplyObservation;
+};
 export const MessageDeliveryList = /* @__PURE__ */ (() =>
-  Schema.Struct({ items: Schema.Array(MessageDelivery) }).annotate({
-    identifier: "MessageDeliveryList",
-  }))();
+  Schema.Struct({
+    id: MessageId,
+    status: Schema.Union([
+      Schema.Literal("pending"),
+      Schema.Literal("scheduled"),
+      Schema.Literal("queued"),
+      Schema.Literal("processing"),
+      Schema.Literal("sent"),
+      Schema.Literal("delivered"),
+      Schema.Literal("read"),
+      Schema.Literal("failed"),
+      Schema.Literal("bounced"),
+      Schema.Literal("complained"),
+    ]),
+    skippedRecipients: Schema.Array(SkippedRecipient),
+    items: Schema.Array(MessageDeliveryObservation),
+    reply: MessageReplyObservation,
+  }).annotate({ identifier: "MessageDeliveryList" }))();
 export type Message = {
   readonly id: MessageId;
   readonly campaign?: { readonly campaignId: CampaignId; readonly runId: CampaignRunId } | null;
@@ -1936,7 +2005,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       .annotate(OpenApi.Summary, "List message deliveries")
       .annotate(
         OpenApi.Description,
-        "Returns one delivery per recipient: its status, attempts, delivery times, and why it failed or is waiting.",
+        "Returns per-recipient queueing, provider acceptance (sentAt), delivery and read times, failures and waits. Includes recipients skipped at admission and the first reply linked by a message reference. Mailbox endpoints and threads require mailbox read access.",
       ),
     HttpApiEndpoint.get("messagesGetEmail", "/v1/messages/:id/email", {
       params: MessagesGetEmailPathParams,
@@ -1957,7 +2026,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       .annotate(OpenApi.Summary, "Get email message details")
       .annotate(
         OpenApi.Description,
-        "Returns email delivery details for a message, optionally including signed URLs for its raw MIME, HTML, and text content.",
+        "Returns email delivery details for a message, optionally including signed URLs for its raw MIME, HTML, and text content. Requesting download URLs for inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`). Omit `includeDownloadUrls` to read the details.",
       ),
     HttpApiEndpoint.get("messagesGetEvents", "/v1/messages/:id/events", {
       params: MessagesGetEventsPathParams,

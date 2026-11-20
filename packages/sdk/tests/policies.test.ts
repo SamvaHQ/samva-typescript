@@ -9,7 +9,7 @@ import type { PolicySnapshot } from "../src/effect/generated/policies";
 import * as Mailboxes from "../src/effect/mailboxes";
 import * as Policies from "../src/effect/policies";
 import { createClient, type PolicyConfiguration } from "../src/promises";
-import { fakeSamvaApi } from "./support/fake-samva-api";
+import { fakeSamvaApi, queryText } from "./support/fake-samva-api";
 
 const mailboxId = "mbx_1234567890123456";
 const scope = { kind: "mailbox", id: mailboxId } as const;
@@ -88,7 +88,7 @@ const requestShapes = (requests: ReturnType<typeof transport>["requests"]) =>
     method: request.method,
     path:
       request.operation === "policiesDeletePolicy"
-        ? `${request.path}?ifVersion=${request.query.ifVersion}`
+        ? `${request.path}?ifVersion=${queryText(request.query.ifVersion)}`
         : request.path,
     body: request.body,
   }));

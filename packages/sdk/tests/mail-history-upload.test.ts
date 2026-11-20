@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Redacted } from "effect";
 import { FetchHttpClient } from "effect/http";
@@ -86,7 +88,7 @@ describe("mail history upload credential transport", () => {
       expect(Redacted.isRedacted(result.uploadUrl)).toBe(true);
       expect(typeof result.uploadUrl).not.toBe("string");
       expect(Redacted.value(result.uploadUrl)).toBe(body.uploadUrl);
-      expect(String(result.uploadUrl)).toBe("<redacted>");
+      expect(inspect(result.uploadUrl)).toBe("<redacted>");
       expect(JSON.stringify(result)).not.toContain(body.uploadUrl);
       assertRequest(fake);
     });

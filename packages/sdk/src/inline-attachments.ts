@@ -11,6 +11,7 @@
 export const INLINE_ATTACHMENT_MAX_BYTES = 4 * 1024 * 1024;
 
 /** A failed upload of an attachment's bytes to its presigned media URL. */
+// @effect-diagnostics-next-line extendsNativeError:off -- Both SDK entry points use this native error and the Promise client has no required Effect dependency.
 export class MediaUploadError extends Error {
   readonly _tag = "MediaUploadError" as const;
   /** The attachment filename the upload was for. */
@@ -50,12 +51,6 @@ export interface InlineUpload {
   readonly bytes: Uint8Array;
   /** The attachment's declared `size`, the bytes the API charges against the inline cap. */
   readonly sizeBytes: number;
-}
-
-/** The presigned request `POST /v1/media` returns for putting the bytes into storage. */
-export interface UploadInstruction {
-  readonly url: string;
-  readonly headers: Readonly<Record<string, string>>;
 }
 
 type AttachmentRecord = Record<string, unknown> & { readonly content?: unknown };

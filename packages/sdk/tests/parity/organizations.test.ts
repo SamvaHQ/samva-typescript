@@ -6,7 +6,7 @@ import * as Client from "../../src/effect/client";
 import * as Api from "../../src/effect/generated";
 import * as Organizations from "../../src/effect/organizations";
 import { createClient } from "../../src/promises";
-import { fakeSamvaApi } from "../support/fake-samva-api";
+import { fakeSamvaApi, queryText } from "../support/fake-samva-api";
 
 const organization = Schema.decodeSync(Api.OrganizationsGet200)({
   id: "org_test",
@@ -122,7 +122,7 @@ describe("organization facade behavior", () => {
     );
     expect(
       api.requests.map(({ path, query, body }) => ({
-        path: query.namespaceId ? `${path}?namespaceId=${query.namespaceId}` : path,
+        path: query.namespaceId ? `${path}?namespaceId=${queryText(query.namespaceId)}` : path,
         body: body ?? null,
       })),
     ).toEqual([

@@ -123,6 +123,12 @@ export type TemplateRegistrationList = {
   data: Array<TemplateRegistration>;
 };
 
+export type ServiceUnavailableError = {
+  _tag: "ServiceUnavailableError";
+  message: string;
+  retryAfterSeconds: number;
+};
+
 export type CredentialsError = {
   _tag: "CredentialsError";
   message: string;
@@ -147,10 +153,35 @@ export type ConflictError = {
 
 export type SubmitTemplateRegistrationPayload = {
   provider: "whatsapp";
-  businessAccountId?: WhatsAppBusinessAccountId | undefined;
+  businessAccountId?: WhatsAppBusinessAccountId1 | undefined;
+  approval?: TemplateRegistrationApproval | undefined;
 };
 
-export type WhatsAppBusinessAccountId = string;
+/**
+ * For a reviewed submission, the exact publication, workspace revision, number and Meta business account. Omit the separate businessAccountId when supplying approval.
+ */
+export type TemplateRegistrationApproval = {
+  publicationId: TemplatePublicationId;
+  businessAccountId: WhatsAppBusinessAccountId2;
+  /**
+   * The Meta business account ID shown for the selected number before approval.
+   */
+  expectedWabaId: string;
+  /**
+   * The workspace revision reviewed for this submission.
+   */
+  expectedWorkspaceRevision: string;
+};
+
+/**
+ * The connected WhatsApp number selected for this submission.
+ */
+export type WhatsAppBusinessAccountId2 = string;
+
+/**
+ * For an immediate submission, the connected number to register on. Defaults to the number for the template's scope.
+ */
+export type WhatsAppBusinessAccountId1 = string;
 
 export type WhatsAppSetupLinkUnavailableError = {
   _tag: "WhatsAppSetupLinkUnavailableError";
@@ -172,6 +203,8 @@ export type WhatsAppSetupLink = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type WhatsAppBusinessAccountId = string;
 
 export type WhatsAppSetupLinkMetadata = {
   [key: string]: string;
@@ -314,12 +347,6 @@ export type WhatsAppFlowVersion = {
   screens: Array<string>;
   dataExchange: boolean;
   createdAt: string;
-};
-
-export type ServiceUnavailableError = {
-  _tag: "ServiceUnavailableError";
-  message: string;
-  retryAfterSeconds: number;
 };
 
 export type RecordWhatsAppFlowVersionPayload = {
@@ -1361,7 +1388,7 @@ export type ScheduleMailboxDraft = {
   sendAt: string;
 };
 
-export type MailboxQuarantinedMessage = {
+export type MailboxSpamHeldMessage = {
   id: MessageId;
   disposition: "quarantined" | "isolated";
   reason:
@@ -1386,8 +1413,8 @@ export type MailboxQuarantinedMessage = {
   discardedAt: string | null;
 };
 
-export type MailboxQuarantinePage = {
-  items: Array<MailboxQuarantinedMessage>;
+export type MailboxSpamHeldPage = {
+  items: Array<MailboxSpamHeldMessage>;
   nextCursor: string | null;
 };
 
@@ -1664,10 +1691,25 @@ export type MailboxLabelId = string;
 
 export type MailboxThreadPriority = "low" | "normal" | "high" | "urgent";
 
-export type MailboxThreadFolder = "inbox" | "assigned" | "pending" | "sent" | "archived" | "trash";
+export type MailboxThreadFolder =
+  | "inbox"
+  | "assigned"
+  | "pending"
+  | "sent"
+  | "archived"
+  | "trash"
+  | "spam";
 
 export type MailboxThreadLabels = {
   labels: [MailboxLabelId, ...Array<MailboxLabelId>];
+};
+
+export type MailboxEmptySpamAccepted = {
+  count: number;
+};
+
+export type MailboxEmptyTrashAccepted = {
+  count: number;
 };
 
 export type UpdateMailboxThreadPayload = {
@@ -1686,6 +1728,10 @@ export type MailboxThread = {
   id: MailboxThreadId;
   channel: MailboxChannel;
   endpointId: MailboxEndpointId | null;
+  /**
+   * The mailbox address that received the thread's first inbound email, including any plus tag. Null when no receiving address is known.
+   */
+  deliveredTo: string | null;
   subject: string | null;
   preview: string | null;
   from: MailboxThreadSender | null;
@@ -1693,6 +1739,7 @@ export type MailboxThread = {
   hasAttachments: boolean;
   hasDraft: boolean;
   folder: MailboxThreadFolder;
+  spam?: MailboxThreadSpam | undefined;
   priority: MailboxThreadPriority;
   labels: Array<MailboxLabelId>;
   read: boolean;
@@ -1729,6 +1776,20 @@ export type MailboxThreadParticipant = {
   address?: string | null | undefined;
 };
 
+export type MailboxThreadSpam = {
+  reason:
+    | "spam"
+    | "dmarc"
+    | "virus"
+    | "virus_unscanned"
+    | "verdict_missing"
+    | "phishing"
+    | "fraud"
+    | "prompt_injection"
+    | null;
+  source: "receipt" | "classifier" | "reader";
+};
+
 export type MailboxThreadSender = {
   address: string | null;
   displayName: string | null;
@@ -1743,6 +1804,10 @@ export type MailboxThreadSummary = {
   id: MailboxThreadId;
   channel: MailboxChannel;
   endpointId: MailboxEndpointId | null;
+  /**
+   * The mailbox address that received the thread's first inbound email, including any plus tag. Null when no receiving address is known.
+   */
+  deliveredTo: string | null;
   subject: string | null;
   preview: string | null;
   from: MailboxThreadSender | null;
@@ -1750,6 +1815,7 @@ export type MailboxThreadSummary = {
   hasAttachments: boolean;
   hasDraft: boolean;
   folder: MailboxThreadFolder;
+  spam?: MailboxThreadSpam | undefined;
   priority: MailboxThreadPriority;
   labels: Array<MailboxLabelId>;
   read: boolean;
@@ -1776,6 +1842,10 @@ export type OrganizationMailboxThreadSummary = {
   id: MailboxThreadId;
   channel: MailboxChannel;
   endpointId: MailboxEndpointId | null;
+  /**
+   * The mailbox address that received the thread's first inbound email, including any plus tag. Null when no receiving address is known.
+   */
+  deliveredTo: string | null;
   subject: string | null;
   preview: string | null;
   from: MailboxThreadSender | null;
@@ -1783,6 +1853,7 @@ export type OrganizationMailboxThreadSummary = {
   hasAttachments: boolean;
   hasDraft: boolean;
   folder: MailboxThreadFolder;
+  spam?: MailboxThreadSpam | undefined;
   priority: MailboxThreadPriority;
   labels: Array<MailboxLabelId>;
   read: boolean;
@@ -2044,8 +2115,8 @@ export type MailboxGrant = {
     | "action:propose"
     | "action:approve"
     | "policy:read"
-    | "quarantine:read"
-    | "quarantine:release"
+    | "spam:read"
+    | "spam:discard"
   >;
   createdAt: string;
 };
@@ -2299,11 +2370,11 @@ export type ApiKeyAccess =
 
 export type ApiKeyMailboxAccess = {
   /**
-   * `read` reads mailboxes, threads, and messages; `update` changes thread state, labels, drafts, and notes; `send` sends and replies; `quarantine.read` reads quarantined mail.
+   * `read` reads mailboxes, threads, and messages; `update` changes thread state, labels, drafts, and notes; `send` sends and replies; `spam.read` reads quarantined mail.
    */
   permissions: [
-    "read" | "update" | "send" | "quarantine.read",
-    ...Array<"read" | "update" | "send" | "quarantine.read">,
+    "read" | "update" | "send" | "spam.read",
+    ...Array<"read" | "update" | "send" | "spam.read">,
   ];
   /**
    * The mailboxes the key may act on. Omit to reach every mailbox the owner can.
@@ -2630,9 +2701,9 @@ export type WebhookEndpoint = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -2688,9 +2759,9 @@ export type UpdateWebhookPayload = {
         | "mailbox.message.sent"
         | "mailbox.action.pending_approval"
         | "mailbox.action.resolved"
-        | "mailbox.message.quarantined"
-        | "mailbox.message.released"
+        | "mailbox.message.spam"
         | "mailbox.message.discarded"
+        | "mailbox.thread.deleted"
         | "mailbox.message.delivered"
         | "mailbox.message.read"
         | "mailbox.message.failed"
@@ -2754,9 +2825,9 @@ export type WebhookEndpointListItem = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -2820,9 +2891,9 @@ export type CreateWebhookPayload = {
     | "mailbox.message.sent"
     | "mailbox.action.pending_approval"
     | "mailbox.action.resolved"
-    | "mailbox.message.quarantined"
-    | "mailbox.message.released"
+    | "mailbox.message.spam"
     | "mailbox.message.discarded"
+    | "mailbox.thread.deleted"
     | "mailbox.message.delivered"
     | "mailbox.message.read"
     | "mailbox.message.failed"
@@ -4090,6 +4161,284 @@ export type IntegrationCatalogSearchEntry = {
   reason: string | null;
 };
 
+export type RecipeReadinessResponse = {
+  ready: boolean;
+  channel: "email" | "whatsapp";
+  availability: {
+    shopify: boolean;
+    journeys: boolean;
+    whatsapp: boolean;
+    plan: "granted" | "denied" | "unreachable" | "disabled" | null;
+  };
+  shopify: {
+    id: IntegrationAccountId;
+    status: AccountStatus;
+    shop: string;
+  } | null;
+  publication: {
+    id: TemplatePublicationId;
+    templateId: TemplateId;
+    /**
+     * Top-level inputs of the selected email publication or approved WhatsApp registration.
+     */
+    parameters?:
+      | Array<{
+          name: string;
+          required: boolean;
+        }>
+      | undefined;
+    /**
+     * Email input diagnostics and guidance when the journey cannot fill this publication.
+     */
+    inputIssues?: Array<string> | undefined;
+  } | null;
+  email: {
+    senderId: EmailSenderId | null;
+    domainId: EmailDomainId | null;
+    address: string;
+    status: "ready" | "unverified" | "inactive";
+  } | null;
+  whatsapp: {
+    accountId: WhatsAppBusinessAccountId;
+    address: string;
+    status: "ready" | "reconnect" | "unverified" | "inactive";
+    registration: {
+      id: TemplateRegistrationId;
+      status: "draft" | "submitted" | "approved" | "rejected" | "paused" | "disabled";
+    } | null;
+  } | null;
+  reply: {
+    endpointId: MailboxEndpointId;
+    mailboxId: MailboxId;
+    address: string;
+    status: "ready" | "inactive" | "different_account";
+  } | null;
+};
+
+export type EmailDomainId = string;
+
+export type AccountStatus = "pending" | "connected" | "needsReconnect";
+
+export type RecipeCatalogResponse = {
+  recipes: Array<{
+    id: "post-delivery-check-in";
+    title: string;
+    trigger:
+      | "shopify.order_created"
+      | "shopify.order_fulfilled"
+      | "shopify.order_delivered"
+      | "shopify.refund_created"
+      | "shopify.checkout_started";
+    stopEvent:
+      | "shopify.order_created"
+      | "shopify.order_fulfilled"
+      | "shopify.order_delivered"
+      | "shopify.refund_created"
+      | "shopify.checkout_started";
+    waitDays: number;
+    channels: Array<"email" | "whatsapp">;
+  }>;
+  events: Array<{
+    event:
+      | "shopify.order_created"
+      | "shopify.order_fulfilled"
+      | "shopify.order_delivered"
+      | "shopify.refund_created"
+      | "shopify.checkout_started";
+    version: number;
+    producer: string;
+    schema: JsonObject;
+    paths: Array<{
+      path: string;
+      mayBeEmpty: boolean;
+    }>;
+    samples: Array<{
+      fixture: string;
+      label: string;
+      properties: JsonObject;
+    }>;
+  }>;
+};
+
+export type RecipeTestReceipt = {
+  messageId: MessageId;
+  state: "queued" | "unresolved" | "rejected";
+};
+
+export type RecipeTestResponse = {
+  messageId: MessageId;
+};
+
+export type RecipeTestPayload =
+  | {
+      templateId: TemplateId;
+      publicationId: TemplatePublicationId;
+      fixture?: string | undefined;
+      templateData?: JsonObject | undefined;
+      channel: "email";
+      requestId: string;
+      mailboxEndpointId: MailboxEndpointId;
+      topicId?: TopicId | undefined;
+      senderId?: EmailSenderId | undefined;
+    }
+  | {
+      templateId: TemplateId;
+      publicationId: TemplatePublicationId;
+      fixture?: string | undefined;
+      templateData?: JsonObject | undefined;
+      channel: "whatsapp";
+      eventBindings?:
+        | {
+            [key: string]: string;
+          }
+        | undefined;
+      requestId: string;
+      mailboxEndpointId: MailboxEndpointId;
+      topicId?: TopicId | undefined;
+      businessAccountId: WhatsAppBusinessAccountId;
+      registrationId: TemplateRegistrationId;
+      challengeId: string;
+    };
+
+export type RecipeChallengeStatus = {
+  id: string;
+  expiresAt: string;
+  observedPhone: string | null;
+  confirmedAt: string | null;
+};
+
+export type RecipeChallengeStarted = {
+  id: string;
+  expiresAt: string;
+  address: string;
+  message: string;
+};
+
+export type RecipePreviewResponse =
+  | {
+      fixture: string;
+      publicationId: TemplatePublicationId;
+      channel: "email";
+      content: {
+        subject: string;
+        preheader?: string | undefined;
+        html: string;
+        text: string;
+      };
+    }
+  | {
+      fixture: string;
+      publicationId: TemplatePublicationId;
+      channel: "whatsapp";
+      content: JsonObject;
+    };
+
+export type RecipePreviewPayload =
+  | {
+      templateId: TemplateId;
+      publicationId: TemplatePublicationId;
+      fixture?: string | undefined;
+      templateData?: JsonObject | undefined;
+      channel: "email";
+    }
+  | {
+      templateId: TemplateId;
+      publicationId: TemplatePublicationId;
+      fixture?: string | undefined;
+      templateData?: JsonObject | undefined;
+      channel: "whatsapp";
+      eventBindings?:
+        | {
+            [key: string]: string;
+          }
+        | undefined;
+    };
+
+export type ActivatedRecipeSetup = {
+  setup: RecipeSetup;
+  journey: {
+    id: JourneyId;
+    status: JourneyStatus;
+    publishedVersion: number;
+  };
+};
+
+export type JourneyStatus = "draft" | "active" | "paused" | "archived";
+
+export type RecipeSetup = {
+  id: string;
+  revision: string;
+  references: RecipeSetupReferences;
+  updatedAt: string;
+};
+
+export type RecipeSetupReferences = {
+  channel: "email" | "whatsapp";
+  templateFamilyId?: TemplateFamilyId | undefined;
+  integrationAccountId?: IntegrationAccountId | undefined;
+  publicationId?: TemplatePublicationId | undefined;
+  senderId?: EmailSenderId | undefined;
+  whatsappAccountId?: WhatsAppBusinessAccountId | undefined;
+  registrationId?: TemplateRegistrationId | undefined;
+  mailboxEndpointId?: MailboxEndpointId | undefined;
+  journeyId?: JourneyId | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string;
+      }
+    | undefined;
+};
+
+export type RecipeSetupReferencesWritable = {
+  channel: "email" | "whatsapp";
+  templateFamilyId?: TemplateFamilyId | undefined;
+  integrationAccountId?: IntegrationAccountId | undefined;
+  publicationId?: TemplatePublicationId | undefined;
+  senderId?: EmailSenderId | undefined;
+  whatsappAccountId?: WhatsAppBusinessAccountId | undefined;
+  registrationId?: TemplateRegistrationId | undefined;
+  mailboxEndpointId?: MailboxEndpointId | undefined;
+  journeyId?: JourneyId | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string | undefined;
+      }
+    | undefined;
+};
+
+export type ActivateRecipeSetup = {
+  revision: string;
+  selection:
+    | {
+        channel: "email";
+        publicationId: TemplatePublicationId;
+        senderId?: EmailSenderId | undefined;
+      }
+    | {
+        channel: "whatsapp";
+        whatsappAccountId: WhatsAppBusinessAccountId;
+        registrationId: TemplateRegistrationId;
+        eventBindings: {
+          [key: string]: string;
+        };
+      };
+};
+
+export type ReplaceRecipeSetup = {
+  references: RecipeSetupReferences;
+  revision: string | null;
+};
+
+export type RecipeSetups = {
+  items: Array<RecipeSetup>;
+};
+
+export type RecipeHandoff = {
+  url: string;
+  organizationSlug: string;
+  setupId: string | null;
+};
+
 export type DeleteAccountResponse = {
   id: IntegrationAccountId;
   deleted: true;
@@ -4162,8 +4511,6 @@ export type AccountInfo = {
   verifiedEmail?: string | undefined;
   timeZone?: string | undefined;
 };
-
-export type AccountStatus = "pending" | "connected" | "needsReconnect";
 
 export type IntegrationAccountList = {
   items: Array<IntegrationAccount>;
@@ -4938,8 +5285,6 @@ export type Journey = {
   updatedAt: string;
 };
 
-export type JourneyStatus = "draft" | "active" | "paused" | "archived";
-
 export type PublishJourneyPayload = {
   revision: string;
 };
@@ -5632,8 +5977,6 @@ export type DomainWarmingDomainRef = {
   id: EmailDomainId;
   domain: string;
 };
-
-export type EmailDomainId = string;
 
 export type DomainWarmingNotePayload = {
   note?: string | null | undefined;
@@ -7711,10 +8054,40 @@ export type SmsMessageContent = {
 };
 
 export type MessageDeliveryList = {
-  items: Array<MessageDelivery>;
+  id: MessageId;
+  status:
+    | "pending"
+    | "scheduled"
+    | "queued"
+    | "processing"
+    | "sent"
+    | "delivered"
+    | "read"
+    | "failed"
+    | "bounced"
+    | "complained";
+  skippedRecipients: Array<SkippedRecipient>;
+  items: Array<MessageDeliveryObservation>;
+  reply: MessageReplyObservation;
 };
 
-export type MessageDelivery = {
+export type MessageReplyObservation = {
+  endpoints: Array<{
+    mailboxId: MailboxId;
+    endpointId: MailboxEndpointId;
+    address: string;
+  }>;
+  received: {
+    messageId: MessageId;
+    receivedAt: string;
+    thread: {
+      mailboxId: MailboxId;
+      threadId: MailboxThreadId;
+    } | null;
+  } | null;
+};
+
+export type MessageDeliveryObservation = {
   id: MessageDeliveryId;
   recipient: string | null;
   status:
@@ -7751,6 +8124,7 @@ export type MessageDelivery = {
   estimatedProviderCost: EstimatedProviderCost | null;
   createdAt: string;
   updatedAt: string;
+  queuedAt: string | null;
 };
 
 export type EstimatedProviderCost = {
@@ -18774,6 +19148,872 @@ export type AccountsConnectResponses = {
 
 export type AccountsConnectResponse = AccountsConnectResponses[keyof AccountsConnectResponses];
 
+export type IntegrationCatalogRecipeConnectionHandoffData = {
+  body?: never;
+  path: {
+    provider: "shopify" | "whatsapp";
+  };
+  query?: {
+    integrationAccountId?: IntegrationAccountId | undefined;
+    whatsappAccountId?: WhatsAppBusinessAccountId | undefined;
+    setupId?: string | undefined;
+  };
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/connections/{provider}";
+};
+
+export type IntegrationCatalogRecipeConnectionHandoffErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeConnectionHandoffError =
+  IntegrationCatalogRecipeConnectionHandoffErrors[keyof IntegrationCatalogRecipeConnectionHandoffErrors];
+
+export type IntegrationCatalogRecipeConnectionHandoffResponses = {
+  /**
+   * RecipeHandoff
+   */
+  200: RecipeHandoff;
+};
+
+export type IntegrationCatalogRecipeConnectionHandoffResponse =
+  IntegrationCatalogRecipeConnectionHandoffResponses[keyof IntegrationCatalogRecipeConnectionHandoffResponses];
+
+export type IntegrationCatalogRecipeTestHandoffData = {
+  body?: never;
+  path?: never;
+  query: {
+    channel: "email" | "whatsapp";
+    templateId: TemplateId;
+    publicationId: TemplatePublicationId;
+    mailboxEndpointId: MailboxEndpointId;
+    fixture?: string | undefined;
+    senderId?: EmailSenderId | undefined;
+    businessAccountId?: WhatsAppBusinessAccountId | undefined;
+    registrationId?: TemplateRegistrationId | undefined;
+  };
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/handoff";
+};
+
+export type IntegrationCatalogRecipeTestHandoffErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeTestHandoffError =
+  IntegrationCatalogRecipeTestHandoffErrors[keyof IntegrationCatalogRecipeTestHandoffErrors];
+
+export type IntegrationCatalogRecipeTestHandoffResponses = {
+  /**
+   * RecipeHandoff
+   */
+  200: RecipeHandoff;
+};
+
+export type IntegrationCatalogRecipeTestHandoffResponse =
+  IntegrationCatalogRecipeTestHandoffResponses[keyof IntegrationCatalogRecipeTestHandoffResponses];
+
+export type IntegrationCatalogRecipeSetupsListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups";
+};
+
+export type IntegrationCatalogRecipeSetupsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeSetupsListError =
+  IntegrationCatalogRecipeSetupsListErrors[keyof IntegrationCatalogRecipeSetupsListErrors];
+
+export type IntegrationCatalogRecipeSetupsListResponses = {
+  /**
+   * RecipeSetups
+   */
+  200: RecipeSetups;
+};
+
+export type IntegrationCatalogRecipeSetupsListResponse =
+  IntegrationCatalogRecipeSetupsListResponses[keyof IntegrationCatalogRecipeSetupsListResponses];
+
+export type IntegrationCatalogRecipeSetupGetData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups/{id}";
+};
+
+export type IntegrationCatalogRecipeSetupGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeSetupGetError =
+  IntegrationCatalogRecipeSetupGetErrors[keyof IntegrationCatalogRecipeSetupGetErrors];
+
+export type IntegrationCatalogRecipeSetupGetResponses = {
+  /**
+   * RecipeSetup
+   */
+  200: RecipeSetup;
+};
+
+export type IntegrationCatalogRecipeSetupGetResponse =
+  IntegrationCatalogRecipeSetupGetResponses[keyof IntegrationCatalogRecipeSetupGetResponses];
+
+export type IntegrationCatalogRecipeSetupReplaceData = {
+  body: {
+    references: RecipeSetupReferencesWritable;
+    revision: string | null;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups/{id}";
+};
+
+export type IntegrationCatalogRecipeSetupReplaceErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeSetupReplaceError =
+  IntegrationCatalogRecipeSetupReplaceErrors[keyof IntegrationCatalogRecipeSetupReplaceErrors];
+
+export type IntegrationCatalogRecipeSetupReplaceResponses = {
+  /**
+   * RecipeSetup
+   */
+  200: RecipeSetup;
+};
+
+export type IntegrationCatalogRecipeSetupReplaceResponse =
+  IntegrationCatalogRecipeSetupReplaceResponses[keyof IntegrationCatalogRecipeSetupReplaceResponses];
+
+export type IntegrationCatalogRecipeSetupActivateData = {
+  body: {
+    revision: string;
+    selection:
+      | {
+          channel: "email";
+          publicationId: TemplatePublicationId;
+          senderId?: EmailSenderId | undefined;
+        }
+      | {
+          channel: "whatsapp";
+          whatsappAccountId: WhatsAppBusinessAccountId;
+          registrationId: TemplateRegistrationId;
+          eventBindings: {
+            [key: string]: string | undefined;
+          };
+        };
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups/{id}/activate";
+};
+
+export type IntegrationCatalogRecipeSetupActivateErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeSetupActivateError =
+  IntegrationCatalogRecipeSetupActivateErrors[keyof IntegrationCatalogRecipeSetupActivateErrors];
+
+export type IntegrationCatalogRecipeSetupActivateResponses = {
+  /**
+   * ActivatedRecipeSetup
+   */
+  200: ActivatedRecipeSetup;
+};
+
+export type IntegrationCatalogRecipeSetupActivateResponse =
+  IntegrationCatalogRecipeSetupActivateResponses[keyof IntegrationCatalogRecipeSetupActivateResponses];
+
+export type IntegrationCatalogRecipePreviewData = {
+  body:
+    | {
+        templateId: TemplateId;
+        publicationId: TemplatePublicationId;
+        fixture?: string | undefined;
+        templateData?: JsonObjectWritable | undefined;
+        channel: "email";
+      }
+    | {
+        templateId: TemplateId;
+        publicationId: TemplatePublicationId;
+        fixture?: string | undefined;
+        templateData?: JsonObjectWritable | undefined;
+        channel: "whatsapp";
+        eventBindings?:
+          | {
+              [key: string]: string | undefined;
+            }
+          | undefined;
+      };
+  path?: never;
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/preview";
+};
+
+export type IntegrationCatalogRecipePreviewErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipePreviewError =
+  IntegrationCatalogRecipePreviewErrors[keyof IntegrationCatalogRecipePreviewErrors];
+
+export type IntegrationCatalogRecipePreviewResponses = {
+  /**
+   * RecipePreviewResponse
+   */
+  200: RecipePreviewResponse;
+};
+
+export type IntegrationCatalogRecipePreviewResponse =
+  IntegrationCatalogRecipePreviewResponses[keyof IntegrationCatalogRecipePreviewResponses];
+
+export type IntegrationCatalogRecipeWhatsAppChallengeBeginData = {
+  body?: never;
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/whatsapp/{accountId}/challenges";
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeBeginErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeBeginError =
+  IntegrationCatalogRecipeWhatsAppChallengeBeginErrors[keyof IntegrationCatalogRecipeWhatsAppChallengeBeginErrors];
+
+export type IntegrationCatalogRecipeWhatsAppChallengeBeginResponses = {
+  /**
+   * RecipeChallengeStarted
+   */
+  200: RecipeChallengeStarted;
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeBeginResponse =
+  IntegrationCatalogRecipeWhatsAppChallengeBeginResponses[keyof IntegrationCatalogRecipeWhatsAppChallengeBeginResponses];
+
+export type IntegrationCatalogRecipeWhatsAppChallengeGetData = {
+  body?: never;
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+    id: string;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/whatsapp/{accountId}/challenges/{id}";
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeGetError =
+  IntegrationCatalogRecipeWhatsAppChallengeGetErrors[keyof IntegrationCatalogRecipeWhatsAppChallengeGetErrors];
+
+export type IntegrationCatalogRecipeWhatsAppChallengeGetResponses = {
+  /**
+   * RecipeChallengeStatus
+   */
+  200: RecipeChallengeStatus;
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeGetResponse =
+  IntegrationCatalogRecipeWhatsAppChallengeGetResponses[keyof IntegrationCatalogRecipeWhatsAppChallengeGetResponses];
+
+export type IntegrationCatalogRecipeWhatsAppChallengeConfirmData = {
+  body: {
+    observedPhone: string;
+  };
+  path: {
+    accountId: WhatsAppBusinessAccountId;
+    id: string;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/whatsapp/{accountId}/challenges/{id}/confirm";
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError | FlagDisabledError
+   */
+  403: ForbiddenError | FlagDisabledError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeConfirmError =
+  IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors[keyof IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors];
+
+export type IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses = {
+  /**
+   * RecipeChallengeStatus
+   */
+  200: RecipeChallengeStatus;
+};
+
+export type IntegrationCatalogRecipeWhatsAppChallengeConfirmResponse =
+  IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses[keyof IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses];
+
+export type IntegrationCatalogRecipeTestData = {
+  body:
+    | {
+        templateId: TemplateId;
+        publicationId: TemplatePublicationId;
+        fixture?: string | undefined;
+        templateData?: JsonObjectWritable | undefined;
+        channel: "email";
+        requestId: string;
+        mailboxEndpointId: MailboxEndpointId;
+        topicId?: TopicId | undefined;
+        senderId?: EmailSenderId | undefined;
+      }
+    | {
+        templateId: TemplateId;
+        publicationId: TemplatePublicationId;
+        fixture?: string | undefined;
+        templateData?: JsonObjectWritable | undefined;
+        channel: "whatsapp";
+        eventBindings?:
+          | {
+              [key: string]: string | undefined;
+            }
+          | undefined;
+        requestId: string;
+        mailboxEndpointId: MailboxEndpointId;
+        topicId?: TopicId | undefined;
+        businessAccountId: WhatsAppBusinessAccountId;
+        registrationId: TemplateRegistrationId;
+        challengeId: string;
+      };
+  path?: never;
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test";
+};
+
+export type IntegrationCatalogRecipeTestErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError | FlagDisabledError | OnboardingReviewRequiredError
+   */
+  403: ForbiddenError | FlagDisabledError | OnboardingReviewRequiredError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError | FromAddressRequiredError | BrandAddressRequiredError | CampaignFooterRequiredError
+   */
+  422:
+    | ValidationError
+    | FromAddressRequiredError
+    | BrandAddressRequiredError
+    | CampaignFooterRequiredError;
+  /**
+   * RateLimitedError
+   */
+  429: RateLimitedError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError | ExternalServiceError
+   */
+  502: BillingProviderError | ExternalServiceError;
+  /**
+   * SenderNotReadyError | DeliveryUnavailableError
+   */
+  503: SenderNotReadyError | DeliveryUnavailableError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeTestError =
+  IntegrationCatalogRecipeTestErrors[keyof IntegrationCatalogRecipeTestErrors];
+
+export type IntegrationCatalogRecipeTestResponses = {
+  /**
+   * RecipeTestResponse
+   */
+  200: RecipeTestResponse;
+};
+
+export type IntegrationCatalogRecipeTestResponse =
+  IntegrationCatalogRecipeTestResponses[keyof IntegrationCatalogRecipeTestResponses];
+
+export type IntegrationCatalogRecipeTestReceiptData = {
+  body?: never;
+  path: {
+    requestId: string;
+  };
+  query?: never;
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/{requestId}";
+};
+
+export type IntegrationCatalogRecipeTestReceiptErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeTestReceiptError =
+  IntegrationCatalogRecipeTestReceiptErrors[keyof IntegrationCatalogRecipeTestReceiptErrors];
+
+export type IntegrationCatalogRecipeTestReceiptResponses = {
+  /**
+   * Success
+   */
+  200: RecipeTestReceipt | null;
+};
+
+export type IntegrationCatalogRecipeTestReceiptResponse =
+  IntegrationCatalogRecipeTestReceiptResponses[keyof IntegrationCatalogRecipeTestReceiptResponses];
+
+export type IntegrationCatalogRecipeCatalogData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/v1/integrations/catalog/recipes";
+};
+
+export type IntegrationCatalogRecipeCatalogErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeCatalogError =
+  IntegrationCatalogRecipeCatalogErrors[keyof IntegrationCatalogRecipeCatalogErrors];
+
+export type IntegrationCatalogRecipeCatalogResponses = {
+  /**
+   * RecipeCatalogResponse
+   */
+  200: RecipeCatalogResponse;
+};
+
+export type IntegrationCatalogRecipeCatalogResponse =
+  IntegrationCatalogRecipeCatalogResponses[keyof IntegrationCatalogRecipeCatalogResponses];
+
+export type IntegrationCatalogRecipeReadinessData = {
+  body?: never;
+  path?: never;
+  query: {
+    channel: "email" | "whatsapp";
+    integrationAccountId?: IntegrationAccountId | undefined;
+    publicationId?: TemplatePublicationId | undefined;
+    senderId?: EmailSenderId | undefined;
+    whatsappAccountId?: WhatsAppBusinessAccountId | undefined;
+    registrationId?: TemplateRegistrationId | undefined;
+    mailboxEndpointId?: MailboxEndpointId | undefined;
+  };
+  url: "/v1/integrations/catalog/recipes/post-delivery-check-in/readiness";
+};
+
+export type IntegrationCatalogRecipeReadinessErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type IntegrationCatalogRecipeReadinessError =
+  IntegrationCatalogRecipeReadinessErrors[keyof IntegrationCatalogRecipeReadinessErrors];
+
+export type IntegrationCatalogRecipeReadinessResponses = {
+  /**
+   * RecipeReadinessResponse
+   */
+  200: RecipeReadinessResponse;
+};
+
+export type IntegrationCatalogRecipeReadinessResponse =
+  IntegrationCatalogRecipeReadinessResponses[keyof IntegrationCatalogRecipeReadinessResponses];
+
 export type IntegrationCatalogPrepareData = {
   body: {
     provider: IntegrationKey;
@@ -28077,9 +29317,9 @@ export type WebhooksCreateData = {
       | "mailbox.message.sent"
       | "mailbox.action.pending_approval"
       | "mailbox.action.resolved"
-      | "mailbox.message.quarantined"
-      | "mailbox.message.released"
+      | "mailbox.message.spam"
       | "mailbox.message.discarded"
+      | "mailbox.thread.deleted"
       | "mailbox.message.delivered"
       | "mailbox.message.read"
       | "mailbox.message.failed"
@@ -28304,9 +29544,9 @@ export type WebhooksUpdateData = {
           | "mailbox.message.sent"
           | "mailbox.action.pending_approval"
           | "mailbox.action.resolved"
-          | "mailbox.message.quarantined"
-          | "mailbox.message.released"
+          | "mailbox.message.spam"
           | "mailbox.message.discarded"
+          | "mailbox.thread.deleted"
           | "mailbox.message.delivered"
           | "mailbox.message.read"
           | "mailbox.message.failed"
@@ -31623,6 +32863,64 @@ export type MailboxesListThreadsResponses = {
 export type MailboxesListThreadsResponse =
   MailboxesListThreadsResponses[keyof MailboxesListThreadsResponses];
 
+export type MailboxesDeleteThreadData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+    threadId: MailboxThreadId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/threads/{threadId}";
+};
+
+export type MailboxesDeleteThreadErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesDeleteThreadError =
+  MailboxesDeleteThreadErrors[keyof MailboxesDeleteThreadErrors];
+
+export type MailboxesDeleteThreadResponses = {
+  /**
+   * SuccessResponse
+   */
+  200: SuccessResponse;
+};
+
+export type MailboxesDeleteThreadResponse =
+  MailboxesDeleteThreadResponses[keyof MailboxesDeleteThreadResponses];
+
 export type MailboxesGetThreadData = {
   body?: never;
   path: {
@@ -31739,6 +33037,110 @@ export type MailboxesUpdateThreadResponses = {
 
 export type MailboxesUpdateThreadResponse =
   MailboxesUpdateThreadResponses[keyof MailboxesUpdateThreadResponses];
+
+export type MailboxesEmptyTrashData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/trash/empty";
+};
+
+export type MailboxesEmptyTrashErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesEmptyTrashError = MailboxesEmptyTrashErrors[keyof MailboxesEmptyTrashErrors];
+
+export type MailboxesEmptyTrashResponses = {
+  /**
+   * MailboxEmptyTrashAccepted
+   */
+  202: MailboxEmptyTrashAccepted;
+};
+
+export type MailboxesEmptyTrashResponse =
+  MailboxesEmptyTrashResponses[keyof MailboxesEmptyTrashResponses];
+
+export type MailboxesEmptySpamData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/spam/empty";
+};
+
+export type MailboxesEmptySpamErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesEmptySpamError = MailboxesEmptySpamErrors[keyof MailboxesEmptySpamErrors];
+
+export type MailboxesEmptySpamResponses = {
+  /**
+   * MailboxEmptySpamAccepted
+   */
+  202: MailboxEmptySpamAccepted;
+};
+
+export type MailboxesEmptySpamResponse =
+  MailboxesEmptySpamResponses[keyof MailboxesEmptySpamResponses];
 
 export type MailboxesRemoveThreadLabelsData = {
   body: {
@@ -32750,7 +34152,7 @@ export type MailboxesForwardResponses = {
 
 export type MailboxesForwardResponse = MailboxesForwardResponses[keyof MailboxesForwardResponses];
 
-export type MailboxesListQuarantineData = {
+export type MailboxesListSpamHeldData = {
   body?: never;
   path: {
     id: MailboxId;
@@ -32761,10 +34163,10 @@ export type MailboxesListQuarantineData = {
     after?: string | undefined;
     before?: string | undefined;
   };
-  url: "/v1/mailboxes/{id}/quarantine";
+  url: "/v1/mailboxes/{id}/spam/held";
 };
 
-export type MailboxesListQuarantineErrors = {
+export type MailboxesListSpamHeldErrors = {
   /**
    * MalformedRequestError
    */
@@ -32795,30 +34197,30 @@ export type MailboxesListQuarantineErrors = {
   504: GatewayTimeoutError;
 };
 
-export type MailboxesListQuarantineError =
-  MailboxesListQuarantineErrors[keyof MailboxesListQuarantineErrors];
+export type MailboxesListSpamHeldError =
+  MailboxesListSpamHeldErrors[keyof MailboxesListSpamHeldErrors];
 
-export type MailboxesListQuarantineResponses = {
+export type MailboxesListSpamHeldResponses = {
   /**
-   * MailboxQuarantinePage
+   * MailboxSpamHeldPage
    */
-  200: MailboxQuarantinePage;
+  200: MailboxSpamHeldPage;
 };
 
-export type MailboxesListQuarantineResponse =
-  MailboxesListQuarantineResponses[keyof MailboxesListQuarantineResponses];
+export type MailboxesListSpamHeldResponse =
+  MailboxesListSpamHeldResponses[keyof MailboxesListSpamHeldResponses];
 
-export type MailboxesReleaseMessageData = {
+export type MailboxesDiscardSpamHeldData = {
   body?: never;
   path: {
     id: MailboxId;
     messageId: MessageId;
   };
   query?: never;
-  url: "/v1/mailboxes/{id}/messages/{messageId}/release";
+  url: "/v1/mailboxes/{id}/spam/held/{messageId}/discard";
 };
 
-export type MailboxesReleaseMessageErrors = {
+export type MailboxesDiscardSpamHeldErrors = {
   /**
    * MalformedRequestError
    */
@@ -32835,68 +34237,6 @@ export type MailboxesReleaseMessageErrors = {
    * ResourceNotFoundError
    */
   404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesReleaseMessageError =
-  MailboxesReleaseMessageErrors[keyof MailboxesReleaseMessageErrors];
-
-export type MailboxesReleaseMessageResponses = {
-  /**
-   * MailboxQuarantinedMessage
-   */
-  200: MailboxQuarantinedMessage;
-};
-
-export type MailboxesReleaseMessageResponse =
-  MailboxesReleaseMessageResponses[keyof MailboxesReleaseMessageResponses];
-
-export type MailboxesDiscardMessageData = {
-  body?: never;
-  path: {
-    id: MailboxId;
-    messageId: MessageId;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/messages/{messageId}/discard";
-};
-
-export type MailboxesDiscardMessageErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ConflictError
-   */
-  409: ConflictError;
   /**
    * ValidationError
    */
@@ -32915,18 +34255,18 @@ export type MailboxesDiscardMessageErrors = {
   504: GatewayTimeoutError;
 };
 
-export type MailboxesDiscardMessageError =
-  MailboxesDiscardMessageErrors[keyof MailboxesDiscardMessageErrors];
+export type MailboxesDiscardSpamHeldError =
+  MailboxesDiscardSpamHeldErrors[keyof MailboxesDiscardSpamHeldErrors];
 
-export type MailboxesDiscardMessageResponses = {
+export type MailboxesDiscardSpamHeldResponses = {
   /**
-   * MailboxQuarantinedMessage
+   * MailboxSpamHeldMessage
    */
-  200: MailboxQuarantinedMessage;
+  200: MailboxSpamHeldMessage;
 };
 
-export type MailboxesDiscardMessageResponse =
-  MailboxesDiscardMessageResponses[keyof MailboxesDiscardMessageResponses];
+export type MailboxesDiscardSpamHeldResponse =
+  MailboxesDiscardSpamHeldResponses[keyof MailboxesDiscardSpamHeldResponses];
 
 export type MailboxesScheduleDraftData = {
   body: {
@@ -37022,7 +38362,8 @@ export type TemplateRegistrationsListResponse =
 export type TemplateRegistrationsSubmitData = {
   body: {
     provider: "whatsapp";
-    businessAccountId?: WhatsAppBusinessAccountId | undefined;
+    businessAccountId?: WhatsAppBusinessAccountId1 | undefined;
+    approval?: TemplateRegistrationApproval | undefined;
   };
   path: {
     id: TemplateId;
@@ -37064,6 +38405,10 @@ export type TemplateRegistrationsSubmitErrors = {
    * WhatsAppChannelError
    */
   502: WhatsAppChannelError;
+  /**
+   * ServiceUnavailableError
+   */
+  503: ServiceUnavailableError;
   /**
    * GatewayTimeoutError
    */

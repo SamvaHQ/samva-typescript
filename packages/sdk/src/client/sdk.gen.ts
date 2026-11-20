@@ -427,6 +427,34 @@ import type {
   IntegrationCatalogListResponses,
   IntegrationCatalogPrepareErrors,
   IntegrationCatalogPrepareResponses,
+  IntegrationCatalogRecipeCatalogErrors,
+  IntegrationCatalogRecipeCatalogResponses,
+  IntegrationCatalogRecipeConnectionHandoffErrors,
+  IntegrationCatalogRecipeConnectionHandoffResponses,
+  IntegrationCatalogRecipePreviewErrors,
+  IntegrationCatalogRecipePreviewResponses,
+  IntegrationCatalogRecipeReadinessErrors,
+  IntegrationCatalogRecipeReadinessResponses,
+  IntegrationCatalogRecipeSetupActivateErrors,
+  IntegrationCatalogRecipeSetupActivateResponses,
+  IntegrationCatalogRecipeSetupGetErrors,
+  IntegrationCatalogRecipeSetupGetResponses,
+  IntegrationCatalogRecipeSetupReplaceErrors,
+  IntegrationCatalogRecipeSetupReplaceResponses,
+  IntegrationCatalogRecipeSetupsListErrors,
+  IntegrationCatalogRecipeSetupsListResponses,
+  IntegrationCatalogRecipeTestErrors,
+  IntegrationCatalogRecipeTestHandoffErrors,
+  IntegrationCatalogRecipeTestHandoffResponses,
+  IntegrationCatalogRecipeTestReceiptErrors,
+  IntegrationCatalogRecipeTestReceiptResponses,
+  IntegrationCatalogRecipeTestResponses,
+  IntegrationCatalogRecipeWhatsAppChallengeBeginErrors,
+  IntegrationCatalogRecipeWhatsAppChallengeBeginResponses,
+  IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors,
+  IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses,
+  IntegrationCatalogRecipeWhatsAppChallengeGetErrors,
+  IntegrationCatalogRecipeWhatsAppChallengeGetResponses,
   IntegrationCatalogSearchErrors,
   IntegrationCatalogSearchResponses,
   IntegrationId,
@@ -521,10 +549,16 @@ import type {
   MailboxesDeleteNoteResponses,
   MailboxesDeleteSplitErrors,
   MailboxesDeleteSplitResponses,
+  MailboxesDeleteThreadErrors,
+  MailboxesDeleteThreadResponses,
   MailboxesDenyActionErrors,
   MailboxesDenyActionResponses,
-  MailboxesDiscardMessageErrors,
-  MailboxesDiscardMessageResponses,
+  MailboxesDiscardSpamHeldErrors,
+  MailboxesDiscardSpamHeldResponses,
+  MailboxesEmptySpamErrors,
+  MailboxesEmptySpamResponses,
+  MailboxesEmptyTrashErrors,
+  MailboxesEmptyTrashResponses,
   MailboxesForwardErrors,
   MailboxesForwardResponses,
   MailboxesGetActionErrors,
@@ -570,11 +604,11 @@ import type {
   MailboxesListOrganizationDraftsResponses,
   MailboxesListOrganizationThreadsErrors,
   MailboxesListOrganizationThreadsResponses,
-  MailboxesListQuarantineErrors,
-  MailboxesListQuarantineResponses,
   MailboxesListResponses,
   MailboxesListScheduledSendsErrors,
   MailboxesListScheduledSendsResponses,
+  MailboxesListSpamHeldErrors,
+  MailboxesListSpamHeldResponses,
   MailboxesListSplitsErrors,
   MailboxesListSplitsResponses,
   MailboxesListThreadMessagesErrors,
@@ -585,8 +619,6 @@ import type {
   MailboxesListThreadsResponses,
   MailboxesPauseErrors,
   MailboxesPauseResponses,
-  MailboxesReleaseMessageErrors,
-  MailboxesReleaseMessageResponses,
   MailboxesRemoveEndpointErrors,
   MailboxesRemoveEndpointResponses,
   MailboxesRemoveErrors,
@@ -788,6 +820,7 @@ import type {
   PolicyReviewRound,
   PolicyRule,
   PolicyVersion,
+  RecipeSetupReferencesWritable,
   RenderLocale,
   RenderTimeZone,
   ReplyMailboxChatPayload,
@@ -815,6 +848,7 @@ import type {
   TemplateInputContractId,
   TemplateProjectId,
   TemplatePublicationId,
+  TemplateRegistrationApproval,
   TemplateRegistrationId,
   TemplateRegistrationsGetErrors,
   TemplateRegistrationsGetResponses,
@@ -964,6 +998,7 @@ import type {
   WebhooksUpdateErrors,
   WebhooksUpdateResponses,
   WhatsAppBusinessAccountId,
+  WhatsAppBusinessAccountId1,
   WhatsappConnectBusinessAccountErrors,
   WhatsappConnectBusinessAccountResponses,
   WhatsappDisconnectBusinessAccountErrors,
@@ -1337,7 +1372,7 @@ export class Messages {
   /**
    * List message deliveries
    *
-   * Returns one delivery per recipient: its status, attempts, delivery times, and why it failed or is waiting.
+   * Returns per-recipient queueing, provider acceptance (sentAt), delivery and read times, failures and waits. Includes recipients skipped at admission and the first reply linked by a message reference. Mailbox endpoints and threads require mailbox read access.
    */
   public static listDeliveries<ThrowOnError extends boolean = false>(
     parameters: {
@@ -1395,7 +1430,7 @@ export class Messages {
   /**
    * Get email message details
    *
-   * Returns email delivery details for a message, optionally including signed URLs for its raw MIME, HTML, and text content.
+   * Returns email delivery details for a message, optionally including signed URLs for its raw MIME, HTML, and text content. Requesting download URLs for inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`). Omit `includeDownloadUrls` to read the details.
    */
   public static getEmail<ThrowOnError extends boolean = false>(
     parameters: {
@@ -5231,7 +5266,7 @@ export class Attachments {
   /**
    * Get an attachment download URL
    *
-   * Generates a presigned, time-limited download URL for the attachment; expiry is configurable via the expiresIn query parameter.
+   * Generates a presigned, time-limited download URL for the attachment. Set `expiresIn` to configure expiry. Returns 404 (`ResourceNotFoundError`) for an inbound email attachment without a passing malware scan.
    */
   public static downloadUrl<ThrowOnError extends boolean = false>(
     parameters: {
@@ -8250,6 +8285,655 @@ export class Accounts2 {
 }
 
 export class IntegrationCatalog {
+  /**
+   * Get a Shopify or WhatsApp browser connection handoff
+   *
+   * Returns a browser link for an organization administrator. Shopify opens the saved check-in when setupId is supplied and the Shopify integration page otherwise. WhatsApp opens its settings page with the specified account, if any, even when setupId is supplied. Provider authorization takes place in the browser.
+   */
+  public static recipeConnectionHandoff<ThrowOnError extends boolean = false>(
+    parameters: {
+      provider: "shopify" | "whatsapp";
+      integrationAccountId?: IntegrationAccountId | undefined;
+      whatsappAccountId?: WhatsAppBusinessAccountId | undefined;
+      setupId?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeConnectionHandoffResponses,
+    IntegrationCatalogRecipeConnectionHandoffErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "provider" },
+            { in: "query", key: "integrationAccountId" },
+            { in: "query", key: "whatsappAccountId" },
+            { in: "query", key: "setupId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeConnectionHandoff",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeConnectionHandoffResponses,
+          IntegrationCatalogRecipeConnectionHandoffErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/connections/{provider}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Get a browser handoff for a verified owner test
+   *
+   * Opens the owner review screen for the specified publication and reply mailbox endpoint. Creating this link submits no message or provider request.
+   */
+  public static recipeTestHandoff<ThrowOnError extends boolean = false>(
+    parameters: {
+      channel: "email" | "whatsapp";
+      templateId: TemplateId;
+      publicationId: TemplatePublicationId;
+      mailboxEndpointId: MailboxEndpointId;
+      fixture?: string | undefined;
+      senderId?: EmailSenderId | undefined;
+      businessAccountId?: WhatsAppBusinessAccountId | undefined;
+      registrationId?: TemplateRegistrationId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeTestHandoffResponses,
+    IntegrationCatalogRecipeTestHandoffErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "channel" },
+            { in: "query", key: "templateId" },
+            { in: "query", key: "publicationId" },
+            { in: "query", key: "mailboxEndpointId" },
+            { in: "query", key: "fixture" },
+            { in: "query", key: "senderId" },
+            { in: "query", key: "businessAccountId" },
+            { in: "query", key: "registrationId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeTestHandoff",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeTestHandoffResponses,
+          IntegrationCatalogRecipeTestHandoffErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/handoff",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * List saved post-delivery check-in setups
+   *
+   * Requires organization-wide access. Lists the 100 most recently updated selections the caller can read. Read live readiness separately.
+   */
+  public static recipeSetupsList<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeSetupsListResponses,
+    IntegrationCatalogRecipeSetupsListErrors,
+    ThrowOnError
+  > {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeSetupsList",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeSetupsListResponses,
+          IntegrationCatalogRecipeSetupsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups",
+          ...options,
+          headers: { ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Read post-delivery check-in setup references
+   *
+   * Requires organization-wide access. Returns the saved resource IDs and revision for a setup the caller can read.
+   */
+  public static recipeSetupGet<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeSetupGetResponses,
+    IntegrationCatalogRecipeSetupGetErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeSetupGet",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeSetupGetResponses,
+          IntegrationCatalogRecipeSetupGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Save post-delivery check-in setup references
+   *
+   * Requires organization-wide access. Creates a setup under a new UUID with a null revision or replaces it with its current revision. Validates references without submitting provider requests.
+   */
+  public static recipeSetupReplace<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      references: RecipeSetupReferencesWritable;
+      revision: string | null;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeSetupReplaceResponses,
+    IntegrationCatalogRecipeSetupReplaceErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "references" },
+            { in: "body", key: "revision" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeSetupReplace",
+      options,
+      (headers) =>
+        (options?.client ?? client).put<
+          IntegrationCatalogRecipeSetupReplaceResponses,
+          IntegrationCatalogRecipeSetupReplaceErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Activate the reviewed Shopify post-delivery check-in
+   *
+   * Publishes the saved setup's reviewed send selection on its own journey. Reuse the same revision and selection after an interrupted response. A changed setup returns 409. Existing runs keep their published version.
+   */
+  public static recipeSetupActivate<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      revision: string;
+      selection:
+        | {
+            channel: "email";
+            publicationId: TemplatePublicationId;
+            senderId?: EmailSenderId | undefined;
+          }
+        | {
+            channel: "whatsapp";
+            whatsappAccountId: WhatsAppBusinessAccountId;
+            registrationId: TemplateRegistrationId;
+            eventBindings: {
+              [key: string]: string | undefined;
+            };
+          };
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeSetupActivateResponses,
+    IntegrationCatalogRecipeSetupActivateErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "revision" },
+            { in: "body", key: "selection" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeSetupActivate",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          IntegrationCatalogRecipeSetupActivateResponses,
+          IntegrationCatalogRecipeSetupActivateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups/{id}/activate",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Render a check-in preview with a labelled sample order
+   *
+   * Renders the exact publication without sending, enrolling a recipient, or requiring a verified test destination.
+   */
+  public static recipePreview<ThrowOnError extends boolean = false>(
+    parameters:
+      | {
+          templateId: TemplateId;
+          publicationId: TemplatePublicationId;
+          fixture?: string | undefined;
+          templateData?: JsonObjectWritable | undefined;
+          channel: "email";
+        }
+      | {
+          templateId: TemplateId;
+          publicationId: TemplatePublicationId;
+          fixture?: string | undefined;
+          templateData?: JsonObjectWritable | undefined;
+          channel: "whatsapp";
+          eventBindings?:
+            | {
+                [key: string]: string | undefined;
+              }
+            | undefined;
+        },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipePreviewResponses,
+    IntegrationCatalogRecipePreviewErrors,
+    ThrowOnError
+  > {
+    const params = { body: parameters };
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipePreview",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          IntegrationCatalogRecipePreviewResponses,
+          IntegrationCatalogRecipePreviewErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/preview",
+          ...options,
+          ...params,
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Open a WhatsApp owner verification challenge
+   *
+   * Requires a signed-in owner. The owner sends the returned code directly from their personal WhatsApp to the listed business number before the code expires.
+   */
+  public static recipeWhatsAppChallengeBegin<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeWhatsAppChallengeBeginResponses,
+    IntegrationCatalogRecipeWhatsAppChallengeBeginErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeWhatsAppChallengeBegin",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          IntegrationCatalogRecipeWhatsAppChallengeBeginResponses,
+          IntegrationCatalogRecipeWhatsAppChallengeBeginErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/whatsapp/{accountId}/challenges",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Read the observed sender for a WhatsApp owner challenge
+   *
+   * Requires the same signed-in owner. The observed phone is available only after authenticated inbound delivery on the selected business number.
+   */
+  public static recipeWhatsAppChallengeGet<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeWhatsAppChallengeGetResponses,
+    IntegrationCatalogRecipeWhatsAppChallengeGetErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "accountId" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeWhatsAppChallengeGet",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeWhatsAppChallengeGetResponses,
+          IntegrationCatalogRecipeWhatsAppChallengeGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/whatsapp/{accountId}/challenges/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Confirm the phone observed on a WhatsApp test challenge
+   *
+   * Requires the same signed-in owner and an exact match with the number reported by WhatsApp. Confirmation does not record consent.
+   */
+  public static recipeWhatsAppChallengeConfirm<ThrowOnError extends boolean = false>(
+    parameters: {
+      accountId: WhatsAppBusinessAccountId;
+      id: string;
+      observedPhone: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses,
+    IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "accountId" },
+            { in: "path", key: "id" },
+            { in: "body", key: "observedPhone" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeWhatsAppChallengeConfirm",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses,
+          IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/whatsapp/{accountId}/challenges/{id}/confirm",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Run an owner-only test of a Shopify check-in
+   *
+   * Takes no recipient. Samva resolves the acting owner's signed-in verified email or confirmed WhatsApp challenge. Normal send admission, billing, suppression and consent apply. Reuse the same request ID to reconcile an uncertain response.
+   */
+  public static recipeTest<ThrowOnError extends boolean = false>(
+    parameters:
+      | {
+          templateId: TemplateId;
+          publicationId: TemplatePublicationId;
+          fixture?: string | undefined;
+          templateData?: JsonObjectWritable | undefined;
+          channel: "email";
+          requestId: string;
+          mailboxEndpointId: MailboxEndpointId;
+          topicId?: TopicId | undefined;
+          senderId?: EmailSenderId | undefined;
+        }
+      | {
+          templateId: TemplateId;
+          publicationId: TemplatePublicationId;
+          fixture?: string | undefined;
+          templateData?: JsonObjectWritable | undefined;
+          channel: "whatsapp";
+          eventBindings?:
+            | {
+                [key: string]: string | undefined;
+              }
+            | undefined;
+          requestId: string;
+          mailboxEndpointId: MailboxEndpointId;
+          topicId?: TopicId | undefined;
+          businessAccountId: WhatsAppBusinessAccountId;
+          registrationId: TemplateRegistrationId;
+          challengeId: string;
+        },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeTestResponses,
+    IntegrationCatalogRecipeTestErrors,
+    ThrowOnError
+  > {
+    const params = { body: parameters };
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeTest",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          IntegrationCatalogRecipeTestResponses,
+          IntegrationCatalogRecipeTestErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test",
+          ...options,
+          ...params,
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Reconcile an owner test after an uncertain response
+   *
+   * Requires messages:read and the signed-in owner in the dashboard or Samva CLI. Returns that owner's test receipt by request ID. Read message deliveries for provider and reply state.
+   */
+  public static recipeTestReceipt<ThrowOnError extends boolean = false>(
+    parameters: {
+      requestId: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeTestReceiptResponses,
+    IntegrationCatalogRecipeTestReceiptErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "requestId" }] }]);
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeTestReceipt",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeTestReceiptResponses,
+          IntegrationCatalogRecipeTestReceiptErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/owner-test/{requestId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * List Shopify journey recipes and event inputs
+   *
+   * Returns recipe defaults, event property schemas and labelled sample payloads.
+   */
+  public static recipeCatalog<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeCatalogResponses,
+    IntegrationCatalogRecipeCatalogErrors,
+    ThrowOnError
+  > {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeCatalog",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeCatalogResponses,
+          IntegrationCatalogRecipeCatalogErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes",
+          ...options,
+          headers: { ...headers },
+        }),
+    );
+  }
+
+  /**
+   * Read Shopify post-delivery check-in readiness
+   *
+   * Checks selected resources and current feature availability. A namespace caller sees its reachable resources. Shopify account and plan fields are null, and full recipe readiness requires organization-wide access. Omit the email sender or WhatsApp account to see the sender or number selected for the publication and caller scope. Requires email:read and domains:read for email, or whatsappAccounts:read for WhatsApp.
+   */
+  public static recipeReadiness<ThrowOnError extends boolean = false>(
+    parameters: {
+      channel: "email" | "whatsapp";
+      integrationAccountId?: IntegrationAccountId | undefined;
+      publicationId?: TemplatePublicationId | undefined;
+      senderId?: EmailSenderId | undefined;
+      whatsappAccountId?: WhatsAppBusinessAccountId | undefined;
+      registrationId?: TemplateRegistrationId | undefined;
+      mailboxEndpointId?: MailboxEndpointId | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    IntegrationCatalogRecipeReadinessResponses,
+    IntegrationCatalogRecipeReadinessErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "channel" },
+            { in: "query", key: "integrationAccountId" },
+            { in: "query", key: "publicationId" },
+            { in: "query", key: "senderId" },
+            { in: "query", key: "whatsappAccountId" },
+            { in: "query", key: "registrationId" },
+            { in: "query", key: "mailboxEndpointId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationCatalogRecipeReadiness",
+      options,
+      (headers) =>
+        (options?.client ?? client).get<
+          IntegrationCatalogRecipeReadinessResponses,
+          IntegrationCatalogRecipeReadinessErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/catalog/recipes/post-delivery-check-in/readiness",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
   /**
    * Prepare an integration connection
    *
@@ -13140,9 +13824,9 @@ export class Webhooks {
         | "mailbox.message.sent"
         | "mailbox.action.pending_approval"
         | "mailbox.action.resolved"
-        | "mailbox.message.quarantined"
-        | "mailbox.message.released"
+        | "mailbox.message.spam"
         | "mailbox.message.discarded"
+        | "mailbox.thread.deleted"
         | "mailbox.message.delivered"
         | "mailbox.message.read"
         | "mailbox.message.failed"
@@ -13288,9 +13972,9 @@ export class Webhooks {
             | "mailbox.message.sent"
             | "mailbox.action.pending_approval"
             | "mailbox.action.resolved"
-            | "mailbox.message.quarantined"
-            | "mailbox.message.released"
+            | "mailbox.message.spam"
             | "mailbox.message.discarded"
+            | "mailbox.thread.deleted"
             | "mailbox.message.delivered"
             | "mailbox.message.read"
             | "mailbox.message.failed"
@@ -15551,6 +16235,48 @@ export class Mailboxes {
   }
 
   /**
+   * Permanently delete a mailbox thread
+   *
+   * Deletes a thread from Trash or Spam. Requires thread:write. Returns 409 if the thread is outside those folders. Publishes mailbox.thread.deleted. Cleanup of stored files runs after the deletion commits.
+   */
+  public static deleteThread<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      threadId: MailboxThreadId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesDeleteThreadResponses, MailboxesDeleteThreadErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "threadId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesDeleteThread",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          MailboxesDeleteThreadResponses,
+          MailboxesDeleteThreadErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/threads/{threadId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
    * Get a mailbox thread
    *
    * Returns a thread with its participants and where it stands. Read its messages with `GET .../threads/{threadId}/messages` and their bodies with `GET .../threads/{threadId}/content`.
@@ -15646,6 +16372,60 @@ export class Mailboxes {
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
         }),
+    );
+  }
+
+  /**
+   * Empty a mailbox's Trash
+   *
+   * Queues permanent deletion of the threads currently in Trash and returns their count. Requires thread:write. A thread restored before processing is skipped.
+   */
+  public static emptyTrash<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesEmptyTrashResponses, MailboxesEmptyTrashErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(options?.client ?? client, "mailboxesEmptyTrash", options, (headers) =>
+      (options?.client ?? client).post<
+        MailboxesEmptyTrashResponses,
+        MailboxesEmptyTrashErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/mailboxes/{id}/trash/empty",
+        ...options,
+        ...params,
+        headers: { ...headers, ...params.headers },
+      }),
+    );
+  }
+
+  /**
+   * Empty a mailbox's Spam
+   *
+   * Queues permanent deletion of the threads currently in Spam and returns their count. Requires thread:write. A thread restored before processing is skipped.
+   */
+  public static emptySpam<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesEmptySpamResponses, MailboxesEmptySpamErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(options?.client ?? client, "mailboxesEmptySpam", options, (headers) =>
+      (options?.client ?? client).post<
+        MailboxesEmptySpamResponses,
+        MailboxesEmptySpamErrors,
+        ThrowOnError
+      >({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/mailboxes/{id}/spam/empty",
+        ...options,
+        ...params,
+        headers: { ...headers, ...params.headers },
+      }),
     );
   }
 
@@ -16104,7 +16884,7 @@ export class Mailboxes {
   /**
    * Get a message's raw MIME
    *
-   * Returns a short-lived URL for the message exactly as it was received (`message/rfc822`). Sent messages have no stored MIME.
+   * Returns a short-lived URL for the message exactly as it was received (`message/rfc822`). Sent messages have no stored MIME. Inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`).
    */
   public static getMessageRaw<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16146,7 +16926,7 @@ export class Mailboxes {
   /**
    * Get a message attachment
    *
-   * Returns a short-lived download URL for one of the message's attachments.
+   * Returns a short-lived download URL for one of the message's attachments. Inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`).
    */
   public static getMessageAttachment<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16194,7 +16974,7 @@ export class Mailboxes {
   /**
    * Copy a message attachment
    *
-   * Copies one of a received message's attachments into the organization's media and returns it as a draft attachment (`mediaId`), so a draft can carry it. A draft that forwards a message saves each original attachment this way.
+   * Copies one of a received message's attachments into the organization's media and returns it as a draft attachment (`mediaId`), so a draft can carry it. A draft that forwards a message saves each original attachment this way. Inbound email without a passing malware scan returns 404 (`ResourceNotFoundError`).
    */
   public static copyMessageAttachment<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16322,7 +17102,7 @@ export class Mailboxes {
   /**
    * Forward a message
    *
-   * Forwards an email to new recipients as a new conversation from the thread's endpoint, with the original quoted below the caller's text and its attachments attached ahead of any the caller adds. The combined attachments must fit the email attachment limits.
+   * Forwards an email to new recipients as a new conversation from the thread's endpoint, with the original quoted below the caller's text and its attachments attached ahead of any the caller adds. The combined attachments must fit the email attachment limits. Forwarding an inbound email with attachments and without a passing malware scan returns 404 (`ResourceNotFoundError`).
    */
   public static forward<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16371,11 +17151,11 @@ export class Mailboxes {
   }
 
   /**
-   * List quarantined messages
+   * List malware held outside Spam threads
    *
-   * Returns the messages this mailbox holds instead of delivering, most recently held first: suspected spam, phishing, fraud, or prompt injection (`quarantined`), and malware (`isolated`). Each is metadata only; a held message appears in no thread, search, or `mailbox.message.received` event until a person releases it. `after` and `before` filter by when the message was held. Needs `quarantine.read`.
+   * Lists isolated messages, newest first. Only metadata is stored. Use the thread list with folder=spam to read Spam. The after and before filters apply to when the message was held.
    */
-  public static listQuarantine<ThrowOnError extends boolean = false>(
+  public static listSpamHeld<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
       limit?: number | null | undefined;
@@ -16384,7 +17164,7 @@ export class Mailboxes {
       before?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesListQuarantineResponses, MailboxesListQuarantineErrors, ThrowOnError> {
+  ): RequestResult<MailboxesListSpamHeldResponses, MailboxesListSpamHeldErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -16401,16 +17181,16 @@ export class Mailboxes {
     );
     return requestWithPolicy(
       options?.client ?? client,
-      "mailboxesListQuarantine",
+      "mailboxesListSpamHeld",
       options,
       (headers) =>
         (options?.client ?? client).get<
-          MailboxesListQuarantineResponses,
-          MailboxesListQuarantineErrors,
+          MailboxesListSpamHeldResponses,
+          MailboxesListSpamHeldErrors,
           ThrowOnError
         >({
           security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/quarantine",
+          url: "/v1/mailboxes/{id}/spam/held",
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
@@ -16419,17 +17199,21 @@ export class Mailboxes {
   }
 
   /**
-   * Release a quarantined message
+   * Discard held malware
    *
-   * Delivers a quarantined message into the thread it would have joined and publishes one `mailbox.message.released` event. Releasing it again returns the same result and publishes nothing. Only a person can release; API keys never hold `quarantine.release`. Isolated (malware) messages and discarded messages cannot be released: 409.
+   * Permanently removes isolated malware from the mailbox's held list. Publishes one `mailbox.message.discarded` event. Retrying returns the same result and publishes nothing. Delete readable Spam through the thread delete endpoint. Only a person with `spam.discard` can discard held mail.
    */
-  public static releaseMessage<ThrowOnError extends boolean = false>(
+  public static discardSpamHeld<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
       messageId: MessageId;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesReleaseMessageResponses, MailboxesReleaseMessageErrors, ThrowOnError> {
+  ): RequestResult<
+    MailboxesDiscardSpamHeldResponses,
+    MailboxesDiscardSpamHeldErrors,
+    ThrowOnError
+  > {
     const params = buildClientParams(
       [parameters],
       [
@@ -16443,58 +17227,16 @@ export class Mailboxes {
     );
     return requestWithPolicy(
       options?.client ?? client,
-      "mailboxesReleaseMessage",
+      "mailboxesDiscardSpamHeld",
       options,
       (headers) =>
         (options?.client ?? client).post<
-          MailboxesReleaseMessageResponses,
-          MailboxesReleaseMessageErrors,
+          MailboxesDiscardSpamHeldResponses,
+          MailboxesDiscardSpamHeldErrors,
           ThrowOnError
         >({
           security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/messages/{messageId}/release",
-          ...options,
-          ...params,
-          headers: { ...headers, ...params.headers },
-        }),
-    );
-  }
-
-  /**
-   * Discard a quarantined message
-   *
-   * Removes a held message from the mailbox's quarantine for good: it leaves the quarantine list, never reaches a thread, and can no longer be released. Quarantined and isolated (malware) messages can both be discarded. Publishes one `mailbox.message.discarded` event; discarding it again returns the same result and publishes nothing. A released message is in its thread and cannot be discarded: 409. Only a person can discard; API keys never hold `quarantine.release`.
-   */
-  public static discardMessage<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: MailboxId;
-      messageId: MessageId;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesDiscardMessageResponses, MailboxesDiscardMessageErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "path", key: "messageId" },
-          ],
-        },
-      ],
-    );
-    return requestWithPolicy(
-      options?.client ?? client,
-      "mailboxesDiscardMessage",
-      options,
-      (headers) =>
-        (options?.client ?? client).post<
-          MailboxesDiscardMessageResponses,
-          MailboxesDiscardMessageErrors,
-          ThrowOnError
-        >({
-          security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/messages/{messageId}/discard",
+          url: "/v1/mailboxes/{id}/spam/held/{messageId}/discard",
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
@@ -19283,13 +20025,14 @@ export class TemplateRegistrations {
   /**
    * Submit a template registration
    *
-   * Submits the template's current publication for the provider's review: for WhatsApp, as a message template on the business account of the named number, or of the default number. A first submission creates the provider template; a later one resubmits the newer publication's content to the same template.
+   * Submits the template's current publication for review on a WhatsApp business account. Pass approval to bind a reviewed submission to the exact publication, workspace revision, connected number and Meta business account. A changed selection returns a conflict. An immediate submission uses the named or default number. A first submission creates the provider template. A later one resubmits through the same registration.
    */
   public static submit<ThrowOnError extends boolean = false>(
     parameters: {
       id: TemplateId;
       provider: "whatsapp";
-      businessAccountId?: WhatsAppBusinessAccountId | undefined;
+      businessAccountId?: WhatsAppBusinessAccountId1 | undefined;
+      approval?: TemplateRegistrationApproval | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -19305,6 +20048,7 @@ export class TemplateRegistrations {
             { in: "path", key: "id" },
             { in: "body", key: "provider" },
             { in: "body", key: "businessAccountId" },
+            { in: "body", key: "approval" },
           ],
         },
       ],
@@ -19754,6 +20498,54 @@ Object.assign(Accounts.check, { operation: "accountsCheck" });
 
 Object.assign(Accounts.connect, { operation: "accountsConnect" });
 
+Object.assign(IntegrationCatalog.recipeConnectionHandoff, {
+  operation: "integrationCatalogRecipeConnectionHandoff",
+});
+
+Object.assign(IntegrationCatalog.recipeTestHandoff, {
+  operation: "integrationCatalogRecipeTestHandoff",
+});
+
+Object.assign(IntegrationCatalog.recipeSetupsList, {
+  operation: "integrationCatalogRecipeSetupsList",
+});
+
+Object.assign(IntegrationCatalog.recipeSetupGet, { operation: "integrationCatalogRecipeSetupGet" });
+
+Object.assign(IntegrationCatalog.recipeSetupReplace, {
+  operation: "integrationCatalogRecipeSetupReplace",
+});
+
+Object.assign(IntegrationCatalog.recipeSetupActivate, {
+  operation: "integrationCatalogRecipeSetupActivate",
+});
+
+Object.assign(IntegrationCatalog.recipePreview, { operation: "integrationCatalogRecipePreview" });
+
+Object.assign(IntegrationCatalog.recipeWhatsAppChallengeBegin, {
+  operation: "integrationCatalogRecipeWhatsAppChallengeBegin",
+});
+
+Object.assign(IntegrationCatalog.recipeWhatsAppChallengeGet, {
+  operation: "integrationCatalogRecipeWhatsAppChallengeGet",
+});
+
+Object.assign(IntegrationCatalog.recipeWhatsAppChallengeConfirm, {
+  operation: "integrationCatalogRecipeWhatsAppChallengeConfirm",
+});
+
+Object.assign(IntegrationCatalog.recipeTest, { operation: "integrationCatalogRecipeTest" });
+
+Object.assign(IntegrationCatalog.recipeTestReceipt, {
+  operation: "integrationCatalogRecipeTestReceipt",
+});
+
+Object.assign(IntegrationCatalog.recipeCatalog, { operation: "integrationCatalogRecipeCatalog" });
+
+Object.assign(IntegrationCatalog.recipeReadiness, {
+  operation: "integrationCatalogRecipeReadiness",
+});
+
 Object.assign(IntegrationCatalog.prepare, { operation: "integrationCatalogPrepare" });
 
 Object.assign(IntegrationCatalog.search, { operation: "integrationCatalogSearch" });
@@ -20112,9 +20904,15 @@ Object.assign(Mailboxes.listOrganizationThreads, { operation: "mailboxesListOrga
 
 Object.assign(Mailboxes.listThreads, { operation: "mailboxesListThreads" });
 
+Object.assign(Mailboxes.deleteThread, { operation: "mailboxesDeleteThread" });
+
 Object.assign(Mailboxes.getThread, { operation: "mailboxesGetThread" });
 
 Object.assign(Mailboxes.updateThread, { operation: "mailboxesUpdateThread" });
+
+Object.assign(Mailboxes.emptyTrash, { operation: "mailboxesEmptyTrash" });
+
+Object.assign(Mailboxes.emptySpam, { operation: "mailboxesEmptySpam" });
 
 Object.assign(Mailboxes.removeThreadLabels, { operation: "mailboxesRemoveThreadLabels" });
 
@@ -20148,11 +20946,9 @@ Object.assign(Mailboxes.replyAll, { operation: "mailboxesReplyAll" });
 
 Object.assign(Mailboxes.forward, { operation: "mailboxesForward" });
 
-Object.assign(Mailboxes.listQuarantine, { operation: "mailboxesListQuarantine" });
+Object.assign(Mailboxes.listSpamHeld, { operation: "mailboxesListSpamHeld" });
 
-Object.assign(Mailboxes.releaseMessage, { operation: "mailboxesReleaseMessage" });
-
-Object.assign(Mailboxes.discardMessage, { operation: "mailboxesDiscardMessage" });
+Object.assign(Mailboxes.discardSpamHeld, { operation: "mailboxesDiscardSpamHeld" });
 
 Object.assign(Mailboxes.scheduleDraft, { operation: "mailboxesScheduleDraft" });
 

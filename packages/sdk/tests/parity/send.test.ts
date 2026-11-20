@@ -42,7 +42,7 @@ const cannedResponse = (): Response =>
 // a bare `instanceof Uint8Array` check is fragile across module realms.
 async function fetchBodyText(raw: unknown, input: RequestInfo | URL): Promise<string> {
   if (typeof raw === "string") return raw;
-  if (ArrayBuffer.isView(raw)) return new TextDecoder().decode(raw as ArrayBufferView);
+  if (ArrayBuffer.isView(raw)) return new TextDecoder().decode(raw);
   if (raw instanceof ArrayBuffer) return new TextDecoder().decode(raw);
   if (input instanceof Request) return await input.clone().text();
   return "";
@@ -66,12 +66,10 @@ function captureEffectBody(cell: Cell): Promise<unknown> {
   }).pipe(
     // The canned 500 is retryable; disable auto-retry so the wire capture is a
     // single shot (parity is about the first request body, not retry behavior).
-    Effect.provide(
-      Layer.mergeAll(
-        Retry.layerDisabled,
-        Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fakeFetch)),
-      ),
-    ),
+    Effect.provide([
+      Retry.layerDisabled,
+      Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, fakeFetch)),
+    ]),
   );
 
   return Effect.runPromise(program);

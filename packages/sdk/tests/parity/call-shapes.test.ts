@@ -579,7 +579,7 @@ const capturePromise = async (cell: CallShapeCell): Promise<CapturedRequest> => 
 const captureEffect = (cell: CallShapeCell): Promise<CapturedRequest> => {
   let captured: CapturedRequest | undefined;
   const fetch: typeof globalThis.fetch = async (input: URL | RequestInfo, init?: RequestInit) => {
-    const url = new URL(input.toString());
+    const url = new URL(input instanceof Request ? input.url : String(input));
     captured = {
       method: init?.method ?? "GET",
       path: `${url.pathname}${url.search}`,

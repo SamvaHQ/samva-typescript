@@ -87,7 +87,7 @@ const uploadOversizedAttachments = (
       uploaded.set(upload.index, { mediaId: created.id, upload });
     }
     return withUploadedAttachments(payload, uploaded);
-  }) as Effect.Effect<Record<string, unknown>, UploadFailure, Service>;
+  });
 
 const sendPayload = (
   payload: Record<string, unknown>,
@@ -105,7 +105,7 @@ const sendPayload = (
       callEndpoint(MessagesGroup, "messagesSend", {
         payload: stripUndefined(prepared as MessagePayload),
         headers: { "idempotency-key": idempotencyKey },
-      }) as Effect.Effect<Effect.Success<SendResult>, Effect.Error<SendResult>, Service>,
+      }),
     );
   });
 

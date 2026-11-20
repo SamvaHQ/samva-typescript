@@ -3211,6 +3211,13 @@ export const TemplateRegistrationUpdatedEventSchema = Schema.StructWithRest(
             },
           ),
         ),
+        templateChannelVariantId: Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^tvar_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+            {
+              expected: "a string matching the RegExp ^tvar_[0-9a-hjkmnp-tv-z]{16,24}$",
+            },
+          ),
+        ),
         target: Schema.Union([
           Schema.StructWithRest(
             Schema.Struct({
@@ -3252,6 +3259,19 @@ export const TemplateRegistrationUpdatedEventSchema = Schema.StructWithRest(
           "paused",
           "disabled",
         ]),
+        pendingTemplateChannelVariantId: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(
+              new globalThis.RegExp("^tvar_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+            ).annotate({
+              expected: "a string matching the RegExp ^tvar_[0-9a-hjkmnp-tv-z]{16,24}$",
+            }),
+          ),
+          Schema.Null,
+        ]).annotate({
+          description:
+            "Content a submission sent to the provider whose outcome is not yet recorded, because its request failed or is still in flight; the provider may already hold it. While it is set nothing sends from this registration, even when `status` is `approved`. Submitting again settles it.",
+        }),
         category: Schema.Literals([
           "marketing",
           "utility",
@@ -4475,9 +4495,9 @@ export const MailboxActionResolvedEventSchema = Schema.StructWithRest(
     ),
   ],
 );
-export const MailboxMessageQuarantinedEventSchema = Schema.StructWithRest(
+export const MailboxMessageSpamEventSchema = Schema.StructWithRest(
   Schema.Struct({
-    type: Schema.Literal("mailbox.message.quarantined"),
+    type: Schema.Literal("mailbox.message.spam"),
     timestamp: Schema.String,
     data: Schema.StructWithRest(
       Schema.Struct({
@@ -4496,18 +4516,31 @@ export const MailboxMessageQuarantinedEventSchema = Schema.StructWithRest(
           ),
           Schema.Null,
         ]),
-        disposition: Schema.Literals(["quarantined", "isolated"]),
-        reason: Schema.Literals([
-          "spam",
-          "dmarc",
-          "virus",
-          "virus_unscanned",
-          "verdict_missing",
-          "phishing",
-          "fraud",
-          "prompt_injection",
+        disposition: Schema.Literals(["spam", "isolated"]),
+        threadId: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(
+              new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+            ).annotate({
+              expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
+            }),
+          ),
+          Schema.Null,
         ]),
-        source: Schema.Literals(["receipt", "classifier"]),
+        reason: Schema.Union([
+          Schema.Literals([
+            "spam",
+            "dmarc",
+            "virus",
+            "virus_unscanned",
+            "verdict_missing",
+            "phishing",
+            "fraud",
+            "prompt_injection",
+          ]),
+          Schema.Null,
+        ]),
+        source: Schema.Literals(["receipt", "classifier", "reader"]),
         message: Schema.StructWithRest(
           Schema.Struct({
             id: Schema.String.check(
@@ -4533,230 +4566,6 @@ export const MailboxMessageQuarantinedEventSchema = Schema.StructWithRest(
             ),
             subject: Schema.Union([Schema.String, Schema.Null]),
             receivedAt: Schema.String,
-          }),
-          [
-            Schema.Record(
-              Schema.String,
-              Schema.Json.annotate({
-                expected: "JSON value",
-              }),
-            ),
-          ],
-        ),
-      }),
-      [
-        Schema.Record(
-          Schema.String,
-          Schema.Json.annotate({
-            expected: "JSON value",
-          }),
-        ),
-      ],
-    ),
-  }),
-  [
-    Schema.Record(
-      Schema.String,
-      Schema.Json.annotate({
-        expected: "JSON value",
-      }),
-    ),
-  ],
-);
-export const MailboxMessageReleasedEventSchema = Schema.StructWithRest(
-  Schema.Struct({
-    type: Schema.Literal("mailbox.message.released"),
-    timestamp: Schema.String,
-    data: Schema.StructWithRest(
-      Schema.Struct({
-        mailboxId: Schema.String.check(
-          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-            expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
-          }),
-        ),
-        namespaceId: Schema.Union([
-          Schema.String.check(
-            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
-              {
-                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
-              },
-            ),
-          ),
-          Schema.Null,
-        ]),
-        releasedBy: Schema.StructWithRest(
-          Schema.Struct({
-            kind: Schema.Literals([
-              "user",
-              "apiKey",
-              "extension",
-              "externalAgent",
-              "samvaAgent",
-              "system",
-            ]),
-            id: Schema.String,
-            displayName: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-            source: Schema.Literals([
-              "humanUi",
-              "externalApi",
-              "externalAgent",
-              "extension",
-              "samvaManagedAgent",
-              "system",
-            ]),
-          }),
-          [
-            Schema.Record(
-              Schema.String,
-              Schema.Json.annotate({
-                expected: "JSON value",
-              }),
-            ),
-          ],
-        ),
-        reason: Schema.Literals([
-          "spam",
-          "dmarc",
-          "virus",
-          "virus_unscanned",
-          "verdict_missing",
-          "phishing",
-          "fraud",
-          "prompt_injection",
-        ]),
-        message: Schema.StructWithRest(
-          Schema.Struct({
-            id: Schema.String.check(
-              Schema.isPattern(
-                new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-              ).annotate({
-                expected: "a string matching the RegExp ^msg_[0-9a-hjkmnp-tv-z]{16,24}$",
-              }),
-            ),
-            campaign: Schema.optionalKey(
-              Schema.Union([
-                Schema.StructWithRest(
-                  Schema.Struct({
-                    campaignId: Schema.String.check(
-                      Schema.isPattern(
-                        new globalThis.RegExp("^camp_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-                      ).annotate({
-                        expected: "a string matching the RegExp ^camp_[0-9a-hjkmnp-tv-z]{16,24}$",
-                      }),
-                    ),
-                    runId: Schema.String.check(
-                      Schema.isPattern(
-                        new globalThis.RegExp("^crun_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-                      ).annotate({
-                        expected: "a string matching the RegExp ^crun_[0-9a-hjkmnp-tv-z]{16,24}$",
-                      }),
-                    ),
-                  }),
-                  [
-                    Schema.Record(
-                      Schema.String,
-                      Schema.Json.annotate({
-                        expected: "JSON value",
-                      }),
-                    ),
-                  ],
-                ),
-                Schema.Null,
-              ]),
-            ),
-            channel: Schema.optionalKey(
-              Schema.Literals(["sms", "whatsapp", "email"]).annotate({
-                description:
-                  "Deliveries recorded before this field existed omit it; they are email.",
-              }),
-            ),
-            threadId: Schema.String.check(
-              Schema.isPattern(
-                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-              ).annotate({
-                expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
-              }),
-            ),
-            from: Schema.StructWithRest(
-              Schema.Struct({
-                address: Schema.String,
-                name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-              }),
-              [
-                Schema.Record(
-                  Schema.String,
-                  Schema.Json.annotate({
-                    expected: "JSON value",
-                  }),
-                ),
-              ],
-            ),
-            to: Schema.Array(Schema.String),
-            cc: Schema.Array(Schema.String),
-            subject: Schema.Union([Schema.String, Schema.Null]),
-            text: Schema.Union([Schema.String, Schema.Null]),
-            replyText: Schema.Union([Schema.String, Schema.Null]),
-            attachments: Schema.Array(
-              Schema.StructWithRest(
-                Schema.Struct({
-                  id: Schema.String.check(
-                    Schema.isPattern(
-                      new globalThis.RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-                    ).annotate({
-                      expected: "a string matching the RegExp ^att_[0-9a-hjkmnp-tv-z]{16,24}$",
-                    }),
-                  ),
-                  filename: Schema.String,
-                  contentType: Schema.String,
-                  size: Schema.Finite,
-                }),
-                [
-                  Schema.Record(
-                    Schema.String,
-                    Schema.Json.annotate({
-                      expected: "JSON value",
-                    }),
-                  ),
-                ],
-              ),
-            ),
-            occurredAt: Schema.String,
-          }),
-          [
-            Schema.Record(
-              Schema.String,
-              Schema.Json.annotate({
-                expected: "JSON value",
-              }),
-            ),
-          ],
-        ),
-        thread: Schema.StructWithRest(
-          Schema.Struct({
-            id: Schema.String.check(
-              Schema.isPattern(
-                new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-              ).annotate({
-                expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
-              }),
-            ),
-            endpointId: Schema.optionalKey(
-              Schema.Union([
-                Schema.String.check(
-                  Schema.isPattern(
-                    new globalThis.RegExp("^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
-                  ).annotate({
-                    expected: "a string matching the RegExp ^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$",
-                  }),
-                ),
-                Schema.Null,
-              ]).annotate({
-                description:
-                  "The endpoint the message arrived at; null once it is removed. Deliveries recorded before this field existed omit it.",
-              }),
-            ),
-            subject: Schema.Union([Schema.String, Schema.Null]),
-            preview: Schema.Union([Schema.String, Schema.Null]),
           }),
           [
             Schema.Record(
@@ -4883,6 +4692,54 @@ export const MailboxMessageDiscardedEventSchema = Schema.StructWithRest(
               }),
             ),
           ],
+        ),
+      }),
+      [
+        Schema.Record(
+          Schema.String,
+          Schema.Json.annotate({
+            expected: "JSON value",
+          }),
+        ),
+      ],
+    ),
+  }),
+  [
+    Schema.Record(
+      Schema.String,
+      Schema.Json.annotate({
+        expected: "JSON value",
+      }),
+    ),
+  ],
+);
+export const MailboxThreadDeletedEventSchema = Schema.StructWithRest(
+  Schema.Struct({
+    type: Schema.Literal("mailbox.thread.deleted"),
+    timestamp: Schema.String,
+    data: Schema.StructWithRest(
+      Schema.Struct({
+        mailboxId: Schema.String.check(
+          Schema.isPattern(new globalThis.RegExp("^mbx_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
+            expected: "a string matching the RegExp ^mbx_[0-9a-hjkmnp-tv-z]{16,24}$",
+          }),
+        ),
+        namespaceId: Schema.Union([
+          Schema.String.check(
+            Schema.isPattern(new globalThis.RegExp("^ns_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate(
+              {
+                expected: "a string matching the RegExp ^ns_[0-9a-hjkmnp-tv-z]{16,24}$",
+              },
+            ),
+          ),
+          Schema.Null,
+        ]),
+        threadId: Schema.String.check(
+          Schema.isPattern(
+            new globalThis.RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^thread_[0-9a-hjkmnp-tv-z]{16,24}$",
+          }),
         ),
       }),
       [
@@ -5245,9 +5102,9 @@ export const SamvaWebhookEventSchema = Schema.Union([
   MailboxMessageSentEventSchema,
   MailboxActionPendingApprovalEventSchema,
   MailboxActionResolvedEventSchema,
-  MailboxMessageQuarantinedEventSchema,
-  MailboxMessageReleasedEventSchema,
+  MailboxMessageSpamEventSchema,
   MailboxMessageDiscardedEventSchema,
+  MailboxThreadDeletedEventSchema,
   MailboxMessageDeliveredEventSchema,
   MailboxMessageReadEventSchema,
   MailboxMessageFailedEventSchema,

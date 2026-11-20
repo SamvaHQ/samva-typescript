@@ -468,7 +468,7 @@ export type ObjectMember =
   | { readonly kind: "index"; readonly type: TypeNode };
 
 export const keyword = (name: string): TypeNode => ({ kind: "keyword", name });
-export const reference = (name: string, args?: ReadonlyArray<TypeNode>): TypeNode =>
+const reference = (name: string, args?: ReadonlyArray<TypeNode>): TypeNode =>
   args === undefined ? { kind: "reference", name } : { kind: "reference", name, args };
 export const literal = (value: Literal | null): TypeNode => ({ kind: "literal", value });
 export const union = (members: ReadonlyArray<TypeNode>): TypeNode => ({ kind: "union", members });
@@ -544,6 +544,7 @@ export const schemaToType = (schema: Ir, onReference: ReferenceSink): TypeNode =
           elements: (ir.items ?? []).map(walk),
           ...(ir.rest === undefined ? {} : { rest: walk(ir.rest) }),
         };
+      case undefined:
       default:
         throw new Error(`Untyped schema reached the typed visitor: ${JSON.stringify(ir)}`);
     }

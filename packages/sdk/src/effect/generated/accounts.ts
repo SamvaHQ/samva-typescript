@@ -4,6 +4,7 @@ import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/ht
 import * as Schema from "effect/Schema";
 
 import {
+  AccountStatus,
   ApiKeySecurityMiddleware,
   ContactId,
   ForbiddenError,
@@ -22,13 +23,6 @@ import {
   ValidationError,
 } from "./shared";
 
-export type AccountStatus = "pending" | "connected" | "needsReconnect";
-export const AccountStatus = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Literal("pending"),
-    Schema.Literal("connected"),
-    Schema.Literal("needsReconnect"),
-  ]).annotate({ identifier: "AccountStatus" }))();
 export type AccountInfo = {
   readonly externalId?: string;
   readonly displayName?: string;

@@ -92,7 +92,7 @@ export const disabledPolicy: Interface = { retry: (effect) => effect };
 
 export const fromOptions = (options: Effect.Retry.Options<unknown>): Interface => ({
   retry: <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
-    Effect.retry(effect, options as Effect.Retry.Options<E>) as Effect.Effect<A, E, R>,
+    Effect.retry(effect, options),
 });
 
 export const layerDefault: Layer.Layer<Service> = Layer.succeed(Service, defaultPolicy);
@@ -130,7 +130,7 @@ export const generateIdempotencyKey: Effect.Effect<string> = Effect.gen(function
     let nibble = yield* Random.nextIntBetween(0, 15);
     if (index === 12) nibble = 4; // version 4
     else if (index === 16) nibble = (nibble & 0x3) | 0x8; // RFC 4122 variant
-    chars.push(HEX[nibble]!);
+    chars.push(HEX.charAt(nibble));
   }
   const hex = chars.join("");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;

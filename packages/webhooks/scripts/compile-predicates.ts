@@ -52,6 +52,9 @@ export const compilePredicates = () => {
     // Reserve before compiling children so each predicate has a distinct name.
     functions.push("");
     if (schema.type !== undefined) {
+      if (typeof schema.type !== "string") {
+        throw new Error(`Unsupported webhook schema type: ${JSON.stringify(schema.type)}`);
+      }
       switch (schema.type) {
         case "object":
           tests.push("isObject(value)");
@@ -73,7 +76,7 @@ export const compilePredicates = () => {
           tests.push('typeof value === "number" && Number.isFinite(value)');
           break;
         default:
-          throw new Error(`Unsupported webhook schema type: ${String(schema.type)}`);
+          throw new Error(`Unsupported webhook schema type: ${schema.type}`);
       }
     }
     for (const [key, operator] of [

@@ -445,7 +445,7 @@ describe("mailbox event stream", () => {
     FakeSocket.instances = [];
     const stream = new MailboxEventStream(
       connection(async (input) => {
-        requests.push(String(input));
+        requests.push(input instanceof Request ? input.url : String(input));
         return answer();
       }),
       { WebSocket: FakeSocket, ...options },

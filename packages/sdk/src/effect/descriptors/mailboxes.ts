@@ -210,6 +210,27 @@ export const mailboxesOperations = {
     paginated: false,
     call: { kind: "pathPayload", paths: ["id", "threadId"] },
   },
+  mailboxesDeleteThread: {
+    group: "Mailboxes",
+    method: "DELETE",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "path", paths: ["id", "threadId"] },
+  },
+  mailboxesEmptyTrash: {
+    group: "Mailboxes",
+    method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "path", paths: ["id"] },
+  },
+  mailboxesEmptySpam: {
+    group: "Mailboxes",
+    method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "path", paths: ["id"] },
+  },
   mailboxesAddThreadLabels: {
     group: "Mailboxes",
     method: "POST",
@@ -322,21 +343,14 @@ export const mailboxesOperations = {
     paginated: false,
     call: { kind: "pathPayload", paths: ["id", "messageId"] },
   },
-  mailboxesListQuarantine: {
+  mailboxesListSpamHeld: {
     group: "Mailboxes",
     method: "GET",
     idempotent: false,
     paginated: true,
     call: { kind: "pathParams", paths: ["id"] },
   },
-  mailboxesReleaseMessage: {
-    group: "Mailboxes",
-    method: "POST",
-    idempotent: false,
-    paginated: false,
-    call: { kind: "path", paths: ["id", "messageId"] },
-  },
-  mailboxesDiscardMessage: {
+  mailboxesDiscardSpamHeld: {
     group: "Mailboxes",
     method: "POST",
     idempotent: false,

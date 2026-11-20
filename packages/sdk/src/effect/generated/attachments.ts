@@ -295,7 +295,7 @@ export class AttachmentsGroup extends HttpApiGroup.make("Attachments")
       .annotate(OpenApi.Summary, "Get an attachment download URL")
       .annotate(
         OpenApi.Description,
-        "Generates a presigned, time-limited download URL for the attachment; expiry is configurable via the expiresIn query parameter.",
+        "Generates a presigned, time-limited download URL for the attachment. Set `expiresIn` to configure expiry. Returns 404 (`ResourceNotFoundError`) for an inbound email attachment without a passing malware scan.",
       ),
   )
   .annotate(OpenApi.Description, "Email attachment metadata and secure download URLs") {}

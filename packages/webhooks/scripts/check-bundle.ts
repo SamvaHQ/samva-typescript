@@ -26,7 +26,9 @@ try {
       minify: true,
     });
     if (!result.success || result.outputs.length !== 1)
-      throw new Error(`Cannot bundle ${runtime} consumer: ${result.logs.join("\n")}`);
+      throw new Error(
+        `Cannot bundle ${runtime} consumer: ${result.logs.map((entry) => entry.message).join("\n")}`,
+      );
     const output = await result.outputs[0]!.text();
     const bytes = new TextEncoder().encode(output).length;
     console.log(

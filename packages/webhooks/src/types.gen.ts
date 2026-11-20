@@ -961,6 +961,7 @@ export type TemplateRegistrationUpdatedEvent = {
     readonly id: string;
     readonly templateId: string;
     readonly publicationId: string;
+    readonly templateChannelVariantId: string;
     readonly target:
       | ({ readonly provider: "whatsapp"; readonly wabaId: string } & {
           readonly [x: string]: JsonValue;
@@ -971,6 +972,7 @@ export type TemplateRegistrationUpdatedEvent = {
     readonly name: string;
     readonly language: string;
     readonly status: "draft" | "submitted" | "approved" | "rejected" | "paused" | "disabled";
+    readonly pendingTemplateChannelVariantId: string | null;
     readonly category:
       | "marketing"
       | "utility"
@@ -1313,13 +1315,14 @@ export type MailboxActionResolvedEvent = {
   } & { readonly [x: string]: JsonValue };
 } & { readonly [x: string]: JsonValue };
 export type MailboxActionResolvedPayload = MailboxActionResolvedEvent["data"];
-export type MailboxMessageQuarantinedEvent = {
-  readonly type: "mailbox.message.quarantined";
+export type MailboxMessageSpamEvent = {
+  readonly type: "mailbox.message.spam";
   readonly timestamp: string;
   readonly data: {
     readonly mailboxId: string;
     readonly namespaceId: string | null;
-    readonly disposition: "quarantined" | "isolated";
+    readonly disposition: "spam" | "isolated";
+    readonly threadId: string | null;
     readonly reason:
       | "spam"
       | "dmarc"
@@ -1328,8 +1331,9 @@ export type MailboxMessageQuarantinedEvent = {
       | "verdict_missing"
       | "phishing"
       | "fraud"
-      | "prompt_injection";
-    readonly source: "receipt" | "classifier";
+      | "prompt_injection"
+      | null;
+    readonly source: "receipt" | "classifier" | "reader";
     readonly message: {
       readonly id: string;
       readonly from: { readonly address: string; readonly name?: string | null } & {
@@ -1340,70 +1344,7 @@ export type MailboxMessageQuarantinedEvent = {
     } & { readonly [x: string]: JsonValue };
   } & { readonly [x: string]: JsonValue };
 } & { readonly [x: string]: JsonValue };
-export type MailboxMessageQuarantinedPayload = MailboxMessageQuarantinedEvent["data"];
-export type MailboxMessageReleasedEvent = {
-  readonly type: "mailbox.message.released";
-  readonly timestamp: string;
-  readonly data: {
-    readonly mailboxId: string;
-    readonly namespaceId: string | null;
-    readonly releasedBy: {
-      readonly kind: "user" | "apiKey" | "extension" | "externalAgent" | "samvaAgent" | "system";
-      readonly id: string;
-      readonly displayName?: string | null;
-      readonly source:
-        | "humanUi"
-        | "externalApi"
-        | "externalAgent"
-        | "extension"
-        | "samvaManagedAgent"
-        | "system";
-    } & { readonly [x: string]: JsonValue };
-    readonly reason:
-      | "spam"
-      | "dmarc"
-      | "virus"
-      | "virus_unscanned"
-      | "verdict_missing"
-      | "phishing"
-      | "fraud"
-      | "prompt_injection";
-    readonly message: {
-      readonly id: string;
-      readonly campaign?:
-        | ({ readonly campaignId: string; readonly runId: string } & {
-            readonly [x: string]: JsonValue;
-          })
-        | null;
-      readonly channel?: "sms" | "whatsapp" | "email";
-      readonly threadId: string;
-      readonly from: { readonly address: string; readonly name?: string | null } & {
-        readonly [x: string]: JsonValue;
-      };
-      readonly to: ReadonlyArray<string>;
-      readonly cc: ReadonlyArray<string>;
-      readonly subject: string | null;
-      readonly text: string | null;
-      readonly replyText: string | null;
-      readonly attachments: ReadonlyArray<
-        {
-          readonly id: string;
-          readonly filename: string;
-          readonly contentType: string;
-          readonly size: number;
-        } & { readonly [x: string]: JsonValue }
-      >;
-      readonly occurredAt: string;
-    } & { readonly [x: string]: JsonValue };
-    readonly thread: {
-      readonly id: string;
-      readonly endpointId?: string | null;
-      readonly subject: string | null;
-      readonly preview: string | null;
-    } & { readonly [x: string]: JsonValue };
-  } & { readonly [x: string]: JsonValue };
-} & { readonly [x: string]: JsonValue };
-export type MailboxMessageReleasedPayload = MailboxMessageReleasedEvent["data"];
+export type MailboxMessageSpamPayload = MailboxMessageSpamEvent["data"];
 export type MailboxMessageDiscardedEvent = {
   readonly type: "mailbox.message.discarded";
   readonly timestamp: string;
@@ -1443,6 +1384,16 @@ export type MailboxMessageDiscardedEvent = {
   } & { readonly [x: string]: JsonValue };
 } & { readonly [x: string]: JsonValue };
 export type MailboxMessageDiscardedPayload = MailboxMessageDiscardedEvent["data"];
+export type MailboxThreadDeletedEvent = {
+  readonly type: "mailbox.thread.deleted";
+  readonly timestamp: string;
+  readonly data: {
+    readonly mailboxId: string;
+    readonly namespaceId: string | null;
+    readonly threadId: string;
+  } & { readonly [x: string]: JsonValue };
+} & { readonly [x: string]: JsonValue };
+export type MailboxThreadDeletedPayload = MailboxThreadDeletedEvent["data"];
 export type MailboxMessageDeliveredEvent = {
   readonly type: "mailbox.message.delivered";
   readonly timestamp: string;
@@ -1547,9 +1498,9 @@ export type SamvaWebhookEvent =
   | MailboxMessageSentEvent
   | MailboxActionPendingApprovalEvent
   | MailboxActionResolvedEvent
-  | MailboxMessageQuarantinedEvent
-  | MailboxMessageReleasedEvent
+  | MailboxMessageSpamEvent
   | MailboxMessageDiscardedEvent
+  | MailboxThreadDeletedEvent
   | MailboxMessageDeliveredEvent
   | MailboxMessageReadEvent
   | MailboxMessageFailedEvent

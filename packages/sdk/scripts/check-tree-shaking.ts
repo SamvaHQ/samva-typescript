@@ -120,7 +120,9 @@ const bundledGroups = (code: string): ReadonlyArray<string> =>
 const assertGroups = (label: string, code: string, expected: ReadonlyArray<string>): void => {
   const actual = bundledGroups(code);
   if (actual.join() !== [...expected].sort().join()) {
-    throw new Error(`${label} bundles groups [${actual}]; expected [${expected}]`);
+    throw new Error(
+      `${label} bundles groups [${actual.join(", ")}]; expected [${expected.join(", ")}]`,
+    );
   }
 };
 
@@ -236,7 +238,9 @@ for (const domain of Object.keys(SDK_EFFECT_MODULES)) {
   const expected = [...new Set([...groups, ...(EXTRA_GROUPS[domain] ?? [])])].sort();
   const actual = bundledGroups(domainBundle.code);
   if (actual.join() !== expected.join()) {
-    throw new Error(`samva/effect/${domain} bundles groups [${actual}]; expected [${expected}]`);
+    throw new Error(
+      `samva/effect/${domain} bundles groups [${actual.join(", ")}]; expected [${expected.join(", ")}]`,
+    );
   }
   assertNoForeignMetadata(`samva/effect/${domain}`, domainBundle.code, expected);
   domainBundles.set(domain, domainBundle.code);

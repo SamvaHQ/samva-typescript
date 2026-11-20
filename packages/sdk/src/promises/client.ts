@@ -98,21 +98,7 @@ import { fromApiError, SamvaTransportError } from "./errors.gen";
 import { configureRequests, type RequestPolicy } from "./request";
 
 export * from "./errors.gen";
-export { MediaUploadError } from "../inline-attachments";
 export type * from "./types.gen";
-export {
-  MailboxEventStream,
-  MailboxEventStreamError,
-  type MailboxEvent,
-  type MailboxEventStreamErrorFields,
-  type MailboxEventStreamErrorReason,
-  type MailboxEventStreamErrorTag,
-  type MailboxEventStreamFailure,
-  type MailboxEventStreamOptions,
-  type MailboxEventStreamReconnect,
-  type MailboxEventStreamWebSocket,
-  type MailboxEventType,
-} from "../mailbox-events";
 
 interface SamvaClientConfigBase
   extends Omit<Config, "baseUrl" | "responseStyle" | "throwOnError">, RequestPolicy {
@@ -148,6 +134,10 @@ type MessageSendOptions<ThrowOnError extends boolean = false> =
 type MessageSendResponse<ThrowOnError extends boolean = false> = ReturnType<
   typeof messages.send<ThrowOnError>
 >;
+/** The send's own promise, or the promise that resolves to the same value once uploads finish. */
+type MessageSendOutcome<ThrowOnError extends boolean = false> =
+  | MessageSendResponse<ThrowOnError>
+  | Promise<Awaited<MessageSendResponse<ThrowOnError>>>;
 type ContactObjectRecipient = { readonly id: string };
 type ErgonomicMessageRecipient = MessageRecipient | ContactObjectRecipient | string;
 type EmailMessageSendBody = Extract<MessageSendBody, { readonly channel: "email" }>;
@@ -191,7 +181,7 @@ type PromiseMessagesTransport = {
   readonly send: <ThrowOnError extends boolean = false>(
     input: ErgonomicMessageSendInput,
     options?: MessageSendOptions<ThrowOnError>,
-  ) => MessageSendResponse<ThrowOnError>;
+  ) => MessageSendOutcome<ThrowOnError>;
 };
 
 type ErgonomicEmailSendBody = Omit<
@@ -208,7 +198,7 @@ type PromiseEmailTransport = Omit<typeof email, "send"> & {
   readonly send: <ThrowOnError extends boolean = false>(
     input: ErgonomicEmailSendBody,
     options?: MessageSendOptions<ThrowOnError>,
-  ) => MessageSendResponse<ThrowOnError>;
+  ) => MessageSendOutcome<ThrowOnError>;
   readonly addSender: <ThrowOnError extends boolean = false>(
     input: ErgonomicEmailAddSenderInput,
     options?: EmailAddSenderOptions<ThrowOnError>,
@@ -292,19 +282,27 @@ async function uploadOversizedAttachments(
 
 /**
  * Send with oversized inline attachments uploaded first. Within the cap this is the send call
- * itself, one request and no extra await, so its result is returned unchanged.
+ * itself, one request and no extra await. Over the cap, the uploads finish first and the returned
+ * promise resolves to the send result.
  */
 function sendWithUploads<Result extends PromiseLike<unknown>>(
   clientInstance: Client,
   payload: Record<string, unknown>,
   requestOptions: MessageSendRequestOptions<boolean>,
   send: (payload: Record<string, unknown>) => Result,
-): Result {
+): Result | Promise<Awaited<Result>> {
   if (planInlineUploads(payload).length === 0) return send(payload);
-  // oxlint-disable-next-line samva/no-unsafe-type-assertion -- the chained promise settles to the send's own result, which TypeScript cannot prove for a conditional result type.
-  return uploadOversizedAttachments(clientInstance, payload, requestOptions).then(
-    send,
-  ) as unknown as Result;
+  return sendAfterUploads(clientInstance, payload, requestOptions, send);
+}
+
+async function sendAfterUploads<Result extends PromiseLike<unknown>>(
+  clientInstance: Client,
+  payload: Record<string, unknown>,
+  requestOptions: MessageSendRequestOptions<boolean>,
+  send: (payload: Record<string, unknown>) => Result,
+): Promise<Awaited<Result>> {
+  const uploaded = await uploadOversizedAttachments(clientInstance, payload, requestOptions);
+  return await send(uploaded);
 }
 
 async function putUpload(
@@ -419,7 +417,7 @@ function createBoundService<Service extends object>(
     if (
       typeof value === "function" &&
       Object.getOwnPropertyNames(value).some(
-        (name) => typeof Reflect.get(value, name) === "function",
+        (name) => typeof Object.getOwnPropertyDescriptor(value, name)?.value === "function",
       )
     ) {
       bound[key] = createBoundService(value, clientInstance);
@@ -479,7 +477,7 @@ function createDirectService<Service extends object>(service: Service): DirectSe
     if (
       typeof value === "function" &&
       Object.getOwnPropertyNames(value).some(
-        (name) => typeof Reflect.get(value, name) === "function",
+        (name) => typeof Object.getOwnPropertyDescriptor(value, name)?.value === "function",
       )
     ) {
       direct[key] = createDirectService(value);

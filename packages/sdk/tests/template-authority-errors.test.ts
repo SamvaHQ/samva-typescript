@@ -1,5 +1,5 @@
 import { assert, describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect } from "effect";
 import { HttpClient, HttpClientResponse } from "effect/http";
 
 import { createClient, ServiceUnavailableError } from "../src";
@@ -44,9 +44,7 @@ describe("template authority service unavailability", () => {
       expect(categoriesOf(outcome)).toEqual(["transient"]);
       expect(isRetryable(outcome)).toBe(true);
     }).pipe(
-      Effect.provide(
-        Layer.mergeAll(Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_test" })),
-      ),
+      Effect.provide([Retry.layerDisabled, Client.layer({ apiKey: "samva_sk_test" })]),
       Effect.provideService(
         HttpClient.HttpClient,
         HttpClient.make((request) =>

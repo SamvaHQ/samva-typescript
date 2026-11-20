@@ -282,13 +282,13 @@ const errorExtension = (name: string, schema: JsonObject): ErrorExtension | unde
         (value): value is string => typeof value === "string" && value !== "_tag",
       )
     : undefined;
-  const body: JsonObject = { ...schema, properties };
-  delete (body as { [key: string]: Json | undefined }).required;
-  delete (body as { [key: string]: Json | undefined })["x-category"];
-  delete (body as { [key: string]: Json | undefined })["x-retryable"];
-  delete (body as { [key: string]: Json | undefined })["x-category-rules"];
+  const body: { [key: string]: Json } = { ...schema, properties };
+  delete body.required;
+  delete body["x-category"];
+  delete body["x-retryable"];
+  delete body["x-category-rules"];
   if (required !== undefined && required.length > 0) {
-    (body as { [key: string]: Json }).required = required;
+    body.required = required;
   }
   return {
     name,
@@ -320,7 +320,7 @@ export const prepareOpenApi = (input: SamvaOpenApiDocument): PreparedDocument =>
   if (!input.openapi.trim().startsWith("3.1")) {
     throw new Error(`Samva Effect codegen requires OpenAPI 3.1, received ${input.openapi}`);
   }
-  const document = structuredClone(input) as SamvaOpenApiDocument;
+  const document = structuredClone(input);
   const schemas = schemasOf(document);
   const reserved = new Set(Object.keys(schemas));
   const brands = new Map<string, string>();
@@ -409,14 +409,14 @@ export const prepareOpenApi = (input: SamvaOpenApiDocument): PreparedDocument =>
   };
 
   const transformed = visit(document) as SamvaOpenApiDocument;
-  const transformedComponents = transformed.components ?? {};
-  const transformedSchemas = schemasOf(transformed) as { [key: string]: Json };
+  const transformedComponents: { [key: string]: Json } = transformed.components ?? {};
+  const transformedSchemas: { [key: string]: Json } = schemasOf(transformed);
   for (const substitution of runtimeSubstitutions.values()) {
     transformedSchemas[substitution.definitionName] =
       SPECIAL_LEAVES[substitution.leafName].placeholder;
   }
   for (const [name, substitution] of strings) transformedSchemas[name] = substitution.schema;
-  (transformedComponents as { [key: string]: Json }).schemas = transformedSchemas;
+  transformedComponents.schemas = transformedSchemas;
   (transformed as { [key: string]: Json }).components = transformedComponents;
 
   // Error bodies must share the same structural substitutions as the document.
@@ -721,10 +721,10 @@ const parseOpenApi = (document: SamvaOpenApiDocument, registry: SchemaRegistry):
           if (Number(mappedStatus) < 400)
             mutable.httpClientResponses.successSchemas.set(mappedStatus, name);
           else mutable.httpClientResponses.errorSchemas.set(mappedStatus, name);
+        } else if (Number(mappedStatus) < 400) {
+          mutable.httpClientResponses.voidSuccessStatuses.add(mappedStatus);
         } else {
-          if (Number(mappedStatus) < 400)
-            mutable.httpClientResponses.voidSuccessStatuses.add(mappedStatus);
-          else mutable.httpClientResponses.voidErrorStatuses.add(mappedStatus);
+          mutable.httpClientResponses.voidErrorStatuses.add(mappedStatus);
         }
         const parsedResponse = {
           status: mappedStatus,
@@ -769,7 +769,7 @@ const parseOpenApi = (document: SamvaOpenApiDocument, registry: SchemaRegistry):
 };
 
 const openApiSchema = (schema: JsonObject): JsonSchema.JsonSchema =>
-  JsonSchema.fromSchemaOpenApi3_1(schema as JsonSchema.JsonSchema).schema;
+  JsonSchema.fromSchemaOpenApi3_1(schema).schema;
 
 // Effect's code generator always renders objects as `Schema.Struct`. A required, unannotated
 // `_tag` literal renders as `Schema.TaggedStruct` instead, so `make` fills the tag in; the
@@ -922,8 +922,25 @@ const runtimeRepresentation = (
         ? representation
         : runtimeRepresentation(replacement, strings);
     }
-    default:
+    case "Any":
+    case "BigInt":
+    case "Boolean":
+    case "Enum":
+    case "Literal":
+    case "Never":
+    case "Null":
+    case "ObjectKeyword":
+    case "String":
+    case "Symbol":
+    case "Undefined":
+    case "UniqueSymbol":
+    case "Unknown":
+    case "Void":
       return { ...representation, annotations, checks: checks ?? [] };
+    default: {
+      const unhandled: never = representation;
+      throw new Error(`Unhandled schema representation: ${JSON.stringify(unhandled)}`);
+    }
   }
 };
 

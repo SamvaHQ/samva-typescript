@@ -1396,10 +1396,12 @@ const validate1357 = (value: unknown): boolean =>
   Object.hasOwn(value, "id") &&
   Object.hasOwn(value, "templateId") &&
   Object.hasOwn(value, "publicationId") &&
+  Object.hasOwn(value, "templateChannelVariantId") &&
   Object.hasOwn(value, "target") &&
   Object.hasOwn(value, "name") &&
   Object.hasOwn(value, "language") &&
   Object.hasOwn(value, "status") &&
+  Object.hasOwn(value, "pendingTemplateChannelVariantId") &&
   Object.hasOwn(value, "category") &&
   Object.hasOwn(value, "providerCategory") &&
   Object.hasOwn(value, "providerTemplateId") &&
@@ -1413,12 +1415,16 @@ const validate1357 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "id") || validate1358(value["id"])) &&
   (!Object.hasOwn(value, "templateId") || validate1359(value["templateId"])) &&
   (!Object.hasOwn(value, "publicationId") || validate1360(value["publicationId"])) &&
-  (!Object.hasOwn(value, "target") || validate1361(value["target"])) &&
+  (!Object.hasOwn(value, "templateChannelVariantId") ||
+    validate1361(value["templateChannelVariantId"])) &&
+  (!Object.hasOwn(value, "target") || validate1362(value["target"])) &&
   (!Object.hasOwn(value, "name") || validate2(value["name"])) &&
   (!Object.hasOwn(value, "language") || validate2(value["language"])) &&
-  (!Object.hasOwn(value, "status") || validate1371(value["status"])) &&
-  (!Object.hasOwn(value, "category") || validate1372(value["category"])) &&
-  (!Object.hasOwn(value, "providerCategory") || validate1373(value["providerCategory"])) &&
+  (!Object.hasOwn(value, "status") || validate1372(value["status"])) &&
+  (!Object.hasOwn(value, "pendingTemplateChannelVariantId") ||
+    validate1373(value["pendingTemplateChannelVariantId"])) &&
+  (!Object.hasOwn(value, "category") || validate1376(value["category"])) &&
+  (!Object.hasOwn(value, "providerCategory") || validate1377(value["providerCategory"])) &&
   (!Object.hasOwn(value, "providerTemplateId") || validate8(value["providerTemplateId"])) &&
   (!Object.hasOwn(value, "reason") || validate8(value["reason"])) &&
   (!Object.hasOwn(value, "submittedAt") || validate8(value["submittedAt"])) &&
@@ -1426,7 +1432,7 @@ const validate1357 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "createdAt") || validate2(value["createdAt"])) &&
   (!Object.hasOwn(value, "updatedAt") || validate2(value["updatedAt"])) &&
   (!Object.hasOwn(value, "organizationId") || validate855(value["organizationId"])) &&
-  (!Object.hasOwn(value, "previousStatus") || validate1371(value["previousStatus"]));
+  (!Object.hasOwn(value, "previousStatus") || validate1372(value["previousStatus"]));
 const validate1358 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
@@ -1439,26 +1445,30 @@ const validate1360 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^tpub_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1361 = (value: unknown): boolean => validate1362(value) || validate1365(value);
-const validate1362 = (value: unknown): boolean =>
+const validate1361 = (value: unknown): boolean =>
+  typeof value === "string" &&
+  typeof value === "string" &&
+  new RegExp("^tvar_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
+const validate1362 = (value: unknown): boolean => validate1363(value) || validate1366(value);
+const validate1363 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "provider") &&
   Object.hasOwn(value, "wabaId") &&
-  (!Object.hasOwn(value, "provider") || validate1363(value["provider"])) &&
+  (!Object.hasOwn(value, "provider") || validate1364(value["provider"])) &&
   (!Object.hasOwn(value, "wabaId") || validate2(value["wabaId"]));
-const validate1363 = (value: unknown): boolean => typeof value === "string" && value === "whatsapp";
-const validate1365 = (value: unknown): boolean =>
+const validate1364 = (value: unknown): boolean => typeof value === "string" && value === "whatsapp";
+const validate1366 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "provider") &&
   Object.hasOwn(value, "entityId") &&
   Object.hasOwn(value, "headerId") &&
-  (!Object.hasOwn(value, "provider") || validate1366(value["provider"])) &&
+  (!Object.hasOwn(value, "provider") || validate1367(value["provider"])) &&
   (!Object.hasOwn(value, "entityId") || validate2(value["entityId"])) &&
   (!Object.hasOwn(value, "headerId") || validate2(value["headerId"]));
-const validate1366 = (value: unknown): boolean => typeof value === "string" && value === "dlt";
-const validate1371 = (value: unknown): boolean =>
+const validate1367 = (value: unknown): boolean => typeof value === "string" && value === "dlt";
+const validate1372 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "draft" ||
     value === "submitted" ||
@@ -1466,7 +1476,8 @@ const validate1371 = (value: unknown): boolean =>
     value === "rejected" ||
     value === "paused" ||
     value === "disabled");
-const validate1372 = (value: unknown): boolean =>
+const validate1373 = (value: unknown): boolean => validate1361(value) || validate6(value);
+const validate1376 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "marketing" ||
     value === "utility" ||
@@ -1475,19 +1486,19 @@ const validate1372 = (value: unknown): boolean =>
     value === "service_implicit" ||
     value === "service_explicit" ||
     value === "promotional");
-const validate1373 = (value: unknown): boolean => validate1372(value) || validate6(value);
-const validate1390 = (value: unknown): boolean =>
+const validate1377 = (value: unknown): boolean => validate1376(value) || validate6(value);
+const validate1394 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1391(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1395(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1393(value["data"]));
-const validate1391 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1397(value["data"]));
+const validate1395 = (value: unknown): boolean =>
   typeof value === "string" && value === "flow.registration.updated";
-const validate1393 = (value: unknown): boolean =>
+const validate1397 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -1506,36 +1517,36 @@ const validate1393 = (value: unknown): boolean =>
   Object.hasOwn(value, "updatedAt") &&
   Object.hasOwn(value, "organizationId") &&
   Object.hasOwn(value, "previousStatus") &&
-  (!Object.hasOwn(value, "id") || validate1394(value["id"])) &&
+  (!Object.hasOwn(value, "id") || validate1398(value["id"])) &&
   (!Object.hasOwn(value, "flowId") || validate750(value["flowId"])) &&
   (!Object.hasOwn(value, "versionId") || validate756(value["versionId"])) &&
   (!Object.hasOwn(value, "versionNumber") || validate1279(value["versionNumber"])) &&
   (!Object.hasOwn(value, "wabaId") || validate2(value["wabaId"])) &&
   (!Object.hasOwn(value, "providerFlowId") || validate8(value["providerFlowId"])) &&
   (!Object.hasOwn(value, "name") || validate2(value["name"])) &&
-  (!Object.hasOwn(value, "status") || validate1403(value["status"])) &&
-  (!Object.hasOwn(value, "validationErrors") || validate1404(value["validationErrors"])) &&
-  (!Object.hasOwn(value, "endpointAlerts") || validate1411(value["endpointAlerts"])) &&
+  (!Object.hasOwn(value, "status") || validate1407(value["status"])) &&
+  (!Object.hasOwn(value, "validationErrors") || validate1408(value["validationErrors"])) &&
+  (!Object.hasOwn(value, "endpointAlerts") || validate1415(value["endpointAlerts"])) &&
   (!Object.hasOwn(value, "publishedAt") || validate8(value["publishedAt"])) &&
   (!Object.hasOwn(value, "statusChangedAt") || validate2(value["statusChangedAt"])) &&
   (!Object.hasOwn(value, "createdAt") || validate2(value["createdAt"])) &&
   (!Object.hasOwn(value, "updatedAt") || validate2(value["updatedAt"])) &&
   (!Object.hasOwn(value, "organizationId") || validate855(value["organizationId"])) &&
-  (!Object.hasOwn(value, "previousStatus") || validate1429(value["previousStatus"]));
-const validate1394 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "previousStatus") || validate1433(value["previousStatus"]));
+const validate1398 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^wafreg_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1403 = (value: unknown): boolean =>
+const validate1407 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "draft" ||
     value === "published" ||
     value === "throttled" ||
     value === "blocked" ||
     value === "deprecated");
-const validate1404 = (value: unknown): boolean =>
-  Array.isArray(value) && Array.isArray(value) && value.every(validate1405);
-const validate1405 = (value: unknown): boolean =>
+const validate1408 = (value: unknown): boolean =>
+  Array.isArray(value) && Array.isArray(value) && value.every(validate1409);
+const validate1409 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "error") &&
@@ -1545,9 +1556,9 @@ const validate1405 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "path") || validate2(value["path"])) &&
   (!Object.hasOwn(value, "line") || validate1279(value["line"])) &&
   (!Object.hasOwn(value, "column") || validate1279(value["column"]));
-const validate1411 = (value: unknown): boolean =>
-  Array.isArray(value) && Array.isArray(value) && value.every(validate1412);
-const validate1412 = (value: unknown): boolean =>
+const validate1415 = (value: unknown): boolean =>
+  Array.isArray(value) && Array.isArray(value) && value.every(validate1416);
+const validate1416 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "kind") &&
@@ -1560,19 +1571,19 @@ const validate1412 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "value") || validate14(value["value"])) &&
   (!Object.hasOwn(value, "threshold") || validate14(value["threshold"])) &&
   (!Object.hasOwn(value, "activatedAt") || validate2(value["activatedAt"]));
-const validate1429 = (value: unknown): boolean => validate1403(value) || validate6(value);
-const validate1432 = (value: unknown): boolean =>
+const validate1433 = (value: unknown): boolean => validate1407(value) || validate6(value);
+const validate1436 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1433(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1437(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1435(value["data"]));
-const validate1433 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1439(value["data"]));
+const validate1437 = (value: unknown): boolean =>
   typeof value === "string" && value === "whatsapp.number.connected";
-const validate1435 = (value: unknown): boolean =>
+const validate1439 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "organizationId") &&
@@ -1587,47 +1598,47 @@ const validate1435 = (value: unknown): boolean =>
   Object.hasOwn(value, "setupLink") &&
   (!Object.hasOwn(value, "organizationId") || validate855(value["organizationId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "businessAccountId") || validate1440(value["businessAccountId"])) &&
+  (!Object.hasOwn(value, "businessAccountId") || validate1444(value["businessAccountId"])) &&
   (!Object.hasOwn(value, "phoneNumber") || validate2(value["phoneNumber"])) &&
   (!Object.hasOwn(value, "phoneNumberId") || validate2(value["phoneNumberId"])) &&
   (!Object.hasOwn(value, "whatsappBusinessAccountId") ||
     validate2(value["whatsappBusinessAccountId"])) &&
   (!Object.hasOwn(value, "displayName") || validate2(value["displayName"])) &&
-  (!Object.hasOwn(value, "verificationStatus") || validate1445(value["verificationStatus"])) &&
+  (!Object.hasOwn(value, "verificationStatus") || validate1449(value["verificationStatus"])) &&
   (!Object.hasOwn(value, "reconnected") || validate33(value["reconnected"])) &&
-  (!Object.hasOwn(value, "setupLink") || validate1447(value["setupLink"]));
-const validate1440 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "setupLink") || validate1451(value["setupLink"]));
+const validate1444 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1445 = (value: unknown): boolean =>
+const validate1449 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "pending" || value === "verified" || value === "failed" || value === "suspended");
-const validate1447 = (value: unknown): boolean => validate1448(value) || validate6(value);
-const validate1448 = (value: unknown): boolean =>
+const validate1451 = (value: unknown): boolean => validate1452(value) || validate6(value);
+const validate1452 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
   Object.hasOwn(value, "metadata") &&
-  (!Object.hasOwn(value, "id") || validate1449(value["id"])) &&
-  (!Object.hasOwn(value, "metadata") || validate1450(value["metadata"]));
-const validate1449 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "id") || validate1453(value["id"])) &&
+  (!Object.hasOwn(value, "metadata") || validate1454(value["metadata"]));
+const validate1453 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^wasl_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1450 = (value: unknown): boolean => isObject(value) && isObject(value);
-const validate1452 = (value: unknown): boolean =>
+const validate1454 = (value: unknown): boolean => isObject(value) && isObject(value);
+const validate1456 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1453(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1457(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1455(value["data"]));
-const validate1453 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1459(value["data"]));
+const validate1457 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.message.received";
-const validate1455 = (value: unknown): boolean =>
+const validate1459 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -1636,9 +1647,9 @@ const validate1455 = (value: unknown): boolean =>
   Object.hasOwn(value, "thread") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "message") || validate1460(value["message"])) &&
-  (!Object.hasOwn(value, "thread") || validate1494(value["thread"]));
-const validate1460 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "message") || validate1464(value["message"])) &&
+  (!Object.hasOwn(value, "thread") || validate1498(value["thread"]));
+const validate1464 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -1654,69 +1665,69 @@ const validate1460 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "id") || validate783(value["id"])) &&
   (!Object.hasOwn(value, "campaign") || validate596(value["campaign"])) &&
   (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
-  (!Object.hasOwn(value, "threadId") || validate1468(value["threadId"])) &&
-  (!Object.hasOwn(value, "from") || validate1469(value["from"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1472(value["threadId"])) &&
+  (!Object.hasOwn(value, "from") || validate1473(value["from"])) &&
   (!Object.hasOwn(value, "to") || validate45(value["to"])) &&
   (!Object.hasOwn(value, "cc") || validate45(value["cc"])) &&
   (!Object.hasOwn(value, "subject") || validate8(value["subject"])) &&
   (!Object.hasOwn(value, "text") || validate8(value["text"])) &&
   (!Object.hasOwn(value, "replyText") || validate8(value["replyText"])) &&
-  (!Object.hasOwn(value, "attachments") || validate1487(value["attachments"])) &&
+  (!Object.hasOwn(value, "attachments") || validate1491(value["attachments"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"]));
-const validate1468 = (value: unknown): boolean =>
+const validate1472 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^thread_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1469 = (value: unknown): boolean =>
+const validate1473 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "address") &&
   (!Object.hasOwn(value, "address") || validate2(value["address"])) &&
   (!Object.hasOwn(value, "name") || validate8(value["name"]));
-const validate1487 = (value: unknown): boolean =>
-  Array.isArray(value) && Array.isArray(value) && value.every(validate1488);
-const validate1488 = (value: unknown): boolean =>
+const validate1491 = (value: unknown): boolean =>
+  Array.isArray(value) && Array.isArray(value) && value.every(validate1492);
+const validate1492 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
   Object.hasOwn(value, "filename") &&
   Object.hasOwn(value, "contentType") &&
   Object.hasOwn(value, "size") &&
-  (!Object.hasOwn(value, "id") || validate1489(value["id"])) &&
+  (!Object.hasOwn(value, "id") || validate1493(value["id"])) &&
   (!Object.hasOwn(value, "filename") || validate2(value["filename"])) &&
   (!Object.hasOwn(value, "contentType") || validate2(value["contentType"])) &&
   (!Object.hasOwn(value, "size") || validate15(value["size"]));
-const validate1489 = (value: unknown): boolean =>
+const validate1493 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^att_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1494 = (value: unknown): boolean =>
+const validate1498 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
   Object.hasOwn(value, "subject") &&
   Object.hasOwn(value, "preview") &&
-  (!Object.hasOwn(value, "id") || validate1468(value["id"])) &&
-  (!Object.hasOwn(value, "endpointId") || validate1496(value["endpointId"])) &&
+  (!Object.hasOwn(value, "id") || validate1472(value["id"])) &&
+  (!Object.hasOwn(value, "endpointId") || validate1500(value["endpointId"])) &&
   (!Object.hasOwn(value, "subject") || validate8(value["subject"])) &&
   (!Object.hasOwn(value, "preview") || validate8(value["preview"]));
-const validate1496 = (value: unknown): boolean => validate1497(value) || validate6(value);
-const validate1497 = (value: unknown): boolean =>
+const validate1500 = (value: unknown): boolean => validate1501(value) || validate6(value);
+const validate1501 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^mbxep_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1505 = (value: unknown): boolean =>
+const validate1509 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1506(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1510(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1508(value["data"]));
-const validate1506 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1512(value["data"]));
+const validate1510 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.message.sent";
-const validate1508 = (value: unknown): boolean =>
+const validate1512 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -1726,28 +1737,28 @@ const validate1508 = (value: unknown): boolean =>
   Object.hasOwn(value, "message") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "actionId") || validate1513(value["actionId"])) &&
-  (!Object.hasOwn(value, "state") || validate1514(value["state"])) &&
+  (!Object.hasOwn(value, "actionId") || validate1517(value["actionId"])) &&
+  (!Object.hasOwn(value, "state") || validate1518(value["state"])) &&
   (!Object.hasOwn(value, "acceptedAt") || validate2(value["acceptedAt"])) &&
-  (!Object.hasOwn(value, "actor") || validate1516(value["actor"])) &&
-  (!Object.hasOwn(value, "message") || validate1460(value["message"]));
-const validate1513 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "actor") || validate1520(value["actor"])) &&
+  (!Object.hasOwn(value, "message") || validate1464(value["message"]));
+const validate1517 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^mbxact_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1514 = (value: unknown): boolean =>
+const validate1518 = (value: unknown): boolean =>
   typeof value === "string" && value === "completed";
-const validate1516 = (value: unknown): boolean =>
+const validate1520 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "kind") &&
   Object.hasOwn(value, "id") &&
   Object.hasOwn(value, "source") &&
-  (!Object.hasOwn(value, "kind") || validate1517(value["kind"])) &&
+  (!Object.hasOwn(value, "kind") || validate1521(value["kind"])) &&
   (!Object.hasOwn(value, "id") || validate2(value["id"])) &&
   (!Object.hasOwn(value, "displayName") || validate8(value["displayName"])) &&
-  (!Object.hasOwn(value, "source") || validate1522(value["source"]));
-const validate1517 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "source") || validate1526(value["source"]));
+const validate1521 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "user" ||
     value === "apiKey" ||
@@ -1755,7 +1766,7 @@ const validate1517 = (value: unknown): boolean =>
     value === "externalAgent" ||
     value === "samvaAgent" ||
     value === "system");
-const validate1522 = (value: unknown): boolean =>
+const validate1526 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "humanUi" ||
     value === "externalApi" ||
@@ -1763,18 +1774,18 @@ const validate1522 = (value: unknown): boolean =>
     value === "extension" ||
     value === "samvaManagedAgent" ||
     value === "system");
-const validate1557 = (value: unknown): boolean =>
+const validate1561 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1558(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1562(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1560(value["data"]));
-const validate1558 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1564(value["data"]));
+const validate1562 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.action.pending_approval";
-const validate1560 = (value: unknown): boolean =>
+const validate1564 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -1783,10 +1794,10 @@ const validate1560 = (value: unknown): boolean =>
   Object.hasOwn(value, "draft") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "action") || validate1565(value["action"])) &&
-  (!Object.hasOwn(value, "draft") || validate1635(value["draft"])) &&
-  (!Object.hasOwn(value, "tool") || validate1645(value["tool"]));
-const validate1565 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "action") || validate1569(value["action"])) &&
+  (!Object.hasOwn(value, "draft") || validate1639(value["draft"])) &&
+  (!Object.hasOwn(value, "tool") || validate1649(value["tool"]));
+const validate1569 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -1797,16 +1808,16 @@ const validate1565 = (value: unknown): boolean =>
   Object.hasOwn(value, "reason") &&
   Object.hasOwn(value, "proposedBy") &&
   Object.hasOwn(value, "createdAt") &&
-  (!Object.hasOwn(value, "id") || validate1513(value["id"])) &&
-  (!Object.hasOwn(value, "type") || validate1567(value["type"])) &&
-  (!Object.hasOwn(value, "reviewRound") || validate1568(value["reviewRound"])) &&
-  (!Object.hasOwn(value, "state") || validate1569(value["state"])) &&
-  (!Object.hasOwn(value, "decision") || validate1570(value["decision"])) &&
-  (!Object.hasOwn(value, "threadId") || validate1621(value["threadId"])) &&
+  (!Object.hasOwn(value, "id") || validate1517(value["id"])) &&
+  (!Object.hasOwn(value, "type") || validate1571(value["type"])) &&
+  (!Object.hasOwn(value, "reviewRound") || validate1572(value["reviewRound"])) &&
+  (!Object.hasOwn(value, "state") || validate1573(value["state"])) &&
+  (!Object.hasOwn(value, "decision") || validate1574(value["decision"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1625(value["threadId"])) &&
   (!Object.hasOwn(value, "reason") || validate8(value["reason"])) &&
-  (!Object.hasOwn(value, "proposedBy") || validate1516(value["proposedBy"])) &&
+  (!Object.hasOwn(value, "proposedBy") || validate1520(value["proposedBy"])) &&
   (!Object.hasOwn(value, "createdAt") || validate2(value["createdAt"]));
-const validate1567 = (value: unknown): boolean =>
+const validate1571 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "sendMessage" ||
     value === "reply" ||
@@ -1818,16 +1829,16 @@ const validate1567 = (value: unknown): boolean =>
     value === "extensionRequest" ||
     value === "toolCall" ||
     value === "handoff");
-const validate1568 = (value: unknown): boolean =>
+const validate1572 = (value: unknown): boolean =>
   typeof value === "number" &&
   Number.isInteger(value) &&
   typeof value === "number" &&
   value <= 9007199254740991 &&
   typeof value === "number" &&
   value > 0;
-const validate1569 = (value: unknown): boolean =>
+const validate1573 = (value: unknown): boolean =>
   typeof value === "string" && value === "approvalRequired";
-const validate1570 = (value: unknown): boolean =>
+const validate1574 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -1837,98 +1848,98 @@ const validate1570 = (value: unknown): boolean =>
   Object.hasOwn(value, "outcome") &&
   Object.hasOwn(value, "reason") &&
   Object.hasOwn(value, "scopes") &&
-  (!Object.hasOwn(value, "id") || validate1571(value["id"])) &&
-  (!Object.hasOwn(value, "reviewRound") || validate1568(value["reviewRound"])) &&
-  (!Object.hasOwn(value, "requirement") || validate1573(value["requirement"])) &&
-  (!Object.hasOwn(value, "decider") || validate1574(value["decider"])) &&
-  (!Object.hasOwn(value, "outcome") || validate1575(value["outcome"])) &&
-  (!Object.hasOwn(value, "reason") || validate1576(value["reason"])) &&
-  (!Object.hasOwn(value, "scopes") || validate1577(value["scopes"])) &&
-  (!Object.hasOwn(value, "rule") || validate1581(value["rule"])) &&
-  (!Object.hasOwn(value, "guard") || validate1588(value["guard"])) &&
-  (!Object.hasOwn(value, "guardReason") || validate1588(value["guardReason"])) &&
-  (!Object.hasOwn(value, "resolution") || validate1594(value["resolution"]));
-const validate1571 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "id") || validate1575(value["id"])) &&
+  (!Object.hasOwn(value, "reviewRound") || validate1572(value["reviewRound"])) &&
+  (!Object.hasOwn(value, "requirement") || validate1577(value["requirement"])) &&
+  (!Object.hasOwn(value, "decider") || validate1578(value["decider"])) &&
+  (!Object.hasOwn(value, "outcome") || validate1579(value["outcome"])) &&
+  (!Object.hasOwn(value, "reason") || validate1580(value["reason"])) &&
+  (!Object.hasOwn(value, "scopes") || validate1581(value["scopes"])) &&
+  (!Object.hasOwn(value, "rule") || validate1585(value["rule"])) &&
+  (!Object.hasOwn(value, "guard") || validate1592(value["guard"])) &&
+  (!Object.hasOwn(value, "guardReason") || validate1592(value["guardReason"])) &&
+  (!Object.hasOwn(value, "resolution") || validate1598(value["resolution"]));
+const validate1575 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^pdec_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1573 = (value: unknown): boolean =>
+const validate1577 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "run" || value === "model" || value === "person" || value === "never");
-const validate1574 = (value: unknown): boolean =>
+const validate1578 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "rule" || value === "model" || value === "person" || value === "agent");
-const validate1575 = (value: unknown): boolean =>
+const validate1579 = (value: unknown): boolean =>
   typeof value === "string" && (value === "allow" || value === "hold" || value === "refuse");
-const validate1576 = (value: unknown): boolean =>
+const validate1580 = (value: unknown): boolean =>
   typeof value === "string" && typeof value === "string" && Array.from(value).length >= 1;
-const validate1577 = (value: unknown): boolean =>
-  Array.isArray(value) && Array.isArray(value) && value.every(validate1578);
-const validate1578 = (value: unknown): boolean =>
+const validate1581 = (value: unknown): boolean =>
+  Array.isArray(value) && Array.isArray(value) && value.every(validate1582);
+const validate1582 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "kind") &&
   Object.hasOwn(value, "id") &&
-  (!Object.hasOwn(value, "kind") || validate1579(value["kind"])) &&
-  (!Object.hasOwn(value, "id") || validate1576(value["id"]));
-const validate1579 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "kind") || validate1583(value["kind"])) &&
+  (!Object.hasOwn(value, "id") || validate1580(value["id"]));
+const validate1583 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "organization" ||
     value === "integration" ||
     value === "mailbox" ||
     value === "agent" ||
     value === "apiKey");
-const validate1581 = (value: unknown): boolean => validate1582(value) || validate6(value);
-const validate1582 = (value: unknown): boolean =>
+const validate1585 = (value: unknown): boolean => validate1586(value) || validate6(value);
+const validate1586 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "scope") &&
   Object.hasOwn(value, "index") &&
-  (!Object.hasOwn(value, "scope") || validate1578(value["scope"])) &&
-  (!Object.hasOwn(value, "index") || validate1586(value["index"]));
-const validate1586 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "scope") || validate1582(value["scope"])) &&
+  (!Object.hasOwn(value, "index") || validate1590(value["index"]));
+const validate1590 = (value: unknown): boolean =>
   typeof value === "number" &&
   Number.isInteger(value) &&
   typeof value === "number" &&
   value >= 0 &&
   typeof value === "number" &&
   value <= 9007199254740991;
-const validate1588 = (value: unknown): boolean => validate1576(value) || validate6(value);
-const validate1594 = (value: unknown): boolean => validate1595(value) || validate6(value);
-const validate1595 = (value: unknown): boolean =>
+const validate1592 = (value: unknown): boolean => validate1580(value) || validate6(value);
+const validate1598 = (value: unknown): boolean => validate1599(value) || validate6(value);
+const validate1599 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "by") &&
   Object.hasOwn(value, "at") &&
   Object.hasOwn(value, "as") &&
-  (!Object.hasOwn(value, "by") || validate1596(value["by"])) &&
+  (!Object.hasOwn(value, "by") || validate1600(value["by"])) &&
   (!Object.hasOwn(value, "at") || validate2(value["at"])) &&
-  (!Object.hasOwn(value, "as") || validate1598(value["as"])) &&
-  (!Object.hasOwn(value, "diff") || validate1599(value["diff"]));
-const validate1596 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "as") || validate1602(value["as"])) &&
+  (!Object.hasOwn(value, "diff") || validate1603(value["diff"]));
+const validate1600 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^user_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1598 = (value: unknown): boolean =>
+const validate1602 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "approved" || value === "edited" || value === "denied" || value === "alwaysAllowed");
-const validate1599 = (value: unknown): boolean => validate1600(value) || validate6(value);
-const validate1600 = (value: unknown): boolean =>
+const validate1603 = (value: unknown): boolean => validate1604(value) || validate6(value);
+const validate1604 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
-  (!Object.hasOwn(value, "text") || validate1601(value["text"])) &&
-  (!Object.hasOwn(value, "html") || validate1601(value["html"]));
-const validate1601 = (value: unknown): boolean => validate1602(value) || validate6(value);
-const validate1602 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "text") || validate1605(value["text"])) &&
+  (!Object.hasOwn(value, "html") || validate1605(value["html"]));
+const validate1605 = (value: unknown): boolean => validate1606(value) || validate6(value);
+const validate1606 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "before") &&
   Object.hasOwn(value, "after") &&
   (!Object.hasOwn(value, "before") || validate8(value["before"])) &&
   (!Object.hasOwn(value, "after") || validate8(value["after"]));
-const validate1621 = (value: unknown): boolean => validate1468(value) || validate6(value);
-const validate1635 = (value: unknown): boolean => validate1636(value) || validate6(value);
-const validate1636 = (value: unknown): boolean =>
+const validate1625 = (value: unknown): boolean => validate1472(value) || validate6(value);
+const validate1639 = (value: unknown): boolean => validate1640(value) || validate6(value);
+const validate1640 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "to") &&
@@ -1937,38 +1948,38 @@ const validate1636 = (value: unknown): boolean =>
   (!Object.hasOwn(value, "to") || validate45(value["to"])) &&
   (!Object.hasOwn(value, "cc") || validate45(value["cc"])) &&
   (!Object.hasOwn(value, "subject") || validate8(value["subject"]));
-const validate1645 = (value: unknown): boolean => validate1646(value) || validate6(value);
-const validate1646 = (value: unknown): boolean =>
+const validate1649 = (value: unknown): boolean => validate1650(value) || validate6(value);
+const validate1650 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "name") &&
   Object.hasOwn(value, "argumentsHash") &&
   Object.hasOwn(value, "arguments") &&
-  (!Object.hasOwn(value, "name") || validate1647(value["name"])) &&
-  (!Object.hasOwn(value, "argumentsHash") || validate1648(value["argumentsHash"])) &&
+  (!Object.hasOwn(value, "name") || validate1651(value["name"])) &&
+  (!Object.hasOwn(value, "argumentsHash") || validate1652(value["argumentsHash"])) &&
   (!Object.hasOwn(value, "arguments") || validate12(value["arguments"]));
-const validate1647 = (value: unknown): boolean =>
+const validate1651 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   Array.from(value).length >= 1 &&
   typeof value === "string" &&
   Array.from(value).length <= 128;
-const validate1648 = (value: unknown): boolean =>
+const validate1652 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^[0-9a-f]{64}$", "u").test(value);
-const validate1651 = (value: unknown): boolean =>
+const validate1655 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1652(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1656(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1654(value["data"]));
-const validate1652 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1658(value["data"]));
+const validate1656 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.action.resolved";
-const validate1654 = (value: unknown): boolean =>
+const validate1658 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -1977,9 +1988,9 @@ const validate1654 = (value: unknown): boolean =>
   Object.hasOwn(value, "resolution") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "action") || validate1659(value["action"])) &&
-  (!Object.hasOwn(value, "resolution") || validate1674(value["resolution"]));
-const validate1659 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "action") || validate1663(value["action"])) &&
+  (!Object.hasOwn(value, "resolution") || validate1678(value["resolution"]));
+const validate1663 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -1988,57 +1999,60 @@ const validate1659 = (value: unknown): boolean =>
   Object.hasOwn(value, "threadId") &&
   Object.hasOwn(value, "proposedBy") &&
   Object.hasOwn(value, "createdAt") &&
-  (!Object.hasOwn(value, "id") || validate1513(value["id"])) &&
-  (!Object.hasOwn(value, "type") || validate1567(value["type"])) &&
-  (!Object.hasOwn(value, "reviewRound") || validate1568(value["reviewRound"])) &&
-  (!Object.hasOwn(value, "threadId") || validate1621(value["threadId"])) &&
-  (!Object.hasOwn(value, "proposedBy") || validate1516(value["proposedBy"])) &&
+  (!Object.hasOwn(value, "id") || validate1517(value["id"])) &&
+  (!Object.hasOwn(value, "type") || validate1571(value["type"])) &&
+  (!Object.hasOwn(value, "reviewRound") || validate1572(value["reviewRound"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1625(value["threadId"])) &&
+  (!Object.hasOwn(value, "proposedBy") || validate1520(value["proposedBy"])) &&
   (!Object.hasOwn(value, "createdAt") || validate2(value["createdAt"]));
-const validate1674 = (value: unknown): boolean =>
+const validate1678 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "outcome") &&
   Object.hasOwn(value, "actor") &&
   Object.hasOwn(value, "resolvedAt") &&
   Object.hasOwn(value, "reason") &&
-  (!Object.hasOwn(value, "outcome") || validate1675(value["outcome"])) &&
-  (!Object.hasOwn(value, "actor") || validate1516(value["actor"])) &&
+  (!Object.hasOwn(value, "outcome") || validate1679(value["outcome"])) &&
+  (!Object.hasOwn(value, "actor") || validate1520(value["actor"])) &&
   (!Object.hasOwn(value, "resolvedAt") || validate2(value["resolvedAt"])) &&
   (!Object.hasOwn(value, "reason") || validate8(value["reason"]));
-const validate1675 = (value: unknown): boolean =>
+const validate1679 = (value: unknown): boolean =>
   typeof value === "string" &&
   (value === "approved" || value === "denied" || value === "cancelled");
-const validate1687 = (value: unknown): boolean =>
+const validate1691 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1688(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1692(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1690(value["data"]));
-const validate1688 = (value: unknown): boolean =>
-  typeof value === "string" && value === "mailbox.message.quarantined";
-const validate1690 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1694(value["data"]));
+const validate1692 = (value: unknown): boolean =>
+  typeof value === "string" && value === "mailbox.message.spam";
+const validate1694 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
   Object.hasOwn(value, "namespaceId") &&
   Object.hasOwn(value, "disposition") &&
+  Object.hasOwn(value, "threadId") &&
   Object.hasOwn(value, "reason") &&
   Object.hasOwn(value, "source") &&
   Object.hasOwn(value, "message") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "disposition") || validate1695(value["disposition"])) &&
-  (!Object.hasOwn(value, "reason") || validate594(value["reason"])) &&
-  (!Object.hasOwn(value, "source") || validate1697(value["source"])) &&
-  (!Object.hasOwn(value, "message") || validate1698(value["message"]));
-const validate1695 = (value: unknown): boolean =>
-  typeof value === "string" && (value === "quarantined" || value === "isolated");
-const validate1697 = (value: unknown): boolean =>
-  typeof value === "string" && (value === "receipt" || value === "classifier");
-const validate1698 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "disposition") || validate1699(value["disposition"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1625(value["threadId"])) &&
+  (!Object.hasOwn(value, "reason") || validate593(value["reason"])) &&
+  (!Object.hasOwn(value, "source") || validate1706(value["source"])) &&
+  (!Object.hasOwn(value, "message") || validate1707(value["message"]));
+const validate1699 = (value: unknown): boolean =>
+  typeof value === "string" && (value === "spam" || value === "isolated");
+const validate1706 = (value: unknown): boolean =>
+  typeof value === "string" &&
+  (value === "receipt" || value === "classifier" || value === "reader");
+const validate1707 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -2046,47 +2060,21 @@ const validate1698 = (value: unknown): boolean =>
   Object.hasOwn(value, "subject") &&
   Object.hasOwn(value, "receivedAt") &&
   (!Object.hasOwn(value, "id") || validate783(value["id"])) &&
-  (!Object.hasOwn(value, "from") || validate1469(value["from"])) &&
+  (!Object.hasOwn(value, "from") || validate1473(value["from"])) &&
   (!Object.hasOwn(value, "subject") || validate8(value["subject"])) &&
   (!Object.hasOwn(value, "receivedAt") || validate2(value["receivedAt"]));
-const validate1709 = (value: unknown): boolean =>
+const validate1718 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1710(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1719(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1712(value["data"]));
-const validate1710 = (value: unknown): boolean =>
-  typeof value === "string" && value === "mailbox.message.released";
-const validate1712 = (value: unknown): boolean =>
-  isObject(value) &&
-  isObject(value) &&
-  Object.hasOwn(value, "mailboxId") &&
-  Object.hasOwn(value, "namespaceId") &&
-  Object.hasOwn(value, "releasedBy") &&
-  Object.hasOwn(value, "reason") &&
-  Object.hasOwn(value, "message") &&
-  Object.hasOwn(value, "thread") &&
-  (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
-  (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "releasedBy") || validate1516(value["releasedBy"])) &&
-  (!Object.hasOwn(value, "reason") || validate594(value["reason"])) &&
-  (!Object.hasOwn(value, "message") || validate1460(value["message"])) &&
-  (!Object.hasOwn(value, "thread") || validate1494(value["thread"]));
-const validate1770 = (value: unknown): boolean =>
-  isObject(value) &&
-  isObject(value) &&
-  Object.hasOwn(value, "type") &&
-  Object.hasOwn(value, "timestamp") &&
-  Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1771(value["type"])) &&
-  (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1773(value["data"]));
-const validate1771 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1721(value["data"]));
+const validate1719 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.message.discarded";
-const validate1773 = (value: unknown): boolean =>
+const validate1721 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -2097,22 +2085,44 @@ const validate1773 = (value: unknown): boolean =>
   Object.hasOwn(value, "message") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "discardedBy") || validate1516(value["discardedBy"])) &&
-  (!Object.hasOwn(value, "disposition") || validate1695(value["disposition"])) &&
+  (!Object.hasOwn(value, "discardedBy") || validate1520(value["discardedBy"])) &&
+  (!Object.hasOwn(value, "disposition") || validate1733(value["disposition"])) &&
   (!Object.hasOwn(value, "reason") || validate594(value["reason"])) &&
-  (!Object.hasOwn(value, "message") || validate1698(value["message"]));
-const validate1798 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "message") || validate1707(value["message"]));
+const validate1733 = (value: unknown): boolean =>
+  typeof value === "string" && (value === "quarantined" || value === "isolated");
+const validate1746 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1799(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1747(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1801(value["data"]));
-const validate1799 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1749(value["data"]));
+const validate1747 = (value: unknown): boolean =>
+  typeof value === "string" && value === "mailbox.thread.deleted";
+const validate1749 = (value: unknown): boolean =>
+  isObject(value) &&
+  isObject(value) &&
+  Object.hasOwn(value, "mailboxId") &&
+  Object.hasOwn(value, "namespaceId") &&
+  Object.hasOwn(value, "threadId") &&
+  (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
+  (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1472(value["threadId"]));
+const validate1755 = (value: unknown): boolean =>
+  isObject(value) &&
+  isObject(value) &&
+  Object.hasOwn(value, "type") &&
+  Object.hasOwn(value, "timestamp") &&
+  Object.hasOwn(value, "data") &&
+  (!Object.hasOwn(value, "type") || validate1756(value["type"])) &&
+  (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
+  (!Object.hasOwn(value, "data") || validate1758(value["data"]));
+const validate1756 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.message.delivered";
-const validate1801 = (value: unknown): boolean =>
+const validate1758 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -2126,27 +2136,27 @@ const validate1801 = (value: unknown): boolean =>
   Object.hasOwn(value, "status") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "threadId") || validate1468(value["threadId"])) &&
-  (!Object.hasOwn(value, "actionId") || validate1513(value["actionId"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1472(value["threadId"])) &&
+  (!Object.hasOwn(value, "actionId") || validate1517(value["actionId"])) &&
   (!Object.hasOwn(value, "messageId") || validate783(value["messageId"])) &&
   (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "recipient") || validate2(value["recipient"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"])) &&
-  (!Object.hasOwn(value, "status") || validate1812(value["status"]));
-const validate1812 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "status") || validate1769(value["status"]));
+const validate1769 = (value: unknown): boolean =>
   typeof value === "string" && value === "delivered";
-const validate1813 = (value: unknown): boolean =>
+const validate1770 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1814(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1771(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1816(value["data"]));
-const validate1814 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1773(value["data"]));
+const validate1771 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.message.read";
-const validate1816 = (value: unknown): boolean =>
+const validate1773 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -2160,26 +2170,26 @@ const validate1816 = (value: unknown): boolean =>
   Object.hasOwn(value, "status") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "threadId") || validate1468(value["threadId"])) &&
-  (!Object.hasOwn(value, "actionId") || validate1513(value["actionId"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1472(value["threadId"])) &&
+  (!Object.hasOwn(value, "actionId") || validate1517(value["actionId"])) &&
   (!Object.hasOwn(value, "messageId") || validate783(value["messageId"])) &&
   (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "recipient") || validate2(value["recipient"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"])) &&
-  (!Object.hasOwn(value, "status") || validate1827(value["status"]));
-const validate1827 = (value: unknown): boolean => typeof value === "string" && value === "read";
-const validate1828 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "status") || validate1784(value["status"]));
+const validate1784 = (value: unknown): boolean => typeof value === "string" && value === "read";
+const validate1785 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1829(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1786(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1831(value["data"]));
-const validate1829 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1788(value["data"]));
+const validate1786 = (value: unknown): boolean =>
   typeof value === "string" && value === "mailbox.message.failed";
-const validate1831 = (value: unknown): boolean =>
+const validate1788 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "mailboxId") &&
@@ -2194,34 +2204,34 @@ const validate1831 = (value: unknown): boolean =>
   Object.hasOwn(value, "error") &&
   (!Object.hasOwn(value, "mailboxId") || validate5(value["mailboxId"])) &&
   (!Object.hasOwn(value, "namespaceId") || validate1339(value["namespaceId"])) &&
-  (!Object.hasOwn(value, "threadId") || validate1468(value["threadId"])) &&
-  (!Object.hasOwn(value, "actionId") || validate1513(value["actionId"])) &&
+  (!Object.hasOwn(value, "threadId") || validate1472(value["threadId"])) &&
+  (!Object.hasOwn(value, "actionId") || validate1517(value["actionId"])) &&
   (!Object.hasOwn(value, "messageId") || validate783(value["messageId"])) &&
   (!Object.hasOwn(value, "channel") || validate7(value["channel"])) &&
   (!Object.hasOwn(value, "recipient") || validate2(value["recipient"])) &&
   (!Object.hasOwn(value, "occurredAt") || validate2(value["occurredAt"])) &&
-  (!Object.hasOwn(value, "status") || validate1842(value["status"])) &&
-  (!Object.hasOwn(value, "error") || validate1843(value["error"]));
-const validate1842 = (value: unknown): boolean => typeof value === "string" && value === "failed";
-const validate1843 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "status") || validate1799(value["status"])) &&
+  (!Object.hasOwn(value, "error") || validate1800(value["error"]));
+const validate1799 = (value: unknown): boolean => typeof value === "string" && value === "failed";
+const validate1800 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "code") &&
   Object.hasOwn(value, "message") &&
   (!Object.hasOwn(value, "code") || validate8(value["code"])) &&
   (!Object.hasOwn(value, "message") || validate8(value["message"]));
-const validate1850 = (value: unknown): boolean =>
+const validate1807 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "type") &&
   Object.hasOwn(value, "timestamp") &&
   Object.hasOwn(value, "data") &&
-  (!Object.hasOwn(value, "type") || validate1851(value["type"])) &&
+  (!Object.hasOwn(value, "type") || validate1808(value["type"])) &&
   (!Object.hasOwn(value, "timestamp") || validate2(value["timestamp"])) &&
-  (!Object.hasOwn(value, "data") || validate1853(value["data"]));
-const validate1851 = (value: unknown): boolean =>
+  (!Object.hasOwn(value, "data") || validate1810(value["data"]));
+const validate1808 = (value: unknown): boolean =>
   typeof value === "string" && value === "journey.webhook";
-const validate1853 = (value: unknown): boolean =>
+const validate1810 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "organizationId") &&
@@ -2232,21 +2242,21 @@ const validate1853 = (value: unknown): boolean =>
   Object.hasOwn(value, "contact") &&
   Object.hasOwn(value, "data") &&
   (!Object.hasOwn(value, "organizationId") || validate855(value["organizationId"])) &&
-  (!Object.hasOwn(value, "journeyId") || validate1855(value["journeyId"])) &&
+  (!Object.hasOwn(value, "journeyId") || validate1812(value["journeyId"])) &&
   (!Object.hasOwn(value, "journeyVersion") || validate1279(value["journeyVersion"])) &&
-  (!Object.hasOwn(value, "runId") || validate1857(value["runId"])) &&
+  (!Object.hasOwn(value, "runId") || validate1814(value["runId"])) &&
   (!Object.hasOwn(value, "nodeId") || validate2(value["nodeId"])) &&
-  (!Object.hasOwn(value, "contact") || validate1859(value["contact"])) &&
+  (!Object.hasOwn(value, "contact") || validate1816(value["contact"])) &&
   (!Object.hasOwn(value, "data") || validate12(value["data"]));
-const validate1855 = (value: unknown): boolean =>
+const validate1812 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^jrny_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1857 = (value: unknown): boolean =>
+const validate1814 = (value: unknown): boolean =>
   typeof value === "string" &&
   typeof value === "string" &&
   new RegExp("^jrun_[0-9a-hjkmnp-tv-z]{16,24}$", "u").test(value);
-const validate1859 = (value: unknown): boolean =>
+const validate1816 = (value: unknown): boolean =>
   isObject(value) &&
   isObject(value) &&
   Object.hasOwn(value, "id") &&
@@ -2315,31 +2325,31 @@ export const isKnownEvent = (value: WebhookEvent): value is SamvaWebhookEvent =>
     case "template.registration.updated":
       return validate1354(value);
     case "flow.registration.updated":
-      return validate1390(value);
+      return validate1394(value);
     case "whatsapp.number.connected":
-      return validate1432(value);
+      return validate1436(value);
     case "mailbox.message.received":
-      return validate1452(value);
+      return validate1456(value);
     case "mailbox.message.sent":
-      return validate1505(value);
+      return validate1509(value);
     case "mailbox.action.pending_approval":
-      return validate1557(value);
+      return validate1561(value);
     case "mailbox.action.resolved":
-      return validate1651(value);
-    case "mailbox.message.quarantined":
-      return validate1687(value);
-    case "mailbox.message.released":
-      return validate1709(value);
+      return validate1655(value);
+    case "mailbox.message.spam":
+      return validate1691(value);
     case "mailbox.message.discarded":
-      return validate1770(value);
+      return validate1718(value);
+    case "mailbox.thread.deleted":
+      return validate1746(value);
     case "mailbox.message.delivered":
-      return validate1798(value);
+      return validate1755(value);
     case "mailbox.message.read":
-      return validate1813(value);
+      return validate1770(value);
     case "mailbox.message.failed":
-      return validate1828(value);
+      return validate1785(value);
     case "journey.webhook":
-      return validate1850(value);
+      return validate1807(value);
     default:
       return false;
   }
@@ -2410,31 +2420,31 @@ export const validateEvent = (value: unknown): value is WebhookEvent => {
     case "template.registration.updated":
       return validate1354(value);
     case "flow.registration.updated":
-      return validate1390(value);
+      return validate1394(value);
     case "whatsapp.number.connected":
-      return validate1432(value);
+      return validate1436(value);
     case "mailbox.message.received":
-      return validate1452(value);
+      return validate1456(value);
     case "mailbox.message.sent":
-      return validate1505(value);
+      return validate1509(value);
     case "mailbox.action.pending_approval":
-      return validate1557(value);
+      return validate1561(value);
     case "mailbox.action.resolved":
-      return validate1651(value);
-    case "mailbox.message.quarantined":
-      return validate1687(value);
-    case "mailbox.message.released":
-      return validate1709(value);
+      return validate1655(value);
+    case "mailbox.message.spam":
+      return validate1691(value);
     case "mailbox.message.discarded":
-      return validate1770(value);
+      return validate1718(value);
+    case "mailbox.thread.deleted":
+      return validate1746(value);
     case "mailbox.message.delivered":
-      return validate1798(value);
+      return validate1755(value);
     case "mailbox.message.read":
-      return validate1813(value);
+      return validate1770(value);
     case "mailbox.message.failed":
-      return validate1828(value);
+      return validate1785(value);
     case "journey.webhook":
-      return validate1850(value);
+      return validate1807(value);
     default:
       return true;
   }

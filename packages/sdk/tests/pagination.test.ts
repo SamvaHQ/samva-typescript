@@ -255,7 +255,7 @@ describe("facade pagination wiring", () => {
       const service = services[serviceName] as Readonly<Record<string, unknown>>;
       for (const [method, id] of Object.entries(SDK_SERVICE_OPERATIONS[serviceName])) {
         const target = service[method];
-        const paginated = SamvaOperations[id as keyof typeof SamvaOperations].paginated;
+        const paginated = SamvaOperations[id].paginated;
         expect(hasCursorHelper(target, "pages"), `${serviceName}.${method}.pages`).toBe(paginated);
         expect(hasCursorHelper(target, "items"), `${serviceName}.${method}.items`).toBe(paginated);
       }
