@@ -17,8 +17,12 @@ export {
 const make = /* @__PURE__ */ forGroup(MailboxesGroup, mailboxesOperations);
 
 export const createImportUpload = /* @__PURE__ */ make("mailboxesCreateImportUpload");
-export const startImport = /* @__PURE__ */ make("mailboxesStartImport");
+export const signImportUploadParts = /* @__PURE__ */ make("mailboxesSignImportUploadParts");
+export const completeImportUpload = /* @__PURE__ */ make("mailboxesCompleteImportUpload");
+export const discardImportUpload = /* @__PURE__ */ make("mailboxesDiscardImportUpload");
+export const discardImport = /* @__PURE__ */ make("mailboxesDiscardImport");
 export const getImport = /* @__PURE__ */ make("mailboxesGetImport");
+export const startImport = /* @__PURE__ */ make("mailboxesStartImport");
 export const listImports = /* @__PURE__ */ make("mailboxesListImports");
 export const list = /* @__PURE__ */ make("mailboxesList");
 export const create = /* @__PURE__ */ make("mailboxesCreate");

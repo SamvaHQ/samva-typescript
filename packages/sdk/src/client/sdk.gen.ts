@@ -521,6 +521,8 @@ import type {
   MailboxesApproveActionResponses,
   MailboxesCancelActionErrors,
   MailboxesCancelActionResponses,
+  MailboxesCompleteImportUploadErrors,
+  MailboxesCompleteImportUploadResponses,
   MailboxesCopyMessageAttachmentErrors,
   MailboxesCopyMessageAttachmentResponses,
   MailboxesCountSplitsErrors,
@@ -553,6 +555,10 @@ import type {
   MailboxesDeleteThreadResponses,
   MailboxesDenyActionErrors,
   MailboxesDenyActionResponses,
+  MailboxesDiscardImportErrors,
+  MailboxesDiscardImportResponses,
+  MailboxesDiscardImportUploadErrors,
+  MailboxesDiscardImportUploadResponses,
   MailboxesDiscardSpamHeldErrors,
   MailboxesDiscardSpamHeldResponses,
   MailboxesEmptySpamErrors,
@@ -645,6 +651,8 @@ import type {
   MailboxesSendMessageResponses,
   MailboxesSendScheduledNowErrors,
   MailboxesSendScheduledNowResponses,
+  MailboxesSignImportUploadPartsErrors,
+  MailboxesSignImportUploadPartsResponses,
   MailboxesStartImportErrors,
   MailboxesStartImportResponses,
   MailboxesUnscheduleSendErrors,
@@ -998,7 +1006,6 @@ import type {
   WebhooksUpdateErrors,
   WebhooksUpdateResponses,
   WhatsAppBusinessAccountId,
-  WhatsAppBusinessAccountId1,
   WhatsappConnectBusinessAccountErrors,
   WhatsappConnectBusinessAccountResponses,
   WhatsappDisconnectBusinessAccountErrors,
@@ -15039,7 +15046,7 @@ export class Mailboxes {
   /**
    * Create a mail history upload
    *
-   * Creates a presigned archive upload for an existing mailbox. Pass importId to append another archive to the same queued job; each upload gets its own URL. Upload each URL with Content-Type application/mbox and Content-Length equal to its accepted sizeBytes. Upload every archive before starting the job. Apple Mail package directories are traversed by the CLI into one import.
+   * Registers an mbox archive and returns the import ID, archive ID, and part size. Pass importId to append to a queued import. Request presigned URLs for the parts, upload them, then complete every archive before starting the import. Returns 402 when the import's archives total more than twice the organization's remaining mailbox storage.
    */
   public static createImportUpload<ThrowOnError extends boolean = false>(
     parameters: {
@@ -15092,17 +15099,170 @@ export class Mailboxes {
   }
 
   /**
-   * Start or resume a mail history import
+   * Sign mail history upload parts
    *
-   * Starts all archives uploaded to the job, or resumes a failed job at its committed byte cursor across those archives. History emits no inbound events or agent triggers.
+   * Returns ten-minute presigned PUT URLs for up to 16 distinct, one-based part numbers. Send each contiguous part with the returned sizeBytes as Content-Length and keep its ETag response header. Request fresh URLs as needed.
    */
-  public static startImport<ThrowOnError extends boolean = false>(
+  public static signImportUploadParts<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId: string;
+      archiveId: string;
+      partNumbers: Array<number>;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesSignImportUploadPartsResponses,
+    MailboxesSignImportUploadPartsErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "importId" },
+            { in: "path", key: "archiveId" },
+            { in: "body", key: "partNumbers" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesSignImportUploadParts",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesSignImportUploadPartsResponses,
+          MailboxesSignImportUploadPartsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/{importId}/uploads/{archiveId}/parts",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Complete a mail history upload
+   *
+   * Assembles the archive using every part number and its ETag as returned by storage. A successful completion can be retried. Complete every archive before starting the import.
+   */
+  public static completeImportUpload<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId: string;
+      archiveId: string;
+      parts: Array<{
+        partNumber: number;
+        etag: string;
+      }>;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesCompleteImportUploadResponses,
+    MailboxesCompleteImportUploadErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "importId" },
+            { in: "path", key: "archiveId" },
+            { in: "body", key: "parts" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesCompleteImportUpload",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesCompleteImportUploadResponses,
+          MailboxesCompleteImportUploadErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/{importId}/uploads/{archiveId}/complete",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Discard a mail history upload
+   *
+   * Removes an archive from a queued import and releases its upload.
+   */
+  public static discardImportUpload<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId: string;
+      archiveId: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    MailboxesDiscardImportUploadResponses,
+    MailboxesDiscardImportUploadErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "importId" },
+            { in: "path", key: "archiveId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesDiscardImportUpload",
+      options,
+      (headers) =>
+        (options?.client ?? client).delete<
+          MailboxesDiscardImportUploadResponses,
+          MailboxesDiscardImportUploadErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/{importId}/uploads/{archiveId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
+    );
+  }
+
+  /**
+   * Discard a queued mail history import
+   *
+   * Discards a queued import and releases all its archive uploads.
+   */
+  public static discardImport<ThrowOnError extends boolean = false>(
     parameters: {
       id: MailboxId;
       importId: string;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<MailboxesStartImportResponses, MailboxesStartImportErrors, ThrowOnError> {
+  ): RequestResult<MailboxesDiscardImportResponses, MailboxesDiscardImportErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -15116,16 +15276,16 @@ export class Mailboxes {
     );
     return requestWithPolicy(
       options?.client ?? client,
-      "mailboxesStartImport",
+      "mailboxesDiscardImport",
       options,
       (headers) =>
-        (options?.client ?? client).post<
-          MailboxesStartImportResponses,
-          MailboxesStartImportErrors,
+        (options?.client ?? client).delete<
+          MailboxesDiscardImportResponses,
+          MailboxesDiscardImportErrors,
           ThrowOnError
         >({
           security: [{ name: "x-api-key", type: "apiKey" }],
-          url: "/v1/mailboxes/{id}/imports/{importId}/start",
+          url: "/v1/mailboxes/{id}/imports/{importId}",
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
@@ -15168,6 +15328,48 @@ export class Mailboxes {
         ...params,
         headers: { ...headers, ...params.headers },
       }),
+    );
+  }
+
+  /**
+   * Start or resume a mail history import
+   *
+   * Starts all archives uploaded to the job, or resumes a failed job at its committed byte cursor across those archives. History emits no inbound events or agent triggers.
+   */
+  public static startImport<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MailboxId;
+      importId: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<MailboxesStartImportResponses, MailboxesStartImportErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "path", key: "importId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesStartImport",
+      options,
+      (headers) =>
+        (options?.client ?? client).post<
+          MailboxesStartImportResponses,
+          MailboxesStartImportErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/{importId}/start",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+        }),
     );
   }
 
@@ -20031,7 +20233,7 @@ export class TemplateRegistrations {
     parameters: {
       id: TemplateId;
       provider: "whatsapp";
-      businessAccountId?: WhatsAppBusinessAccountId1 | undefined;
+      businessAccountId?: WhatsAppBusinessAccountId | undefined;
       approval?: TemplateRegistrationApproval | undefined;
     },
     options?: Options<never, ThrowOnError>,
@@ -20850,9 +21052,17 @@ Object.assign(Whoami.get, { operation: "whoamiGet" });
 
 Object.assign(Mailboxes.createImportUpload, { operation: "mailboxesCreateImportUpload" });
 
-Object.assign(Mailboxes.startImport, { operation: "mailboxesStartImport" });
+Object.assign(Mailboxes.signImportUploadParts, { operation: "mailboxesSignImportUploadParts" });
+
+Object.assign(Mailboxes.completeImportUpload, { operation: "mailboxesCompleteImportUpload" });
+
+Object.assign(Mailboxes.discardImportUpload, { operation: "mailboxesDiscardImportUpload" });
+
+Object.assign(Mailboxes.discardImport, { operation: "mailboxesDiscardImport" });
 
 Object.assign(Mailboxes.getImport, { operation: "mailboxesGetImport" });
+
+Object.assign(Mailboxes.startImport, { operation: "mailboxesStartImport" });
 
 Object.assign(Mailboxes.listImports, { operation: "mailboxesListImports" });
 

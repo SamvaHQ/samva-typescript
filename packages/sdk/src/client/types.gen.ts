@@ -151,9 +151,12 @@ export type ConflictError = {
   id?: string | null | undefined;
 };
 
+/**
+ * For an immediate submission, `businessAccountId` is the connected number to register on and defaults to the number for the template's scope.
+ */
 export type SubmitTemplateRegistrationPayload = {
   provider: "whatsapp";
-  businessAccountId?: WhatsAppBusinessAccountId1 | undefined;
+  businessAccountId?: WhatsAppBusinessAccountId | undefined;
   approval?: TemplateRegistrationApproval | undefined;
 };
 
@@ -162,7 +165,7 @@ export type SubmitTemplateRegistrationPayload = {
  */
 export type TemplateRegistrationApproval = {
   publicationId: TemplatePublicationId;
-  businessAccountId: WhatsAppBusinessAccountId2;
+  businessAccountId: WhatsAppBusinessAccountId;
   /**
    * The Meta business account ID shown for the selected number before approval.
    */
@@ -173,15 +176,7 @@ export type TemplateRegistrationApproval = {
   expectedWorkspaceRevision: string;
 };
 
-/**
- * The connected WhatsApp number selected for this submission.
- */
-export type WhatsAppBusinessAccountId2 = string;
-
-/**
- * For an immediate submission, the connected number to register on. Defaults to the number for the template's scope.
- */
-export type WhatsAppBusinessAccountId1 = string;
+export type WhatsAppBusinessAccountId = string;
 
 export type WhatsAppSetupLinkUnavailableError = {
   _tag: "WhatsAppSetupLinkUnavailableError";
@@ -203,8 +198,6 @@ export type WhatsAppSetupLink = {
   createdAt: string;
   updatedAt: string;
 };
-
-export type WhatsAppBusinessAccountId = string;
 
 export type WhatsAppSetupLinkMetadata = {
   [key: string]: string;
@@ -31282,6 +31275,79 @@ export type MailboxesCreateImportUploadErrors = {
    */
   401: UnauthorizedError;
   /**
+   * PaymentRequiredError
+   */
+  402: PaymentRequiredError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * BillingProviderError
+   */
+  502: BillingProviderError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesCreateImportUploadError =
+  MailboxesCreateImportUploadErrors[keyof MailboxesCreateImportUploadErrors];
+
+export type MailboxesCreateImportUploadResponses = {
+  /**
+   * Success
+   */
+  200: {
+    id: string;
+    archiveId: string;
+    partSizeBytes: number;
+  };
+};
+
+export type MailboxesCreateImportUploadResponse =
+  MailboxesCreateImportUploadResponses[keyof MailboxesCreateImportUploadResponses];
+
+export type MailboxesSignImportUploadPartsData = {
+  body: {
+    partNumbers: Array<number>;
+  };
+  path: {
+    id: MailboxId;
+    importId: string;
+    archiveId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}/uploads/{archiveId}/parts";
+};
+
+export type MailboxesSignImportUploadPartsErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
    * ForbiddenError
    */
   403: ForbiddenError;
@@ -31307,21 +31373,258 @@ export type MailboxesCreateImportUploadErrors = {
   504: GatewayTimeoutError;
 };
 
-export type MailboxesCreateImportUploadError =
-  MailboxesCreateImportUploadErrors[keyof MailboxesCreateImportUploadErrors];
+export type MailboxesSignImportUploadPartsError =
+  MailboxesSignImportUploadPartsErrors[keyof MailboxesSignImportUploadPartsErrors];
 
-export type MailboxesCreateImportUploadResponses = {
+export type MailboxesSignImportUploadPartsResponses = {
   /**
    * Success
    */
   200: {
-    id: string;
-    uploadUrl: string;
+    parts: Array<{
+      partNumber: number;
+      sizeBytes: number;
+      uploadUrl: string;
+    }>;
   };
 };
 
-export type MailboxesCreateImportUploadResponse =
-  MailboxesCreateImportUploadResponses[keyof MailboxesCreateImportUploadResponses];
+export type MailboxesSignImportUploadPartsResponse =
+  MailboxesSignImportUploadPartsResponses[keyof MailboxesSignImportUploadPartsResponses];
+
+export type MailboxesCompleteImportUploadData = {
+  body: {
+    parts: Array<{
+      partNumber: number;
+      etag: string;
+    }>;
+  };
+  path: {
+    id: MailboxId;
+    importId: string;
+    archiveId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}/uploads/{archiveId}/complete";
+};
+
+export type MailboxesCompleteImportUploadErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesCompleteImportUploadError =
+  MailboxesCompleteImportUploadErrors[keyof MailboxesCompleteImportUploadErrors];
+
+export type MailboxesCompleteImportUploadResponses = {
+  /**
+   * SuccessResponse
+   */
+  200: SuccessResponse;
+};
+
+export type MailboxesCompleteImportUploadResponse =
+  MailboxesCompleteImportUploadResponses[keyof MailboxesCompleteImportUploadResponses];
+
+export type MailboxesDiscardImportUploadData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+    importId: string;
+    archiveId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}/uploads/{archiveId}";
+};
+
+export type MailboxesDiscardImportUploadErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesDiscardImportUploadError =
+  MailboxesDiscardImportUploadErrors[keyof MailboxesDiscardImportUploadErrors];
+
+export type MailboxesDiscardImportUploadResponses = {
+  /**
+   * SuccessResponse
+   */
+  200: SuccessResponse;
+};
+
+export type MailboxesDiscardImportUploadResponse =
+  MailboxesDiscardImportUploadResponses[keyof MailboxesDiscardImportUploadResponses];
+
+export type MailboxesDiscardImportData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+    importId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}";
+};
+
+export type MailboxesDiscardImportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ConflictError
+   */
+  409: ConflictError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesDiscardImportError =
+  MailboxesDiscardImportErrors[keyof MailboxesDiscardImportErrors];
+
+export type MailboxesDiscardImportResponses = {
+  /**
+   * SuccessResponse
+   */
+  200: SuccessResponse;
+};
+
+export type MailboxesDiscardImportResponse =
+  MailboxesDiscardImportResponses[keyof MailboxesDiscardImportResponses];
+
+export type MailboxesGetImportData = {
+  body?: never;
+  path: {
+    id: MailboxId;
+    importId: string;
+  };
+  query?: never;
+  url: "/v1/mailboxes/{id}/imports/{importId}";
+};
+
+export type MailboxesGetImportErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type MailboxesGetImportError = MailboxesGetImportErrors[keyof MailboxesGetImportErrors];
+
+export type MailboxesGetImportResponses = {
+  /**
+   * MailHistoryImportJob
+   */
+  200: MailHistoryImportJob;
+};
+
+export type MailboxesGetImportResponse =
+  MailboxesGetImportResponses[keyof MailboxesGetImportResponses];
 
 export type MailboxesStartImportData = {
   body?: never;
@@ -31380,59 +31683,6 @@ export type MailboxesStartImportResponses = {
 
 export type MailboxesStartImportResponse =
   MailboxesStartImportResponses[keyof MailboxesStartImportResponses];
-
-export type MailboxesGetImportData = {
-  body?: never;
-  path: {
-    id: MailboxId;
-    importId: string;
-  };
-  query?: never;
-  url: "/v1/mailboxes/{id}/imports/{importId}";
-};
-
-export type MailboxesGetImportErrors = {
-  /**
-   * MalformedRequestError
-   */
-  400: MalformedRequestError;
-  /**
-   * UnauthorizedError
-   */
-  401: UnauthorizedError;
-  /**
-   * ForbiddenError
-   */
-  403: ForbiddenError;
-  /**
-   * ResourceNotFoundError
-   */
-  404: ResourceNotFoundError;
-  /**
-   * ValidationError
-   */
-  422: ValidationError;
-  /**
-   * InternalError
-   */
-  500: InternalError;
-  /**
-   * GatewayTimeoutError
-   */
-  504: GatewayTimeoutError;
-};
-
-export type MailboxesGetImportError = MailboxesGetImportErrors[keyof MailboxesGetImportErrors];
-
-export type MailboxesGetImportResponses = {
-  /**
-   * MailHistoryImportJob
-   */
-  200: MailHistoryImportJob;
-};
-
-export type MailboxesGetImportResponse =
-  MailboxesGetImportResponses[keyof MailboxesGetImportResponses];
 
 export type MailboxesListImportsData = {
   body?: never;
@@ -38360,9 +38610,12 @@ export type TemplateRegistrationsListResponse =
   TemplateRegistrationsListResponses[keyof TemplateRegistrationsListResponses];
 
 export type TemplateRegistrationsSubmitData = {
+  /**
+   * For an immediate submission, `businessAccountId` is the connected number to register on and defaults to the number for the template's scope.
+   */
   body: {
     provider: "whatsapp";
-    businessAccountId?: WhatsAppBusinessAccountId1 | undefined;
+    businessAccountId?: WhatsAppBusinessAccountId | undefined;
     approval?: TemplateRegistrationApproval | undefined;
   };
   path: {

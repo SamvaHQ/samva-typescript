@@ -4043,6 +4043,30 @@ export type MailboxesGetImport500 = InternalError;
 export const MailboxesGetImport500 = InternalError;
 export type MailboxesGetImport504 = GatewayTimeoutError;
 export const MailboxesGetImport504 = GatewayTimeoutError;
+export type MailboxesDiscardImportPathParams = {
+  readonly id: MailboxId;
+  readonly importId: string;
+};
+export const MailboxesDiscardImportPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({ id: MailboxId, importId: Schema.String }))();
+export type MailboxesDiscardImport200 = SuccessResponse;
+export const MailboxesDiscardImport200 = SuccessResponse;
+export type MailboxesDiscardImport400 = MalformedRequestError;
+export const MailboxesDiscardImport400 = MalformedRequestError;
+export type MailboxesDiscardImport401 = UnauthorizedError;
+export const MailboxesDiscardImport401 = UnauthorizedError;
+export type MailboxesDiscardImport403 = ForbiddenError;
+export const MailboxesDiscardImport403 = ForbiddenError;
+export type MailboxesDiscardImport404 = ResourceNotFoundError;
+export const MailboxesDiscardImport404 = ResourceNotFoundError;
+export type MailboxesDiscardImport409 = ConflictError;
+export const MailboxesDiscardImport409 = ConflictError;
+export type MailboxesDiscardImport422 = ValidationError;
+export const MailboxesDiscardImport422 = ValidationError;
+export type MailboxesDiscardImport500 = InternalError;
+export const MailboxesDiscardImport500 = InternalError;
+export type MailboxesDiscardImport504 = GatewayTimeoutError;
+export const MailboxesDiscardImport504 = GatewayTimeoutError;
 export type MailboxesStartImportPathParams = { readonly id: MailboxId; readonly importId: string };
 export const MailboxesStartImportPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId, importId: Schema.String }))();
@@ -4064,6 +4088,211 @@ export type MailboxesStartImport500 = InternalError;
 export const MailboxesStartImport500 = InternalError;
 export type MailboxesStartImport504 = GatewayTimeoutError;
 export const MailboxesStartImport504 = GatewayTimeoutError;
+export type MailboxesDiscardImportUploadPathParams = {
+  readonly id: MailboxId;
+  readonly importId: string;
+  readonly archiveId: string;
+};
+export const MailboxesDiscardImportUploadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    importId: Schema.String,
+    archiveId: Schema.String.annotate({ format: "uuid" }).check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+      }),
+    ),
+  }))();
+export type MailboxesDiscardImportUpload200 = SuccessResponse;
+export const MailboxesDiscardImportUpload200 = SuccessResponse;
+export type MailboxesDiscardImportUpload400 = MalformedRequestError;
+export const MailboxesDiscardImportUpload400 = MalformedRequestError;
+export type MailboxesDiscardImportUpload401 = UnauthorizedError;
+export const MailboxesDiscardImportUpload401 = UnauthorizedError;
+export type MailboxesDiscardImportUpload403 = ForbiddenError;
+export const MailboxesDiscardImportUpload403 = ForbiddenError;
+export type MailboxesDiscardImportUpload404 = ResourceNotFoundError;
+export const MailboxesDiscardImportUpload404 = ResourceNotFoundError;
+export type MailboxesDiscardImportUpload409 = ConflictError;
+export const MailboxesDiscardImportUpload409 = ConflictError;
+export type MailboxesDiscardImportUpload422 = ValidationError;
+export const MailboxesDiscardImportUpload422 = ValidationError;
+export type MailboxesDiscardImportUpload500 = InternalError;
+export const MailboxesDiscardImportUpload500 = InternalError;
+export type MailboxesDiscardImportUpload504 = GatewayTimeoutError;
+export const MailboxesDiscardImportUpload504 = GatewayTimeoutError;
+export type MailboxesCompleteImportUploadPathParams = {
+  readonly id: MailboxId;
+  readonly importId: string;
+  readonly archiveId: string;
+};
+export const MailboxesCompleteImportUploadPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    importId: Schema.String,
+    archiveId: Schema.String.annotate({ format: "uuid" }).check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+      }),
+    ),
+  }))();
+export type MailboxesCompleteImportUploadRequestJson = {
+  readonly parts: ReadonlyArray<{ readonly partNumber: number; readonly etag: string }>;
+};
+export const MailboxesCompleteImportUploadRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    parts: Schema.Array(
+      Schema.Struct({
+        partNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(1024).annotate({
+              expected: "a value less than or equal to 1024",
+            }),
+          ),
+        etag: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        )
+          .check(
+            Schema.isMaxCodePoints(256).annotate({
+              expected: "a string with at most 256 code points",
+            }),
+          )
+          .check(
+            Schema.isMaxLength(256).annotate({ expected: "a value with a length of at most 256" }),
+          ),
+      }),
+    )
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
+      ),
+  }))();
+export type MailboxesCompleteImportUpload200 = SuccessResponse;
+export const MailboxesCompleteImportUpload200 = SuccessResponse;
+export type MailboxesCompleteImportUpload400 = MalformedRequestError;
+export const MailboxesCompleteImportUpload400 = MalformedRequestError;
+export type MailboxesCompleteImportUpload401 = UnauthorizedError;
+export const MailboxesCompleteImportUpload401 = UnauthorizedError;
+export type MailboxesCompleteImportUpload403 = ForbiddenError;
+export const MailboxesCompleteImportUpload403 = ForbiddenError;
+export type MailboxesCompleteImportUpload404 = ResourceNotFoundError;
+export const MailboxesCompleteImportUpload404 = ResourceNotFoundError;
+export type MailboxesCompleteImportUpload409 = ConflictError;
+export const MailboxesCompleteImportUpload409 = ConflictError;
+export type MailboxesCompleteImportUpload422 = ValidationError;
+export const MailboxesCompleteImportUpload422 = ValidationError;
+export type MailboxesCompleteImportUpload500 = InternalError;
+export const MailboxesCompleteImportUpload500 = InternalError;
+export type MailboxesCompleteImportUpload504 = GatewayTimeoutError;
+export const MailboxesCompleteImportUpload504 = GatewayTimeoutError;
+export type MailboxesSignImportUploadPartsPathParams = {
+  readonly id: MailboxId;
+  readonly importId: string;
+  readonly archiveId: string;
+};
+export const MailboxesSignImportUploadPartsPathParams = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    id: MailboxId,
+    importId: Schema.String,
+    archiveId: Schema.String.annotate({ format: "uuid" }).check(
+      Schema.isPattern(
+        new globalThis.RegExp(
+          "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+          "u",
+        ),
+      ).annotate({
+        expected:
+          "a string matching the RegExp ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+      }),
+    ),
+  }))();
+export type MailboxesSignImportUploadPartsRequestJson = {
+  readonly partNumbers: ReadonlyArray<number>;
+};
+export const MailboxesSignImportUploadPartsRequestJson = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    partNumbers: Schema.Array(
+      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+        .check(
+          Schema.isGreaterThanOrEqualTo(1).annotate({
+            expected: "a value greater than or equal to 1",
+          }),
+        )
+        .check(
+          Schema.isLessThanOrEqualTo(1024).annotate({
+            expected: "a value less than or equal to 1024",
+          }),
+        ),
+    )
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(Schema.isMaxLength(16).annotate({ expected: "a value with a length of at most 16" })),
+  }))();
+export type MailboxesSignImportUploadParts200 = {
+  readonly parts: ReadonlyArray<{
+    readonly partNumber: number;
+    readonly sizeBytes: number;
+    readonly uploadUrl: __SamvaRuntimeSensitiveString;
+  }>;
+};
+export const MailboxesSignImportUploadParts200 = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    parts: Schema.Array(
+      Schema.Struct({
+        partNumber: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
+            }),
+          )
+          .check(
+            Schema.isLessThanOrEqualTo(1024).annotate({
+              expected: "a value less than or equal to 1024",
+            }),
+          ),
+        sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+              expected: "a value less than or equal to 9007199254740991",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        uploadUrl: __SamvaRuntimeSensitiveString,
+      }),
+    ),
+  }))();
+export type MailboxesSignImportUploadParts400 = MalformedRequestError;
+export const MailboxesSignImportUploadParts400 = MalformedRequestError;
+export type MailboxesSignImportUploadParts401 = UnauthorizedError;
+export const MailboxesSignImportUploadParts401 = UnauthorizedError;
+export type MailboxesSignImportUploadParts403 = ForbiddenError;
+export const MailboxesSignImportUploadParts403 = ForbiddenError;
+export type MailboxesSignImportUploadParts404 = ResourceNotFoundError;
+export const MailboxesSignImportUploadParts404 = ResourceNotFoundError;
+export type MailboxesSignImportUploadParts409 = ConflictError;
+export const MailboxesSignImportUploadParts409 = ConflictError;
+export type MailboxesSignImportUploadParts422 = ValidationError;
+export const MailboxesSignImportUploadParts422 = ValidationError;
+export type MailboxesSignImportUploadParts500 = InternalError;
+export const MailboxesSignImportUploadParts500 = InternalError;
+export type MailboxesSignImportUploadParts504 = GatewayTimeoutError;
+export const MailboxesSignImportUploadParts504 = GatewayTimeoutError;
 export type MailboxesCreateImportUploadPathParams = { readonly id: MailboxId };
 export const MailboxesCreateImportUploadPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: MailboxId }))();
@@ -4095,8 +4324,8 @@ export const MailboxesCreateImportUploadRequestJson = /* @__PURE__ */ (() =>
       ),
     sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
-        Schema.isLessThanOrEqualTo(5000000000).annotate({
-          expected: "a value less than or equal to 5000000000",
+        Schema.isLessThanOrEqualTo(68719476736).annotate({
+          expected: "a value less than or equal to 68719476736",
         }),
       )
       .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
@@ -4120,14 +4349,27 @@ export const MailboxesCreateImportUploadRequestJson = /* @__PURE__ */ (() =>
   }))();
 export type MailboxesCreateImportUpload200 = {
   readonly id: string;
-  readonly uploadUrl: __SamvaRuntimeSensitiveString;
+  readonly archiveId: string;
+  readonly partSizeBytes: number;
 };
 export const MailboxesCreateImportUpload200 = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: Schema.String, uploadUrl: __SamvaRuntimeSensitiveString }))();
+  Schema.Struct({
+    id: Schema.String,
+    archiveId: Schema.String,
+    partSizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
+      .check(
+        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
+          expected: "a value less than or equal to 9007199254740991",
+        }),
+      )
+      .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+  }))();
 export type MailboxesCreateImportUpload400 = MalformedRequestError;
 export const MailboxesCreateImportUpload400 = MalformedRequestError;
 export type MailboxesCreateImportUpload401 = UnauthorizedError;
 export const MailboxesCreateImportUpload401 = UnauthorizedError;
+export type MailboxesCreateImportUpload402 = PaymentRequiredError;
+export const MailboxesCreateImportUpload402 = PaymentRequiredError;
 export type MailboxesCreateImportUpload403 = ForbiddenError;
 export const MailboxesCreateImportUpload403 = ForbiddenError;
 export type MailboxesCreateImportUpload404 = ResourceNotFoundError;
@@ -4138,6 +4380,8 @@ export type MailboxesCreateImportUpload422 = ValidationError;
 export const MailboxesCreateImportUpload422 = ValidationError;
 export type MailboxesCreateImportUpload500 = InternalError;
 export const MailboxesCreateImportUpload500 = InternalError;
+export type MailboxesCreateImportUpload502 = BillingProviderError;
+export const MailboxesCreateImportUpload502 = BillingProviderError;
 export type MailboxesCreateImportUpload504 = GatewayTimeoutError;
 export const MailboxesCreateImportUpload504 = GatewayTimeoutError;
 export type MailboxesListLabelsPathParams = { readonly id: MailboxId };
@@ -6635,6 +6879,27 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Identifier, "mailboxes.getImport")
       .annotate(OpenApi.Summary, "Read mail history import progress")
       .annotate(OpenApi.Description, "Returns import status, counts, and bounded failure reasons."),
+    HttpApiEndpoint.delete("mailboxesDiscardImport", "/v1/mailboxes/:id/imports/:importId", {
+      params: MailboxesDiscardImportPathParams,
+      success: MailboxesDiscardImport200,
+      error: [
+        MailboxesDiscardImport400.pipe(HttpApiSchema.status(400)),
+        MailboxesDiscardImport401.pipe(HttpApiSchema.status(401)),
+        MailboxesDiscardImport403.pipe(HttpApiSchema.status(403)),
+        MailboxesDiscardImport404.pipe(HttpApiSchema.status(404)),
+        MailboxesDiscardImport409.pipe(HttpApiSchema.status(409)),
+        MailboxesDiscardImport422.pipe(HttpApiSchema.status(422)),
+        MailboxesDiscardImport500,
+        MailboxesDiscardImport504.pipe(HttpApiSchema.status(504)),
+      ],
+    })
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.discardImport")
+      .annotate(OpenApi.Summary, "Discard a queued mail history import")
+      .annotate(
+        OpenApi.Description,
+        "Discards a queued import and releases all its archive uploads.",
+      ),
     HttpApiEndpoint.post("mailboxesStartImport", "/v1/mailboxes/:id/imports/:importId/start", {
       params: MailboxesStartImportPathParams,
       success: MailboxesStartImport200,
@@ -6656,6 +6921,83 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
         OpenApi.Description,
         "Starts all archives uploaded to the job, or resumes a failed job at its committed byte cursor across those archives. History emits no inbound events or agent triggers.",
       ),
+    HttpApiEndpoint.delete(
+      "mailboxesDiscardImportUpload",
+      "/v1/mailboxes/:id/imports/:importId/uploads/:archiveId",
+      {
+        params: MailboxesDiscardImportUploadPathParams,
+        success: MailboxesDiscardImportUpload200,
+        error: [
+          MailboxesDiscardImportUpload400.pipe(HttpApiSchema.status(400)),
+          MailboxesDiscardImportUpload401.pipe(HttpApiSchema.status(401)),
+          MailboxesDiscardImportUpload403.pipe(HttpApiSchema.status(403)),
+          MailboxesDiscardImportUpload404.pipe(HttpApiSchema.status(404)),
+          MailboxesDiscardImportUpload409.pipe(HttpApiSchema.status(409)),
+          MailboxesDiscardImportUpload422.pipe(HttpApiSchema.status(422)),
+          MailboxesDiscardImportUpload500,
+          MailboxesDiscardImportUpload504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.discardImportUpload")
+      .annotate(OpenApi.Summary, "Discard a mail history upload")
+      .annotate(
+        OpenApi.Description,
+        "Removes an archive from a queued import and releases its upload.",
+      ),
+    HttpApiEndpoint.post(
+      "mailboxesCompleteImportUpload",
+      "/v1/mailboxes/:id/imports/:importId/uploads/:archiveId/complete",
+      {
+        params: MailboxesCompleteImportUploadPathParams,
+        payload: MailboxesCompleteImportUploadRequestJson,
+        success: MailboxesCompleteImportUpload200,
+        error: [
+          MailboxesCompleteImportUpload400.pipe(HttpApiSchema.status(400)),
+          MailboxesCompleteImportUpload401.pipe(HttpApiSchema.status(401)),
+          MailboxesCompleteImportUpload403.pipe(HttpApiSchema.status(403)),
+          MailboxesCompleteImportUpload404.pipe(HttpApiSchema.status(404)),
+          MailboxesCompleteImportUpload409.pipe(HttpApiSchema.status(409)),
+          MailboxesCompleteImportUpload422.pipe(HttpApiSchema.status(422)),
+          MailboxesCompleteImportUpload500,
+          MailboxesCompleteImportUpload504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.completeImportUpload")
+      .annotate(OpenApi.Summary, "Complete a mail history upload")
+      .annotate(
+        OpenApi.Description,
+        "Assembles the archive using every part number and its ETag as returned by storage. A successful completion can be retried. Complete every archive before starting the import.",
+      ),
+    HttpApiEndpoint.post(
+      "mailboxesSignImportUploadParts",
+      "/v1/mailboxes/:id/imports/:importId/uploads/:archiveId/parts",
+      {
+        params: MailboxesSignImportUploadPartsPathParams,
+        payload: MailboxesSignImportUploadPartsRequestJson,
+        success: MailboxesSignImportUploadParts200,
+        error: [
+          MailboxesSignImportUploadParts400.pipe(HttpApiSchema.status(400)),
+          MailboxesSignImportUploadParts401.pipe(HttpApiSchema.status(401)),
+          MailboxesSignImportUploadParts403.pipe(HttpApiSchema.status(403)),
+          MailboxesSignImportUploadParts404.pipe(HttpApiSchema.status(404)),
+          MailboxesSignImportUploadParts409.pipe(HttpApiSchema.status(409)),
+          MailboxesSignImportUploadParts422.pipe(HttpApiSchema.status(422)),
+          MailboxesSignImportUploadParts500,
+          MailboxesSignImportUploadParts504.pipe(HttpApiSchema.status(504)),
+        ],
+      },
+    )
+      .middleware(ApiKeySecurityMiddleware)
+      .annotate(OpenApi.Identifier, "mailboxes.signImportUploadParts")
+      .annotate(OpenApi.Summary, "Sign mail history upload parts")
+      .annotate(
+        OpenApi.Description,
+        "Returns ten-minute presigned PUT URLs for up to 16 distinct, one-based part numbers. Send each contiguous part with the returned sizeBytes as Content-Length and keep its ETag response header. Request fresh URLs as needed.",
+      ),
     HttpApiEndpoint.post("mailboxesCreateImportUpload", "/v1/mailboxes/:id/imports/uploads", {
       params: MailboxesCreateImportUploadPathParams,
       payload: MailboxesCreateImportUploadRequestJson,
@@ -6663,11 +7005,13 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       error: [
         MailboxesCreateImportUpload400.pipe(HttpApiSchema.status(400)),
         MailboxesCreateImportUpload401.pipe(HttpApiSchema.status(401)),
+        MailboxesCreateImportUpload402.pipe(HttpApiSchema.status(402)),
         MailboxesCreateImportUpload403.pipe(HttpApiSchema.status(403)),
         MailboxesCreateImportUpload404.pipe(HttpApiSchema.status(404)),
         MailboxesCreateImportUpload409.pipe(HttpApiSchema.status(409)),
         MailboxesCreateImportUpload422.pipe(HttpApiSchema.status(422)),
         MailboxesCreateImportUpload500,
+        MailboxesCreateImportUpload502.pipe(HttpApiSchema.status(502)),
         MailboxesCreateImportUpload504.pipe(HttpApiSchema.status(504)),
       ],
     })
@@ -6676,7 +7020,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Create a mail history upload")
       .annotate(
         OpenApi.Description,
-        "Creates a presigned archive upload for an existing mailbox. Pass importId to append another archive to the same queued job; each upload gets its own URL. Upload each URL with Content-Type application/mbox and Content-Length equal to its accepted sizeBytes. Upload every archive before starting the job. Apple Mail package directories are traversed by the CLI into one import.",
+        "Registers an mbox archive and returns the import ID, archive ID, and part size. Pass importId to append to a queued import. Request presigned URLs for the parts, upload them, then complete every archive before starting the import. Returns 402 when the import's archives total more than twice the organization's remaining mailbox storage.",
       ),
     HttpApiEndpoint.get("mailboxesListLabels", "/v1/mailboxes/:id/labels", {
       params: MailboxesListLabelsPathParams,

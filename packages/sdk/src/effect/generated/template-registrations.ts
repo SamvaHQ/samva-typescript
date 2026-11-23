@@ -21,7 +21,7 @@ import {
   TemplateRegistrationId,
   UnauthorizedError,
   ValidationError,
-  WhatsAppBusinessAccountId_1,
+  WhatsAppBusinessAccountId,
   WhatsAppChannelError,
 } from "./shared";
 
@@ -165,14 +165,17 @@ export const TemplateRegistrationsSubmitPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: TemplateId }))();
 export type TemplateRegistrationsSubmitRequestJson = {
   readonly provider: "whatsapp";
-  readonly businessAccountId?: WhatsAppBusinessAccountId_1;
+  readonly businessAccountId?: WhatsAppBusinessAccountId;
   readonly approval?: TemplateRegistrationApproval;
 };
 export const TemplateRegistrationsSubmitRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
     provider: Schema.Literal("whatsapp"),
-    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId_1),
+    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
     approval: Schema.optionalKey(TemplateRegistrationApproval),
+  }).annotate({
+    description:
+      "For an immediate submission, `businessAccountId` is the connected number to register on and defaults to the number for the template's scope.",
   }))();
 export type TemplateRegistrationsSubmit201 = TemplateRegistration;
 export const TemplateRegistrationsSubmit201 = TemplateRegistration;

@@ -7,9 +7,30 @@ export const mailboxesOperations = {
     paginated: false,
     call: { kind: "pathPayload", paths: ["id"] },
   },
-  mailboxesStartImport: {
+  mailboxesSignImportUploadParts: {
     group: "Mailboxes",
     method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "pathPayload", paths: ["id", "importId", "archiveId"] },
+  },
+  mailboxesCompleteImportUpload: {
+    group: "Mailboxes",
+    method: "POST",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "pathPayload", paths: ["id", "importId", "archiveId"] },
+  },
+  mailboxesDiscardImportUpload: {
+    group: "Mailboxes",
+    method: "DELETE",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "path", paths: ["id", "importId", "archiveId"] },
+  },
+  mailboxesDiscardImport: {
+    group: "Mailboxes",
+    method: "DELETE",
     idempotent: false,
     paginated: false,
     call: { kind: "path", paths: ["id", "importId"] },
@@ -17,6 +38,13 @@ export const mailboxesOperations = {
   mailboxesGetImport: {
     group: "Mailboxes",
     method: "GET",
+    idempotent: false,
+    paginated: false,
+    call: { kind: "path", paths: ["id", "importId"] },
+  },
+  mailboxesStartImport: {
+    group: "Mailboxes",
+    method: "POST",
     idempotent: false,
     paginated: false,
     call: { kind: "path", paths: ["id", "importId"] },

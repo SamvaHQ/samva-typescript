@@ -2666,27 +2666,6 @@ export const TemplateFromDefaultInput = /* @__PURE__ */ (() =>
       ]),
     ),
   }).annotate({ identifier: "TemplateFromDefaultInput" }))();
-export type WhatsAppBusinessAccountId_1 = string;
-export const WhatsAppBusinessAccountId_1 = /* @__PURE__ */ (() =>
-  Schema.String.annotate({
-    description:
-      "For an immediate submission, the connected number to register on. Defaults to the number for the template's scope.",
-  }).check(
-    Schema.isPattern(new globalThis.RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^waba_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "WhatsAppBusinessAccountId_1",
-    }),
-  ))();
-export type WhatsAppBusinessAccountId_2 = string;
-export const WhatsAppBusinessAccountId_2 = /* @__PURE__ */ (() =>
-  Schema.String.annotate({
-    description: "The connected WhatsApp number selected for this submission.",
-  }).check(
-    Schema.isPattern(new globalThis.RegExp("^waba_[0-9a-hjkmnp-tv-z]{16,24}$", "u")).annotate({
-      expected: "a string matching the RegExp ^waba_[0-9a-hjkmnp-tv-z]{16,24}$",
-      identifier: "WhatsAppBusinessAccountId_2",
-    }),
-  ))();
 export class CredentialsError extends Schema.TaggedError<CredentialsError>()(
   "CredentialsError",
   Schema.Struct({ message: Schema.String, retryable: Schema.Boolean }),
@@ -2975,8 +2954,8 @@ export const CreateMailHistoryUpload = /* @__PURE__ */ (() =>
       ),
     sizeBytes: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
-        Schema.isLessThanOrEqualTo(5000000000).annotate({
-          expected: "a value less than or equal to 5000000000",
+        Schema.isLessThanOrEqualTo(68719476736).annotate({
+          expected: "a value less than or equal to 68719476736",
         }),
       )
       .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
@@ -5248,6 +5227,41 @@ export const WhatsAppTemplateBinding = /* @__PURE__ */ (() =>
   Schema.Union([WhatsAppTemplateContactBinding, WhatsAppTemplateCustomFieldBinding]).annotate({
     identifier: "WhatsAppTemplateBinding",
   }))();
+export type TemplateRegistrationApproval = {
+  readonly publicationId: TemplatePublicationId;
+  readonly businessAccountId: WhatsAppBusinessAccountId;
+  readonly expectedWabaId: string;
+  readonly expectedWorkspaceRevision: string;
+};
+export const TemplateRegistrationApproval = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    publicationId: TemplatePublicationId,
+    businessAccountId: WhatsAppBusinessAccountId,
+    expectedWabaId: Schema.String.annotate({
+      description: "The Meta business account ID shown for the selected number before approval.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+    expectedWorkspaceRevision: Schema.String.annotate({
+      description: "The workspace revision reviewed for this submission.",
+    })
+      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+      .check(
+        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
+      )
+      .check(
+        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
+      ),
+  }).annotate({
+    description:
+      "For a reviewed submission, the exact publication, workspace revision, number and Meta business account. Omit the separate businessAccountId when supplying approval.",
+    identifier: "TemplateRegistrationApproval",
+  }))();
 export type RegisterWhatsAppFlowPayload = {
   readonly businessAccountId?: WhatsAppBusinessAccountId;
 };
@@ -6605,41 +6619,6 @@ export const UpdateTemplatePayload = /* @__PURE__ */ (() =>
       ),
     }),
   }).annotate({ identifier: "UpdateTemplatePayload" }))();
-export type TemplateRegistrationApproval = {
-  readonly publicationId: TemplatePublicationId;
-  readonly businessAccountId: WhatsAppBusinessAccountId_2;
-  readonly expectedWabaId: string;
-  readonly expectedWorkspaceRevision: string;
-};
-export const TemplateRegistrationApproval = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    publicationId: TemplatePublicationId,
-    businessAccountId: WhatsAppBusinessAccountId_2,
-    expectedWabaId: Schema.String.annotate({
-      description: "The Meta business account ID shown for the selected number before approval.",
-    })
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(
-        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-      ),
-    expectedWorkspaceRevision: Schema.String.annotate({
-      description: "The workspace revision reviewed for this submission.",
-    })
-      .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
-      .check(
-        Schema.isMaxCodePoints(128).annotate({ expected: "a string with at most 128 code points" }),
-      )
-      .check(
-        Schema.isMaxLength(128).annotate({ expected: "a value with a length of at most 128" }),
-      ),
-  }).annotate({
-    description:
-      "For a reviewed submission, the exact publication, workspace revision, number and Meta business account. Omit the separate businessAccountId when supplying approval.",
-    identifier: "TemplateRegistrationApproval",
-  }))();
 export type CreateWhatsAppSetupLinkPayload = {
   readonly namespaceId: NamespaceId;
   readonly redirectUrl?: WhatsAppSetupLinkRedirectUrl | null;
@@ -7224,6 +7203,21 @@ export const WhatsAppTemplateBindings = /* @__PURE__ */ (() =>
         identifier: "WhatsAppTemplateBindings",
       }),
     ))();
+export type SubmitTemplateRegistrationPayload = {
+  readonly provider: "whatsapp";
+  readonly businessAccountId?: WhatsAppBusinessAccountId;
+  readonly approval?: TemplateRegistrationApproval;
+};
+export const SubmitTemplateRegistrationPayload = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    provider: Schema.Literal("whatsapp"),
+    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId),
+    approval: Schema.optionalKey(TemplateRegistrationApproval),
+  }).annotate({
+    description:
+      "For an immediate submission, `businessAccountId` is the connected number to register on and defaults to the number for the template's scope.",
+    identifier: "SubmitTemplateRegistrationPayload",
+  }))();
 export type MessagePage = {
   readonly items: ReadonlyArray<MessageSummary>;
   readonly nextCursor: string | null;
@@ -7538,17 +7532,6 @@ export const OperationAccepted = /* @__PURE__ */ (() =>
       resource: OperationResourceLink,
     }),
   }).annotate({ identifier: "OperationAccepted" }))();
-export type SubmitTemplateRegistrationPayload = {
-  readonly provider: "whatsapp";
-  readonly businessAccountId?: WhatsAppBusinessAccountId_1;
-  readonly approval?: TemplateRegistrationApproval;
-};
-export const SubmitTemplateRegistrationPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    provider: Schema.Literal("whatsapp"),
-    businessAccountId: Schema.optionalKey(WhatsAppBusinessAccountId_1),
-    approval: Schema.optionalKey(TemplateRegistrationApproval),
-  }).annotate({ identifier: "SubmitTemplateRegistrationPayload" }))();
 export type SmsCampaignContentInput = {
   readonly channel: "sms";
   readonly sms: SmsDispatchContent;
