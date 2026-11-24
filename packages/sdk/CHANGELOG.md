@@ -1,3 +1,58 @@
+## samva@0.51.0
+
+### `FromAddressRequiredError` lists the addresses you can send from
+
+**Breaking for code that constructs the error.** `FromAddressRequiredError` (`422`) carries a
+required `addresses` field: the sender addresses the caller can pass as `from`, in the
+`{ email }` shape `email.send` takes. Pass one of them as `from` and retry.
+
+### Responses no longer carry member emails
+
+**Breaking.** Scheduled messages, campaigns, and campaign runs no longer return `actorEmail` or
+`memberRole`, and an API key's `owner` no longer returns `email`. Read `createdBy`, the creating
+member's user id, for attribution; for a schedule or campaign created with an API key it is the
+key owner's user id. An API key's `owner` keeps `id` and `name`.
+
+`samva api-keys get` shows the owner's name without an email address.
+
+### Enable receiving with the domain id alone
+
+**Breaking.** `email.enableReceiving` no longer takes `domain`: the `id` names the domain. Remove
+`domain` from the call, or the request is rejected as an unexpected field:
+
+```ts
+await samva.email.enableReceiving({ id: domain.id, catchAll: true });
+```
+
+`samva email receiving enable <domain-id>` no longer takes `--domain`.
+
+### API keys work as a Bearer token
+
+REST accepts a `samva_sk_` API key in `Authorization: Bearer <key>` as well as `X-API-Key`. The
+SDK keeps sending `X-API-Key`; nothing changes for SDK callers.
+
+### See a domain that is being removed
+
+Domain reads (`email.listDomains`, `email.getDomainById`, and `email.addDomain`'s response) carry
+`deleting`. It is `true` once `email.removeDomain` is accepted: removal finishes in the background,
+the domain sends nothing meanwhile, and once teardown completes the domain reads as not found.
+
+When Samva answers with a server error that carries no error details, such as a gateway `503`, the
+CLI says the service is temporarily unavailable and that the request may already have been
+applied, instead of printing a decode failure.
+
+### Requests time out after 30 seconds
+
+**Breaking.** Every request attempt now fails after 30 000 ms by default. On the Promise client the
+error is `SamvaTimeoutError`, a `SamvaTransportError` carrying `timeoutMs`; on the Effect client it
+is the tagged `SamvaTimeoutError` from `samva/effect/errors`. A retry-safe call, such as
+`email.send` with its idempotency key, retries after a timeout with the same key.
+
+Set `timeoutMs` on the client (`createClient({ apiKey, timeoutMs })`, or `Client.layer` and
+`Client.layerFetch` options) or per call (`{ timeoutMs }`); `null` turns the bound off. Uploading
+an oversized inline attachment to storage has its own bound, `uploadTimeoutMs`, 300 000 ms by
+default.
+
 ## samva@0.50.0
 
 ### Mail imports check plan storage before uploading

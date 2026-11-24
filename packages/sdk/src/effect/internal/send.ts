@@ -13,7 +13,8 @@ import { MessagesGroup } from "../generated/messages";
 import type { SendMessagePayload } from "../generated/shared";
 import { generateIdempotencyKey, withRetry } from "../retry";
 import { type Interface, Service } from "./client";
-import { callEndpoint, type OperationResult, stripUndefined } from "./operation";
+import { attemptTimeout, callEndpoint, type OperationResult, stripUndefined } from "./operation";
+import { withTimeout } from "./timeout";
 
 type MessagePayload = typeof SendMessagePayload.Encoded;
 export type MessageRecipient = EmailPayload["to"][number];
@@ -28,6 +29,10 @@ type ErgonomicEmailContent = Omit<EmailPayload["email"], "replyTo"> & {
 
 export interface SendOptions {
   readonly idempotencyKey?: string;
+  /** Per-attempt bound on the send and its media requests; `null` disables it. */
+  readonly timeoutMs?: number | null | undefined;
+  /** Per-put bound on oversized attachment bytes; `null` disables it. */
+  readonly uploadTimeoutMs?: number | null | undefined;
 }
 
 export type MessageSendInput = Omit<EmailPayload, "to" | "cc" | "bcc" | "email"> & {
@@ -66,15 +71,18 @@ type UploadFailure = MediaUploadError | Effect.Error<SendResult>;
 const uploadOversizedAttachments = (
   client: Interface,
   payload: Record<string, unknown>,
+  timeoutMs: number | null,
+  uploadTimeoutMs: SendOptions["uploadTimeoutMs"],
 ): Effect.Effect<Record<string, unknown>, UploadFailure, Service> =>
   Effect.gen(function* () {
     const plan = planInlineUploads(payload);
     if (plan.length === 0) return payload;
     const uploaded = new Map<number, { mediaId: string; upload: InlineUpload }>();
     for (const upload of plan) {
-      const created = (yield* callEndpoint(MediaGroup, "mediaCreate", {
-        payload: mediaCreateBody(upload),
-      })) as CreatedUpload;
+      const created = (yield* withTimeout(
+        callEndpoint(MediaGroup, "mediaCreate", { payload: mediaCreateBody(upload) }),
+        timeoutMs,
+      )) as CreatedUpload;
       yield* client.putUpload({
         filename: upload.filename,
         mediaId: created.id,
@@ -82,8 +90,12 @@ const uploadOversizedAttachments = (
         method: created.upload.method,
         headers: created.upload.headers,
         bytes: upload.bytes,
+        timeoutMs: uploadTimeoutMs,
       });
-      yield* callEndpoint(MediaGroup, "mediaComplete", { params: { id: created.id } });
+      yield* withTimeout(
+        callEndpoint(MediaGroup, "mediaComplete", { params: { id: created.id } }),
+        timeoutMs,
+      );
       uploaded.set(upload.index, { mediaId: created.id, upload });
     }
     return withUploadedAttachments(payload, uploaded);
@@ -95,17 +107,26 @@ const sendPayload = (
 ): Effect.Effect<Effect.Success<SendResult>, UploadFailure, Service> =>
   Effect.gen(function* () {
     const client = yield* Service;
+    const timeoutMs = attemptTimeout(options, client);
     const idempotencyKey =
       options?.idempotencyKey ??
       client.idempotency?.("messagesSend") ??
       (yield* generateIdempotencyKey);
     // Uploads run once, outside the retry, so a retried send reuses the same media ids.
-    const prepared = yield* uploadOversizedAttachments(client, payload);
+    const prepared = yield* uploadOversizedAttachments(
+      client,
+      payload,
+      timeoutMs,
+      options?.uploadTimeoutMs,
+    );
     return yield* withRetry(
-      callEndpoint(MessagesGroup, "messagesSend", {
-        payload: stripUndefined(prepared as MessagePayload),
-        headers: { "idempotency-key": idempotencyKey },
-      }),
+      withTimeout(
+        callEndpoint(MessagesGroup, "messagesSend", {
+          payload: stripUndefined(prepared as MessagePayload),
+          headers: { "idempotency-key": idempotencyKey },
+        }),
+        timeoutMs,
+      ),
     );
   });
 

@@ -1,11 +1,12 @@
 import { type Brand, Effect, Predicate, Redacted, Stream } from "effect";
 import type { HttpApiGroup } from "effect/http-api";
 
-import { isRetrySafe } from "../../request-policy";
+import { DEFAULT_TIMEOUT_MS, isRetrySafe, resolveTimeout } from "../../request-policy";
 import type { SDK_OPERATION_CALLS } from "../../service-map";
 import { type CursorPageEnvelope, streamCursorItems, streamCursorPages } from "../pagination";
 import { generateIdempotencyKey, withRetry } from "../retry";
 import { type FlatRaw, type Operation, type OperationResult, Service } from "./client";
+import { withTimeout } from "./timeout";
 
 export type { OperationResult };
 
@@ -56,7 +57,19 @@ type Input<Name extends SdkOperation> = Wire<
  */
 export interface OperationOptions {
   readonly idempotencyKey?: string | undefined;
+  /**
+   * Milliseconds each attempt may take before it fails with `SamvaTimeoutError`; `null` disables
+   * the bound, `undefined` inherits the client's `timeoutMs` (default 30 000).
+   */
+  readonly timeoutMs?: number | null | undefined;
 }
+
+/** The call's bound, else the client's, else the default; throws a `RangeError` when invalid. */
+export const attemptTimeout = (
+  options: { readonly timeoutMs?: number | null | undefined } | undefined,
+  client: { readonly timeoutMs?: number | null | undefined },
+): number | null =>
+  resolveTimeout("timeoutMs", options?.timeoutMs, client.timeoutMs, DEFAULT_TIMEOUT_MS);
 
 /**
  * What one operation wrapper reads at runtime. `codegen/generate-registry.ts` emits a table of these
@@ -136,17 +149,22 @@ const adapt = (
   rawCall: (request?: unknown) => Effect.Effect<unknown, unknown, Service>,
   input: unknown,
   idempotencyKey: string | undefined,
+  timeoutMs: number | null,
 ): Effect.Effect<unknown, unknown, Service> => {
   const callDescriptor = descriptor.call;
   const call = (request: Record<string, unknown> = {}) => {
-    const operation = rawCall({
-      ...request,
-      // HttpApi validates a declared headers object even when every header is optional.
-      headers: {
-        ...(request["headers"] as Readonly<Record<string, string>> | undefined),
-        ...(idempotencyKey === undefined ? {} : { "idempotency-key": idempotencyKey }),
-      },
-    });
+    // Each retry re-runs the bounded attempt, so every attempt gets the whole bound.
+    const operation = withTimeout(
+      rawCall({
+        ...request,
+        // HttpApi validates a declared headers object even when every header is optional.
+        headers: {
+          ...(request["headers"] as Readonly<Record<string, string>> | undefined),
+          ...(idempotencyKey === undefined ? {} : { "idempotency-key": idempotencyKey }),
+        },
+      }),
+      timeoutMs,
+    );
     return isRetrySafe(descriptor, input) ? withRetry(operation) : operation;
   };
 
@@ -218,13 +236,14 @@ const make = <Name extends SdkOperation>(
     options?: OperationOptions,
   ) {
     const client = yield* Service;
+    const timeoutMs = attemptTimeout(options, client);
     const rawCall = yield* client.endpoint(group, operationName);
     const idempotencyKey = descriptor.idempotent
       ? (options?.idempotencyKey ??
         client.idempotency?.(operationName) ??
         (yield* generateIdempotencyKey))
       : undefined;
-    return yield* adapt(descriptor, operationName, rawCall, input, idempotencyKey);
+    return yield* adapt(descriptor, operationName, rawCall, input, idempotencyKey, timeoutMs);
   });
   const operation = call as OperationFunction<Name>;
 

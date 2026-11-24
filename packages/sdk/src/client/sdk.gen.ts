@@ -1082,6 +1082,8 @@ export type Options<
   client?: Client | undefined;
   idempotencyKey?: string | undefined;
   maxRetries?: number | undefined;
+  /** Milliseconds each attempt may take; `null` disables the bound, `undefined` inherits the client's. */
+  timeoutMs?: number | null | undefined;
   /**
    * You can pass arbitrary values through the `meta` object. This can be
    * used to access values that aren't defined as part of the SDK function.
@@ -1119,7 +1121,7 @@ export class ApprovalRequests {
       options?.client ?? client,
       "approvalRequestsCreate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ApprovalRequestsCreateResponses,
           ApprovalRequestsCreateErrors,
@@ -1131,6 +1133,7 @@ export class ApprovalRequests {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1147,18 +1150,23 @@ export class ApprovalRequests {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApprovalRequestsGetResponses, ApprovalRequestsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "approvalRequestsGet", options, (headers) =>
-      (options?.client ?? client).get<
-        ApprovalRequestsGetResponses,
-        ApprovalRequestsGetErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/approval-requests/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "approvalRequestsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          ApprovalRequestsGetResponses,
+          ApprovalRequestsGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/approval-requests/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1178,7 +1186,7 @@ export class ApprovalRequests {
       options?.client ?? client,
       "approvalRequestsApprove",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ApprovalRequestsApproveResponses,
           ApprovalRequestsApproveErrors,
@@ -1189,6 +1197,7 @@ export class ApprovalRequests {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1220,7 +1229,7 @@ export class ApprovalRequests {
       options?.client ?? client,
       "approvalRequestsReject",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ApprovalRequestsRejectResponses,
           ApprovalRequestsRejectErrors,
@@ -1232,6 +1241,7 @@ export class ApprovalRequests {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1294,14 +1304,19 @@ export class Messages {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "messagesList", options, (headers) =>
-      (options?.client ?? client).get<MessagesListResponses, MessagesListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<MessagesListResponses, MessagesListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1315,14 +1330,19 @@ export class Messages {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesSendResponses, MessagesSendErrors, ThrowOnError> {
     const params = { body: parameters };
-    return requestWithPolicy(options?.client ?? client, "messagesSend", options, (headers) =>
-      (options?.client ?? client).post<MessagesSendResponses, MessagesSendErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages",
-        ...options,
-        ...params,
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesSend",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<MessagesSendResponses, MessagesSendErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages",
+          ...options,
+          ...params,
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1338,18 +1358,23 @@ export class Messages {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesRemoveResponses, MessagesRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "messagesRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        MessagesRemoveResponses,
-        MessagesRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          MessagesRemoveResponses,
+          MessagesRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1365,13 +1390,14 @@ export class Messages {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesGetResponses, MessagesGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "messagesGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "messagesGet", options, (headers, signal) =>
       (options?.client ?? client).get<MessagesGetResponses, MessagesGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/messages/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -1392,7 +1418,7 @@ export class Messages {
       options?.client ?? client,
       "messagesListDeliveries",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MessagesListDeliveriesResponses,
           MessagesListDeliveriesErrors,
@@ -1403,6 +1429,7 @@ export class Messages {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1419,18 +1446,23 @@ export class Messages {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesGetContentResponses, MessagesGetContentErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "messagesGetContent", options, (headers) =>
-      (options?.client ?? client).get<
-        MessagesGetContentResponses,
-        MessagesGetContentErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages/{id}/content",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesGetContent",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MessagesGetContentResponses,
+          MessagesGetContentErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages/{id}/content",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1459,18 +1491,23 @@ export class Messages {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "messagesGetEmail", options, (headers) =>
-      (options?.client ?? client).get<
-        MessagesGetEmailResponses,
-        MessagesGetEmailErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages/{id}/email",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesGetEmail",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MessagesGetEmailResponses,
+          MessagesGetEmailErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages/{id}/email",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1513,7 +1550,7 @@ export class Messages {
       options?.client ?? client,
       "messagesValidateEmail",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MessagesValidateEmailResponses,
           MessagesValidateEmailErrors,
@@ -1525,6 +1562,7 @@ export class Messages {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1541,18 +1579,23 @@ export class Messages {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MessagesGetStatusResponses, MessagesGetStatusErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "messagesGetStatus", options, (headers) =>
-      (options?.client ?? client).get<
-        MessagesGetStatusResponses,
-        MessagesGetStatusErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages/{id}/status",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesGetStatus",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MessagesGetStatusResponses,
+          MessagesGetStatusErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages/{id}/status",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1581,18 +1624,23 @@ export class Messages {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "messagesGetEvents", options, (headers) =>
-      (options?.client ?? client).get<
-        MessagesGetEventsResponses,
-        MessagesGetEventsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/messages/{id}/events",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "messagesGetEvents",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MessagesGetEventsResponses,
+          MessagesGetEventsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/messages/{id}/events",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -1629,14 +1677,23 @@ export class Operations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "operationsList", options, (headers) =>
-      (options?.client ?? client).get<OperationsListResponses, OperationsListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/operations",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "operationsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          OperationsListResponses,
+          OperationsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/operations",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1652,14 +1709,19 @@ export class Operations {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<OperationsGetResponses, OperationsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "operationsGet", options, (headers) =>
-      (options?.client ?? client).get<OperationsGetResponses, OperationsGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/operations/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "operationsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<OperationsGetResponses, OperationsGetErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/operations/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1675,18 +1737,23 @@ export class Operations {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<OperationsRetryResponses, OperationsRetryErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "operationsRetry", options, (headers) =>
-      (options?.client ?? client).post<
-        OperationsRetryResponses,
-        OperationsRetryErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/operations/{id}/retry",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "operationsRetry",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          OperationsRetryResponses,
+          OperationsRetryErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/operations/{id}/retry",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -1734,7 +1801,7 @@ export class ScheduledMessages {
       options?.client ?? client,
       "scheduledMessagesList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ScheduledMessagesListResponses,
           ScheduledMessagesListErrors,
@@ -1745,6 +1812,7 @@ export class ScheduledMessages {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1782,7 +1850,7 @@ export class ScheduledMessages {
       options?.client ?? client,
       "scheduledMessagesCreate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ScheduledMessagesCreateResponses,
           ScheduledMessagesCreateErrors,
@@ -1794,6 +1862,7 @@ export class ScheduledMessages {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1814,7 +1883,7 @@ export class ScheduledMessages {
       options?.client ?? client,
       "scheduledMessagesGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ScheduledMessagesGetResponses,
           ScheduledMessagesGetErrors,
@@ -1825,6 +1894,7 @@ export class ScheduledMessages {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1845,7 +1915,7 @@ export class ScheduledMessages {
       options?.client ?? client,
       "scheduledMessagesCancel",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ScheduledMessagesCancelResponses,
           ScheduledMessagesCancelErrors,
@@ -1856,6 +1926,7 @@ export class ScheduledMessages {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1894,7 +1965,7 @@ export class ScheduledMessages {
       options?.client ?? client,
       "scheduledMessagesResume",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ScheduledMessagesResumeResponses,
           ScheduledMessagesResumeErrors,
@@ -1905,6 +1976,7 @@ export class ScheduledMessages {
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -1940,19 +2012,24 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsPreview", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsPreviewResponses,
-        CampaignsPreviewErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/preview",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsPreview",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsPreviewResponses,
+          CampaignsPreviewErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/preview",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -1981,19 +2058,24 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsSendTest", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsSendTestResponses,
-        CampaignsSendTestErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/test-send",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsSendTest",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsSendTestResponses,
+          CampaignsSendTestErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/test-send",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2022,14 +2104,19 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsList", options, (headers) =>
-      (options?.client ?? client).get<CampaignsListResponses, CampaignsListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<CampaignsListResponses, CampaignsListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2062,19 +2149,24 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsCreateResponses,
-        CampaignsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsCreateResponses,
+          CampaignsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2090,14 +2182,19 @@ export class Campaigns {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CampaignsGetResponses, CampaignsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "campaignsGet", options, (headers) =>
-      (options?.client ?? client).get<CampaignsGetResponses, CampaignsGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<CampaignsGetResponses, CampaignsGetErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2130,19 +2227,24 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        CampaignsUpdateResponses,
-        CampaignsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          CampaignsUpdateResponses,
+          CampaignsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2158,18 +2260,23 @@ export class Campaigns {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CampaignsArchiveResponses, CampaignsArchiveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "campaignsArchive", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsArchiveResponses,
-        CampaignsArchiveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}/archive",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsArchive",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsArchiveResponses,
+          CampaignsArchiveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}/archive",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2208,18 +2315,23 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsListRuns", options, (headers) =>
-      (options?.client ?? client).get<
-        CampaignsListRunsResponses,
-        CampaignsListRunsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}/runs",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsListRuns",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          CampaignsListRunsResponses,
+          CampaignsListRunsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}/runs",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2250,7 +2362,7 @@ export class Campaigns {
       options?.client ?? client,
       "campaignsScheduleRun",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           CampaignsScheduleRunResponses,
           CampaignsScheduleRunErrors,
@@ -2262,6 +2374,7 @@ export class Campaigns {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2289,18 +2402,23 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsGetRun", options, (headers) =>
-      (options?.client ?? client).get<
-        CampaignsGetRunResponses,
-        CampaignsGetRunErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}/runs/{runId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsGetRun",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          CampaignsGetRunResponses,
+          CampaignsGetRunErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}/runs/{runId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2331,7 +2449,7 @@ export class Campaigns {
       options?.client ?? client,
       "campaignsGetRunReport",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           CampaignsGetRunReportResponses,
           CampaignsGetRunReportErrors,
@@ -2342,6 +2460,7 @@ export class Campaigns {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2369,18 +2488,23 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsPauseRun", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsPauseRunResponses,
-        CampaignsPauseRunErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}/runs/{runId}/pause",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsPauseRun",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsPauseRunResponses,
+          CampaignsPauseRunErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}/runs/{runId}/pause",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2407,18 +2531,23 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsResumeRun", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsResumeRunResponses,
-        CampaignsResumeRunErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}/runs/{runId}/resume",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsResumeRun",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsResumeRunResponses,
+          CampaignsResumeRunErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}/runs/{runId}/resume",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2445,18 +2574,23 @@ export class Campaigns {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "campaignsCancelRun", options, (headers) =>
-      (options?.client ?? client).post<
-        CampaignsCancelRunResponses,
-        CampaignsCancelRunErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/campaigns/{id}/runs/{runId}/cancel",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "campaignsCancelRun",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CampaignsCancelRunResponses,
+          CampaignsCancelRunErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/campaigns/{id}/runs/{runId}/cancel",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2493,7 +2627,7 @@ export class Campaigns {
       options?.client ?? client,
       "campaignsListRecipients",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           CampaignsListRecipientsResponses,
           CampaignsListRecipientsErrors,
@@ -2504,6 +2638,7 @@ export class Campaigns {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2530,7 +2665,7 @@ export class Email {
       options?.client ?? client,
       "emailGetOnboardingReview",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetOnboardingReviewResponses,
           EmailGetOnboardingReviewErrors,
@@ -2540,6 +2675,7 @@ export class Email {
           url: "/v1/email/onboarding-review",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -2567,7 +2703,7 @@ export class Email {
       options?.client ?? client,
       "emailReapplyOnboardingReview",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailReapplyOnboardingReviewResponses,
           EmailReapplyOnboardingReviewErrors,
@@ -2579,6 +2715,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2616,7 +2753,7 @@ export class Email {
       options?.client ?? client,
       "emailRespondToOnboardingInformationRequest",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailRespondToOnboardingInformationRequestResponses,
           EmailRespondToOnboardingInformationRequestErrors,
@@ -2628,6 +2765,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2648,7 +2786,7 @@ export class Email {
       options?.client ?? client,
       "emailGetTrackingDefaults",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetTrackingDefaultsResponses,
           EmailGetTrackingDefaultsErrors,
@@ -2658,6 +2796,7 @@ export class Email {
           url: "/v1/email/tracking/defaults",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -2693,7 +2832,7 @@ export class Email {
       options?.client ?? client,
       "emailUpdateTrackingDefaults",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           EmailUpdateTrackingDefaultsResponses,
           EmailUpdateTrackingDefaultsErrors,
@@ -2705,6 +2844,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2729,7 +2869,7 @@ export class Email {
       options?.client ?? client,
       "emailGetRecipientTrackingPreference",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetRecipientTrackingPreferenceResponses,
           EmailGetRecipientTrackingPreferenceErrors,
@@ -2740,6 +2880,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2775,7 +2916,7 @@ export class Email {
       options?.client ?? client,
       "emailUpdateRecipientTrackingPreference",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           EmailUpdateRecipientTrackingPreferenceResponses,
           EmailUpdateRecipientTrackingPreferenceErrors,
@@ -2787,6 +2928,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2820,18 +2962,23 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailListDomains", options, (headers) =>
-      (options?.client ?? client).get<
-        EmailListDomainsResponses,
-        EmailListDomainsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/domains",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailListDomains",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          EmailListDomainsResponses,
+          EmailListDomainsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/domains",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -2868,17 +3015,24 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailAddDomain", options, (headers) =>
-      (options?.client ?? client).post<EmailAddDomainResponses, EmailAddDomainErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailAddDomain",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          EmailAddDomainResponses,
+          EmailAddDomainErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/email/domains",
           ...options,
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -2902,7 +3056,7 @@ export class Email {
       options?.client ?? client,
       "emailGetDomainVerification",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetDomainVerificationResponses,
           EmailGetDomainVerificationErrors,
@@ -2913,6 +3067,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2933,7 +3088,7 @@ export class Email {
       options?.client ?? client,
       "emailRotateDomainDkim",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailRotateDomainDkimResponses,
           EmailRotateDomainDkimErrors,
@@ -2944,6 +3099,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2968,7 +3124,7 @@ export class Email {
       options?.client ?? client,
       "emailAdvanceDomainVerification",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailAdvanceDomainVerificationResponses,
           EmailAdvanceDomainVerificationErrors,
@@ -2979,6 +3135,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -2986,7 +3143,7 @@ export class Email {
   /**
    * Remove a sending domain
    *
-   * Permanently deletes a sending domain from the organization.
+   * Permanently deletes a sending domain from the organization. Removal is asynchronous: a `200` means its teardown was accepted. The domain stays listed with `deleting: true` and sends nothing until teardown finishes, then reads as `404`. A repeat call while teardown runs answers `200` again; once it finishes, a `404` means the domain is gone.
    */
   public static removeDomain<ThrowOnError extends boolean = false>(
     parameters: {
@@ -2995,18 +3152,23 @@ export class Email {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailRemoveDomainResponses, EmailRemoveDomainErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "emailRemoveDomain", options, (headers) =>
-      (options?.client ?? client).delete<
-        EmailRemoveDomainResponses,
-        EmailRemoveDomainErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/domains/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailRemoveDomain",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          EmailRemoveDomainResponses,
+          EmailRemoveDomainErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/domains/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3022,18 +3184,23 @@ export class Email {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailGetDomainByIdResponses, EmailGetDomainByIdErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "emailGetDomainById", options, (headers) =>
-      (options?.client ?? client).get<
-        EmailGetDomainByIdResponses,
-        EmailGetDomainByIdErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/domains/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailGetDomainById",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          EmailGetDomainByIdResponses,
+          EmailGetDomainByIdErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/domains/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3064,7 +3231,7 @@ export class Email {
       options?.client ?? client,
       "emailDetectRegistrar",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailDetectRegistrarResponses,
           EmailDetectRegistrarErrors,
@@ -3076,6 +3243,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3107,7 +3275,7 @@ export class Email {
       options?.client ?? client,
       "emailGetDomainConnect",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetDomainConnectResponses,
           EmailGetDomainConnectErrors,
@@ -3118,6 +3286,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3153,7 +3322,7 @@ export class Email {
       options?.client ?? client,
       "emailBuildDomainConnectApplyUrl",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailBuildDomainConnectApplyUrlResponses,
           EmailBuildDomainConnectApplyUrlErrors,
@@ -3165,6 +3334,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3204,7 +3374,7 @@ export class Email {
       options?.client ?? client,
       "emailCompleteDomainConnect",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailCompleteDomainConnectResponses,
           EmailCompleteDomainConnectErrors,
@@ -3216,6 +3386,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3228,7 +3399,6 @@ export class Email {
   public static enableReceiving<ThrowOnError extends boolean = false>(
     parameters: {
       id: EmailDomainId;
-      domain: string;
       catchAll?: boolean | null | undefined;
       endpointId?: WebhookEndpointId | null | undefined;
       addresses?: Array<string> | null | undefined;
@@ -3241,7 +3411,6 @@ export class Email {
         {
           args: [
             { in: "path", key: "id" },
-            { in: "body", key: "domain" },
             { in: "body", key: "catchAll" },
             { in: "body", key: "endpointId" },
             { in: "body", key: "addresses" },
@@ -3253,7 +3422,7 @@ export class Email {
       options?.client ?? client,
       "emailEnableReceiving",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailEnableReceivingResponses,
           EmailEnableReceivingErrors,
@@ -3265,6 +3434,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3285,7 +3455,7 @@ export class Email {
       options?.client ?? client,
       "emailGetReceivingStatus",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetReceivingStatusResponses,
           EmailGetReceivingStatusErrors,
@@ -3296,6 +3466,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3316,7 +3487,7 @@ export class Email {
       options?.client ?? client,
       "emailSetDefaultDomain",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailSetDefaultDomainResponses,
           EmailSetDefaultDomainErrors,
@@ -3327,6 +3498,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3370,7 +3542,7 @@ export class Email {
       options?.client ?? client,
       "emailUpdateDomainConfig",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           EmailUpdateDomainConfigResponses,
           EmailUpdateDomainConfigErrors,
@@ -3382,6 +3554,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3406,7 +3579,7 @@ export class Email {
       options?.client ?? client,
       "emailDisableCustomTracking",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           EmailDisableCustomTrackingResponses,
           EmailDisableCustomTrackingErrors,
@@ -3417,6 +3590,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3437,7 +3611,7 @@ export class Email {
       options?.client ?? client,
       "emailGetCustomTracking",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetCustomTrackingResponses,
           EmailGetCustomTrackingErrors,
@@ -3448,6 +3622,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3485,7 +3660,7 @@ export class Email {
       options?.client ?? client,
       "emailEnableCustomTracking",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailEnableCustomTrackingResponses,
           EmailEnableCustomTrackingErrors,
@@ -3497,6 +3672,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3521,7 +3697,7 @@ export class Email {
       options?.client ?? client,
       "emailRecheckCustomTracking",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailRecheckCustomTrackingResponses,
           EmailRecheckCustomTrackingErrors,
@@ -3532,6 +3708,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3556,7 +3733,7 @@ export class Email {
       options?.client ?? client,
       "emailGetCustomTrackingDomainConnect",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetCustomTrackingDomainConnectResponses,
           EmailGetCustomTrackingDomainConnectErrors,
@@ -3567,6 +3744,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3591,7 +3769,7 @@ export class Email {
       options?.client ?? client,
       "emailBuildCustomTrackingDomainConnectApplyUrl",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailBuildCustomTrackingDomainConnectApplyUrlResponses,
           EmailBuildCustomTrackingDomainConnectApplyUrlErrors,
@@ -3602,6 +3780,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3641,7 +3820,7 @@ export class Email {
       options?.client ?? client,
       "emailCompleteCustomTrackingDomainConnect",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailCompleteCustomTrackingDomainConnectResponses,
           EmailCompleteCustomTrackingDomainConnectErrors,
@@ -3653,6 +3832,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3688,18 +3868,23 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailListSenders", options, (headers) =>
-      (options?.client ?? client).get<
-        EmailListSendersResponses,
-        EmailListSendersErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/senders",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailListSenders",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          EmailListSendersResponses,
+          EmailListSendersErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/senders",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3732,17 +3917,24 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailAddSender", options, (headers) =>
-      (options?.client ?? client).post<EmailAddSenderResponses, EmailAddSenderErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailAddSender",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          EmailAddSenderResponses,
+          EmailAddSenderErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/email/senders",
           ...options,
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -3766,7 +3958,7 @@ export class Email {
       options?.client ?? client,
       "emailCheckSenderVerification",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailCheckSenderVerificationResponses,
           EmailCheckSenderVerificationErrors,
@@ -3777,6 +3969,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3793,18 +3986,23 @@ export class Email {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailRemoveSenderResponses, EmailRemoveSenderErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "emailRemoveSender", options, (headers) =>
-      (options?.client ?? client).delete<
-        EmailRemoveSenderResponses,
-        EmailRemoveSenderErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/senders/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailRemoveSender",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          EmailRemoveSenderResponses,
+          EmailRemoveSenderErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/senders/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3820,14 +4018,23 @@ export class Email {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailGetSenderResponses, EmailGetSenderErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "emailGetSender", options, (headers) =>
-      (options?.client ?? client).get<EmailGetSenderResponses, EmailGetSenderErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/senders/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailGetSender",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          EmailGetSenderResponses,
+          EmailGetSenderErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/senders/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3858,7 +4065,7 @@ export class Email {
       options?.client ?? client,
       "emailSetDefaultSender",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailSetDefaultSenderResponses,
           EmailSetDefaultSenderErrors,
@@ -3870,6 +4077,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3897,14 +4105,19 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailGetStats", options, (headers) =>
-      (options?.client ?? client).get<EmailGetStatsResponses, EmailGetStatsErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/stats",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailGetStats",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<EmailGetStatsResponses, EmailGetStatsErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/stats",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3931,19 +4144,24 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailEnableCatchAll", options, (headers) =>
-      (options?.client ?? client).post<
-        EmailEnableCatchAllResponses,
-        EmailEnableCatchAllErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/domains/{id}/enable-catch-all",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailEnableCatchAll",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          EmailEnableCatchAllResponses,
+          EmailEnableCatchAllErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/domains/{id}/enable-catch-all",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -3963,7 +4181,7 @@ export class Email {
       options?.client ?? client,
       "emailDisableCatchAll",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailDisableCatchAllResponses,
           EmailDisableCatchAllErrors,
@@ -3974,6 +4192,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -3994,7 +4213,7 @@ export class Email {
       options?.client ?? client,
       "emailGetCatchAllConfig",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetCatchAllConfigResponses,
           EmailGetCatchAllConfigErrors,
@@ -4005,6 +4224,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4042,7 +4262,7 @@ export class Email {
       options?.client ?? client,
       "emailUpdateCatchAllConfig",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           EmailUpdateCatchAllConfigResponses,
           EmailUpdateCatchAllConfigErrors,
@@ -4054,6 +4274,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4087,7 +4308,7 @@ export class Email {
       options?.client ?? client,
       "emailGetCatchAllStats",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetCatchAllStatsResponses,
           EmailGetCatchAllStatsErrors,
@@ -4098,6 +4319,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4137,7 +4359,7 @@ export class Email {
       options?.client ?? client,
       "emailListSuppressions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailListSuppressionsResponses,
           EmailListSuppressionsErrors,
@@ -4148,6 +4370,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4171,7 +4394,7 @@ export class Email {
       options?.client ?? client,
       "emailCountSuppressions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailCountSuppressionsResponses,
           EmailCountSuppressionsErrors,
@@ -4182,6 +4405,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4202,7 +4426,7 @@ export class Email {
       options?.client ?? client,
       "emailRemoveSuppression",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           EmailRemoveSuppressionResponses,
           EmailRemoveSuppressionErrors,
@@ -4213,6 +4437,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4244,18 +4469,23 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailListBlocks", options, (headers) =>
-      (options?.client ?? client).get<
-        EmailListBlocksResponses,
-        EmailListBlocksErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/blocks",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailListBlocks",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          EmailListBlocksResponses,
+          EmailListBlocksErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/blocks",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -4288,15 +4518,22 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailAddBlock", options, (headers) =>
-      (options?.client ?? client).post<EmailAddBlockResponses, EmailAddBlockErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/blocks",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailAddBlock",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<EmailAddBlockResponses, EmailAddBlockErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/email/blocks",
+            ...options,
+            ...params,
+            body: params.body ?? {},
+            headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -4312,18 +4549,23 @@ export class Email {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EmailRemoveBlockResponses, EmailRemoveBlockErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "emailRemoveBlock", options, (headers) =>
-      (options?.client ?? client).delete<
-        EmailRemoveBlockResponses,
-        EmailRemoveBlockErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/blocks/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailRemoveBlock",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          EmailRemoveBlockResponses,
+          EmailRemoveBlockErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/blocks/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -4356,19 +4598,24 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailUpdateBlock", options, (headers) =>
-      (options?.client ?? client).patch<
-        EmailUpdateBlockResponses,
-        EmailUpdateBlockErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/blocks/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailUpdateBlock",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          EmailUpdateBlockResponses,
+          EmailUpdateBlockErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/blocks/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -4403,18 +4650,23 @@ export class Email {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "emailGetBlockLogs", options, (headers) =>
-      (options?.client ?? client).get<
-        EmailGetBlockLogsResponses,
-        EmailGetBlockLogsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/blocks/logs",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailGetBlockLogs",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          EmailGetBlockLogsResponses,
+          EmailGetBlockLogsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/blocks/logs",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -4433,19 +4685,24 @@ export class Email {
       [parameters],
       [{ args: [{ in: "body", key: "emailAddress" }] }],
     );
-    return requestWithPolicy(options?.client ?? client, "emailCheckBlocked", options, (headers) =>
-      (options?.client ?? client).post<
-        EmailCheckBlockedResponses,
-        EmailCheckBlockedErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/email/blocks/check",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "emailCheckBlocked",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          EmailCheckBlockedResponses,
+          EmailCheckBlockedErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/email/blocks/check",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -4480,7 +4737,7 @@ export class Email {
       options?.client ?? client,
       "emailListForwardingRules",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailListForwardingRulesResponses,
           EmailListForwardingRulesErrors,
@@ -4491,6 +4748,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4549,7 +4807,7 @@ export class Email {
       options?.client ?? client,
       "emailCreateForwardingRule",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailCreateForwardingRuleResponses,
           EmailCreateForwardingRuleErrors,
@@ -4561,6 +4819,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4585,7 +4844,7 @@ export class Email {
       options?.client ?? client,
       "emailDeleteForwardingRule",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           EmailDeleteForwardingRuleResponses,
           EmailDeleteForwardingRuleErrors,
@@ -4596,6 +4855,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4656,7 +4916,7 @@ export class Email {
       options?.client ?? client,
       "emailUpdateForwardingRule",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           EmailUpdateForwardingRuleResponses,
           EmailUpdateForwardingRuleErrors,
@@ -4668,6 +4928,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4707,7 +4968,7 @@ export class Email {
       options?.client ?? client,
       "emailGetForwardingLog",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetForwardingLogResponses,
           EmailGetForwardingLogErrors,
@@ -4718,6 +4979,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4738,7 +5000,7 @@ export class Email {
       options?.client ?? client,
       "emailGetDomainWarming",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           EmailGetDomainWarmingResponses,
           EmailGetDomainWarmingErrors,
@@ -4749,6 +5011,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4790,7 +5053,7 @@ export class Email {
       options?.client ?? client,
       "emailCreateDomainWarmingPlan",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailCreateDomainWarmingPlanResponses,
           EmailCreateDomainWarmingPlanErrors,
@@ -4802,6 +5065,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4841,7 +5105,7 @@ export class Email {
       options?.client ?? client,
       "emailUpdateDomainWarmingPolicy",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           EmailUpdateDomainWarmingPolicyResponses,
           EmailUpdateDomainWarmingPolicyErrors,
@@ -4853,6 +5117,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4888,7 +5153,7 @@ export class Email {
       options?.client ?? client,
       "emailCancelDomainWarmingBatch",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           EmailCancelDomainWarmingBatchResponses,
           EmailCancelDomainWarmingBatchErrors,
@@ -4899,6 +5164,7 @@ export class Email {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4930,7 +5196,7 @@ export class Email {
       options?.client ?? client,
       "emailPauseDomainWarming",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailPauseDomainWarmingResponses,
           EmailPauseDomainWarmingErrors,
@@ -4942,6 +5208,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -4977,7 +5244,7 @@ export class Email {
       options?.client ?? client,
       "emailResumeDomainWarming",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailResumeDomainWarmingResponses,
           EmailResumeDomainWarmingErrors,
@@ -4989,6 +5256,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5024,7 +5292,7 @@ export class Email {
       options?.client ?? client,
       "emailCompleteDomainWarming",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           EmailCompleteDomainWarmingResponses,
           EmailCompleteDomainWarmingErrors,
@@ -5036,6 +5304,7 @@ export class Email {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5075,7 +5344,7 @@ export class Media {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mediaCreate", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "mediaCreate", options, (headers, signal) =>
       (options?.client ?? client).post<MediaCreateResponses, MediaCreateErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/media",
@@ -5083,6 +5352,7 @@ export class Media {
         ...params,
         body: params.body ?? {},
         headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -5099,14 +5369,21 @@ export class Media {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MediaCompleteResponses, MediaCompleteErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mediaComplete", options, (headers) =>
-      (options?.client ?? client).post<MediaCompleteResponses, MediaCompleteErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/media/{id}/complete",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mediaComplete",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<MediaCompleteResponses, MediaCompleteErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/media/{id}/complete",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -5122,13 +5399,14 @@ export class Media {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MediaRemoveResponses, MediaRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mediaRemove", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "mediaRemove", options, (headers, signal) =>
       (options?.client ?? client).delete<MediaRemoveResponses, MediaRemoveErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/media/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -5145,14 +5423,19 @@ export class Media {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MediaGetByIdResponses, MediaGetByIdErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mediaGetById", options, (headers) =>
-      (options?.client ?? client).get<MediaGetByIdResponses, MediaGetByIdErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/media/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mediaGetById",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<MediaGetByIdResponses, MediaGetByIdErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/media/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5168,18 +5451,23 @@ export class Media {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MediaDownloadUrlResponses, MediaDownloadUrlErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mediaDownloadUrl", options, (headers) =>
-      (options?.client ?? client).get<
-        MediaDownloadUrlResponses,
-        MediaDownloadUrlErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/media/{id}/url",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mediaDownloadUrl",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MediaDownloadUrlResponses,
+          MediaDownloadUrlErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/media/{id}/url",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -5201,18 +5489,23 @@ export class Attachments {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AttachmentsRemoveResponses, AttachmentsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "attachmentsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        AttachmentsRemoveResponses,
-        AttachmentsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/attachments/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "attachmentsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          AttachmentsRemoveResponses,
+          AttachmentsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/attachments/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5228,18 +5521,23 @@ export class Attachments {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AttachmentsGetByIdResponses, AttachmentsGetByIdErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "attachmentsGetById", options, (headers) =>
-      (options?.client ?? client).get<
-        AttachmentsGetByIdResponses,
-        AttachmentsGetByIdErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/attachments/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "attachmentsGetById",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          AttachmentsGetByIdResponses,
+          AttachmentsGetByIdErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/attachments/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5255,18 +5553,23 @@ export class Attachments {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AttachmentsListResponses, AttachmentsListErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "messageId" }] }]);
-    return requestWithPolicy(options?.client ?? client, "attachmentsList", options, (headers) =>
-      (options?.client ?? client).get<
-        AttachmentsListResponses,
-        AttachmentsListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/attachments",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "attachmentsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          AttachmentsListResponses,
+          AttachmentsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/attachments",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5297,7 +5600,7 @@ export class Attachments {
       options?.client ?? client,
       "attachmentsDownloadUrl",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           AttachmentsDownloadUrlResponses,
           AttachmentsDownloadUrlErrors,
@@ -5308,6 +5611,7 @@ export class Attachments {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5355,18 +5659,23 @@ export class Conversations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "conversationsList", options, (headers) =>
-      (options?.client ?? client).get<
-        ConversationsListResponses,
-        ConversationsListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/conversations",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "conversationsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          ConversationsListResponses,
+          ConversationsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/conversations",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5427,19 +5736,24 @@ export class Conversations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "conversationsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        ConversationsCreateResponses,
-        ConversationsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/conversations",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "conversationsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ConversationsCreateResponses,
+          ConversationsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/conversations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5459,7 +5773,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsGetById",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ConversationsGetByIdResponses,
           ConversationsGetByIdErrors,
@@ -5470,6 +5784,7 @@ export class Conversations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5525,19 +5840,24 @@ export class Conversations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "conversationsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        ConversationsUpdateResponses,
-        ConversationsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/conversations/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "conversationsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          ConversationsUpdateResponses,
+          ConversationsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/conversations/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -5578,7 +5898,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsListMessages",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ConversationsListMessagesResponses,
           ConversationsListMessagesErrors,
@@ -5589,6 +5909,7 @@ export class Conversations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5620,7 +5941,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsRemoveTags",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           ConversationsRemoveTagsResponses,
           ConversationsRemoveTagsErrors,
@@ -5632,6 +5953,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5663,7 +5985,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsAddTags",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ConversationsAddTagsResponses,
           ConversationsAddTagsErrors,
@@ -5675,6 +5997,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5710,7 +6033,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsRemoveCategories",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           ConversationsRemoveCategoriesResponses,
           ConversationsRemoveCategoriesErrors,
@@ -5722,6 +6045,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5757,7 +6081,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsAddCategories",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ConversationsAddCategoriesResponses,
           ConversationsAddCategoriesErrors,
@@ -5769,6 +6093,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5804,7 +6129,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsRemoveChannels",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           ConversationsRemoveChannelsResponses,
           ConversationsRemoveChannelsErrors,
@@ -5816,6 +6141,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5851,7 +6177,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsAddChannels",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ConversationsAddChannelsResponses,
           ConversationsAddChannelsErrors,
@@ -5863,6 +6189,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5898,7 +6225,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsRemoveContacts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           ConversationsRemoveContactsResponses,
           ConversationsRemoveContactsErrors,
@@ -5910,6 +6237,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -5945,7 +6273,7 @@ export class Conversations {
       options?.client ?? client,
       "conversationsAddContacts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ConversationsAddContactsResponses,
           ConversationsAddContactsErrors,
@@ -5957,6 +6285,7 @@ export class Conversations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6006,14 +6335,19 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsList", options, (headers) =>
-      (options?.client ?? client).get<ContactsListResponses, ContactsListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<ContactsListResponses, ContactsListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6060,17 +6394,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsCreate", options, (headers) =>
-      (options?.client ?? client).post<ContactsCreateResponses, ContactsCreateErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactsCreateResponses,
+          ContactsCreateErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/contacts",
           ...options,
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -6101,15 +6442,20 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsFind", options, (headers) =>
-      (options?.client ?? client).post<ContactsFindResponses, ContactsFindErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/find",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsFind",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<ContactsFindResponses, ContactsFindErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/find",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6152,7 +6498,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsFindOrCreate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactsFindOrCreateResponses,
           ContactsFindOrCreateErrors,
@@ -6164,6 +6510,7 @@ export class Contacts {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6180,18 +6527,23 @@ export class Contacts {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactsRemoveResponses, ContactsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "contactsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        ContactsRemoveResponses,
-        ContactsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          ContactsRemoveResponses,
+          ContactsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6207,13 +6559,14 @@ export class Contacts {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactsGetResponses, ContactsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "contactsGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "contactsGet", options, (headers, signal) =>
       (options?.client ?? client).get<ContactsGetResponses, ContactsGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/contacts/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -6257,19 +6610,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        ContactsUpdateResponses,
-        ContactsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          ContactsUpdateResponses,
+          ContactsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6298,15 +6656,22 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsMerge", options, (headers) =>
-      (options?.client ?? client).post<ContactsMergeResponses, ContactsMergeErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}/merge",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsMerge",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<ContactsMergeResponses, ContactsMergeErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/contacts/{id}/merge",
+            ...options,
+            ...params,
+            body: params.body ?? {},
+            headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -6343,7 +6708,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsMergeByConnection",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactsMergeByConnectionResponses,
           ContactsMergeByConnectionErrors,
@@ -6355,6 +6720,7 @@ export class Contacts {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6386,19 +6752,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsAddIdentity", options, (headers) =>
-      (options?.client ?? client).post<
-        ContactsAddIdentityResponses,
-        ContactsAddIdentityErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}/identities",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsAddIdentity",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactsAddIdentityResponses,
+          ContactsAddIdentityErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}/identities",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6429,7 +6800,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsRemoveIdentity",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           ContactsRemoveIdentityResponses,
           ContactsRemoveIdentityErrors,
@@ -6440,6 +6811,7 @@ export class Contacts {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6477,19 +6849,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsSetConsent", options, (headers) =>
-      (options?.client ?? client).put<
-        ContactsSetConsentResponses,
-        ContactsSetConsentErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}/identities/{identityId}/consent/{channel}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsSetConsent",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).put<
+          ContactsSetConsentResponses,
+          ContactsSetConsentErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}/identities/{identityId}/consent/{channel}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6516,19 +6893,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsRemoveTags", options, (headers) =>
-      (options?.client ?? client).delete<
-        ContactsRemoveTagsResponses,
-        ContactsRemoveTagsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}/tags",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsRemoveTags",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          ContactsRemoveTagsResponses,
+          ContactsRemoveTagsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}/tags",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6555,19 +6937,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsAddTags", options, (headers) =>
-      (options?.client ?? client).post<
-        ContactsAddTagsResponses,
-        ContactsAddTagsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/{id}/tags",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsAddTags",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactsAddTagsResponses,
+          ContactsAddTagsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/{id}/tags",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6587,7 +6974,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsGetEngagement",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactsGetEngagementResponses,
           ContactsGetEngagementErrors,
@@ -6598,6 +6985,7 @@ export class Contacts {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6658,19 +7046,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsPlanImport", options, (headers) =>
-      (options?.client ?? client).post<
-        ContactsPlanImportResponses,
-        ContactsPlanImportErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/imports/plan",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsPlanImport",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactsPlanImportResponses,
+          ContactsPlanImportErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/imports/plan",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6732,7 +7125,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsStartImport",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactsStartImportResponses,
           ContactsStartImportErrors,
@@ -6743,6 +7136,7 @@ export class Contacts {
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
       parameters,
     );
@@ -6764,7 +7158,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsGetImportJob",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactsGetImportJobResponses,
           ContactsGetImportJobErrors,
@@ -6775,6 +7169,7 @@ export class Contacts {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6791,19 +7186,24 @@ export class Contacts {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactsBulkDeleteResponses, ContactsBulkDeleteErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "ids" }] }]);
-    return requestWithPolicy(options?.client ?? client, "contactsBulkDelete", options, (headers) =>
-      (options?.client ?? client).post<
-        ContactsBulkDeleteResponses,
-        ContactsBulkDeleteErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contacts/bulk-delete",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsBulkDelete",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactsBulkDeleteResponses,
+          ContactsBulkDeleteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contacts/bulk-delete",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -6836,7 +7236,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsBulkUpdateTags",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactsBulkUpdateTagsResponses,
           ContactsBulkUpdateTagsErrors,
@@ -6848,6 +7248,7 @@ export class Contacts {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6883,7 +7284,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsBulkUpdateStatus",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactsBulkUpdateStatusResponses,
           ContactsBulkUpdateStatusErrors,
@@ -6895,6 +7296,7 @@ export class Contacts {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -6932,17 +7334,24 @@ export class Contacts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactsExport", options, (headers) =>
-      (options?.client ?? client).post<ContactsExportResponses, ContactsExportErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactsExport",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactsExportResponses,
+          ContactsExportErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/contacts/export",
           ...options,
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -6981,7 +7390,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsGetActivityTimeline",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactsGetActivityTimelineResponses,
           ContactsGetActivityTimelineErrors,
@@ -6992,6 +7401,7 @@ export class Contacts {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -7029,7 +7439,7 @@ export class Contacts {
       options?.client ?? client,
       "contactsGetGroupMemberships",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactsGetGroupMembershipsResponses,
           ContactsGetGroupMembershipsErrors,
@@ -7040,6 +7450,7 @@ export class Contacts {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -7077,15 +7488,20 @@ export class Events {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "eventsCreate", options, (headers) =>
-      (options?.client ?? client).post<EventsCreateResponses, EventsCreateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/events",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "eventsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<EventsCreateResponses, EventsCreateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/events",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7101,7 +7517,7 @@ export class Events {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<EventsBatchResponses, EventsBatchErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "events" }] }]);
-    return requestWithPolicy(options?.client ?? client, "eventsBatch", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "eventsBatch", options, (headers, signal) =>
       (options?.client ?? client).post<EventsBatchResponses, EventsBatchErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/events/batch",
@@ -7109,6 +7525,7 @@ export class Events {
         ...params,
         body: params.body ?? {},
         headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -7148,7 +7565,7 @@ export class ContactEvents {
       options?.client ?? client,
       "contactEventsListEvents",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactEventsListEventsResponses,
           ContactEventsListEventsErrors,
@@ -7159,6 +7576,7 @@ export class ContactEvents {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -7194,14 +7612,19 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysList", options, (headers) =>
-      (options?.client ?? client).get<JourneysListResponses, JourneysListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<JourneysListResponses, JourneysListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7228,17 +7651,24 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysCreate", options, (headers) =>
-      (options?.client ?? client).post<JourneysCreateResponses, JourneysCreateErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          JourneysCreateResponses,
+          JourneysCreateErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/journeys",
           ...options,
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -7254,18 +7684,23 @@ export class Journeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysRemoveResponses, JourneysRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "journeysRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        JourneysRemoveResponses,
-        JourneysRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          JourneysRemoveResponses,
+          JourneysRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7281,13 +7716,14 @@ export class Journeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysGetResponses, JourneysGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "journeysGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "journeysGet", options, (headers, signal) =>
       (options?.client ?? client).get<JourneysGetResponses, JourneysGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/journeys/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -7315,19 +7751,24 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        JourneysUpdateResponses,
-        JourneysUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          JourneysUpdateResponses,
+          JourneysUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7360,7 +7801,7 @@ export class Journeys {
       options?.client ?? client,
       "journeysReplaceDraft",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).put<
           JourneysReplaceDraftResponses,
           JourneysReplaceDraftErrors,
@@ -7372,6 +7813,7 @@ export class Journeys {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -7399,19 +7841,24 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysPublish", options, (headers) =>
-      (options?.client ?? client).post<
-        JourneysPublishResponses,
-        JourneysPublishErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/publish",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysPublish",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          JourneysPublishResponses,
+          JourneysPublishErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}/publish",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7427,14 +7874,21 @@ export class Journeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysPauseResponses, JourneysPauseErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "journeysPause", options, (headers) =>
-      (options?.client ?? client).post<JourneysPauseResponses, JourneysPauseErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/pause",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysPause",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<JourneysPauseResponses, JourneysPauseErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/journeys/{id}/pause",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -7450,16 +7904,23 @@ export class Journeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysResumeResponses, JourneysResumeErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "journeysResume", options, (headers) =>
-      (options?.client ?? client).post<JourneysResumeResponses, JourneysResumeErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysResume",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          JourneysResumeResponses,
+          JourneysResumeErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/journeys/{id}/resume",
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -7475,18 +7936,23 @@ export class Journeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<JourneysArchiveResponses, JourneysArchiveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "journeysArchive", options, (headers) =>
-      (options?.client ?? client).post<
-        JourneysArchiveResponses,
-        JourneysArchiveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/archive",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysArchive",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          JourneysArchiveResponses,
+          JourneysArchiveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}/archive",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7513,18 +7979,23 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysGetVersion", options, (headers) =>
-      (options?.client ?? client).get<
-        JourneysGetVersionResponses,
-        JourneysGetVersionErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/versions/{version}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysGetVersion",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          JourneysGetVersionResponses,
+          JourneysGetVersionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}/versions/{version}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7551,14 +8022,19 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysStats", options, (headers) =>
-      (options?.client ?? client).get<JourneysStatsResponses, JourneysStatsErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/stats",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysStats",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<JourneysStatsResponses, JourneysStatsErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}/stats",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7591,18 +8067,23 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysListRuns", options, (headers) =>
-      (options?.client ?? client).get<
-        JourneysListRunsResponses,
-        JourneysListRunsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/runs",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysListRuns",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          JourneysListRunsResponses,
+          JourneysListRunsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}/runs",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7629,14 +8110,23 @@ export class Journeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "journeysGetRun", options, (headers) =>
-      (options?.client ?? client).get<JourneysGetRunResponses, JourneysGetRunErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/journeys/{id}/runs/{runId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "journeysGetRun",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          JourneysGetRunResponses,
+          JourneysGetRunErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/journeys/{id}/runs/{runId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -7671,19 +8161,24 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsRerunTests", options, (headers) =>
-      (options?.client ?? client).post<
-        AgentsRerunTestsResponses,
-        AgentsRerunTestsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}/tests/rerun",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsRerunTests",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          AgentsRerunTestsResponses,
+          AgentsRerunTestsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/tests/rerun",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7712,13 +8207,14 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsList", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "agentsList", options, (headers, signal) =>
       (options?.client ?? client).get<AgentsListResponses, AgentsListErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/agents",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -7750,15 +8246,20 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsCreate", options, (headers) =>
-      (options?.client ?? client).post<AgentsCreateResponses, AgentsCreateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<AgentsCreateResponses, AgentsCreateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7770,17 +8271,22 @@ export class Agents {
   public static listModels<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsListModelsResponses, AgentsListModelsErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "agentsListModels", options, (headers) =>
-      (options?.client ?? client).get<
-        AgentsListModelsResponses,
-        AgentsListModelsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/models",
-        ...options,
-        headers: { ...headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsListModels",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          AgentsListModelsResponses,
+          AgentsListModelsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/models",
+          ...options,
+          headers: { ...headers },
+          signal,
+        }),
     );
   }
 
@@ -7796,14 +8302,21 @@ export class Agents {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsRemoveResponses, AgentsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "agentsRemove", options, (headers) =>
-      (options?.client ?? client).delete<AgentsRemoveResponses, AgentsRemoveErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<AgentsRemoveResponses, AgentsRemoveErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/agents/{id}",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -7819,13 +8332,14 @@ export class Agents {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AgentsGetResponses, AgentsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "agentsGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "agentsGet", options, (headers, signal) =>
       (options?.client ?? client).get<AgentsGetResponses, AgentsGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/agents/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -7855,15 +8369,20 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<AgentsUpdateResponses, AgentsUpdateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<AgentsUpdateResponses, AgentsUpdateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7892,19 +8411,24 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsReplaceDraft", options, (headers) =>
-      (options?.client ?? client).put<
-        AgentsReplaceDraftResponses,
-        AgentsReplaceDraftErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}/draft",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsReplaceDraft",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).put<
+          AgentsReplaceDraftResponses,
+          AgentsReplaceDraftErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/draft",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -7931,15 +8455,22 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsPublish", options, (headers) =>
-      (options?.client ?? client).post<AgentsPublishResponses, AgentsPublishErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}/publish",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsPublish",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<AgentsPublishResponses, AgentsPublishErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/agents/{id}/publish",
+            ...options,
+            ...params,
+            body: params.body ?? {},
+            headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -7968,18 +8499,23 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsListVersions", options, (headers) =>
-      (options?.client ?? client).get<
-        AgentsListVersionsResponses,
-        AgentsListVersionsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}/versions",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsListVersions",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          AgentsListVersionsResponses,
+          AgentsListVersionsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/versions",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -8012,7 +8548,7 @@ export class Agents {
       options?.client ?? client,
       "agentsPublishVersion",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           AgentsPublishVersionResponses,
           AgentsPublishVersionErrors,
@@ -8024,6 +8560,7 @@ export class Agents {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8048,7 +8585,7 @@ export class Agents {
       options?.client ?? client,
       "agentsContinueOnStandard",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           AgentsContinueOnStandardResponses,
           AgentsContinueOnStandardErrors,
@@ -8059,6 +8596,7 @@ export class Agents {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8086,18 +8624,23 @@ export class Agents {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "agentsGetVersion", options, (headers) =>
-      (options?.client ?? client).get<
-        AgentsGetVersionResponses,
-        AgentsGetVersionErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/agents/{id}/versions/{version}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "agentsGetVersion",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          AgentsGetVersionResponses,
+          AgentsGetVersionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/agents/{id}/versions/{version}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -8127,7 +8670,7 @@ export class Accounts {
       options?.client ?? client,
       "accountsListContactConnections",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           AccountsListContactConnectionsResponses,
           AccountsListContactConnectionsErrors,
@@ -8138,6 +8681,7 @@ export class Accounts {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8150,13 +8694,18 @@ export class Accounts {
   public static list<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AccountsListResponses, AccountsListErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "accountsList", options, (headers) =>
-      (options?.client ?? client).get<AccountsListResponses, AccountsListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/accounts",
-        ...options,
-        headers: { ...headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "accountsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<AccountsListResponses, AccountsListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/accounts",
+          ...options,
+          headers: { ...headers },
+          signal,
+        }),
     );
   }
 
@@ -8172,18 +8721,23 @@ export class Accounts {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AccountsRemoveResponses, AccountsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
-    return requestWithPolicy(options?.client ?? client, "accountsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        AccountsRemoveResponses,
-        AccountsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/accounts/{accountId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "accountsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          AccountsRemoveResponses,
+          AccountsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/accounts/{accountId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -8199,13 +8753,14 @@ export class Accounts {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AccountsGetResponses, AccountsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
-    return requestWithPolicy(options?.client ?? client, "accountsGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "accountsGet", options, (headers, signal) =>
       (options?.client ?? client).get<AccountsGetResponses, AccountsGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/accounts/{accountId}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -8222,14 +8777,21 @@ export class Accounts {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<AccountsCheckResponses, AccountsCheckErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "accountId" }] }]);
-    return requestWithPolicy(options?.client ?? client, "accountsCheck", options, (headers) =>
-      (options?.client ?? client).post<AccountsCheckResponses, AccountsCheckErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/accounts/{accountId}/check",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "accountsCheck",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<AccountsCheckResponses, AccountsCheckErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/accounts/{accountId}/check",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -8270,19 +8832,24 @@ export class Accounts {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "accountsConnect", options, (headers) =>
-      (options?.client ?? client).post<
-        AccountsConnectResponses,
-        AccountsConnectErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/accounts/connect",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "accountsConnect",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          AccountsConnectResponses,
+          AccountsConnectErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/accounts/connect",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -8327,7 +8894,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeConnectionHandoff",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeConnectionHandoffResponses,
           IntegrationCatalogRecipeConnectionHandoffErrors,
@@ -8338,6 +8905,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8385,7 +8953,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeTestHandoff",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeTestHandoffResponses,
           IntegrationCatalogRecipeTestHandoffErrors,
@@ -8396,6 +8964,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8416,7 +8985,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeSetupsList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeSetupsListResponses,
           IntegrationCatalogRecipeSetupsListErrors,
@@ -8426,6 +8995,7 @@ export class IntegrationCatalog {
           url: "/v1/integrations/catalog/recipes/post-delivery-check-in/setups",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -8450,7 +9020,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeSetupGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeSetupGetResponses,
           IntegrationCatalogRecipeSetupGetErrors,
@@ -8461,6 +9031,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8498,7 +9069,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeSetupReplace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).put<
           IntegrationCatalogRecipeSetupReplaceResponses,
           IntegrationCatalogRecipeSetupReplaceErrors,
@@ -8510,6 +9081,7 @@ export class IntegrationCatalog {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8560,7 +9132,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeSetupActivate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           IntegrationCatalogRecipeSetupActivateResponses,
           IntegrationCatalogRecipeSetupActivateErrors,
@@ -8572,6 +9144,7 @@ export class IntegrationCatalog {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8613,7 +9186,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipePreview",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           IntegrationCatalogRecipePreviewResponses,
           IntegrationCatalogRecipePreviewErrors,
@@ -8624,6 +9197,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8648,7 +9222,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeWhatsAppChallengeBegin",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           IntegrationCatalogRecipeWhatsAppChallengeBeginResponses,
           IntegrationCatalogRecipeWhatsAppChallengeBeginErrors,
@@ -8659,6 +9233,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8694,7 +9269,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeWhatsAppChallengeGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeWhatsAppChallengeGetResponses,
           IntegrationCatalogRecipeWhatsAppChallengeGetErrors,
@@ -8705,6 +9280,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8742,7 +9318,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeWhatsAppChallengeConfirm",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           IntegrationCatalogRecipeWhatsAppChallengeConfirmResponses,
           IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors,
@@ -8754,6 +9330,7 @@ export class IntegrationCatalog {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8805,7 +9382,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeTest",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           IntegrationCatalogRecipeTestResponses,
           IntegrationCatalogRecipeTestErrors,
@@ -8816,6 +9393,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8840,7 +9418,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeTestReceipt",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeTestReceiptResponses,
           IntegrationCatalogRecipeTestReceiptErrors,
@@ -8851,6 +9429,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8871,7 +9450,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeCatalog",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeCatalogResponses,
           IntegrationCatalogRecipeCatalogErrors,
@@ -8881,6 +9460,7 @@ export class IntegrationCatalog {
           url: "/v1/integrations/catalog/recipes",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -8926,7 +9506,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogRecipeReadiness",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogRecipeReadinessResponses,
           IntegrationCatalogRecipeReadinessErrors,
@@ -8937,6 +9517,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -8972,7 +9553,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogPrepare",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           IntegrationCatalogPrepareResponses,
           IntegrationCatalogPrepareErrors,
@@ -8984,6 +9565,7 @@ export class IntegrationCatalog {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9040,7 +9622,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogSearch",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogSearchResponses,
           IntegrationCatalogSearchErrors,
@@ -9051,6 +9633,7 @@ export class IntegrationCatalog {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9067,7 +9650,7 @@ export class IntegrationCatalog {
       options?.client ?? client,
       "integrationCatalogList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationCatalogListResponses,
           IntegrationCatalogListErrors,
@@ -9077,6 +9660,7 @@ export class IntegrationCatalog {
           url: "/v1/integrations/catalog",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -9110,18 +9694,23 @@ export class Integrations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "integrationsList", options, (headers) =>
-      (options?.client ?? client).get<
-        IntegrationsListResponses,
-        IntegrationsListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/integrations",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          IntegrationsListResponses,
+          IntegrationsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9150,19 +9739,24 @@ export class Integrations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "integrationsInstall", options, (headers) =>
-      (options?.client ?? client).post<
-        IntegrationsInstallResponses,
-        IntegrationsInstallErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/integrations",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsInstall",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          IntegrationsInstallResponses,
+          IntegrationsInstallErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9195,7 +9789,7 @@ export class Integrations {
       options?.client ?? client,
       "integrationsListTools",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationsListToolsResponses,
           IntegrationsListToolsErrors,
@@ -9206,6 +9800,7 @@ export class Integrations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9241,7 +9836,7 @@ export class Integrations {
       options?.client ?? client,
       "integrationsReadTool",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           IntegrationsReadToolResponses,
           IntegrationsReadToolErrors,
@@ -9252,6 +9847,7 @@ export class Integrations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9271,18 +9867,23 @@ export class Integrations {
       [parameters],
       [{ args: [{ in: "path", key: "integrationId" }] }],
     );
-    return requestWithPolicy(options?.client ?? client, "integrationsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        IntegrationsRemoveResponses,
-        IntegrationsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/integrations/{integrationId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          IntegrationsRemoveResponses,
+          IntegrationsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/{integrationId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9301,18 +9902,23 @@ export class Integrations {
       [parameters],
       [{ args: [{ in: "path", key: "integrationId" }] }],
     );
-    return requestWithPolicy(options?.client ?? client, "integrationsGet", options, (headers) =>
-      (options?.client ?? client).get<
-        IntegrationsGetResponses,
-        IntegrationsGetErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/integrations/{integrationId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          IntegrationsGetResponses,
+          IntegrationsGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/{integrationId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9351,19 +9957,24 @@ export class Integrations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "integrationsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        IntegrationsUpdateResponses,
-        IntegrationsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/integrations/{integrationId}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "integrationsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          IntegrationsUpdateResponses,
+          IntegrationsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/integrations/{integrationId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -9411,7 +10022,7 @@ export class Subscriptions {
       options?.client ?? client,
       "subscriptionsSubscribe",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           SubscriptionsSubscribeResponses,
           SubscriptionsSubscribeErrors,
@@ -9423,6 +10034,7 @@ export class Subscriptions {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9460,18 +10072,23 @@ export class ContactGroups {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactGroupsList", options, (headers) =>
-      (options?.client ?? client).get<
-        ContactGroupsListResponses,
-        ContactGroupsListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contact-groups",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactGroupsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          ContactGroupsListResponses,
+          ContactGroupsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contact-groups",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9515,19 +10132,24 @@ export class ContactGroups {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactGroupsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        ContactGroupsCreateResponses,
-        ContactGroupsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contact-groups",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactGroupsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          ContactGroupsCreateResponses,
+          ContactGroupsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contact-groups",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9543,18 +10165,23 @@ export class ContactGroups {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ContactGroupsRemoveResponses, ContactGroupsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "contactGroupsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        ContactGroupsRemoveResponses,
-        ContactGroupsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contact-groups/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactGroupsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          ContactGroupsRemoveResponses,
+          ContactGroupsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contact-groups/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9574,7 +10201,7 @@ export class ContactGroups {
       options?.client ?? client,
       "contactGroupsGetById",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactGroupsGetByIdResponses,
           ContactGroupsGetByIdErrors,
@@ -9585,6 +10212,7 @@ export class ContactGroups {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9631,19 +10259,24 @@ export class ContactGroups {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "contactGroupsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        ContactGroupsUpdateResponses,
-        ContactGroupsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/contact-groups/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "contactGroupsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          ContactGroupsUpdateResponses,
+          ContactGroupsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/contact-groups/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9678,7 +10311,7 @@ export class ContactGroups {
       options?.client ?? client,
       "contactGroupsRemoveMembers",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           ContactGroupsRemoveMembersResponses,
           ContactGroupsRemoveMembersErrors,
@@ -9690,6 +10323,7 @@ export class ContactGroups {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9723,7 +10357,7 @@ export class ContactGroups {
       options?.client ?? client,
       "contactGroupsGetMembers",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           ContactGroupsGetMembersResponses,
           ContactGroupsGetMembersErrors,
@@ -9734,6 +10368,7 @@ export class ContactGroups {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9767,7 +10402,7 @@ export class ContactGroups {
       options?.client ?? client,
       "contactGroupsAddMembers",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactGroupsAddMembersResponses,
           ContactGroupsAddMembersErrors,
@@ -9779,6 +10414,7 @@ export class ContactGroups {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9803,7 +10439,7 @@ export class ContactGroups {
       options?.client ?? client,
       "contactGroupsEvaluateDynamic",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactGroupsEvaluateDynamicResponses,
           ContactGroupsEvaluateDynamicErrors,
@@ -9814,6 +10450,7 @@ export class ContactGroups {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9846,7 +10483,7 @@ export class ContactGroups {
       options?.client ?? client,
       "contactGroupsPreview",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           ContactGroupsPreviewResponses,
           ContactGroupsPreviewErrors,
@@ -9858,6 +10495,7 @@ export class ContactGroups {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -9876,17 +10514,22 @@ export class CustomFields {
   public static list<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CustomFieldsListResponses, CustomFieldsListErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "customFieldsList", options, (headers) =>
-      (options?.client ?? client).get<
-        CustomFieldsListResponses,
-        CustomFieldsListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/custom-fields",
-        ...options,
-        headers: { ...headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "customFieldsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          CustomFieldsListResponses,
+          CustomFieldsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/custom-fields",
+          ...options,
+          headers: { ...headers },
+          signal,
+        }),
     );
   }
 
@@ -9923,19 +10566,24 @@ export class CustomFields {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "customFieldsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        CustomFieldsCreateResponses,
-        CustomFieldsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/custom-fields",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "customFieldsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          CustomFieldsCreateResponses,
+          CustomFieldsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/custom-fields",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9951,18 +10599,23 @@ export class CustomFields {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<CustomFieldsRemoveResponses, CustomFieldsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "customFieldsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        CustomFieldsRemoveResponses,
-        CustomFieldsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/custom-fields/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "customFieldsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          CustomFieldsRemoveResponses,
+          CustomFieldsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/custom-fields/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -9997,19 +10650,24 @@ export class CustomFields {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "customFieldsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        CustomFieldsUpdateResponses,
-        CustomFieldsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/custom-fields/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "customFieldsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          CustomFieldsUpdateResponses,
+          CustomFieldsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/custom-fields/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -10034,13 +10692,14 @@ export class Topics {
       [parameters],
       [{ args: [{ in: "query", key: "namespaceId" }] }],
     );
-    return requestWithPolicy(options?.client ?? client, "topicsList", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "topicsList", options, (headers, signal) =>
       (options?.client ?? client).get<TopicsListResponses, TopicsListErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/topics",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -10078,15 +10737,20 @@ export class Topics {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "topicsCreate", options, (headers) =>
-      (options?.client ?? client).post<TopicsCreateResponses, TopicsCreateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<TopicsCreateResponses, TopicsCreateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10125,7 +10789,7 @@ export class Topics {
       options?.client ?? client,
       "topicsCheckSubscription",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TopicsCheckSubscriptionResponses,
           TopicsCheckSubscriptionErrors,
@@ -10136,6 +10800,7 @@ export class Topics {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10152,14 +10817,21 @@ export class Topics {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicsRemoveResponses, TopicsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "topicsRemove", options, (headers) =>
-      (options?.client ?? client).delete<TopicsRemoveResponses, TopicsRemoveErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<TopicsRemoveResponses, TopicsRemoveErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/topics/{id}",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -10175,13 +10847,14 @@ export class Topics {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicsGetResponses, TopicsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "topicsGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "topicsGet", options, (headers, signal) =>
       (options?.client ?? client).get<TopicsGetResponses, TopicsGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/topics/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -10219,15 +10892,20 @@ export class Topics {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "topicsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<TopicsUpdateResponses, TopicsUpdateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<TopicsUpdateResponses, TopicsUpdateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10243,18 +10921,23 @@ export class Topics {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicsSetDefaultResponses, TopicsSetDefaultErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "topicsSetDefault", options, (headers) =>
-      (options?.client ?? client).post<
-        TopicsSetDefaultResponses,
-        TopicsSetDefaultErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}/default",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicsSetDefault",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          TopicsSetDefaultResponses,
+          TopicsSetDefaultErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}/default",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10291,7 +10974,7 @@ export class Topics {
       options?.client ?? client,
       "topicsListSubscriptions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TopicsListSubscriptionsResponses,
           TopicsListSubscriptionsErrors,
@@ -10302,6 +10985,7 @@ export class Topics {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10339,7 +11023,7 @@ export class Topics {
       options?.client ?? client,
       "topicsSetSubscriptions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TopicsSetSubscriptionsResponses,
           TopicsSetSubscriptionsErrors,
@@ -10351,6 +11035,7 @@ export class Topics {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10373,14 +11058,23 @@ export class TopicForms {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TopicFormsListResponses, TopicFormsListErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "topicFormsList", options, (headers) =>
-      (options?.client ?? client).get<TopicFormsListResponses, TopicFormsListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}/forms",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicFormsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          TopicFormsListResponses,
+          TopicFormsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}/forms",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10417,19 +11111,24 @@ export class TopicForms {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "topicFormsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        TopicFormsCreateResponses,
-        TopicFormsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}/forms",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicFormsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          TopicFormsCreateResponses,
+          TopicFormsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}/forms",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10456,18 +11155,23 @@ export class TopicForms {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "topicFormsRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        TopicFormsRemoveResponses,
-        TopicFormsRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}/forms/{formId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicFormsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          TopicFormsRemoveResponses,
+          TopicFormsRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}/forms/{formId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10494,14 +11198,19 @@ export class TopicForms {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "topicFormsGet", options, (headers) =>
-      (options?.client ?? client).get<TopicFormsGetResponses, TopicFormsGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}/forms/{formId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicFormsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<TopicFormsGetResponses, TopicFormsGetErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}/forms/{formId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10540,19 +11249,24 @@ export class TopicForms {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "topicFormsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        TopicFormsUpdateResponses,
-        TopicFormsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/topics/{id}/forms/{formId}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "topicFormsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          TopicFormsUpdateResponses,
+          TopicFormsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/topics/{id}/forms/{formId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -10578,7 +11292,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NewsletterIssuesListResponses,
           NewsletterIssuesListErrors,
@@ -10589,6 +11303,7 @@ export class Issues {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10624,7 +11339,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesUpdate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           NewsletterIssuesUpdateResponses,
           NewsletterIssuesUpdateErrors,
@@ -10636,6 +11351,7 @@ export class Issues {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10671,7 +11387,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesCreate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NewsletterIssuesCreateResponses,
           NewsletterIssuesCreateErrors,
@@ -10683,6 +11399,7 @@ export class Issues {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10703,7 +11420,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesOpen",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NewsletterIssuesOpenResponses,
           NewsletterIssuesOpenErrors,
@@ -10714,6 +11431,7 @@ export class Issues {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10743,18 +11461,23 @@ export class Issues {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "newsletterIssuesGet", options, (headers) =>
-      (options?.client ?? client).get<
-        NewsletterIssuesGetResponses,
-        NewsletterIssuesGetErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/newsletters/{id}/issues/document",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "newsletterIssuesGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          NewsletterIssuesGetResponses,
+          NewsletterIssuesGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/newsletters/{id}/issues/document",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -10787,7 +11510,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesRemove",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NewsletterIssuesRemoveResponses,
           NewsletterIssuesRemoveErrors,
@@ -10799,6 +11522,7 @@ export class Issues {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10834,7 +11558,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesSave",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NewsletterIssuesSaveResponses,
           NewsletterIssuesSaveErrors,
@@ -10846,6 +11570,7 @@ export class Issues {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10879,7 +11604,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesCheck",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NewsletterIssuesCheckResponses,
           NewsletterIssuesCheckErrors,
@@ -10891,6 +11616,7 @@ export class Issues {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10928,7 +11654,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesRender",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NewsletterIssuesRenderResponses,
           NewsletterIssuesRenderErrors,
@@ -10940,6 +11666,7 @@ export class Issues {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -10960,7 +11687,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesHead",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NewsletterIssuesHeadResponses,
           NewsletterIssuesHeadErrors,
@@ -10971,6 +11698,7 @@ export class Issues {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11002,7 +11730,7 @@ export class Issues {
       options?.client ?? client,
       "newsletterIssuesHistory",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NewsletterIssuesHistoryResponses,
           NewsletterIssuesHistoryErrors,
@@ -11013,6 +11741,7 @@ export class Issues {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11048,7 +11777,7 @@ export class Domains {
       options?.client ?? client,
       "newsletterDomainsList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NewsletterDomainsListResponses,
           NewsletterDomainsListErrors,
@@ -11059,6 +11788,7 @@ export class Domains {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11090,7 +11820,7 @@ export class Domains {
       options?.client ?? client,
       "newsletterDomainsAdd",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NewsletterDomainsAddResponses,
           NewsletterDomainsAddErrors,
@@ -11102,6 +11832,7 @@ export class Domains {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11133,7 +11864,7 @@ export class Domains {
       options?.client ?? client,
       "newsletterDomainsRemove",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           NewsletterDomainsRemoveResponses,
           NewsletterDomainsRemoveErrors,
@@ -11144,6 +11875,7 @@ export class Domains {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11175,7 +11907,7 @@ export class Domains {
       options?.client ?? client,
       "newsletterDomainsGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NewsletterDomainsGetResponses,
           NewsletterDomainsGetErrors,
@@ -11186,6 +11918,7 @@ export class Domains {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11207,18 +11940,23 @@ export class Newsletters {
       [parameters],
       [{ args: [{ in: "query", key: "namespaceId" }] }],
     );
-    return requestWithPolicy(options?.client ?? client, "newslettersList", options, (headers) =>
-      (options?.client ?? client).get<
-        NewslettersListResponses,
-        NewslettersListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/newsletters",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "newslettersList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          NewslettersListResponses,
+          NewslettersListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/newsletters",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11253,19 +11991,24 @@ export class Newsletters {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "newslettersCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        NewslettersCreateResponses,
-        NewslettersCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/newsletters",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "newslettersCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          NewslettersCreateResponses,
+          NewslettersCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/newsletters",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11281,18 +12024,23 @@ export class Newsletters {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NewslettersRemoveResponses, NewslettersRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "newslettersRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        NewslettersRemoveResponses,
-        NewslettersRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/newsletters/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "newslettersRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          NewslettersRemoveResponses,
+          NewslettersRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/newsletters/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11308,14 +12056,23 @@ export class Newsletters {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NewslettersGetResponses, NewslettersGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "newslettersGet", options, (headers) =>
-      (options?.client ?? client).get<NewslettersGetResponses, NewslettersGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/newsletters/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "newslettersGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          NewslettersGetResponses,
+          NewslettersGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/newsletters/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11344,19 +12101,24 @@ export class Newsletters {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "newslettersUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        NewslettersUpdateResponses,
-        NewslettersUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/newsletters/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "newslettersUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          NewslettersUpdateResponses,
+          NewslettersUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/newsletters/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11395,18 +12157,23 @@ export class Analytics {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "analyticsGetStats", options, (headers) =>
-      (options?.client ?? client).get<
-        AnalyticsGetStatsResponses,
-        AnalyticsGetStatsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/analytics/stats",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "analyticsGetStats",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          AnalyticsGetStatsResponses,
+          AnalyticsGetStatsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/analytics/stats",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11443,7 +12210,7 @@ export class Analytics {
       options?.client ?? client,
       "analyticsGetChannelStats",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           AnalyticsGetChannelStatsResponses,
           AnalyticsGetChannelStatsErrors,
@@ -11454,6 +12221,7 @@ export class Analytics {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11491,7 +12259,7 @@ export class Analytics {
       options?.client ?? client,
       "analyticsGetTopContacts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           AnalyticsGetTopContactsResponses,
           AnalyticsGetTopContactsErrors,
@@ -11502,6 +12270,7 @@ export class Analytics {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11539,7 +12308,7 @@ export class Analytics {
       options?.client ?? client,
       "analyticsGetHourlyDistribution",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           AnalyticsGetHourlyDistributionResponses,
           AnalyticsGetHourlyDistributionErrors,
@@ -11550,6 +12319,7 @@ export class Analytics {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11589,7 +12359,7 @@ export class Analytics {
       options?.client ?? client,
       "analyticsGetDeliveryMetrics",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           AnalyticsGetDeliveryMetricsResponses,
           AnalyticsGetDeliveryMetricsErrors,
@@ -11600,6 +12370,7 @@ export class Analytics {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11633,19 +12404,24 @@ export class Analytics {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "analyticsExportData", options, (headers) =>
-      (options?.client ?? client).post<
-        AnalyticsExportDataResponses,
-        AnalyticsExportDataErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/analytics/export",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "analyticsExportData",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          AnalyticsExportDataResponses,
+          AnalyticsExportDataErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/analytics/export",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -11700,14 +12476,19 @@ export class Templates {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "templatesList", options, (headers) =>
-      (options?.client ?? client).get<TemplatesListResponses, TemplatesListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<TemplatesListResponses, TemplatesListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11759,19 +12540,24 @@ export class Templates {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "templatesCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        TemplatesCreateResponses,
-        TemplatesCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          TemplatesCreateResponses,
+          TemplatesCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11804,7 +12590,7 @@ export class Templates {
       options?.client ?? client,
       "templatesListFamilies",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplatesListFamiliesResponses,
           TemplatesListFamiliesErrors,
@@ -11815,6 +12601,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11846,7 +12633,7 @@ export class Templates {
       options?.client ?? client,
       "templatesCreateFamily",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesCreateFamilyResponses,
           TemplatesCreateFamilyErrors,
@@ -11858,6 +12645,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11878,7 +12666,7 @@ export class Templates {
       options?.client ?? client,
       "templatesDeleteFamily",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           TemplatesDeleteFamilyResponses,
           TemplatesDeleteFamilyErrors,
@@ -11889,6 +12677,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11905,18 +12694,23 @@ export class Templates {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TemplatesGetFamilyResponses, TemplatesGetFamilyErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "templatesGetFamily", options, (headers) =>
-      (options?.client ?? client).get<
-        TemplatesGetFamilyResponses,
-        TemplatesGetFamilyErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates/families/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesGetFamily",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          TemplatesGetFamilyResponses,
+          TemplatesGetFamilyErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/families/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -11947,7 +12741,7 @@ export class Templates {
       options?.client ?? client,
       "templatesRenameFamily",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           TemplatesRenameFamilyResponses,
           TemplatesRenameFamilyErrors,
@@ -11959,6 +12753,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -11994,7 +12789,7 @@ export class Templates {
       options?.client ?? client,
       "templatesCreateFamilyFromTemplate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesCreateFamilyFromTemplateResponses,
           TemplatesCreateFamilyFromTemplateErrors,
@@ -12006,6 +12801,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12041,7 +12837,7 @@ export class Templates {
       options?.client ?? client,
       "templatesDetachFamilyMember",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           TemplatesDetachFamilyMemberResponses,
           TemplatesDetachFamilyMemberErrors,
@@ -12052,6 +12848,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12087,7 +12884,7 @@ export class Templates {
       options?.client ?? client,
       "templatesAttachFamilyMember",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesAttachFamilyMemberResponses,
           TemplatesAttachFamilyMemberErrors,
@@ -12098,6 +12895,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12114,18 +12912,23 @@ export class Templates {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TemplatesDeleteResponses, TemplatesDeleteErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "templatesDelete", options, (headers) =>
-      (options?.client ?? client).delete<
-        TemplatesDeleteResponses,
-        TemplatesDeleteErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesDelete",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          TemplatesDeleteResponses,
+          TemplatesDeleteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -12141,18 +12944,23 @@ export class Templates {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<TemplatesGetByIdResponses, TemplatesGetByIdErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "templatesGetById", options, (headers) =>
-      (options?.client ?? client).get<
-        TemplatesGetByIdResponses,
-        TemplatesGetByIdErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesGetById",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          TemplatesGetByIdResponses,
+          TemplatesGetByIdErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -12204,19 +13012,24 @@ export class Templates {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "templatesUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        TemplatesUpdateResponses,
-        TemplatesUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          TemplatesUpdateResponses,
+          TemplatesUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -12251,7 +13064,7 @@ export class Templates {
       options?.client ?? client,
       "templatesSuggestStarters",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesSuggestStartersResponses,
           TemplatesSuggestStartersErrors,
@@ -12263,6 +13076,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12308,7 +13122,7 @@ export class Templates {
       options?.client ?? client,
       "templatesCreateFromBrief",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesCreateFromBriefResponses,
           TemplatesCreateFromBriefErrors,
@@ -12320,6 +13134,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12357,7 +13172,7 @@ export class Templates {
       options?.client ?? client,
       "templatesCreateFromWebsite",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesCreateFromWebsiteResponses,
           TemplatesCreateFromWebsiteErrors,
@@ -12369,6 +13184,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12413,19 +13229,24 @@ export class Templates {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "templatesAddEntry", options, (headers) =>
-      (options?.client ?? client).post<
-        TemplatesAddEntryResponses,
-        TemplatesAddEntryErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates/projects/{id}/entries",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesAddEntry",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          TemplatesAddEntryResponses,
+          TemplatesAddEntryErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/projects/{id}/entries",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -12445,7 +13266,7 @@ export class Templates {
       options?.client ?? client,
       "templatesDeleteProject",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           TemplatesDeleteProjectResponses,
           TemplatesDeleteProjectErrors,
@@ -12456,6 +13277,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12495,7 +13317,7 @@ export class Templates {
       options?.client ?? client,
       "templatesPatchWorkspace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           TemplatesPatchWorkspaceResponses,
           TemplatesPatchWorkspaceErrors,
@@ -12507,6 +13329,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12527,7 +13350,7 @@ export class Templates {
       options?.client ?? client,
       "templatesOpenWorkspace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesOpenWorkspaceResponses,
           TemplatesOpenWorkspaceErrors,
@@ -12538,6 +13361,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12569,7 +13393,7 @@ export class Templates {
       options?.client ?? client,
       "templatesDiffWorkspace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesDiffWorkspaceResponses,
           TemplatesDiffWorkspaceErrors,
@@ -12581,6 +13405,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12622,7 +13447,7 @@ export class Templates {
       options?.client ?? client,
       "templatesPutWorkspaceAsset",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).put<
           TemplatesPutWorkspaceAssetResponses,
           TemplatesPutWorkspaceAssetErrors,
@@ -12634,6 +13459,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12678,7 +13504,7 @@ export class Templates {
       options?.client ?? client,
       "templatesResolveWorkspaceConflict",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesResolveWorkspaceConflictResponses,
           TemplatesResolveWorkspaceConflictErrors,
@@ -12690,6 +13516,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12725,7 +13552,7 @@ export class Templates {
       options?.client ?? client,
       "templatesSaveWorkspace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesSaveWorkspaceResponses,
           TemplatesSaveWorkspaceErrors,
@@ -12737,6 +13564,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12774,7 +13602,7 @@ export class Templates {
       options?.client ?? client,
       "templatesRestoreWorkspace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesRestoreWorkspaceResponses,
           TemplatesRestoreWorkspaceErrors,
@@ -12786,6 +13614,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12821,7 +13650,7 @@ export class Templates {
       options?.client ?? client,
       "templatesWorkspaceHistory",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplatesWorkspaceHistoryResponses,
           TemplatesWorkspaceHistoryErrors,
@@ -12832,6 +13661,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12863,7 +13693,7 @@ export class Templates {
       options?.client ?? client,
       "templatesCheckWorkspace",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesCheckWorkspaceResponses,
           TemplatesCheckWorkspaceErrors,
@@ -12875,6 +13705,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12912,7 +13743,7 @@ export class Templates {
       options?.client ?? client,
       "templatesRenderWorkspaceFixture",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesRenderWorkspaceFixtureResponses,
           TemplatesRenderWorkspaceFixtureErrors,
@@ -12924,6 +13755,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -12959,19 +13791,24 @@ export class Templates {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "templatesPublish", options, (headers) =>
-      (options?.client ?? client).post<
-        TemplatesPublishResponses,
-        TemplatesPublishErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/templates/{id}/publications",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "templatesPublish",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          TemplatesPublishResponses,
+          TemplatesPublishErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/templates/{id}/publications",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -13002,7 +13839,7 @@ export class Templates {
       options?.client ?? client,
       "templatesGetPublication",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplatesGetPublicationResponses,
           TemplatesGetPublicationErrors,
@@ -13013,6 +13850,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13056,7 +13894,7 @@ export class Templates {
       options?.client ?? client,
       "templatesRenderPublication",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesRenderPublicationResponses,
           TemplatesRenderPublicationErrors,
@@ -13068,6 +13906,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13105,7 +13944,7 @@ export class Templates {
       options?.client ?? client,
       "templatesListInputContracts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplatesListInputContractsResponses,
           TemplatesListInputContractsErrors,
@@ -13116,6 +13955,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13151,7 +13991,7 @@ export class Templates {
       options?.client ?? client,
       "templatesGetInputContract",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplatesGetInputContractResponses,
           TemplatesGetInputContractErrors,
@@ -13162,6 +14002,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13186,7 +14027,7 @@ export class Templates {
       options?.client ?? client,
       "templatesGetGitRepository",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplatesGetGitRepositoryResponses,
           TemplatesGetGitRepositoryErrors,
@@ -13197,6 +14038,7 @@ export class Templates {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13232,7 +14074,7 @@ export class Templates {
       options?.client ?? client,
       "templatesIssueGitCredential",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesIssueGitCredentialResponses,
           TemplatesIssueGitCredentialErrors,
@@ -13244,6 +14086,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13292,7 +14135,7 @@ export class Templates {
       options?.client ?? client,
       "templatesAttachWorkspaceResource",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesAttachWorkspaceResourceResponses,
           TemplatesAttachWorkspaceResourceErrors,
@@ -13304,6 +14147,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13341,7 +14185,7 @@ export class Templates {
       options?.client ?? client,
       "templatesRemoveWorkspaceResource",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplatesRemoveWorkspaceResourceResponses,
           TemplatesRemoveWorkspaceResourceErrors,
@@ -13353,6 +14197,7 @@ export class Templates {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13383,7 +14228,7 @@ export class TemplateShareLinks {
       options?.client ?? client,
       "templateShareLinksDelete",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           TemplateShareLinksDeleteResponses,
           TemplateShareLinksDeleteErrors,
@@ -13394,6 +14239,7 @@ export class TemplateShareLinks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13414,7 +14260,7 @@ export class TemplateShareLinks {
       options?.client ?? client,
       "templateShareLinksGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplateShareLinksGetResponses,
           TemplateShareLinksGetErrors,
@@ -13425,6 +14271,7 @@ export class TemplateShareLinks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13460,7 +14307,7 @@ export class TemplateShareLinks {
       options?.client ?? client,
       "templateShareLinksRename",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           TemplateShareLinksRenameResponses,
           TemplateShareLinksRenameErrors,
@@ -13472,6 +14319,7 @@ export class TemplateShareLinks {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13507,7 +14355,7 @@ export class TemplateShareLinks {
       options?.client ?? client,
       "templateShareLinksCreate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplateShareLinksCreateResponses,
           TemplateShareLinksCreateErrors,
@@ -13519,6 +14367,7 @@ export class TemplateShareLinks {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13543,7 +14392,7 @@ export class TemplateShareLinks {
       options?.client ?? client,
       "templateShareLinksUpdate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplateShareLinksUpdateResponses,
           TemplateShareLinksUpdateErrors,
@@ -13554,6 +14403,7 @@ export class TemplateShareLinks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -13572,12 +14422,13 @@ export class Brands {
   public static list<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<BrandsListResponses, BrandsListErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "brandsList", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "brandsList", options, (headers, signal) =>
       (options?.client ?? client).get<BrandsListResponses, BrandsListErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/brands",
         ...options,
         headers: { ...headers },
+        signal,
       }),
     );
   }
@@ -13613,15 +14464,20 @@ export class Brands {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "brandsCreate", options, (headers) =>
-      (options?.client ?? client).post<BrandsCreateResponses, BrandsCreateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/brands",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "brandsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<BrandsCreateResponses, BrandsCreateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/brands",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -13637,14 +14493,21 @@ export class Brands {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<BrandsRemoveResponses, BrandsRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "slug" }] }]);
-    return requestWithPolicy(options?.client ?? client, "brandsRemove", options, (headers) =>
-      (options?.client ?? client).delete<BrandsRemoveResponses, BrandsRemoveErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/brands/{slug}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "brandsRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<BrandsRemoveResponses, BrandsRemoveErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/brands/{slug}",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -13660,13 +14523,14 @@ export class Brands {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<BrandsGetResponses, BrandsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "slug" }] }]);
-    return requestWithPolicy(options?.client ?? client, "brandsGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "brandsGet", options, (headers, signal) =>
       (options?.client ?? client).get<BrandsGetResponses, BrandsGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/brands/{slug}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -13702,15 +14566,20 @@ export class Brands {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "brandsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<BrandsUpdateResponses, BrandsUpdateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/brands/{slug}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "brandsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<BrandsUpdateResponses, BrandsUpdateErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/brands/{slug}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -13726,18 +14595,23 @@ export class Brands {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<BrandsSetDefaultResponses, BrandsSetDefaultErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "slug" }] }]);
-    return requestWithPolicy(options?.client ?? client, "brandsSetDefault", options, (headers) =>
-      (options?.client ?? client).post<
-        BrandsSetDefaultResponses,
-        BrandsSetDefaultErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/brands/{slug}/default",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "brandsSetDefault",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          BrandsSetDefaultResponses,
+          BrandsSetDefaultErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/brands/{slug}/default",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -13776,14 +14650,19 @@ export class Webhooks {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "webhooksList", options, (headers) =>
-      (options?.client ?? client).get<WebhooksListResponses, WebhooksListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<WebhooksListResponses, WebhooksListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -13869,17 +14748,24 @@ export class Webhooks {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "webhooksCreate", options, (headers) =>
-      (options?.client ?? client).post<WebhooksCreateResponses, WebhooksCreateErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          WebhooksCreateResponses,
+          WebhooksCreateErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/webhooks",
           ...options,
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -13895,18 +14781,23 @@ export class Webhooks {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WebhooksRemoveResponses, WebhooksRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "webhooksRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        WebhooksRemoveResponses,
-        WebhooksRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          WebhooksRemoveResponses,
+          WebhooksRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -13922,13 +14813,14 @@ export class Webhooks {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WebhooksGetResponses, WebhooksGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "webhooksGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "webhooksGet", options, (headers, signal) =>
       (options?.client ?? client).get<WebhooksGetResponses, WebhooksGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/webhooks/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -14020,19 +14912,24 @@ export class Webhooks {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "webhooksUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        WebhooksUpdateResponses,
-        WebhooksUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          WebhooksUpdateResponses,
+          WebhooksUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14064,15 +14961,20 @@ export class Webhooks {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "webhooksTest", options, (headers) =>
-      (options?.client ?? client).post<WebhooksTestResponses, WebhooksTestErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks/{id}/test",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksTest",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<WebhooksTestResponses, WebhooksTestErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks/{id}/test",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14101,18 +15003,23 @@ export class Webhooks {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "webhooksGetLogs", options, (headers) =>
-      (options?.client ?? client).get<
-        WebhooksGetLogsResponses,
-        WebhooksGetLogsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks/{id}/logs",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksGetLogs",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          WebhooksGetLogsResponses,
+          WebhooksGetLogsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks/{id}/logs",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14141,18 +15048,23 @@ export class Webhooks {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "webhooksGetStats", options, (headers) =>
-      (options?.client ?? client).get<
-        WebhooksGetStatsResponses,
-        WebhooksGetStatsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks/{id}/stats",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksGetStats",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          WebhooksGetStatsResponses,
+          WebhooksGetStatsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks/{id}/stats",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14183,7 +15095,7 @@ export class Webhooks {
       options?.client ?? client,
       "webhooksRetryDelivery",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WebhooksRetryDeliveryResponses,
           WebhooksRetryDeliveryErrors,
@@ -14194,6 +15106,7 @@ export class Webhooks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -14218,7 +15131,7 @@ export class Webhooks {
       options?.client ?? client,
       "webhooksRegenerateSecret",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WebhooksRegenerateSecretResponses,
           WebhooksRegenerateSecretErrors,
@@ -14229,6 +15142,7 @@ export class Webhooks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -14245,18 +15159,23 @@ export class Webhooks {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WebhooksGetSecretResponses, WebhooksGetSecretErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "webhooksGetSecret", options, (headers) =>
-      (options?.client ?? client).get<
-        WebhooksGetSecretResponses,
-        WebhooksGetSecretErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/webhooks/{id}/secret",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "webhooksGetSecret",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          WebhooksGetSecretResponses,
+          WebhooksGetSecretErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/webhooks/{id}/secret",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -14301,7 +15220,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsInviteMember",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           OrganizationsInviteMemberResponses,
           OrganizationsInviteMemberErrors,
@@ -14313,6 +15232,7 @@ export class Organizations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -14329,19 +15249,24 @@ export class Organizations {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<OrganizationsCreateResponses, OrganizationsCreateErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "name" }] }]);
-    return requestWithPolicy(options?.client ?? client, "organizationsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        OrganizationsCreateResponses,
-        OrganizationsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/organizations",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          OrganizationsCreateResponses,
+          OrganizationsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14353,17 +15278,22 @@ export class Organizations {
   public static get<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<OrganizationsGetResponses, OrganizationsGetErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "organizationsGet", options, (headers) =>
-      (options?.client ?? client).get<
-        OrganizationsGetResponses,
-        OrganizationsGetErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/organizations/current",
-        ...options,
-        headers: { ...headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          OrganizationsGetResponses,
+          OrganizationsGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/current",
+          ...options,
+          headers: { ...headers },
+          signal,
+        }),
     );
   }
 
@@ -14409,19 +15339,24 @@ export class Organizations {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "organizationsUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        OrganizationsUpdateResponses,
-        OrganizationsUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/organizations/current",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          OrganizationsUpdateResponses,
+          OrganizationsUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/current",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14437,7 +15372,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsGetProfile",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           OrganizationsGetProfileResponses,
           OrganizationsGetProfileErrors,
@@ -14447,6 +15382,7 @@ export class Organizations {
           url: "/v1/organizations/current/profile",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -14482,7 +15418,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsAssignPersonalMailbox",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           OrganizationsAssignPersonalMailboxResponses,
           OrganizationsAssignPersonalMailboxErrors,
@@ -14494,6 +15430,7 @@ export class Organizations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -14514,7 +15451,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsListPersonalMailboxAssignments",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           OrganizationsListPersonalMailboxAssignmentsResponses,
           OrganizationsListPersonalMailboxAssignmentsErrors,
@@ -14524,6 +15461,7 @@ export class Organizations {
           url: "/v1/organizations/personal-mailboxes/assignments",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -14551,7 +15489,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsGetPersonalMailboxAddressOptions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           OrganizationsGetPersonalMailboxAddressOptionsResponses,
           OrganizationsGetPersonalMailboxAddressOptionsErrors,
@@ -14562,6 +15500,7 @@ export class Organizations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -14582,7 +15521,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsGetTrustTier",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           OrganizationsGetTrustTierResponses,
           OrganizationsGetTrustTierErrors,
@@ -14592,6 +15531,7 @@ export class Organizations {
           url: "/v1/organizations/trust-tier",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -14612,7 +15552,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsCreateAvatarUpload",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           OrganizationsCreateAvatarUploadResponses,
           OrganizationsCreateAvatarUploadErrors,
@@ -14622,6 +15562,7 @@ export class Organizations {
           url: "/v1/organizations/current/avatar-upload",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -14653,7 +15594,7 @@ export class Organizations {
       options?.client ?? client,
       "organizationsGetUsage",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           OrganizationsGetUsageResponses,
           OrganizationsGetUsageErrors,
@@ -14664,6 +15605,7 @@ export class Organizations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -14683,19 +15625,24 @@ export class Organizations {
       [parameters],
       [{ args: [{ in: "body", key: "confirmationName" }] }],
     );
-    return requestWithPolicy(options?.client ?? client, "organizationsDelete", options, (headers) =>
-      (options?.client ?? client).post<
-        OrganizationsDeleteResponses,
-        OrganizationsDeleteErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/organizations/deletion-operations",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "organizationsDelete",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          OrganizationsDeleteResponses,
+          OrganizationsDeleteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/organizations/deletion-operations",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -14734,13 +15681,14 @@ export class ApiKeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "apiKeysList", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "apiKeysList", options, (headers, signal) =>
       (options?.client ?? client).get<ApiKeysListResponses, ApiKeysListErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/api-keys",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -14772,15 +15720,22 @@ export class ApiKeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "apiKeysCreate", options, (headers) =>
-      (options?.client ?? client).post<ApiKeysCreateResponses, ApiKeysCreateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/api-keys",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "apiKeysCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<ApiKeysCreateResponses, ApiKeysCreateErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/api-keys",
+            ...options,
+            ...params,
+            body: params.body ?? {},
+            headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -14796,13 +15751,14 @@ export class ApiKeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysGetResponses, ApiKeysGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "apiKeysGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "apiKeysGet", options, (headers, signal) =>
       (options?.client ?? client).get<ApiKeysGetResponses, ApiKeysGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/api-keys/{id}",
         ...options,
         ...params,
         headers: { ...headers, ...params.headers },
+        signal,
       }),
     );
   }
@@ -14832,15 +15788,24 @@ export class ApiKeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "apiKeysUpdate", options, (headers) =>
-      (options?.client ?? client).patch<ApiKeysUpdateResponses, ApiKeysUpdateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/api-keys/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "apiKeysUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          ApiKeysUpdateResponses,
+          ApiKeysUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/api-keys/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14856,14 +15821,21 @@ export class ApiKeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysRevokeResponses, ApiKeysRevokeErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "apiKeysRevoke", options, (headers) =>
-      (options?.client ?? client).post<ApiKeysRevokeResponses, ApiKeysRevokeErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/api-keys/{id}/revoke",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "apiKeysRevoke",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<ApiKeysRevokeResponses, ApiKeysRevokeErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/api-keys/{id}/revoke",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -14879,14 +15851,21 @@ export class ApiKeys {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<ApiKeysRotateResponses, ApiKeysRotateErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "apiKeysRotate", options, (headers) =>
-      (options?.client ?? client).post<ApiKeysRotateResponses, ApiKeysRotateErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/api-keys/{id}/rotate",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "apiKeysRotate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<ApiKeysRotateResponses, ApiKeysRotateErrors, ThrowOnError>(
+          {
+            security: [{ name: "x-api-key", type: "apiKey" }],
+            url: "/v1/api-keys/{id}/rotate",
+            ...options,
+            ...params,
+            headers: { ...headers, ...params.headers },
+            signal,
+          },
+        ),
     );
   }
 
@@ -14915,18 +15894,23 @@ export class ApiKeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "apiKeysGetStats", options, (headers) =>
-      (options?.client ?? client).get<
-        ApiKeysGetStatsResponses,
-        ApiKeysGetStatsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/api-keys/{id}/stats",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "apiKeysGetStats",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          ApiKeysGetStatsResponses,
+          ApiKeysGetStatsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/api-keys/{id}/stats",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -14955,18 +15939,23 @@ export class ApiKeys {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "apiKeysGetActivity", options, (headers) =>
-      (options?.client ?? client).get<
-        ApiKeysGetActivityResponses,
-        ApiKeysGetActivityErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/api-keys/{id}/activity",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "apiKeysGetActivity",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          ApiKeysGetActivityResponses,
+          ApiKeysGetActivityErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/api-keys/{id}/activity",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -15001,15 +15990,20 @@ export class Feedback {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "feedbackSend", options, (headers) =>
-      (options?.client ?? client).post<FeedbackSendResponses, FeedbackSendErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/feedback",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "feedbackSend",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<FeedbackSendResponses, FeedbackSendErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/feedback",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -15027,12 +16021,13 @@ export class Whoami {
   public static get<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WhoamiGetResponses, WhoamiGetErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "whoamiGet", options, (headers) =>
+    return requestWithPolicy(options?.client ?? client, "whoamiGet", options, (headers, signal) =>
       (options?.client ?? client).get<WhoamiGetResponses, WhoamiGetErrors, ThrowOnError>({
         security: [{ name: "x-api-key", type: "apiKey" }],
         url: "/v1/whoami",
         ...options,
         headers: { ...headers },
+        signal,
       }),
     );
   }
@@ -15082,7 +16077,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCreateImportUpload",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCreateImportUploadResponses,
           MailboxesCreateImportUploadErrors,
@@ -15094,6 +16089,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15133,7 +16129,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesSignImportUploadParts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesSignImportUploadPartsResponses,
           MailboxesSignImportUploadPartsErrors,
@@ -15145,6 +16141,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15187,7 +16184,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCompleteImportUpload",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCompleteImportUploadResponses,
           MailboxesCompleteImportUploadErrors,
@@ -15199,6 +16196,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15236,7 +16234,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDiscardImportUpload",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesDiscardImportUploadResponses,
           MailboxesDiscardImportUploadErrors,
@@ -15247,6 +16245,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15278,7 +16277,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDiscardImport",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesDiscardImportResponses,
           MailboxesDiscardImportErrors,
@@ -15289,6 +16288,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15316,18 +16316,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesGetImport", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesGetImportResponses,
-        MailboxesGetImportErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/imports/{importId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGetImport",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesGetImportResponses,
+          MailboxesGetImportErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/imports/{importId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15358,7 +16363,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesStartImport",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesStartImportResponses,
           MailboxesStartImportErrors,
@@ -15369,6 +16374,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15389,7 +16395,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListImports",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListImportsResponses,
           MailboxesListImportsErrors,
@@ -15400,6 +16406,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15433,14 +16440,19 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesList", options, (headers) =>
-      (options?.client ?? client).get<MailboxesListResponses, MailboxesListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<MailboxesListResponses, MailboxesListErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15473,19 +16485,24 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesCreateResponses,
-        MailboxesCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesCreateResponses,
+          MailboxesCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15501,18 +16518,23 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesRemoveResponses, MailboxesRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        MailboxesRemoveResponses,
-        MailboxesRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          MailboxesRemoveResponses,
+          MailboxesRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15528,14 +16550,19 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesGetResponses, MailboxesGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesGet", options, (headers) =>
-      (options?.client ?? client).get<MailboxesGetResponses, MailboxesGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<MailboxesGetResponses, MailboxesGetErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15564,19 +16591,24 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        MailboxesUpdateResponses,
-        MailboxesUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          MailboxesUpdateResponses,
+          MailboxesUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15611,7 +16643,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCreateEndpoint",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCreateEndpointResponses,
           MailboxesCreateEndpointErrors,
@@ -15623,6 +16655,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15654,7 +16687,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesRemoveEndpoint",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesRemoveEndpointResponses,
           MailboxesRemoveEndpointErrors,
@@ -15665,6 +16698,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15700,7 +16734,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUpdateEndpoint",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           MailboxesUpdateEndpointResponses,
           MailboxesUpdateEndpointErrors,
@@ -15712,6 +16746,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15728,16 +16763,23 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesPauseResponses, MailboxesPauseErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesPause", options, (headers) =>
-      (options?.client ?? client).post<MailboxesPauseResponses, MailboxesPauseErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesPause",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesPauseResponses,
+          MailboxesPauseErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/mailboxes/{id}/pause",
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -15753,18 +16795,23 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesResumeResponses, MailboxesResumeErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesResume", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesResumeResponses,
-        MailboxesResumeErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/resume",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesResume",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesResumeResponses,
+          MailboxesResumeErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/resume",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15801,7 +16848,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesGetAgentActivity",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesGetAgentActivityResponses,
           MailboxesGetAgentActivityErrors,
@@ -15812,6 +16859,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15841,18 +16889,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesListGrants", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesListGrantsResponses,
-        MailboxesListGrantsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/grants",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListGrants",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesListGrantsResponses,
+          MailboxesListGrantsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/grants",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -15885,7 +16938,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCreateGrant",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCreateGrantResponses,
           MailboxesCreateGrantErrors,
@@ -15897,6 +16950,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15928,7 +16982,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesRevokeGrant",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesRevokeGrantResponses,
           MailboxesRevokeGrantErrors,
@@ -15939,6 +16993,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -15972,7 +17027,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUpdateGrant",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           MailboxesUpdateGrantResponses,
           MailboxesUpdateGrantErrors,
@@ -15984,6 +17039,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16004,7 +17060,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListFolders",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListFoldersResponses,
           MailboxesListFoldersErrors,
@@ -16015,6 +17071,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16031,18 +17088,23 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListLabelsResponses, MailboxesListLabelsErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesListLabels", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesListLabelsResponses,
-        MailboxesListLabelsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/labels",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListLabels",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesListLabelsResponses,
+          MailboxesListLabelsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/labels",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -16085,7 +17147,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCreateLabel",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCreateLabelResponses,
           MailboxesCreateLabelErrors,
@@ -16097,6 +17159,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16128,7 +17191,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDeleteLabel",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesDeleteLabelResponses,
           MailboxesDeleteLabelErrors,
@@ -16139,6 +17202,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16182,7 +17246,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUpdateLabel",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           MailboxesUpdateLabelResponses,
           MailboxesUpdateLabelErrors,
@@ -16194,6 +17258,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16225,7 +17290,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesGetNeedsYou",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesGetNeedsYouResponses,
           MailboxesGetNeedsYouErrors,
@@ -16236,6 +17301,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16277,7 +17343,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListOrganizationDrafts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListOrganizationDraftsResponses,
           MailboxesListOrganizationDraftsErrors,
@@ -16288,6 +17354,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16353,7 +17420,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListOrganizationThreads",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListOrganizationThreadsResponses,
           MailboxesListOrganizationThreadsErrors,
@@ -16364,6 +17431,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16371,7 +17439,7 @@ export class Mailboxes {
   /**
    * List threads in a mailbox
    *
-   * Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once.
+   * Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once. Omit `folder` to list every folder. A thread's folder is set when it is created and does not move on later replies: a thread a send started stays in `sent`, so find replies with `unread: true` and no `folder`.
    */
   public static listThreads<ThrowOnError extends boolean = false>(
     parameters: {
@@ -16421,7 +17489,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListThreads",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListThreadsResponses,
           MailboxesListThreadsErrors,
@@ -16432,6 +17500,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16463,7 +17532,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDeleteThread",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesDeleteThreadResponses,
           MailboxesDeleteThreadErrors,
@@ -16474,6 +17543,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16501,18 +17571,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesGetThread", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesGetThreadResponses,
-        MailboxesGetThreadErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/threads/{threadId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGetThread",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesGetThreadResponses,
+          MailboxesGetThreadErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/threads/{threadId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -16561,7 +17636,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUpdateThread",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           MailboxesUpdateThreadResponses,
           MailboxesUpdateThreadErrors,
@@ -16573,6 +17648,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16589,18 +17665,23 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesEmptyTrashResponses, MailboxesEmptyTrashErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesEmptyTrash", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesEmptyTrashResponses,
-        MailboxesEmptyTrashErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/trash/empty",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesEmptyTrash",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesEmptyTrashResponses,
+          MailboxesEmptyTrashErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/trash/empty",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -16616,18 +17697,23 @@ export class Mailboxes {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesEmptySpamResponses, MailboxesEmptySpamErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "mailboxesEmptySpam", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesEmptySpamResponses,
-        MailboxesEmptySpamErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/spam/empty",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesEmptySpam",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesEmptySpamResponses,
+          MailboxesEmptySpamErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/spam/empty",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -16664,7 +17750,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesRemoveThreadLabels",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesRemoveThreadLabelsResponses,
           MailboxesRemoveThreadLabelsErrors,
@@ -16676,6 +17762,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16713,7 +17800,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesAddThreadLabels",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesAddThreadLabelsResponses,
           MailboxesAddThreadLabelsErrors,
@@ -16725,6 +17812,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16764,7 +17852,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListThreadMessages",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListThreadMessagesResponses,
           MailboxesListThreadMessagesErrors,
@@ -16775,6 +17863,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16814,7 +17903,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesGetThreadContent",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesGetThreadContentResponses,
           MailboxesGetThreadContentErrors,
@@ -16825,6 +17914,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16864,7 +17954,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListThreadNotes",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListThreadNotesResponses,
           MailboxesListThreadNotesErrors,
@@ -16875,6 +17965,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -16908,19 +17999,24 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesCreateNote", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesCreateNoteResponses,
-        MailboxesCreateNoteErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/threads/{threadId}/notes",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesCreateNote",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesCreateNoteResponses,
+          MailboxesCreateNoteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/threads/{threadId}/notes",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -16949,18 +18045,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesDeleteNote", options, (headers) =>
-      (options?.client ?? client).delete<
-        MailboxesDeleteNoteResponses,
-        MailboxesDeleteNoteErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/threads/{threadId}/notes/{noteId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesDeleteNote",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          MailboxesDeleteNoteResponses,
+          MailboxesDeleteNoteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/threads/{threadId}/notes/{noteId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -16995,19 +18096,24 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesUpdateNote", options, (headers) =>
-      (options?.client ?? client).patch<
-        MailboxesUpdateNoteResponses,
-        MailboxesUpdateNoteErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/threads/{threadId}/notes/{noteId}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesUpdateNote",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          MailboxesUpdateNoteResponses,
+          MailboxesUpdateNoteErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/threads/{threadId}/notes/{noteId}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -17030,7 +18136,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesSendMessage",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesSendMessageResponses,
           MailboxesSendMessageErrors,
@@ -17041,6 +18147,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17068,18 +18175,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesGetMessage", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesGetMessageResponses,
-        MailboxesGetMessageErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/messages/{messageId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGetMessage",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesGetMessageResponses,
+          MailboxesGetMessageErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/messages/{messageId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -17110,7 +18222,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesGetMessageRaw",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesGetMessageRawResponses,
           MailboxesGetMessageRawErrors,
@@ -17121,6 +18233,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17158,7 +18271,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesGetMessageAttachment",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesGetMessageAttachmentResponses,
           MailboxesGetMessageAttachmentErrors,
@@ -17169,6 +18282,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17206,7 +18320,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCopyMessageAttachment",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCopyMessageAttachmentResponses,
           MailboxesCopyMessageAttachmentErrors,
@@ -17217,6 +18331,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17247,16 +18362,23 @@ export class Mailboxes {
     params.body = Object.fromEntries(
       Object.entries(parameters).filter(([key]) => !["id", "messageId"].includes(key)),
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesReply", options, (headers) =>
-      (options?.client ?? client).post<MailboxesReplyResponses, MailboxesReplyErrors, ThrowOnError>(
-        {
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesReply",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesReplyResponses,
+          MailboxesReplyErrors,
+          ThrowOnError
+        >({
           security: [{ name: "x-api-key", type: "apiKey" }],
           url: "/v1/mailboxes/{id}/messages/{messageId}/reply",
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-        },
-      ),
+          signal,
+        }),
     );
   }
 
@@ -17286,18 +18408,23 @@ export class Mailboxes {
     params.body = Object.fromEntries(
       Object.entries(parameters).filter(([key]) => !["id", "messageId"].includes(key)),
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesReplyAll", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesReplyAllResponses,
-        MailboxesReplyAllErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/messages/{messageId}/reply-all",
-        ...options,
-        ...params,
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesReplyAll",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesReplyAllResponses,
+          MailboxesReplyAllErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/messages/{messageId}/reply-all",
+          ...options,
+          ...params,
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -17336,19 +18463,24 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesForward", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesForwardResponses,
-        MailboxesForwardErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/messages/{messageId}/forward",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesForward",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesForwardResponses,
+          MailboxesForwardErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/messages/{messageId}/forward",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -17385,7 +18517,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListSpamHeld",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListSpamHeldResponses,
           MailboxesListSpamHeldErrors,
@@ -17396,6 +18528,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17403,7 +18536,7 @@ export class Mailboxes {
   /**
    * Discard held malware
    *
-   * Permanently removes isolated malware from the mailbox's held list. Publishes one `mailbox.message.discarded` event. Retrying returns the same result and publishes nothing. Delete readable Spam through the thread delete endpoint. Only a person with `spam.discard` can discard held mail.
+   * Permanently removes isolated malware from the mailbox's held list. Publishes one `mailbox.message.discarded` event. Retrying returns the same result and publishes nothing. Delete readable Spam through the thread delete endpoint. Only a person signed in to Samva with `spam.discard` can discard held mail; an API key is rejected with `403`.
    */
   public static discardSpamHeld<ThrowOnError extends boolean = false>(
     parameters: {
@@ -17431,7 +18564,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDiscardSpamHeld",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesDiscardSpamHeldResponses,
           MailboxesDiscardSpamHeldErrors,
@@ -17442,6 +18575,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17481,7 +18615,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesScheduleDraft",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesScheduleDraftResponses,
           MailboxesScheduleDraftErrors,
@@ -17493,6 +18627,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17530,7 +18665,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUnscheduleSend",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesUnscheduleSendResponses,
           MailboxesUnscheduleSendErrors,
@@ -17542,6 +18677,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17581,7 +18717,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesRescheduleSend",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           MailboxesRescheduleSendResponses,
           MailboxesRescheduleSendErrors,
@@ -17593,6 +18729,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17634,7 +18771,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesSendScheduledNow",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesSendScheduledNowResponses,
           MailboxesSendScheduledNowErrors,
@@ -17646,6 +18783,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17683,7 +18821,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListScheduledSends",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListScheduledSendsResponses,
           MailboxesListScheduledSendsErrors,
@@ -17694,6 +18832,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17725,18 +18864,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesListDrafts", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesListDraftsResponses,
-        MailboxesListDraftsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/drafts",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListDrafts",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesListDraftsResponses,
+          MailboxesListDraftsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/drafts",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -17759,7 +18903,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCreateDraft",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCreateDraftResponses,
           MailboxesCreateDraftErrors,
@@ -17770,6 +18914,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17801,7 +18946,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDeleteDraft",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesDeleteDraftResponses,
           MailboxesDeleteDraftErrors,
@@ -17812,6 +18957,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17839,18 +18985,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesGetDraft", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesGetDraftResponses,
-        MailboxesGetDraftErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/drafts/{draftId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGetDraft",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesGetDraftResponses,
+          MailboxesGetDraftErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/drafts/{draftId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -17897,7 +19048,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUpdateDraft",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           MailboxesUpdateDraftResponses,
           MailboxesUpdateDraftErrors,
@@ -17909,6 +19060,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -17936,18 +19088,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesSendDraft", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesSendDraftResponses,
-        MailboxesSendDraftErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/drafts/{draftId}/send",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesSendDraft",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesSendDraftResponses,
+          MailboxesSendDraftErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/drafts/{draftId}/send",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18003,7 +19160,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListActions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListActionsResponses,
           MailboxesListActionsErrors,
@@ -18014,6 +19171,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18041,25 +19199,30 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesGetAction", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesGetActionResponses,
-        MailboxesGetActionErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/actions/{actionId}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesGetAction",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesGetActionResponses,
+          MailboxesGetActionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/actions/{actionId}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
   /**
    * Cancel a mailbox send
    *
-   * Cancels a definitely unsent action and reopens its draft atomically. Only an authorized person who proposed the send or can approve actions may cancel. Accepted sends return 409 with their winning receipt and cannot be withdrawn. An uncertain send requires reconciliation and cannot be cancelled as unsent. Cancelling a send held for approval records `resolution.outcome: cancelled` and publishes one `mailbox.action.resolved` event.
+   * Cancels a definitely unsent action and reopens its draft atomically. Only an authorized person who proposed the send or can approve actions may cancel; an API key is rejected with `403`, even one with full access. Accepted sends return 409 with their winning receipt and cannot be withdrawn. An uncertain send requires reconciliation and cannot be cancelled as unsent. Cancelling a send held for approval records `resolution.outcome: cancelled` and publishes one `mailbox.action.resolved` event.
    */
   public static cancelAction<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18083,7 +19246,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCancelAction",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCancelActionResponses,
           MailboxesCancelActionErrors,
@@ -18094,6 +19257,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18101,7 +19265,7 @@ export class Mailboxes {
   /**
    * Resume a mailbox send
    *
-   * Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.
+   * Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry; an API key is rejected with `403`, even one with full access. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.
    */
   public static retryAction<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18125,7 +19289,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesRetryAction",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesRetryActionResponses,
           MailboxesRetryActionErrors,
@@ -18136,6 +19300,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18143,7 +19308,7 @@ export class Mailboxes {
   /**
    * Approve a mailbox action
    *
-   * Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin; for a hosted agent's integration tool call it lets that tool run without approval for every agent, which only the organization owner may do. A held action's `alwaysAllow` says who may and whether the caller can. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.
+   * Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer; an API key is rejected with `403`. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin; for a hosted agent's integration tool call it lets that tool run without approval for every agent, which only the organization owner may do. A held action's `alwaysAllow` says who may and whether the caller can. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.
    */
   public static approveAction<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18179,7 +19344,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesApproveAction",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesApproveActionResponses,
           MailboxesApproveActionErrors,
@@ -18191,6 +19356,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18198,7 +19364,7 @@ export class Mailboxes {
   /**
    * Deny a mailbox action
    *
-   * Denies an action waiting for approval with a reason and returns it without executing it. Only a person signed in or through OAuth may deny, and never the one who proposed it. The action's `resolution` records the denier and reason; denying a held send publishes one `mailbox.action.resolved` event.
+   * Denies an action waiting for approval with a reason and returns it without executing it. Only a person signed in or through OAuth may deny, and never the one who proposed it; an API key is rejected with `403`. The action's `resolution` records the denier and reason; denying a held send publishes one `mailbox.action.resolved` event.
    */
   public static denyAction<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18222,19 +19388,24 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesDenyAction", options, (headers) =>
-      (options?.client ?? client).post<
-        MailboxesDenyActionResponses,
-        MailboxesDenyActionErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/actions/{actionId}/deny",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesDenyAction",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          MailboxesDenyActionResponses,
+          MailboxesDenyActionErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/actions/{actionId}/deny",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18267,18 +19438,23 @@ export class Mailboxes {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "mailboxesListEvents", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesListEventsResponses,
-        MailboxesListEventsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/{id}/events",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListEvents",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesListEventsResponses,
+          MailboxesListEventsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/{id}/events",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18294,7 +19470,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCountSplits",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesCountSplitsResponses,
           MailboxesCountSplitsErrors,
@@ -18304,6 +19480,7 @@ export class Mailboxes {
           url: "/v1/mailboxes/splits/counts",
           ...options,
           headers: { ...headers },
+          signal,
         }),
     );
   }
@@ -18316,17 +19493,22 @@ export class Mailboxes {
   public static listSplits<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListSplitsResponses, MailboxesListSplitsErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "mailboxesListSplits", options, (headers) =>
-      (options?.client ?? client).get<
-        MailboxesListSplitsResponses,
-        MailboxesListSplitsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/mailboxes/splits",
-        ...options,
-        headers: { ...headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "mailboxesListSplits",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          MailboxesListSplitsResponses,
+          MailboxesListSplitsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/mailboxes/splits",
+          ...options,
+          headers: { ...headers },
+          signal,
+        }),
     );
   }
 
@@ -18373,7 +19555,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesCreateSplit",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           MailboxesCreateSplitResponses,
           MailboxesCreateSplitErrors,
@@ -18385,6 +19567,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18405,7 +19588,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesDeleteSplit",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           MailboxesDeleteSplitResponses,
           MailboxesDeleteSplitErrors,
@@ -18416,6 +19599,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18465,7 +19649,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesUpdateSplit",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).put<
           MailboxesUpdateSplitResponses,
           MailboxesUpdateSplitErrors,
@@ -18477,6 +19661,7 @@ export class Mailboxes {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18508,7 +19693,7 @@ export class Mailboxes {
       options?.client ?? client,
       "mailboxesListAddresses",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           MailboxesListAddressesResponses,
           MailboxesListAddressesErrors,
@@ -18519,6 +19704,7 @@ export class Mailboxes {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18532,7 +19718,7 @@ export class Policies {
   /**
    * Clear decision rules
    *
-   * Clears this scope's rules and instructions only when ifVersion matches, and returns the next version. The stored version is retained. Other scopes and subject defaults continue to apply.
+   * Clears this scope's rules and instructions only when ifVersion matches, and returns the next version. The stored version is retained. Other scopes and subject defaults continue to apply. An API key with organization-wide reach may clear another key's policy; clearing its own key, a mailbox that holds rules, the organization, or an agent returns 403.
    */
   public static deletePolicy<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18558,7 +19744,7 @@ export class Policies {
       options?.client ?? client,
       "policiesDeletePolicy",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           PoliciesDeletePolicyResponses,
           PoliciesDeletePolicyErrors,
@@ -18569,6 +19755,7 @@ export class Policies {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18596,25 +19783,30 @@ export class Policies {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "policiesGetPolicy", options, (headers) =>
-      (options?.client ?? client).get<
-        PoliciesGetPolicyResponses,
-        PoliciesGetPolicyErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/policies/{kind}/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "policiesGetPolicy",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          PoliciesGetPolicyResponses,
+          PoliciesGetPolicyErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/policies/{kind}/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
   /**
    * Set decision rules
    *
-   * Replaces this scope's rules and instructions only when ifVersion matches its current version. A stale version returns a conflict. More specific scopes replace defaults; atLeast floors remain binding. Identical rule matches in one scope are rejected.
+   * Replaces this scope's rules and instructions only when ifVersion matches its current version. A stale version returns a conflict. More specific scopes replace defaults; atLeast floors remain binding. Identical rule matches in one scope are rejected. An API key changes policy only with organization-wide reach (full access, no namespace, owned by an organization owner or admin): it may set any rule on another key, and on a mailbox it can configure only add atLeast person or never floors or decide: never rules while keeping every existing rule. Its own key, the organization, and agents return 403; a person changes those.
    */
   public static setPolicy<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18642,19 +19834,24 @@ export class Policies {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "policiesSetPolicy", options, (headers) =>
-      (options?.client ?? client).put<
-        PoliciesSetPolicyResponses,
-        PoliciesSetPolicyErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/policies/{kind}/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "policiesSetPolicy",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).put<
+          PoliciesSetPolicyResponses,
+          PoliciesSetPolicyErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/policies/{kind}/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -18691,14 +19888,23 @@ export class Namespaces {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "namespacesList", options, (headers) =>
-      (options?.client ?? client).get<NamespacesListResponses, NamespacesListErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/namespaces",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          NamespacesListResponses,
+          NamespacesListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18725,26 +19931,31 @@ export class Namespaces {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "namespacesCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        NamespacesCreateResponses,
-        NamespacesCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/namespaces",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          NamespacesCreateResponses,
+          NamespacesCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
   /**
    * Delete a namespace
    *
-   * Deletes an empty namespace. A namespace that still holds anything conflicts, and the error names and counts each resource kind that remains. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes, keys, and webhook endpoints cannot move and are deleted. Messages keep the namespace they ran in.
+   * Deletes an empty namespace. A namespace that still holds anything conflicts, and the error names and counts each resource kind that remains. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes and webhook endpoints cannot move and are deleted. Only an enabled API key holds the namespace: revoke the namespace's keys, and deletion retires and detaches each one, keeping its record. Deletion also deletes the namespace's portal links and WhatsApp setup links, so their URLs stop working. Messages keep the namespace they ran in.
    */
   public static remove<ThrowOnError extends boolean = false>(
     parameters: {
@@ -18753,18 +19964,23 @@ export class Namespaces {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NamespacesRemoveResponses, NamespacesRemoveErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "namespacesRemove", options, (headers) =>
-      (options?.client ?? client).delete<
-        NamespacesRemoveResponses,
-        NamespacesRemoveErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/namespaces/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesRemove",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).delete<
+          NamespacesRemoveResponses,
+          NamespacesRemoveErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18780,14 +19996,19 @@ export class Namespaces {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<NamespacesGetResponses, NamespacesGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "namespacesGet", options, (headers) =>
-      (options?.client ?? client).get<NamespacesGetResponses, NamespacesGetErrors, ThrowOnError>({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/namespaces/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<NamespacesGetResponses, NamespacesGetErrors, ThrowOnError>({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18821,19 +20042,24 @@ export class Namespaces {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "namespacesUpdate", options, (headers) =>
-      (options?.client ?? client).patch<
-        NamespacesUpdateResponses,
-        NamespacesUpdateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/namespaces/{id}",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesUpdate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).patch<
+          NamespacesUpdateResponses,
+          NamespacesUpdateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -18870,7 +20096,7 @@ export class Namespaces {
       options?.client ?? client,
       "namespacesAssignResource",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NamespacesAssignResourceResponses,
           NamespacesAssignResourceErrors,
@@ -18882,6 +20108,7 @@ export class Namespaces {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18919,7 +20146,7 @@ export class Namespaces {
       options?.client ?? client,
       "namespacesRemoveResource",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           NamespacesRemoveResourceResponses,
           NamespacesRemoveResourceErrors,
@@ -18930,6 +20157,7 @@ export class Namespaces {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -18967,7 +20195,7 @@ export class Namespaces {
       options?.client ?? client,
       "namespacesListPortalLinks",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           NamespacesListPortalLinksResponses,
           NamespacesListPortalLinksErrors,
@@ -18978,6 +20206,7 @@ export class Namespaces {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19017,7 +20246,7 @@ export class Namespaces {
       options?.client ?? client,
       "namespacesCreatePortalLink",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           NamespacesCreatePortalLinkResponses,
           NamespacesCreatePortalLinkErrors,
@@ -19029,6 +20258,7 @@ export class Namespaces {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19064,7 +20294,7 @@ export class Namespaces {
       options?.client ?? client,
       "namespacesRevokePortalLink",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           NamespacesRevokePortalLinkResponses,
           NamespacesRevokePortalLinkErrors,
@@ -19075,6 +20305,7 @@ export class Namespaces {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19104,18 +20335,23 @@ export class Namespaces {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "namespacesGetUsage", options, (headers) =>
-      (options?.client ?? client).get<
-        NamespacesGetUsageResponses,
-        NamespacesGetUsageErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/namespaces/{id}/usage",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "namespacesGetUsage",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          NamespacesGetUsageResponses,
+          NamespacesGetUsageErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/namespaces/{id}/usage",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 }
@@ -19148,18 +20384,23 @@ export class Whatsapp {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "whatsappGetStats", options, (headers) =>
-      (options?.client ?? client).get<
-        WhatsappGetStatsResponses,
-        WhatsappGetStatsErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/whatsapp/stats",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappGetStats",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          WhatsappGetStatsResponses,
+          WhatsappGetStatsErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/stats",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -19200,7 +20441,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappGetTemplateStats",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappGetTemplateStatsResponses,
           WhatsappGetTemplateStatsErrors,
@@ -19211,6 +20452,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19246,7 +20488,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappGetServiceWindowStatus",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappGetServiceWindowStatusResponses,
           WhatsappGetServiceWindowStatusErrors,
@@ -19257,6 +20499,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19284,7 +20527,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappGetServiceWindowBilling",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappGetServiceWindowBillingResponses,
           WhatsappGetServiceWindowBillingErrors,
@@ -19295,6 +20538,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19319,7 +20563,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappGetMediaDownloadUrl",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappGetMediaDownloadUrlResponses,
           WhatsappGetMediaDownloadUrlErrors,
@@ -19330,6 +20574,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19371,7 +20616,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappListBusinessAccounts",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappListBusinessAccountsResponses,
           WhatsappListBusinessAccountsErrors,
@@ -19382,6 +20627,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19421,7 +20667,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappConnectBusinessAccount",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappConnectBusinessAccountResponses,
           WhatsappConnectBusinessAccountErrors,
@@ -19433,6 +20679,7 @@ export class Whatsapp {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19457,7 +20704,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappDisconnectBusinessAccount",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).delete<
           WhatsappDisconnectBusinessAccountResponses,
           WhatsappDisconnectBusinessAccountErrors,
@@ -19468,6 +20715,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19492,7 +20740,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappGetBusinessAccount",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappGetBusinessAccountResponses,
           WhatsappGetBusinessAccountErrors,
@@ -19503,6 +20751,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19540,7 +20789,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappUpdateBusinessAccount",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).patch<
           WhatsappUpdateBusinessAccountResponses,
           WhatsappUpdateBusinessAccountErrors,
@@ -19552,6 +20801,7 @@ export class Whatsapp {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19576,7 +20826,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappSetDefaultBusinessAccount",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappSetDefaultBusinessAccountResponses,
           WhatsappSetDefaultBusinessAccountErrors,
@@ -19587,6 +20837,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19611,7 +20862,7 @@ export class Whatsapp {
       options?.client ?? client,
       "whatsappSyncAccountStatus",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappSyncAccountStatusResponses,
           WhatsappSyncAccountStatusErrors,
@@ -19622,6 +20873,7 @@ export class Whatsapp {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19640,17 +20892,22 @@ export class WhatsappFlows {
   public static list<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WhatsappFlowsListResponses, WhatsappFlowsListErrors, ThrowOnError> {
-    return requestWithPolicy(options?.client ?? client, "whatsappFlowsList", options, (headers) =>
-      (options?.client ?? client).get<
-        WhatsappFlowsListResponses,
-        WhatsappFlowsListErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/whatsapp/flows",
-        ...options,
-        headers: { ...headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsList",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          WhatsappFlowsListResponses,
+          WhatsappFlowsListErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows",
+          ...options,
+          headers: { ...headers },
+          signal,
+        }),
     );
   }
 
@@ -19688,19 +20945,24 @@ export class WhatsappFlows {
         },
       ],
     );
-    return requestWithPolicy(options?.client ?? client, "whatsappFlowsCreate", options, (headers) =>
-      (options?.client ?? client).post<
-        WhatsappFlowsCreateResponses,
-        WhatsappFlowsCreateErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/whatsapp/flows",
-        ...options,
-        ...params,
-        body: params.body ?? {},
-        headers: { "Content-Type": "application/json", ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsCreate",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).post<
+          WhatsappFlowsCreateResponses,
+          WhatsappFlowsCreateErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows",
+          ...options,
+          ...params,
+          body: params.body ?? {},
+          headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -19716,18 +20978,23 @@ export class WhatsappFlows {
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WhatsappFlowsGetResponses, WhatsappFlowsGetErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return requestWithPolicy(options?.client ?? client, "whatsappFlowsGet", options, (headers) =>
-      (options?.client ?? client).get<
-        WhatsappFlowsGetResponses,
-        WhatsappFlowsGetErrors,
-        ThrowOnError
-      >({
-        security: [{ name: "x-api-key", type: "apiKey" }],
-        url: "/v1/whatsapp/flows/{id}",
-        ...options,
-        ...params,
-        headers: { ...headers, ...params.headers },
-      }),
+    return requestWithPolicy(
+      options?.client ?? client,
+      "whatsappFlowsGet",
+      options,
+      (headers, signal) =>
+        (options?.client ?? client).get<
+          WhatsappFlowsGetResponses,
+          WhatsappFlowsGetErrors,
+          ThrowOnError
+        >({
+          security: [{ name: "x-api-key", type: "apiKey" }],
+          url: "/v1/whatsapp/flows/{id}",
+          ...options,
+          ...params,
+          headers: { ...headers, ...params.headers },
+          signal,
+        }),
     );
   }
 
@@ -19751,7 +21018,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsListVersions",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappFlowsListVersionsResponses,
           WhatsappFlowsListVersionsErrors,
@@ -19762,6 +21029,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19799,7 +21067,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsRecordVersion",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappFlowsRecordVersionResponses,
           WhatsappFlowsRecordVersionErrors,
@@ -19811,6 +21079,7 @@ export class WhatsappFlows {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19835,7 +21104,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsListRegistrations",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappFlowsListRegistrationsResponses,
           WhatsappFlowsListRegistrationsErrors,
@@ -19846,6 +21115,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19877,7 +21147,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsRegister",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappFlowsRegisterResponses,
           WhatsappFlowsRegisterErrors,
@@ -19889,6 +21159,7 @@ export class WhatsappFlows {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19916,7 +21187,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsRotateEncryptionKey",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappFlowsRotateEncryptionKeyResponses,
           WhatsappFlowsRotateEncryptionKeyErrors,
@@ -19928,6 +21199,7 @@ export class WhatsappFlows {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19963,7 +21235,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsSetEndpoint",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).put<
           WhatsappFlowsSetEndpointResponses,
           WhatsappFlowsSetEndpointErrors,
@@ -19975,6 +21247,7 @@ export class WhatsappFlows {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -19999,7 +21272,7 @@ export class WhatsappFlows {
       options?.client ?? client,
       "whatsappFlowsRotateEndpointSecret",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappFlowsRotateEndpointSecretResponses,
           WhatsappFlowsRotateEndpointSecretErrors,
@@ -20010,6 +21283,7 @@ export class WhatsappFlows {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20051,7 +21325,7 @@ export class WhatsappSetupLinks {
       options?.client ?? client,
       "whatsappSetupLinksList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappSetupLinksListResponses,
           WhatsappSetupLinksListErrors,
@@ -20062,6 +21336,7 @@ export class WhatsappSetupLinks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20101,7 +21376,7 @@ export class WhatsappSetupLinks {
       options?.client ?? client,
       "whatsappSetupLinksCreate",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappSetupLinksCreateResponses,
           WhatsappSetupLinksCreateErrors,
@@ -20113,6 +21388,7 @@ export class WhatsappSetupLinks {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20133,7 +21409,7 @@ export class WhatsappSetupLinks {
       options?.client ?? client,
       "whatsappSetupLinksGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           WhatsappSetupLinksGetResponses,
           WhatsappSetupLinksGetErrors,
@@ -20144,6 +21420,7 @@ export class WhatsappSetupLinks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20168,7 +21445,7 @@ export class WhatsappSetupLinks {
       options?.client ?? client,
       "whatsappSetupLinksRevoke",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           WhatsappSetupLinksRevokeResponses,
           WhatsappSetupLinksRevokeErrors,
@@ -20179,6 +21456,7 @@ export class WhatsappSetupLinks {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20209,7 +21487,7 @@ export class TemplateRegistrations {
       options?.client ?? client,
       "templateRegistrationsList",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplateRegistrationsListResponses,
           TemplateRegistrationsListErrors,
@@ -20220,6 +21498,7 @@ export class TemplateRegistrations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20259,7 +21538,7 @@ export class TemplateRegistrations {
       options?.client ?? client,
       "templateRegistrationsSubmit",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).post<
           TemplateRegistrationsSubmitResponses,
           TemplateRegistrationsSubmitErrors,
@@ -20271,6 +21550,7 @@ export class TemplateRegistrations {
           ...params,
           body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
+          signal,
         }),
     );
   }
@@ -20306,7 +21586,7 @@ export class TemplateRegistrations {
       options?.client ?? client,
       "templateRegistrationsGet",
       options,
-      (headers) =>
+      (headers, signal) =>
         (options?.client ?? client).get<
           TemplateRegistrationsGetResponses,
           TemplateRegistrationsGetErrors,
@@ -20317,6 +21597,7 @@ export class TemplateRegistrations {
           ...options,
           ...params,
           headers: { ...headers, ...params.headers },
+          signal,
         }),
     );
   }

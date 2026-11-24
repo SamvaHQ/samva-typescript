@@ -877,7 +877,7 @@ const renderMethod = (
   }
   parameters.push(`options?: ${names.options}<never, ThrowOnError>`);
   statements.push(
-    `return requestWithPolicy(options?.client ?? ${names.client}, ${JSON.stringify(operation.id)}, options, (headers) => (options?.client ?? ${names.client}).${operation.method}<${generics}>(${objectLiteral([...request, `headers: { ${operation.body === undefined ? "" : `"Content-Type": ${JSON.stringify(operation.body.mediaType)}, `}...headers${method.signature === undefined ? "" : ", ...params.headers"} }`])})${operation.conditionalIdempotency ? ", parameters" : ""});`,
+    `return requestWithPolicy(options?.client ?? ${names.client}, ${JSON.stringify(operation.id)}, options, (headers, signal) => (options?.client ?? ${names.client}).${operation.method}<${generics}>(${objectLiteral([...request, `headers: { ${operation.body === undefined ? "" : `"Content-Type": ${JSON.stringify(operation.body.mediaType)}, `}...headers${method.signature === undefined ? "" : ", ...params.headers"} }`, "signal"])})${operation.conditionalIdempotency ? ", parameters" : ""});`,
   );
   return [
     `${docComment(doc, "  ")}  public static ${method.name}<ThrowOnError extends boolean = false>(`,
@@ -1041,6 +1041,8 @@ const renderSdk = (
     `  client?: ${names.runtime("Client")} | undefined;`,
     "  idempotencyKey?: string | undefined;",
     "  maxRetries?: number | undefined;",
+    "  /** Milliseconds each attempt may take; `null` disables the bound, `undefined` inherits the client's. */",
+    "  timeoutMs?: number | null | undefined;",
     "  /**",
     "   * You can pass arbitrary values through the `meta` object. This can be",
     "   * used to access values that aren't defined as part of the SDK function.",

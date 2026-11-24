@@ -6389,7 +6389,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Approve a mailbox action")
       .annotate(
         OpenApi.Description,
-        "Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin; for a hosted agent's integration tool call it lets that tool run without approval for every agent, which only the organization owner may do. A held action's `alwaysAllow` says who may and whether the caller can. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.",
+        "Records approval of a send and returns 202 while it is pending. A send is queued for automatic retry within 15 minutes of approval; repeating approval does not extend this deadline. Accepted, completed, and notSent replays return 200. No expiry applies before approval. Only a person signed in or through OAuth may approve, and never the proposer; an API key is rejected with `403`. Non-send approvals execute synchronously and return 200 with their own execution states. Set `always: true` to add an actor-specific rule allowing matching future actions, subject to policy floors and guards. Remembering an allowance for a hosted agent or API key requires an organization owner or admin; for a hosted agent's integration tool call it lets that tool run without approval for every agent, which only the organization owner may do. A held action's `alwaysAllow` says who may and whether the caller can. A hand-off cannot be always allowed. The action's `resolution` names the approver; approving a held send publishes one `mailbox.action.resolved` event.",
       ),
     HttpApiEndpoint.post("mailboxesCancelAction", "/v1/mailboxes/:id/actions/:actionId/cancel", {
       params: MailboxesCancelActionPathParams,
@@ -6414,7 +6414,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Cancel a mailbox send")
       .annotate(
         OpenApi.Description,
-        "Cancels a definitely unsent action and reopens its draft atomically. Only an authorized person who proposed the send or can approve actions may cancel. Accepted sends return 409 with their winning receipt and cannot be withdrawn. An uncertain send requires reconciliation and cannot be cancelled as unsent. Cancelling a send held for approval records `resolution.outcome: cancelled` and publishes one `mailbox.action.resolved` event.",
+        "Cancels a definitely unsent action and reopens its draft atomically. Only an authorized person who proposed the send or can approve actions may cancel; an API key is rejected with `403`, even one with full access. Accepted sends return 409 with their winning receipt and cannot be withdrawn. An uncertain send requires reconciliation and cannot be cancelled as unsent. Cancelling a send held for approval records `resolution.outcome: cancelled` and publishes one `mailbox.action.resolved` event.",
       ),
     HttpApiEndpoint.post("mailboxesDenyAction", "/v1/mailboxes/:id/actions/:actionId/deny", {
       params: MailboxesDenyActionPathParams,
@@ -6436,7 +6436,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Deny a mailbox action")
       .annotate(
         OpenApi.Description,
-        "Denies an action waiting for approval with a reason and returns it without executing it. Only a person signed in or through OAuth may deny, and never the one who proposed it. The action's `resolution` records the denier and reason; denying a held send publishes one `mailbox.action.resolved` event.",
+        "Denies an action waiting for approval with a reason and returns it without executing it. Only a person signed in or through OAuth may deny, and never the one who proposed it; an API key is rejected with `403`. The action's `resolution` records the denier and reason; denying a held send publishes one `mailbox.action.resolved` event.",
       ),
     HttpApiEndpoint.post("mailboxesRetryAction", "/v1/mailboxes/:id/actions/:actionId/retry", {
       params: MailboxesRetryActionPathParams,
@@ -6461,7 +6461,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Resume a mailbox send")
       .annotate(
         OpenApi.Description,
-        "Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.",
+        "Resumes the same eligible action while preserving its content, message identity, existing retry delays and original deadline. A queued action can resume while cleanup from an ended send attempt waits. A send attempt that is still running or whose status is unknown cannot be retried. Only an authorized person who proposed the send or can approve actions may retry; an API key is rejected with `403`, even one with full access. Automatic waits need no manual Retry. This does not grant new approval or resubmit an accepted or uncertain send.",
       ),
     HttpApiEndpoint.get("mailboxesListAddresses", "/v1/mailboxes/:id/addresses", {
       params: MailboxesListAddressesPathParams,
@@ -7494,7 +7494,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "Discard held malware")
       .annotate(
         OpenApi.Description,
-        "Permanently removes isolated malware from the mailbox's held list. Publishes one `mailbox.message.discarded` event. Retrying returns the same result and publishes nothing. Delete readable Spam through the thread delete endpoint. Only a person with `spam.discard` can discard held mail.",
+        "Permanently removes isolated malware from the mailbox's held list. Publishes one `mailbox.message.discarded` event. Retrying returns the same result and publishes nothing. Delete readable Spam through the thread delete endpoint. Only a person signed in to Samva with `spam.discard` can discard held mail; an API key is rejected with `403`.",
       ),
     HttpApiEndpoint.get("mailboxesListThreads", "/v1/mailboxes/:id/threads", {
       params: MailboxesListThreadsPathParams,
@@ -7515,7 +7515,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "List threads in a mailbox")
       .annotate(
         OpenApi.Description,
-        "Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once.",
+        "Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once. Omit `folder` to list every folder. A thread's folder is set when it is created and does not move on later replies: a thread a send started stays in `sent`, so find replies with `unread: true` and no `folder`.",
       ),
     HttpApiEndpoint.get("mailboxesGetThread", "/v1/mailboxes/:id/threads/:threadId", {
       params: MailboxesGetThreadPathParams,

@@ -153,6 +153,7 @@ const domainsPage = (page: number, totalPages: number): Api.EmailListDomains200 
         shared: false,
         phase: "ready",
         isDefault: false,
+        deleting: false,
         deliverability: {
           bounceRate: 0,
           complaintRate: 0,

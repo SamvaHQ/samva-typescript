@@ -2456,7 +2456,6 @@ export type ApiKeyWithSecret = {
 export type ApiKeyOwner = {
   id: string;
   name: string;
-  email: string;
 };
 
 export type ApiKey = {
@@ -3948,6 +3947,7 @@ export type FromAddressRequiredError = {
   _tag: "FromAddressRequiredError";
   message: string;
   verifiedDomains: Array<string>;
+  addresses: Array<string>;
 };
 
 export type ExternalServiceError = {
@@ -6309,6 +6309,10 @@ export type EmailDomainDetailed = {
   namespaceId: NamespaceId | null;
   shared: boolean;
   isDefault: boolean;
+  /**
+   * True once a removal was accepted. Removal runs in the background: the domain stays listed and sends nothing while its provider teardown finishes, then it reads as not found.
+   */
+  deleting: boolean;
   deliverability: DeliverabilityFacts;
   createdAt: string;
   updatedAt: string;
@@ -6476,6 +6480,10 @@ export type EmailDomainPage = {
     namespaceId: NamespaceId | null;
     shared: boolean;
     isDefault: boolean;
+    /**
+     * True once a removal was accepted. Removal runs in the background: the domain stays listed and sends nothing while its provider teardown finishes, then it reads as not found.
+     */
+    deleting: boolean;
     deliverability: DeliverabilityFacts;
     series: SendsSeries;
     createdAt: string;
@@ -6632,9 +6640,10 @@ export type CampaignRun = {
   holdUntil: string | null;
   capacityWarning: string | null;
   lastContactId: string | null;
+  /**
+   * The user id of the member who created it; for an API key, the key owner's user id. Never an email address.
+   */
   createdBy: string | null;
-  actorEmail: string;
-  memberRole: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -6923,9 +6932,10 @@ export type Campaign = {
   policy: CampaignPolicy;
   definition: CampaignDefinitionSummary;
   latestRun: CampaignLatestRun | null;
+  /**
+   * The user id of the member who created it; for an API key, the key owner's user id. Never an email address.
+   */
   createdBy: string | null;
-  actorEmail: string;
-  memberRole: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -7030,9 +7040,10 @@ export type CampaignListItem = {
   policy: CampaignPolicy;
   definition: CampaignDefinitionSummary;
   latestRun: CampaignLatestRun | null;
+  /**
+   * The user id of the member who created it; for an API key, the key owner's user id. Never an email address.
+   */
   createdBy: string | null;
-  actorEmail: string;
-  memberRole: string;
   createdAt: string;
   updatedAt: string;
   series: SendsSeries;
@@ -7067,9 +7078,10 @@ export type ScheduledMessage = {
   referenceId: string | null;
   failureReason: string | null;
   attempts: number;
+  /**
+   * The user id of the member who created it; for an API key, the key owner's user id. Never an email address.
+   */
   createdBy: string | null;
-  actorEmail: string;
-  memberRole: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -11653,7 +11665,6 @@ export type EmailCompleteDomainConnectResponse =
 
 export type EmailEnableReceivingData = {
   body: {
-    domain: string;
     catchAll?: boolean | null | undefined;
     endpointId?: WebhookEndpointId | null | undefined;
     addresses?: Array<string> | null | undefined;

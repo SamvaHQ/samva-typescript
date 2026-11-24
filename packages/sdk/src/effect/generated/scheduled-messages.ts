@@ -344,8 +344,6 @@ export type ScheduledMessage = {
   readonly failureReason: string | null;
   readonly attempts: number;
   readonly createdBy: string | null;
-  readonly actorEmail: string;
-  readonly memberRole: string;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -369,9 +367,10 @@ export const ScheduledMessage = /* @__PURE__ */ (() =>
     referenceId: Schema.Union([Schema.String, Schema.Null]),
     failureReason: Schema.Union([Schema.String, Schema.Null]),
     attempts: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    createdBy: Schema.Union([Schema.String, Schema.Null]),
-    actorEmail: Schema.String,
-    memberRole: Schema.String,
+    createdBy: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The user id of the member who created it; for an API key, the key owner's user id. Never an email address.",
+    }),
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "ScheduledMessage" }))();

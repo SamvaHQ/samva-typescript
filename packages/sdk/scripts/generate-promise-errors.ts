@@ -250,7 +250,7 @@ export abstract class SamvaApiError<Tag extends SamvaApiErrorTag = SamvaApiError
 /** A transport or malformed-response failure that is not part of the API error contract. */
 // @effect-diagnostics-next-line extendsNativeError:off -- Public Promise transport errors retain their native constructor and cause.
 export class SamvaTransportError extends Error {
-  readonly _tag = "SamvaTransportError" as const;
+  readonly _tag: "SamvaTransportError" | "SamvaTimeoutError" = "SamvaTransportError";
   readonly request: Request | undefined;
   readonly response: Response | undefined;
   readonly status: number | undefined;
@@ -263,6 +263,22 @@ export class SamvaTransportError extends Error {
     this.request = redactRequest(context.request);
     this.response = context.response;
     this.status = context.response?.status;
+  }
+}
+
+/**
+ * A request attempt that did not finish within its \`timeoutMs\`. The request may still have
+ * reached the API, so a keyed write retries with the same idempotency key.
+ */
+export class SamvaTimeoutError extends SamvaTransportError {
+  override readonly _tag = "SamvaTimeoutError" as const;
+  readonly timeoutMs: number;
+
+  constructor(timeoutMs: number) {
+    super(undefined);
+    this.name = "SamvaTimeoutError";
+    this.message = "Samva request did not finish within " + timeoutMs + " ms";
+    this.timeoutMs = timeoutMs;
   }
 }
 

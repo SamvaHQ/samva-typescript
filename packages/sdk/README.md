@@ -125,6 +125,13 @@ const receipt = await samva.mailboxes.sendMessage({
 console.log(receipt.state);
 ```
 
+A hosted address receives mail at once. Read each email endpoint's `sendingStatus` from
+`mailboxes.get`: `pending` means sending setup is still running, and `failed` means setup failed
+and support recovers the address. `ready` describes the address's setup only. While the
+organization's email onboarding review is undecided, a send from a ready address returns a receipt
+whose action stays `queued`; read `samva.email.getOnboardingReview()` (or run `samva email doctor`)
+for the reason. See [a send that stays queued](https://samva.dev/docs/mailboxes/approvals?utm_source=readme&utm_medium=sdk#a-send-that-stays-queued).
+
 Replies arrive as signed webhooks or over the mailbox event stream, threaded to the conversation. Give
 the agent a key that reaches only its own mailbox, and set rules that hold a send for a person to
 approve: see [Give an agent an inbox](https://samva.dev/docs/mailboxes?utm_source=readme&utm_medium=sdk). To drive the same mailbox
@@ -143,7 +150,7 @@ The root entrypoint is Promise-based:
 import { createClient } from "samva";
 ```
 
-The same Promise SDK is also available at `samva/promises`. Native Effect users import domain modules such as `samva/effect/email` and provide `samva/effect/client`. Both clients are generated from Samva's public OpenAPI document, while the Effect runtime does not wrap or execute the Promise samva. Effect is an optional peer dependency, so Promise-only applications do not install or load it.
+The same Promise SDK is also available at `samva/promises`. Native Effect users import domain modules such as `samva/effect/email` and provide `samva/effect/client`. Both clients are generated from Samva's public OpenAPI document, while the Effect runtime does not wrap or execute the Promise SDK. Effect is an optional peer dependency, so Promise-only applications do not install or load it.
 
 ## Installation
 
@@ -171,6 +178,7 @@ const { contact } = await samva.contacts.findOrCreate({
 });
 
 const message = await samva.email.send({
+  from: { email: "hello@yourdomain.com" },
   to: [contact],
   subject: "Hello",
   html: "<p>Hello World</p>",
@@ -185,15 +193,22 @@ for await (const message of samva.messages.list.items({ limit: 20 })) {
 }
 ```
 
+`from` is an object, `{ email, name? }`, never a string, on an address at a verified domain
+(a hosted mailbox domain counts). Omit it only when the template sets `fromDefault`, the
+organization has a default sender, or it has exactly one verified sender. A new organization whose
+only sending identity is a hosted mailbox address has none of these, so the send fails with
+`FromAddressRequiredError` (`422`) with its `verifiedDomains` and `addresses`; pass one of those
+addresses as `from: { email }`, or set a default with `samva.email.setDefaultSender` (`samva email senders set-default`).
+
 Creation fails with `ConflictError` (HTTP 409) when an external ID or address belongs to another
 contact. The error names the conflicting field and the creation is rolled back.
 
 ## Effect Quick Start
 
-Install `effect` next to `samva` when using the Effect entrypoint:
+Install `effect` next to `samva` when using the Effect entrypoint, at a version in the range `samva` lists in `peerDependencies`:
 
 ```bash
-bun add samva effect@4.0.6
+bun add samva effect
 ```
 
 ```typescript
@@ -202,6 +217,7 @@ import * as Client from "samva/effect/client";
 import * as Email from "samva/effect/email";
 
 const program = Email.send({
+  from: { email: "hello@yourdomain.com" },
   to: "ada@example.com",
   subject: "Welcome",
   html: "<h1>Welcome to Samva</h1>",
@@ -299,7 +315,9 @@ advisory `x-samva-client` request header. Supply your own value in `headers`, or
 
 Author a template as TSX with `samva templates init`, then publish an exact commit with
 `samva templates publish --commit HEAD` (see [`@samva/cli`](https://www.npmjs.com/package/@samva/cli)).
-A published template is addressed by its slug, which is the `id` in its `defineTemplate`:
+A published template is addressed by its slug, which is the `id` in its `defineTemplate` unless
+`samva templates add --slug` chose another handle. `templateSlug` takes that slug; `templateId` takes
+the template's `tmpl_...` id. A send names exactly one of them:
 
 ```typescript
 import { createClient } from "samva";
@@ -307,6 +325,7 @@ import { createClient } from "samva";
 const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
 await samva.email.send({
+  from: { email: "hello@yourdomain.com" },
   to: [{ email: "ada@example.com" }],
   templateSlug: "order-shipped",
   templateData: { name: "Ada", orderId: "A-1042" },
@@ -314,7 +333,26 @@ await samva.email.send({
 ```
 
 A template send omits `subject`, `html`, and `text`; the request fails if `templateData` does not
-match the template's input schema. `samva templates types` generates TypeScript types for that input.
+match the template's input schema. `from` follows the same rule as above: pass it unless the
+template's `fromDefault`, the organization default sender, or a single verified sender supplies it. `samva templates types` generates TypeScript types for that input.
+
+The SDK and CLI flatten `templateSlug`, `templateData`, `templateId`, `publicationId`, `locale`, and
+`timeZone` into the call. Over REST, `POST /v1/messages` nests them under `email`:
+
+```json
+{
+  "channel": "email",
+  "from": { "email": "hello@yourdomain.com" },
+  "to": [{ "email": "ada@example.com" }],
+  "email": {
+    "templateSlug": "order-shipped",
+    "templateData": { "name": "Ada", "orderId": "A-1042" }
+  }
+}
+```
+
+To create, save, and publish a template without Git or the CLI, see
+[Create and publish a template from code](https://samva.dev/docs/sml/create-and-publish-from-code?utm_source=readme&utm_medium=sdk).
 
 ## Copy a Share Link
 
@@ -334,6 +372,16 @@ reuse the organization's existing copy. An unavailable share link returns `Share
 
 Effect applications use `Templates.create({ shareLinkSlug })` from `samva/effect/templates`.
 The CLI accepts `samva templates create --data '{"shareLinkSlug":"for-context-dev"}' --json`.
+
+## Method Names
+
+Each method is named for its API operation. A REST `DELETE` is `remove`: `mailboxes.remove`,
+`namespaces.remove`, `webhooks.remove`, `email.removeDomain`, `newsletters.domains.remove`. The
+exceptions are `apiKeys.revoke`, `whatsappSetupLinks.revoke`, `campaigns.archive`,
+`templates.delete`, `templates.deleteProject`, and `templateShareLinks.delete`. The identity call is `samva.whoami.get()`, listing sent mail is
+`messages.list`, and sending from a mailbox is `mailboxes.sendMessage`. Hosted MCP tool names are
+`<group>_<operation>` and can use a different verb for the same operation, such as
+`namespaces_delete` for `namespaces.remove`.
 
 ## Service Surface
 
@@ -410,7 +458,7 @@ error with `Effect.catchTag` does not require importing its constructor.
 Both clients retry safe operations by default:
 
 - **What retries**: reads (`GET`/`HEAD`) and requests covered by `x-idempotent` in the OpenAPI document and its optional `x-idempotent-when` condition. Both clients attach one key per logical call and reuse it across retries. Other mutations never retry.
-- **When**: only for `isRetryable` failures: throttling (`429`), transient server errors (including a transient `BillingProviderError`), and request-transport failures. `ValidationError`, `ConflictError`, `NotFound`, auth, and billing-limit `PaymentRequiredError` failures never retry.
+- **When**: only for `isRetryable` failures: throttling (`429`), transient server errors (including a transient `BillingProviderError`), request-transport failures, and attempt timeouts. `ValidationError`, `ConflictError`, `NotFound`, auth, and billing-limit `PaymentRequiredError` failures never retry.
 - **How**: jittered exponential backoff, bounded to four attempts total. A `429` honors the server's `retryAfterSeconds` hint (capped at 60s) in place of the computed delay.
 
 `contacts.startImport` retries only `mode: "new"`. Resumes use a generation fence and never retry automatically, even with an explicit key. After an ambiguous resume response, read `contacts.getImportJob` before deciding what to do next.
@@ -429,6 +477,39 @@ program.pipe(Effect.provide(Retry.layerDisabled));
 program.pipe(Effect.provide(Retry.layer({ times: 6, while: isRetryable })));
 ```
 
+### Timeouts
+
+Each request attempt has a 30 000 ms bound. An attempt that outlasts it is aborted and fails with
+`SamvaTimeoutError`, which carries `timeoutMs`. Every retry starts a fresh timer, and a timeout
+retries exactly where a transport failure would: on reads and idempotent operations, with the same
+idempotency key. Set `timeoutMs` on the client or per call; a per-call `undefined` inherits the
+client's value, and `null` at either level disables the bound. A value that is not a positive,
+finite number of milliseconds throws a `RangeError`.
+
+```typescript
+import { createClient, SamvaTimeoutError } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY!, timeoutMs: 10_000 });
+
+try {
+  await samva.email.listDomains({}, { timeoutMs: 60_000 });
+} catch (error) {
+  if (error instanceof SamvaTimeoutError) console.error(`No answer in ${error.timeoutMs} ms`);
+  else throw error;
+}
+```
+
+`SamvaTimeoutError` extends `SamvaTransportError`. Aborting your own `signal` is not a timeout: it
+rejects with a `SamvaTransportError` whose `cause` is the abort. Storage puts of oversized inline
+attachments have their own bound, `uploadTimeoutMs` (default 300 000 ms, same rules), on the client
+and on `email.send` and `messages.send`; a put past it fails as `MediaUploadError` caused by
+`SamvaTimeoutError`. The media and send requests around the put keep `timeoutMs`.
+
+The Effect client takes the same options on `Client.layer` and `Client.layerFetch`, `timeoutMs` per
+call in each operation's options, and `uploadTimeoutMs` per call on `Email.send` and
+`Messages.send`. A timed-out attempt fails with the tagged `SamvaTimeoutError` from
+`samva/effect/errors`, which `isRetryable` accepts; interrupting the fiber stays an interruption.
+
 ### Idempotency keys
 
 Each idempotent operation generates an `Idempotency-Key` per logical call, stable across the built-in retries and distinct across calls, so a retried send never delivers twice. Pass an explicit key for cross-process deduplication (safe to replay the same request from a different machine):
@@ -440,6 +521,7 @@ const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
 await samva.email.send(
   {
+    from: { email: "hello@yourdomain.com" },
     to: "ada@example.com",
     subject: "Your receipt",
     html: "<p>Thanks for your order.</p>",
@@ -502,6 +584,13 @@ const inspectKey = Effect.gen(function* () {
 
 The wire body and the Promise client keep plain strings; only the Effect surface is `Redacted`.
 
+`apiKeys.create` and `apiKeys.rotate` return the whole key object with the secret in `key`, and the
+Promise client returns it as a plain string. Destructure the secret
+(`const { key: secret } = await samva.apiKeys.create({ ... })`), write it to your secret store,
+and keep the response out of request logs and agent tool output. Revoke a key that was printed.
+Capture the key before any redaction filter runs; a filter that blanks the response loses the only
+copy.
+
 ## OpenAPI vendor extensions
 
 The published `openapi.json` carries machine-readable semantics on top of the standard schema, derived from the same contract annotations the Effect SDK uses (no second taxonomy):
@@ -531,6 +620,7 @@ const { contact } = await samva.contacts.findOrCreate({
 });
 
 const response = await samva.email.send({
+  from: { email: "hello@yourdomain.com" },
   to: [contact],
   subject: "Welcome",
   html: "<h1>Welcome to Samva</h1>",
@@ -549,6 +639,7 @@ import * as Client from "samva/effect/client";
 import * as Email from "samva/effect/email";
 
 const program = Email.send({
+  from: { email: "hello@yourdomain.com" },
   to: "ada@example.com",
   subject: "Welcome",
   html: "<h1>Welcome to Samva</h1>",
@@ -569,6 +660,42 @@ const response = await samva.conversations.list({
   status: "active",
 });
 ```
+
+### Add and Verify a Domain
+
+Email domain methods are flat on `samva.email`; only newsletter domains are nested under
+`samva.newsletters.domains`. There is no `samva.email.domains`.
+
+```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+// Register the domain. The response lists the DNS records to publish in `dnsRecords`.
+const domain = await samva.email.addDomain({ domain: "mail.example.com" });
+
+// Read the last observed state, then check DNS now. Repeat after publishing the records
+// until `phase` is "ready".
+await samva.email.getDomainVerification({ id: domain.id });
+const verification = await samva.email.advanceDomainVerification({ id: domain.id });
+console.log(verification.phase);
+
+// Receive mail on a verified domain.
+await samva.email.enableReceiving({ id: domain.id, catchAll: true });
+const receiving = await samva.email.getReceivingStatus({ id: domain.id });
+console.log(receiving.ready, receiving.mx.expected);
+
+// Delete the domain. Removal finishes in the background: the domain reads `deleting: true`
+// until teardown completes, then reads as not found.
+await samva.email.removeDomain({ id: domain.id });
+```
+
+`enableReceiving` on a domain that is not verified returns a `ValidationError`; check verification
+first. The MX record `getReceivingStatus` reports is the one to publish for inbound mail. The same
+steps over REST are `POST /v1/email/domains`, `GET /v1/email/domains/{id}/verification`,
+`POST /v1/email/domains/{id}/verify`, `POST /v1/email/domains/{id}/enable-receiving`,
+`GET /v1/email/domains/{id}/receiving-status`, and `DELETE /v1/email/domains/{id}`; authenticate
+with the `X-API-Key` header.
 
 ### Schedule a Message
 
@@ -713,6 +840,7 @@ const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
 try {
   const message = await samva.email.send({
+    from: { email: "hello@yourdomain.com" },
     to: "ada@example.com",
     subject: "Test",
     html: "<p>Test</p>",
@@ -733,7 +861,7 @@ try {
 
 Every ergonomic method returns its decoded success value and throws a generated `SamvaApiError`
 subclass for failures declared by OpenAPI. Network and malformed-response failures throw
-`SamvaTransportError`.
+`SamvaTransportError`; an attempt past its `timeoutMs` throws its subclass `SamvaTimeoutError`.
 
 ### Raw response access
 
@@ -762,6 +890,7 @@ const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 type EmailInput = Parameters<typeof samva.email.send>[0];
 
 const input = {
+  from: { email: "hello@yourdomain.com" },
   to: "ada@example.com",
   subject: "Hello",
   html: "<p>Hello World</p>",

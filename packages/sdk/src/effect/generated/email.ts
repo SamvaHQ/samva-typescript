@@ -744,6 +744,7 @@ export type EmailDomainPage = {
     readonly namespaceId: NamespaceId | null;
     readonly shared: boolean;
     readonly isDefault: boolean;
+    readonly deleting: boolean;
     readonly deliverability: DeliverabilityFacts;
     readonly series: SendsSeries;
     readonly createdAt: string;
@@ -777,6 +778,10 @@ export const EmailDomainPage = /* @__PURE__ */ (() =>
         }),
         shared: Schema.Boolean,
         isDefault: Schema.Boolean,
+        deleting: Schema.Boolean.annotate({
+          description:
+            "True once a removal was accepted. Removal runs in the background: the domain stays listed and sends nothing while its provider teardown finishes, then it reads as not found.",
+        }),
         deliverability: DeliverabilityFacts,
         series: SendsSeries,
         createdAt: Schema.String,
@@ -804,6 +809,7 @@ export type EmailDomainDetailed = {
   readonly namespaceId: NamespaceId | null;
   readonly shared: boolean;
   readonly isDefault: boolean;
+  readonly deleting: boolean;
   readonly deliverability: DeliverabilityFacts;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -869,6 +875,10 @@ export const EmailDomainDetailed = /* @__PURE__ */ (() =>
     }),
     shared: Schema.Boolean,
     isDefault: Schema.Boolean,
+    deleting: Schema.Boolean.annotate({
+      description:
+        "True once a removal was accepted. Removal runs in the background: the domain stays listed and sends nothing while its provider teardown finishes, then it reads as not found.",
+    }),
     deliverability: DeliverabilityFacts,
     createdAt: Schema.String,
     updatedAt: Schema.String,
@@ -2808,14 +2818,12 @@ export type EmailEnableReceivingPathParams = { readonly id: EmailDomainId };
 export const EmailEnableReceivingPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: EmailDomainId }))();
 export type EmailEnableReceivingRequestJson = {
-  readonly domain: string;
   readonly catchAll?: boolean | null;
   readonly endpointId?: WebhookEndpointId | null;
   readonly addresses?: ReadonlyArray<string> | null;
 };
 export const EmailEnableReceivingRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
-    domain: Schema.String,
     catchAll: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     endpointId: Schema.optionalKey(Schema.Union([WebhookEndpointId, Schema.Null])),
     addresses: Schema.optionalKey(Schema.Union([Schema.Array(Schema.String), Schema.Null])),
@@ -4405,7 +4413,10 @@ export class EmailGroup extends HttpApiGroup.make("Email")
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "email.removeDomain")
       .annotate(OpenApi.Summary, "Remove a sending domain")
-      .annotate(OpenApi.Description, "Permanently deletes a sending domain from the organization."),
+      .annotate(
+        OpenApi.Description,
+        "Permanently deletes a sending domain from the organization. Removal is asynchronous: a `200` means its teardown was accepted. The domain stays listed with `deleting: true` and sends nothing until teardown finishes, then reads as `404`. A repeat call while teardown runs answers `200` again; once it finishes, a `404` means the domain is gone.",
+      ),
     HttpApiEndpoint.patch("emailUpdateDomainConfig", "/v1/email/domains/:id/config", {
       params: EmailUpdateDomainConfigPathParams,
       payload: EmailUpdateDomainConfigRequestJson,

@@ -441,6 +441,7 @@ const domainPage = (page: number) => ({
       phase: "ready",
       shared: false,
       isDefault: page === 1,
+      deleting: false,
       namespaceId: null,
       unknownRecipientMailboxId: null,
       deliverability: { bounceRate: 0, complaintRate: 0, windowSends: 0, sendingStatus: "enabled" },

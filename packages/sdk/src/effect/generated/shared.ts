@@ -901,7 +901,11 @@ export class TemplateSourceError extends Schema.TaggedError<TemplateSourceError>
 ) {}
 export class FromAddressRequiredError extends Schema.TaggedError<FromAddressRequiredError>()(
   "FromAddressRequiredError",
-  Schema.Struct({ message: Schema.String, verifiedDomains: Schema.Array(Schema.String) }),
+  Schema.Struct({
+    message: Schema.String,
+    verifiedDomains: Schema.Array(Schema.String),
+    addresses: Schema.Array(Schema.String),
+  }),
 ) {}
 export class BrandAddressRequiredError extends Schema.TaggedError<BrandAddressRequiredError>()(
   "BrandAddressRequiredError",

@@ -11,14 +11,17 @@ import { MediaUploadError } from "../src/inline-attachments";
 import * as PromiseErrors from "../src/promises/errors.gen";
 
 // The generated Promise errors track the contracts' API error inventory.
-const transportOnly = new Set(["SamvaApiError", "SamvaTransportError"]);
+const transportOnly = new Set(["SamvaApiError", "SamvaTransportError", "SamvaTimeoutError"]);
 const apiErrorNames = Object.keys(PromiseErrors).filter(
   (name) => /^[A-Z]\w*Error$/.test(name) && !transportOnly.has(name),
 );
 
 describe("samva/effect/errors", () => {
-  it("exports exactly the API errors and MediaUploadError", () => {
-    expect(Object.keys(Errors).sort()).toEqual([...apiErrorNames, "MediaUploadError"].sort());
+  it("exports exactly the API errors, MediaUploadError, and SamvaTimeoutError", () => {
+    expect(Object.keys(Errors).sort()).toEqual(
+      [...apiErrorNames, "MediaUploadError", "SamvaTimeoutError"].sort(),
+    );
+    expect(EffectSdk.SamvaTimeoutError).toBe(Errors.SamvaTimeoutError);
   });
 
   it.each(apiErrorNames)("shares the %s constructor with the barrel", (name) => {

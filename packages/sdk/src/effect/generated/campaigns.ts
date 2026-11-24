@@ -608,8 +608,6 @@ export type CampaignListItem = {
   readonly definition: CampaignDefinitionSummary;
   readonly latestRun: CampaignLatestRun | null;
   readonly createdBy: string | null;
-  readonly actorEmail: string;
-  readonly memberRole: string;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly series: SendsSeries;
@@ -628,9 +626,10 @@ export const CampaignListItem = /* @__PURE__ */ (() =>
     policy: CampaignPolicy,
     definition: CampaignDefinitionSummary,
     latestRun: Schema.Union([CampaignLatestRun, Schema.Null]),
-    createdBy: Schema.Union([Schema.String, Schema.Null]),
-    actorEmail: Schema.String,
-    memberRole: Schema.String,
+    createdBy: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The user id of the member who created it; for an API key, the key owner's user id. Never an email address.",
+    }),
     createdAt: Schema.String,
     updatedAt: Schema.String,
     series: SendsSeries,
@@ -645,8 +644,6 @@ export type Campaign = {
   readonly definition: CampaignDefinitionSummary;
   readonly latestRun: CampaignLatestRun | null;
   readonly createdBy: string | null;
-  readonly actorEmail: string;
-  readonly memberRole: string;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -664,9 +661,10 @@ export const Campaign = /* @__PURE__ */ (() =>
     policy: CampaignPolicy,
     definition: CampaignDefinitionSummary,
     latestRun: Schema.Union([CampaignLatestRun, Schema.Null]),
-    createdBy: Schema.Union([Schema.String, Schema.Null]),
-    actorEmail: Schema.String,
-    memberRole: Schema.String,
+    createdBy: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The user id of the member who created it; for an API key, the key owner's user id. Never an email address.",
+    }),
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Campaign" }))();
@@ -702,8 +700,6 @@ export type CampaignRun = {
   readonly capacityWarning: string | null;
   readonly lastContactId: string | null;
   readonly createdBy: string | null;
-  readonly actorEmail: string;
-  readonly memberRole: string;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -744,9 +740,10 @@ export const CampaignRun = /* @__PURE__ */ (() =>
     holdUntil: Schema.Union([Schema.String, Schema.Null]),
     capacityWarning: Schema.Union([Schema.String, Schema.Null]),
     lastContactId: Schema.Union([Schema.String, Schema.Null]),
-    createdBy: Schema.Union([Schema.String, Schema.Null]),
-    actorEmail: Schema.String,
-    memberRole: Schema.String,
+    createdBy: Schema.Union([Schema.String, Schema.Null]).annotate({
+      description:
+        "The user id of the member who created it; for an API key, the key owner's user id. Never an email address.",
+    }),
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "CampaignRun" }))();

@@ -147,13 +147,17 @@ const isRequestTransportError = (error: unknown): boolean => {
   return Predicate.isObject(reason) && Predicate.isTagged(reason, "TransportError");
 };
 
-/** True for transient failures, including raw request-transport errors. */
-export const isTransient = (error: unknown): boolean =>
-  hasCategory(error, "transient") || isRequestTransportError(error);
+/** A request attempt that outlasted its `timeoutMs`; it fails like a lost response. */
+const isAttemptTimeout = (error: unknown): boolean =>
+  Predicate.isTagged(error, "SamvaTimeoutError");
 
-/** True when an error is declared safe to retry (throttling / transient / transport). */
+/** True for transient failures, including raw request-transport errors and attempt timeouts. */
+export const isTransient = (error: unknown): boolean =>
+  hasCategory(error, "transient") || isRequestTransportError(error) || isAttemptTimeout(error);
+
+/** True when an error is declared safe to retry (throttling / transient / transport / timeout). */
 export const isRetryable = (error: unknown): boolean =>
-  isRetryableError(error) || isRequestTransportError(error);
+  isRetryableError(error) || isRequestTransportError(error) || isAttemptTimeout(error);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Catch combinators — narrow the caught category out of the error channel

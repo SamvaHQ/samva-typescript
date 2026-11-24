@@ -590,7 +590,7 @@ export class NamespacesGroup extends HttpApiGroup.make("Namespaces")
       .annotate(OpenApi.Summary, "Delete a namespace")
       .annotate(
         OpenApi.Description,
-        "Deletes an empty namespace. A namespace that still holds anything conflicts, and the error names and counts each resource kind that remains. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes, keys, and webhook endpoints cannot move and are deleted. Messages keep the namespace they ran in.",
+        "Deletes an empty namespace. A namespace that still holds anything conflicts, and the error names and counts each resource kind that remains. Delete each, or return it to organization level with `DELETE /v1/namespaces/{id}/resources/{type}/{resourceId}`; mailboxes and webhook endpoints cannot move and are deleted. Only an enabled API key holds the namespace: revoke the namespace's keys, and deletion retires and detaches each one, keeping its record. Deletion also deletes the namespace's portal links and WhatsApp setup links, so their URLs stop working. Messages keep the namespace they ran in.",
       ),
     HttpApiEndpoint.patch("namespacesUpdate", "/v1/namespaces/:id", {
       params: NamespacesUpdatePathParams,

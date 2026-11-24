@@ -52,3 +52,51 @@ For separate decoding, import `MessageBouncedEventSchema` or `SamvaWebhookEventS
 
 Signing secrets are `whsec_` followed by Base64-encoded secret bytes. Copy the entire secret from
 Samva; the suffix is Base64, not hex or Base64url.
+
+## Test your handler
+
+`generateWebhookSecret` and `signWebhook` produce the same signed bytes Samva sends, so a test can
+exercise the success path and the failing-signature path without a live delivery. The fixture below
+uses an event type the package does not know, which passes through as an untyped event; a known type
+needs a payload that matches its schema.
+
+```ts
+import {
+  generateWebhookSecret,
+  InvalidWebhookHeadersError,
+  safeVerify,
+  signWebhook,
+  verify,
+  WebhookSignatureError,
+} from "@samva/webhooks";
+
+const secret = generateWebhookSecret();
+const body = JSON.stringify({
+  type: "example.test",
+  timestamp: new Date().toISOString(),
+  data: { note: "fixture" },
+});
+const id = "evt_test_1";
+const timestamp = Math.floor(Date.now() / 1000);
+const signature = await signWebhook({ body, id, timestamp, secret });
+const delivery = { body, id, timestamp: String(timestamp), signature, secret };
+
+await verify(delivery); // resolves { id, event }
+
+// A body changed by one byte fails the signature check.
+await verify({ ...delivery, body: `${body} ` }).catch((error) => {
+  console.log(error instanceof WebhookSignatureError); // true
+});
+
+// An absent header fails before the signature is read.
+await verify({ ...delivery, signature: undefined }).catch((error) => {
+  console.log(error instanceof InvalidWebhookHeadersError); // true
+});
+
+// safeVerify returns the failure instead of rejecting.
+console.log((await safeVerify({ ...delivery, body: `${body} ` })).verified); // false
+```
+
+In an HTTP test, send the same `webhook-id`, `webhook-timestamp`, and `webhook-signature` header
+values (the `WEBHOOK_*_HEADER` constants) with the signed body, then repeat the request with a
+changed body and expect your handler to answer `4xx`.

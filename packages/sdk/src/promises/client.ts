@@ -95,7 +95,7 @@ import {
   replyToEmailsPayload,
 } from "../normalize";
 import { fromApiError, SamvaTransportError } from "./errors.gen";
-import { configureRequests, type RequestPolicy } from "./request";
+import { configureRequests, type RequestPolicy, startAttempt, uploadTimeout } from "./request";
 
 export * from "./errors.gen";
 export type * from "./types.gen";
@@ -130,6 +130,11 @@ type MessageSendOptions<ThrowOnError extends boolean = false> =
   MessageSendRequestOptions<ThrowOnError> & {
     /** Sent as the `idempotency-key` header; defaults to a fresh UUID per call. */
     readonly idempotencyKey?: string | undefined;
+    /**
+     * Overrides the client's `uploadTimeoutMs` for the storage puts of oversized inline
+     * attachments; `undefined` inherits it.
+     */
+    readonly uploadTimeoutMs?: number | null | undefined;
   };
 type MessageSendResponse<ThrowOnError extends boolean = false> = ReturnType<
   typeof messages.send<ThrowOnError>
@@ -263,7 +268,7 @@ type CreatedUpload = Awaited<ReturnType<DirectService<typeof media>["create"]>>;
 async function uploadOversizedAttachments(
   clientInstance: Client,
   payload: Record<string, unknown>,
-  requestOptions: MessageSendRequestOptions<boolean>,
+  requestOptions: MessageSendOptions<boolean>,
 ): Promise<Record<string, unknown>> {
   const plan = planInlineUploads(payload);
   if (plan.length === 0) return payload;
@@ -272,7 +277,7 @@ async function uploadOversizedAttachments(
   // oxlint-disable no-await-in-loop -- Uploads run one at a time: the first failure stops the send before more bytes leave, and only one decoded attachment is held at once.
   for (const upload of plan) {
     const created = await directMedia.create(mediaCreateBody(upload), requestOptions);
-    await putUpload(clientInstance, upload, created, requestOptions.signal ?? undefined);
+    await putUpload(clientInstance, upload, created, requestOptions);
     await directMedia.complete({ id: created.id }, requestOptions);
     uploaded.set(upload.index, { mediaId: created.id, upload });
   }
@@ -288,7 +293,7 @@ async function uploadOversizedAttachments(
 function sendWithUploads<Result extends PromiseLike<unknown>>(
   clientInstance: Client,
   payload: Record<string, unknown>,
-  requestOptions: MessageSendRequestOptions<boolean>,
+  requestOptions: MessageSendOptions<boolean>,
   send: (payload: Record<string, unknown>) => Result,
 ): Result | Promise<Awaited<Result>> {
   if (planInlineUploads(payload).length === 0) return send(payload);
@@ -298,21 +303,26 @@ function sendWithUploads<Result extends PromiseLike<unknown>>(
 async function sendAfterUploads<Result extends PromiseLike<unknown>>(
   clientInstance: Client,
   payload: Record<string, unknown>,
-  requestOptions: MessageSendRequestOptions<boolean>,
+  requestOptions: MessageSendOptions<boolean>,
   send: (payload: Record<string, unknown>) => Result,
 ): Promise<Awaited<Result>> {
   const uploaded = await uploadOversizedAttachments(clientInstance, payload, requestOptions);
   return await send(uploaded);
 }
 
+/** A put that outlasts its `uploadTimeoutMs` fails as `MediaUploadError` caused by `SamvaTimeoutError`. */
 async function putUpload(
   clientInstance: Client,
   upload: InlineUpload,
   created: CreatedUpload,
-  signal: AbortSignal | undefined,
+  options: MessageSendOptions<boolean>,
 ): Promise<void> {
   const fail = (status: number | undefined, cause?: unknown) =>
     new MediaUploadError({ filename: upload.filename, mediaId: created.id, status, cause });
+  const attempt = startAttempt(
+    options.signal ?? clientInstance.getConfig().signal,
+    uploadTimeout(clientInstance, options.uploadTimeoutMs),
+  );
   let response: Response;
   try {
     // The presigned URL authenticates itself, so the API key never travels to storage.
@@ -322,11 +332,13 @@ async function putUpload(
         method: created.upload.method,
         headers: created.upload.headers,
         body: upload.bytes as BodyInit,
-        signal: signal ?? null,
+        signal: attempt.signal ?? null,
       }),
     );
   } catch (error) {
-    throw fail(undefined, error);
+    throw fail(undefined, attempt.timedOut() ?? error);
+  } finally {
+    attempt.end();
   }
   if (!response.ok) throw fail(response.status);
 }
@@ -458,7 +470,8 @@ async function unwrap(
   try {
     result = await method(...arguments_);
   } catch (error) {
-    if (error instanceof MediaUploadError) throw error;
+    // An invalid `maxRetries` or timeout is the caller's mistake, not a transport failure.
+    if (error instanceof MediaUploadError || error instanceof RangeError) throw error;
     throw fromApiError(error);
   }
   if (!isObject(result)) throw new SamvaTransportError(result);

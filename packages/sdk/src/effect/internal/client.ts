@@ -13,8 +13,15 @@ import * as HttpClientRequest from "effect/http/HttpClientRequest";
 import { CLIENT_ATTRIBUTION_HEADER, clientAttribution } from "../../client-attribution";
 import { MediaUploadError, uploadContentType } from "../../inline-attachments";
 import type { MailboxEventStreamConnection } from "../../mailbox-events";
+import {
+  DEFAULT_UPLOAD_TIMEOUT_MS,
+  resolveTimeout,
+  type TimeoutSetting,
+  validateTimeout,
+} from "../../request-policy";
 import type { SamvaApi } from "../generated/index";
 import { ApiKeySecurityMiddleware } from "../generated/shared";
+import { type SamvaTimeoutError, withTimeout } from "./timeout";
 
 const DEFAULT_BASE_URL = "https://api.samva.dev";
 
@@ -23,6 +30,16 @@ export interface ConfigBase {
   /** Generate the key once for each idempotent logical call. */
   readonly idempotency?: ((operation: string) => string | undefined) | undefined;
   readonly headers?: Readonly<Record<string, string | undefined>>;
+  /**
+   * Milliseconds each request attempt may take before it fails with `SamvaTimeoutError`
+   * (default 30 000). `null` disables the bound.
+   */
+  readonly timeoutMs?: number | null | undefined;
+  /**
+   * Milliseconds each put of attachment bytes to storage may take (default 300 000). `null`
+   * disables the bound.
+   */
+  readonly uploadTimeoutMs?: number | null | undefined;
 }
 
 export type Config =
@@ -67,7 +84,7 @@ type MethodReturn<Method> = Method extends (...args: infer _Args) => infer Retur
 /** What one operation wrapper returns: the endpoint's decoded success and typed failure. */
 export type OperationResult<Name extends Operation> = Effect.Effect<
   OperationSuccess<Name>,
-  Effect.Error<MethodReturn<FlatRaw[Name]>>,
+  Effect.Error<MethodReturn<FlatRaw[Name]>> | SamvaTimeoutError,
   Service
 >;
 
@@ -78,6 +95,8 @@ type OperationCall<Name extends Operation> = (request?: unknown) => OperationRes
 
 export interface Interface {
   readonly idempotency?: ((operation: string) => string | undefined) | undefined;
+  /** The client's per-attempt request bound; `undefined` means the default, `null` none. */
+  readonly timeoutMs?: number | null | undefined;
   /**
    * The generated call for one endpoint. A group's client is built on the first call to any of its
    * endpoints and reused, so a group the program never calls costs nothing.
@@ -91,7 +110,8 @@ export interface Interface {
   /**
    * Put bytes at a presigned storage URL through the configured transport, replaying the
    * instruction's headers exactly and sending no API credentials. Fails with the response status
-   * (or the transport error) as `MediaUploadError`.
+   * (or the transport error, or a `SamvaTimeoutError` past the upload bound) as
+   * `MediaUploadError`. `timeoutMs` overrides the client's `uploadTimeoutMs`.
    */
   readonly putUpload: (input: {
     readonly filename: string;
@@ -100,6 +120,7 @@ export interface Interface {
     readonly method: string;
     readonly headers: Readonly<Record<string, string>>;
     readonly bytes: Uint8Array;
+    readonly timeoutMs?: TimeoutSetting;
   }) => Effect.Effect<void, MediaUploadError>;
 }
 
@@ -186,33 +207,40 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
     }
 
     const putUpload: Interface["putUpload"] = (input) =>
-      storage
-        .execute(
+      withTimeout(
+        storage.execute(
           HttpClientRequest.make(input.method as "PUT")(input.url).pipe(
             HttpClientRequest.bodyUint8Array(input.bytes, uploadContentType(input.headers)),
             HttpClientRequest.setHeaders(input.headers),
           ),
-        )
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new MediaUploadError({ filename: input.filename, mediaId: input.mediaId, cause }),
-          ),
-          Effect.flatMap((response) =>
-            response.status >= 200 && response.status < 300
-              ? Effect.void
-              : Effect.fail(
-                  new MediaUploadError({
-                    filename: input.filename,
-                    mediaId: input.mediaId,
-                    status: response.status,
-                  }),
-                ),
-          ),
-        );
+        ),
+        resolveTimeout(
+          "uploadTimeoutMs",
+          input.timeoutMs,
+          config.uploadTimeoutMs,
+          DEFAULT_UPLOAD_TIMEOUT_MS,
+        ),
+      ).pipe(
+        Effect.mapError(
+          (cause) =>
+            new MediaUploadError({ filename: input.filename, mediaId: input.mediaId, cause }),
+        ),
+        Effect.flatMap((response) =>
+          response.status >= 200 && response.status < 300
+            ? Effect.void
+            : Effect.fail(
+                new MediaUploadError({
+                  filename: input.filename,
+                  mediaId: input.mediaId,
+                  status: response.status,
+                }),
+              ),
+        ),
+      );
 
     return Service.of({
       idempotency: config.idempotency,
+      timeoutMs: config.timeoutMs,
       putUpload,
       endpoint: (group, name) =>
         Effect.flatMap(groupClient(group), (client) => {
@@ -230,8 +258,12 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
     });
   });
 
-export const layer = (config: Config): Layer.Layer<Service, never, HttpClient.HttpClient> =>
-  Layer.effect(Service, make(config));
+/** Throws a `RangeError` for an invalid `timeoutMs` or `uploadTimeoutMs`, as the Promise client does. */
+export const layer = (config: Config): Layer.Layer<Service, never, HttpClient.HttpClient> => {
+  validateTimeout("timeoutMs", config.timeoutMs);
+  validateTimeout("uploadTimeoutMs", config.uploadTimeoutMs);
+  return Layer.effect(Service, make(config));
+};
 
 export const layerFetch = (config: Config): Layer.Layer<Service> =>
   layer(config).pipe(Layer.provide(FetchHttpClient.layer));

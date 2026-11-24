@@ -212,7 +212,7 @@ export class PoliciesGroup extends HttpApiGroup.make("Policies")
       .annotate(OpenApi.Summary, "Set decision rules")
       .annotate(
         OpenApi.Description,
-        "Replaces this scope's rules and instructions only when ifVersion matches its current version. A stale version returns a conflict. More specific scopes replace defaults; atLeast floors remain binding. Identical rule matches in one scope are rejected.",
+        "Replaces this scope's rules and instructions only when ifVersion matches its current version. A stale version returns a conflict. More specific scopes replace defaults; atLeast floors remain binding. Identical rule matches in one scope are rejected. An API key changes policy only with organization-wide reach (full access, no namespace, owned by an organization owner or admin): it may set any rule on another key, and on a mailbox it can configure only add atLeast person or never floors or decide: never rules while keeping every existing rule. Its own key, the organization, and agents return 403; a person changes those.",
       ),
     HttpApiEndpoint.delete("policiesDeletePolicy", "/v1/policies/:kind/:id", {
       params: PoliciesDeletePolicyPathParams,
@@ -234,7 +234,7 @@ export class PoliciesGroup extends HttpApiGroup.make("Policies")
       .annotate(OpenApi.Summary, "Clear decision rules")
       .annotate(
         OpenApi.Description,
-        "Clears this scope's rules and instructions only when ifVersion matches, and returns the next version. The stored version is retained. Other scopes and subject defaults continue to apply.",
+        "Clears this scope's rules and instructions only when ifVersion matches, and returns the next version. The stored version is retained. Other scopes and subject defaults continue to apply. An API key with organization-wide reach may clear another key's policy; clearing its own key, a mailbox that holds rules, the organization, or an agent returns 403.",
       ),
   )
   .annotate(OpenApi.Description, "Rules governing who decides each gated action.") {}

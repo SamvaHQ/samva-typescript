@@ -22,9 +22,9 @@ import {
   __SamvaRuntimeSensitiveString,
 } from "./shared";
 
-export type ApiKeyOwner = { readonly id: string; readonly name: string; readonly email: string };
+export type ApiKeyOwner = { readonly id: string; readonly name: string };
 export const ApiKeyOwner = /* @__PURE__ */ (() =>
-  Schema.Struct({ id: Schema.String, name: Schema.String, email: Schema.String }).annotate({
+  Schema.Struct({ id: Schema.String, name: Schema.String }).annotate({
     identifier: "ApiKeyOwner",
   }))();
 export type ApiKeyActivityPage = {

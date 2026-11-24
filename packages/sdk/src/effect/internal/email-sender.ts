@@ -4,8 +4,15 @@ import { replyToEmailsPayload } from "../../normalize";
 import { EmailGroup } from "../generated/email";
 import { generateIdempotencyKey, withRetry } from "../retry";
 import { type FlatRaw, Service } from "./client";
-import { callEndpoint, type RequestArg, stripUndefined } from "./operation";
-import type { ErgonomicEmailList, SendOptions } from "./send";
+import {
+  attemptTimeout,
+  callEndpoint,
+  type OperationOptions,
+  type RequestArg,
+  stripUndefined,
+} from "./operation";
+import type { ErgonomicEmailList } from "./send";
+import { withTimeout } from "./timeout";
 
 type AddSenderRequest = NonNullable<RequestArg<FlatRaw["emailAddSender"]>>;
 
@@ -15,21 +22,25 @@ export type EmailAddSenderInput = Omit<AddSenderRequest["payload"], "replyToEmai
 
 export const addEmailSender = Effect.fn("Email.addSender")(function* (
   input: EmailAddSenderInput,
-  options?: SendOptions,
+  options?: OperationOptions,
 ) {
   const client = yield* Service;
+  const timeoutMs = attemptTimeout(options, client);
   const idempotencyKey =
     options?.idempotencyKey ??
     client.idempotency?.("emailAddSender") ??
     (yield* generateIdempotencyKey);
   const { replyToEmails, ...sender } = input;
   return yield* withRetry(
-    callEndpoint(EmailGroup, "emailAddSender", {
-      headers: { "idempotency-key": idempotencyKey },
-      payload: stripUndefined({
-        ...sender,
-        ...replyToEmailsPayload(replyToEmails),
+    withTimeout(
+      callEndpoint(EmailGroup, "emailAddSender", {
+        headers: { "idempotency-key": idempotencyKey },
+        payload: stripUndefined({
+          ...sender,
+          ...replyToEmailsPayload(replyToEmails),
+        }),
       }),
-    }),
+      timeoutMs,
+    ),
   );
 });

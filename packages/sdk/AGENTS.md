@@ -25,10 +25,50 @@ Mailbox send operations return asynchronous action receipts. Interpret `state`, 
 and read `mailboxes.getAction` (or `Mailboxes.getAction`) to follow progress. Narrow on action `type`
 before reading send-specific `send` receipt and frozen `intent`. `queued` is not a sent confirmation;
 `accepted` supplies `messageId` and `acceptedAt`, while `completed` records mailbox projection,
-not recipient delivery. A timeout preserves the original idempotency key and body; a new key can
+not recipient delivery. Each request attempt fails with `SamvaTimeoutError` after 30 000 ms; set
+`timeoutMs` on the client (`createClient`, `Client.layerFetch`) or per call, and `null` disables
+the bound. A retry after a timeout preserves the original idempotency key and body; a new key can
 send another email. `uncertain` requires reconciliation. Only a permitted person can cancel before
 acceptance or retry an eligible original action without extending its deadline. Approval is also
 asynchronous. See https://samva.dev/docs/mailboxes/approvals for the receipt contract.
+
+`email.send` takes `from` as `{ email, name? }`, never a string. Without `from` it falls back to the
+template's `fromDefault`, then the organization default sender, then the only verified sender; a new
+organization whose only sending identity is a hosted mailbox address has none, so the send fails with
+`FromAddressRequiredError` (`422`, with `verifiedDomains` and `addresses`) and the example must pass `from`.
+`mailboxes.sendMessage` takes plain address strings and sends from the mailbox's default email
+endpoint; it has no `from` or template fields. `mailboxes.create` takes a full address on
+`whoami.get()`'s `organization.hostedMailDomain`; a slug is not an address.
+
+A thread id is not a message id: `mailboxes.getThread` returns no messages, so read a thread's
+`msg_` ids from `listThreadMessages({ id, threadId })` (or `getThreadContent`) and pass an item's
+`id` as `messageId` to `reply`, `replyAll`, and `forward`. A thread's folder is set when it is
+created and does not move on later replies: a thread a send started stays in `sent`, so
+`listThreads({ folder: "inbox" })` omits it; omit `folder` and pass `unread: true` for replies.
+To confirm a send landed, poll `getAction` until `state` is `completed`, `notSent`, or `uncertain`
+within `executeUntil`, then read `action.send.messageId` and `action.send.threadId`.
+
+A mailbox email endpoint's `sendingStatus` (`mailboxes.get`) reports the address's setup: `pending`,
+`ready`, or `failed`. While the organization's email onboarding review is undecided, a send from a
+`ready` address stays `queued`; read `email.getOnboardingReview()` for the cause.
+
+Each SDK method is named for its API operation, so a REST `DELETE` is `remove` (`mailboxes.remove`,
+`namespaces.remove`, `webhooks.remove`, `email.removeDomain`, `newsletters.domains.remove`). The
+exceptions are `apiKeys.revoke`, `whatsappSetupLinks.revoke`, `campaigns.archive`,
+`templates.delete`, `templates.deleteProject`, and `templateShareLinks.delete`. The identity call is
+`whoami.get()`. `apiKeys.create` and `apiKeys.rotate` return the secret in `key`; destructure it and
+keep the response out of logs.
+
+Email domain methods are flat on `client.email`: `addDomain`, `getDomainVerification`,
+`advanceDomainVerification` (checks DNS now; repeat until `phase` is `ready`), `enableReceiving`
+(takes `id` and optional `catchAll`, `endpointId`, `addresses`; the domain must be
+verified), `getReceivingStatus`, and `removeDomain`. Only newsletter domains nest, under
+`client.newsletters.domains`.
+
+Create and publish a template from code with `templates.create({ name, slug })`, `openWorkspace`,
+`patchWorkspace`, `checkWorkspace`, `saveWorkspace`, `publish`, and `renderPublication`; every
+workspace call carries the workspace `revision` as `expectedRevision`, and Save also carries
+`expectedHead`. See https://samva.dev/docs/sml/create-and-publish-from-code.
 
 Use `client.policies` or `Policies` from `samva/effect/policies` to read, replace, or clear an
 organization, mailbox, or API key's decision rules. Policy writes require a person's OAuth session
@@ -62,8 +102,9 @@ https://samva.dev/docs/channels/email/newsletters.
 
 Every idempotent operation generates one key per logical call and reuses it across built-in
 retries. Override only through the second options argument, `{ idempotencyKey }`. Both clients
-retry reads and contract-marked idempotent mutations. Promise clients accept `maxRetries` at
-client and call level. `contacts.startImport` retries only `mode: "new"`; a resume uses
+retry reads and contract-marked idempotent mutations, after a timeout too. Promise clients accept
+`maxRetries` at client and call level. Storage puts of oversized inline attachments use
+`uploadTimeoutMs` (default 300 000 ms) instead of `timeoutMs`. `contacts.startImport` retries only `mode: "new"`; a resume uses
 a generation fence and must be followed by `getImportJob` after an ambiguous response. Promise cursor lists expose lazy `.pages(params)` and `.items(params)`
 async iterators. `orgSlug` selects an organization when paired with `authToken`.
 

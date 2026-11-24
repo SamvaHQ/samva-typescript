@@ -32,3 +32,4 @@ export {
 } from "./generated/shared";
 
 export { MediaUploadError } from "../inline-attachments";
+export { SamvaTimeoutError } from "./internal/timeout";
