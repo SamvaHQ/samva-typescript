@@ -1251,9 +1251,8 @@ export type CampaignsPreview400 = MalformedRequestError;
 export const CampaignsPreview400 = MalformedRequestError;
 export type CampaignsPreview401 = UnauthorizedError;
 export const CampaignsPreview401 = UnauthorizedError;
-export type CampaignsPreview403 = FlagDisabledError | ForbiddenError;
-export const CampaignsPreview403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type CampaignsPreview403 = ForbiddenError;
+export const CampaignsPreview403 = ForbiddenError;
 export type CampaignsPreview404 = ResourceNotFoundError;
 export const CampaignsPreview404 = ResourceNotFoundError;
 export type CampaignsPreview409 = ConflictError;
@@ -1286,12 +1285,9 @@ export type CampaignsSendTest401 = UnauthorizedError;
 export const CampaignsSendTest401 = UnauthorizedError;
 export type CampaignsSendTest402 = PaymentRequiredError;
 export const CampaignsSendTest402 = PaymentRequiredError;
-export type CampaignsSendTest403 =
-  | ForbiddenError
-  | OnboardingReviewRequiredError
-  | FlagDisabledError;
+export type CampaignsSendTest403 = ForbiddenError | OnboardingReviewRequiredError;
 export const CampaignsSendTest403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, OnboardingReviewRequiredError, FlagDisabledError]))();
+  Schema.Union([ForbiddenError, OnboardingReviewRequiredError]))();
 export type CampaignsSendTest404 = ResourceNotFoundError;
 export const CampaignsSendTest404 = ResourceNotFoundError;
 export type CampaignsSendTest409 = ConflictError;

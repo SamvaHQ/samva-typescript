@@ -14,6 +14,7 @@ import {
   ConflictError,
   ContactId,
   ConversationId,
+  DeliveryErrorDetails,
   DeliveryUnavailableError,
   EmailBccRecipients,
   EmailCcRecipients,
@@ -21,7 +22,6 @@ import {
   EmailRecipients,
   EmailSendMessagePayload,
   EmailSender,
-  EmailTrackingOverrideV1,
   ExternalServiceError,
   FlagDisabledError,
   ForbiddenError,
@@ -33,7 +33,7 @@ import {
   MailboxId,
   MailboxThreadId,
   MalformedRequestError,
-  MediaId,
+  MessageContent,
   MessageDeliveryId,
   MessageId,
   MessageMetadata,
@@ -46,16 +46,11 @@ import {
   SenderNotReadyError,
   SkippedRecipient,
   SmsSendMessagePayload,
+  SubmissionClient,
   UnauthorizedError,
   UserId,
   ValidationError,
-  WhatsAppButtonsMessage,
-  WhatsAppCtaUrlMessage,
-  WhatsAppFlowId,
-  WhatsAppFlowVersionId,
-  WhatsAppListMessage,
   WhatsAppSendMessagePayload,
-  WhatsAppTextHeader,
 } from "./shared";
 
 export type MessageSender = { readonly address: string; readonly name: string | null };
@@ -64,178 +59,6 @@ export const MessageSender = /* @__PURE__ */ (() =>
     address: Schema.String,
     name: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "MessageSender" }))();
-export type SubmissionClient = {
-  readonly surface: "typescript-promise" | "typescript-effect" | "cli" | "mcp";
-  readonly version: string;
-};
-export const SubmissionClient = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    surface: Schema.Union([
-      Schema.Literal("typescript-promise"),
-      Schema.Literal("typescript-effect"),
-      Schema.Literal("cli"),
-      Schema.Literal("mcp"),
-    ]),
-    version: Schema.String,
-  }).annotate({ identifier: "SubmissionClient" }))();
-export type SmsMessageContent = {
-  readonly text: string;
-  readonly unicode?: boolean | null;
-  readonly parts?: number | null;
-};
-export const SmsMessageContent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    text: Schema.String,
-    unicode: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-    parts: Schema.optionalKey(
-      Schema.Union([
-        Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-        Schema.Null,
-      ]),
-    ),
-  }).annotate({ identifier: "SmsMessageContent" }))();
-export type WhatsAppStoredLocation = {
-  readonly latitude: number;
-  readonly longitude: number;
-  readonly name?: string;
-  readonly address?: string;
-  readonly url?: string;
-};
-export const WhatsAppStoredLocation = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    latitude: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    longitude: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    name: Schema.optionalKey(Schema.String),
-    address: Schema.optionalKey(Schema.String),
-    url: Schema.optionalKey(Schema.String),
-  }).annotate({ identifier: "WhatsAppStoredLocation" }))();
-export type WhatsAppStoredContactCard = {
-  readonly name?: {
-    readonly formattedName?: string;
-    readonly firstName?: string;
-    readonly lastName?: string;
-    readonly middleName?: string;
-    readonly prefix?: string;
-    readonly suffix?: string;
-  };
-  readonly phones?: ReadonlyArray<{
-    readonly phone?: string;
-    readonly type?: string;
-    readonly waId?: string;
-  }>;
-  readonly emails?: ReadonlyArray<{ readonly email?: string; readonly type?: string }>;
-  readonly urls?: ReadonlyArray<{ readonly url?: string; readonly type?: string }>;
-  readonly org?: {
-    readonly company?: string;
-    readonly department?: string;
-    readonly title?: string;
-  };
-  readonly addresses?: ReadonlyArray<{
-    readonly street?: string;
-    readonly city?: string;
-    readonly state?: string;
-    readonly zip?: string;
-    readonly country?: string;
-    readonly countryCode?: string;
-    readonly type?: string;
-  }>;
-  readonly birthday?: string;
-};
-export const WhatsAppStoredContactCard = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    name: Schema.optionalKey(
-      Schema.Struct({
-        formattedName: Schema.optionalKey(Schema.String),
-        firstName: Schema.optionalKey(Schema.String),
-        lastName: Schema.optionalKey(Schema.String),
-        middleName: Schema.optionalKey(Schema.String),
-        prefix: Schema.optionalKey(Schema.String),
-        suffix: Schema.optionalKey(Schema.String),
-      }),
-    ),
-    phones: Schema.optionalKey(
-      Schema.Array(
-        Schema.Struct({
-          phone: Schema.optionalKey(Schema.String),
-          type: Schema.optionalKey(Schema.String),
-          waId: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    ),
-    emails: Schema.optionalKey(
-      Schema.Array(
-        Schema.Struct({
-          email: Schema.optionalKey(Schema.String),
-          type: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    ),
-    urls: Schema.optionalKey(
-      Schema.Array(
-        Schema.Struct({
-          url: Schema.optionalKey(Schema.String),
-          type: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    ),
-    org: Schema.optionalKey(
-      Schema.Struct({
-        company: Schema.optionalKey(Schema.String),
-        department: Schema.optionalKey(Schema.String),
-        title: Schema.optionalKey(Schema.String),
-      }),
-    ),
-    addresses: Schema.optionalKey(
-      Schema.Array(
-        Schema.Struct({
-          street: Schema.optionalKey(Schema.String),
-          city: Schema.optionalKey(Schema.String),
-          state: Schema.optionalKey(Schema.String),
-          zip: Schema.optionalKey(Schema.String),
-          country: Schema.optionalKey(Schema.String),
-          countryCode: Schema.optionalKey(Schema.String),
-          type: Schema.optionalKey(Schema.String),
-        }),
-      ),
-    ),
-    birthday: Schema.optionalKey(Schema.String),
-  }).annotate({ identifier: "WhatsAppStoredContactCard" }))();
-export type WhatsAppReceivedReply = {
-  readonly type: "button" | "list" | "template_button";
-  readonly id: string;
-  readonly title: string;
-  readonly description?: string;
-};
-export const WhatsAppReceivedReply = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    type: Schema.Union([
-      Schema.Literal("button"),
-      Schema.Literal("list"),
-      Schema.Literal("template_button"),
-    ]),
-    id: Schema.String,
-    title: Schema.String,
-    description: Schema.optionalKey(Schema.String),
-  }).annotate({ identifier: "WhatsAppReceivedReply" }))();
-export type WhatsAppReceivedFlowResponse = {
-  readonly flowToken: string | null;
-  readonly response: { readonly [x: string]: JsonValue };
-  readonly body?: string;
-};
-export const WhatsAppReceivedFlowResponse = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    flowToken: Schema.Union([Schema.String, Schema.Null]),
-    response: Schema.Record(Schema.String, JsonValue),
-    body: Schema.optionalKey(Schema.String),
-  }).annotate({ identifier: "WhatsAppReceivedFlowResponse" }))();
-export type WhatsAppStructuredContent = {
-  readonly type: string;
-  readonly data: { readonly [x: string]: JsonValue };
-};
-export const WhatsAppStructuredContent = /* @__PURE__ */ (() =>
-  Schema.Struct({ type: Schema.String, data: Schema.Record(Schema.String, JsonValue) }).annotate({
-    identifier: "WhatsAppStructuredContent",
-  }))();
 export type MessageDeliveryError = {
   readonly code: string | null;
   readonly message: string | null;
@@ -262,33 +85,6 @@ export const EstimatedProviderCost = /* @__PURE__ */ (() =>
     currency: Schema.String,
     billingMode: Schema.Literal("pass_through"),
   }).annotate({ identifier: "EstimatedProviderCost" }))();
-export type DeliveryErrorDetails = {
-  readonly code?: string | null;
-  readonly name?: string | null;
-  readonly message?: string | null;
-  readonly details?: { readonly [x: string]: string | number | null } | null;
-  readonly retryable?: boolean | null;
-};
-export const DeliveryErrorDetails = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    code: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    name: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    message: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    details: Schema.optionalKey(
-      Schema.Union([
-        Schema.Record(
-          Schema.String,
-          Schema.Union([
-            Schema.String,
-            Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-            Schema.Null,
-          ]),
-        ),
-        Schema.Null,
-      ]),
-    ),
-    retryable: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-  }).annotate({ identifier: "DeliveryErrorDetails" }))();
 export type EmailAddress = { readonly email: string; readonly name: string | null };
 export const EmailAddress = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -358,86 +154,6 @@ export const SubmissionCredential = /* @__PURE__ */ (() =>
     }),
     Schema.Struct({ kind: Schema.Literal("session") }),
   ]).annotate({ identifier: "SubmissionCredential" }))();
-export type WhatsAppStoredReaction = {
-  readonly messageId: MessageId | null;
-  readonly providerMessageId: string;
-  readonly emoji: string | null;
-};
-export const WhatsAppStoredReaction = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    messageId: Schema.Union([MessageId, Schema.Null]),
-    providerMessageId: Schema.String,
-    emoji: Schema.Union([Schema.String, Schema.Null]),
-  }).annotate({ identifier: "WhatsAppStoredReaction" }))();
-export type WhatsAppMessageReference = {
-  readonly messageId: MessageId | null;
-  readonly providerMessageId: string;
-};
-export const WhatsAppMessageReference = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    messageId: Schema.Union([MessageId, Schema.Null]),
-    providerMessageId: Schema.String,
-  }).annotate({ identifier: "WhatsAppMessageReference" }))();
-export type WhatsAppStoredMedia =
-  | {
-      readonly type: "image" | "video" | "audio" | "document" | "sticker";
-      readonly url: string;
-      readonly caption?: string;
-      readonly filename?: string;
-    }
-  | {
-      readonly type: "image" | "video" | "audio" | "document" | "sticker";
-      readonly mediaId: MediaId;
-      readonly caption?: string;
-      readonly filename?: string;
-    }
-  | {
-      readonly type: "image" | "video" | "audio" | "document" | "sticker";
-      readonly providerMediaId: string;
-      readonly mimeType?: string | null;
-      readonly caption?: string | null;
-      readonly filename?: string;
-    };
-export const WhatsAppStoredMedia = /* @__PURE__ */ (() =>
-  Schema.Union([
-    Schema.Struct({
-      type: Schema.Union([
-        Schema.Literal("image"),
-        Schema.Literal("video"),
-        Schema.Literal("audio"),
-        Schema.Literal("document"),
-        Schema.Literal("sticker"),
-      ]),
-      url: Schema.String,
-      caption: Schema.optionalKey(Schema.String),
-      filename: Schema.optionalKey(Schema.String),
-    }),
-    Schema.Struct({
-      type: Schema.Union([
-        Schema.Literal("image"),
-        Schema.Literal("video"),
-        Schema.Literal("audio"),
-        Schema.Literal("document"),
-        Schema.Literal("sticker"),
-      ]),
-      mediaId: MediaId,
-      caption: Schema.optionalKey(Schema.String),
-      filename: Schema.optionalKey(Schema.String),
-    }),
-    Schema.Struct({
-      type: Schema.Union([
-        Schema.Literal("image"),
-        Schema.Literal("video"),
-        Schema.Literal("audio"),
-        Schema.Literal("document"),
-        Schema.Literal("sticker"),
-      ]),
-      providerMediaId: Schema.String,
-      mimeType: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      caption: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-      filename: Schema.optionalKey(Schema.String),
-    }),
-  ]).annotate({ identifier: "WhatsAppStoredMedia" }))();
 export type MessageReplyObservation = {
   readonly endpoints: ReadonlyArray<{
     readonly mailboxId: MailboxId;
@@ -471,99 +187,6 @@ export const MessageReplyObservation = /* @__PURE__ */ (() =>
       Schema.Null,
     ]),
   }).annotate({ identifier: "MessageReplyObservation" }))();
-export type WhatsAppStoredFlowMessage = {
-  readonly type: "flow";
-  readonly header?: WhatsAppTextHeader;
-  readonly body: string;
-  readonly footer?: string;
-  readonly flowId: WhatsAppFlowId;
-  readonly cta: string;
-  readonly token?: string;
-  readonly action?: "navigate" | "data_exchange";
-  readonly screen?: string;
-  readonly data?: { readonly [x: string]: JsonValue };
-  readonly flowVersionId: WhatsAppFlowVersionId;
-  readonly providerFlowId: string;
-};
-export const WhatsAppStoredFlowMessage = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    type: Schema.Literal("flow"),
-    header: Schema.optionalKey(WhatsAppTextHeader),
-    body: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(1024).annotate({
-          expected: "a string with at most 1024 code points",
-        }),
-      )
-      .check(
-        Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-      )
-      .check(
-        Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
-          expected: "a string matching the RegExp \\S",
-        }),
-      ),
-    footer: Schema.optionalKey(
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(60).annotate({ expected: "a string with at most 60 code points" }),
-        )
-        .check(Schema.isMaxLength(60).annotate({ expected: "a value with a length of at most 60" }))
-        .check(
-          Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
-            expected: "a string matching the RegExp \\S",
-          }),
-        ),
-    ),
-    flowId: WhatsAppFlowId,
-    cta: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    )
-      .check(
-        Schema.isMaxCodePoints(30).annotate({ expected: "a string with at most 30 code points" }),
-      )
-      .check(Schema.isMaxLength(30).annotate({ expected: "a value with a length of at most 30" }))
-      .check(
-        Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
-          expected: "a string matching the RegExp \\S",
-        }),
-      ),
-    token: Schema.optionalKey(
-      Schema.String.check(
-        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-      )
-        .check(
-          Schema.isMaxCodePoints(1024).annotate({
-            expected: "a string with at most 1024 code points",
-          }),
-        )
-        .check(
-          Schema.isMaxLength(1024).annotate({ expected: "a value with a length of at most 1024" }),
-        )
-        .check(
-          Schema.isPattern(new globalThis.RegExp("\\S")).annotate({
-            expected: "a string matching the RegExp \\S",
-          }),
-        ),
-    ),
-    action: Schema.optionalKey(
-      Schema.Union([Schema.Literal("navigate"), Schema.Literal("data_exchange")]),
-    ),
-    screen: Schema.optionalKey(
-      Schema.String.check(
-        Schema.isPattern(new globalThis.RegExp("^[A-Za-z_]{1,100}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[A-Za-z_]{1,100}$",
-        }),
-      ),
-    ),
-    data: Schema.optionalKey(Schema.Record(Schema.String, JsonValue)),
-    flowVersionId: WhatsAppFlowVersionId,
-    providerFlowId: Schema.String,
-  }).annotate({ identifier: "WhatsAppStoredFlowMessage" }))();
 export type MessageDeliveryObservation = {
   readonly id: MessageDeliveryId;
   readonly recipient: string | null;
@@ -913,222 +536,6 @@ export const Message = /* @__PURE__ */ (() =>
     createdAt: Schema.String,
     updatedAt: Schema.String,
   }).annotate({ identifier: "Message" }))();
-export type WhatsAppStoredInteractive =
-  | WhatsAppButtonsMessage
-  | WhatsAppListMessage
-  | WhatsAppCtaUrlMessage
-  | WhatsAppStoredFlowMessage;
-export const WhatsAppStoredInteractive = /* @__PURE__ */ (() =>
-  Schema.Union([
-    WhatsAppButtonsMessage,
-    WhatsAppListMessage,
-    WhatsAppCtaUrlMessage,
-    WhatsAppStoredFlowMessage,
-  ]).annotate({ identifier: "WhatsAppStoredInteractive" }))();
-export type WhatsAppMessageContent = {
-  readonly text?: string | null;
-  readonly template?: {
-    readonly name: string;
-    readonly language: string;
-    readonly components: ReadonlyArray<{
-      readonly type: "header" | "body" | "footer" | "button";
-      readonly sub_type?: "url" | "quick_reply" | "copy_code" | "flow" | null;
-      readonly index?: string | null;
-      readonly parameters: ReadonlyArray<{
-        readonly type:
-          | "text"
-          | "currency"
-          | "date_time"
-          | "image"
-          | "document"
-          | "video"
-          | "coupon_code"
-          | "action";
-        readonly text?: string | null;
-        readonly currency?: {
-          readonly fallback_value: string;
-          readonly code: string;
-          readonly amount_1000: number;
-        } | null;
-        readonly date_time?: { readonly fallback_value: string } | null;
-        readonly image?: { readonly link: string } | null;
-        readonly document?: { readonly link: string; readonly filename?: string | null } | null;
-        readonly video?: { readonly link: string } | null;
-        readonly coupon_code?: string | null;
-        readonly action?: { readonly flow_token: string } | null;
-      }>;
-    }>;
-  } | null;
-  readonly interactive?: WhatsAppStoredInteractive;
-  readonly media?: WhatsAppStoredMedia | null;
-  readonly reaction?: WhatsAppStoredReaction;
-  readonly location?: WhatsAppStoredLocation;
-  readonly contacts?: ReadonlyArray<WhatsAppStoredContactCard>;
-  readonly reply?: WhatsAppReceivedReply;
-  readonly flowResponse?: WhatsAppReceivedFlowResponse;
-  readonly context?: WhatsAppMessageReference;
-};
-export const WhatsAppMessageContent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    template: Schema.optionalKey(
-      Schema.Union([
-        Schema.Struct({
-          name: Schema.String,
-          language: Schema.String,
-          components: Schema.Array(
-            Schema.Struct({
-              type: Schema.Union([
-                Schema.Literal("header"),
-                Schema.Literal("body"),
-                Schema.Literal("footer"),
-                Schema.Literal("button"),
-              ]),
-              sub_type: Schema.optionalKey(
-                Schema.Union([
-                  Schema.Union([
-                    Schema.Literal("url"),
-                    Schema.Literal("quick_reply"),
-                    Schema.Literal("copy_code"),
-                    Schema.Literal("flow"),
-                  ]),
-                  Schema.Null,
-                ]),
-              ),
-              index: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-              parameters: Schema.Array(
-                Schema.Struct({
-                  type: Schema.Union([
-                    Schema.Literal("text"),
-                    Schema.Literal("currency"),
-                    Schema.Literal("date_time"),
-                    Schema.Literal("image"),
-                    Schema.Literal("document"),
-                    Schema.Literal("video"),
-                    Schema.Literal("coupon_code"),
-                    Schema.Literal("action"),
-                  ]),
-                  text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                  currency: Schema.optionalKey(
-                    Schema.Union([
-                      Schema.Struct({
-                        fallback_value: Schema.String,
-                        code: Schema.String,
-                        amount_1000: Schema.Finite.check(
-                          Schema.isFinite().annotate({ expected: "a finite number" }),
-                        ),
-                      }),
-                      Schema.Null,
-                    ]),
-                  ),
-                  date_time: Schema.optionalKey(
-                    Schema.Union([Schema.Struct({ fallback_value: Schema.String }), Schema.Null]),
-                  ),
-                  image: Schema.optionalKey(
-                    Schema.Union([Schema.Struct({ link: Schema.String }), Schema.Null]),
-                  ),
-                  document: Schema.optionalKey(
-                    Schema.Union([
-                      Schema.Struct({
-                        link: Schema.String,
-                        filename: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                      }),
-                      Schema.Null,
-                    ]),
-                  ),
-                  video: Schema.optionalKey(
-                    Schema.Union([Schema.Struct({ link: Schema.String }), Schema.Null]),
-                  ),
-                  coupon_code: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                  action: Schema.optionalKey(
-                    Schema.Union([Schema.Struct({ flow_token: Schema.String }), Schema.Null]),
-                  ),
-                }),
-              ),
-            }),
-          ),
-        }),
-        Schema.Null,
-      ]),
-    ),
-    interactive: Schema.optionalKey(WhatsAppStoredInteractive),
-    media: Schema.optionalKey(Schema.Union([WhatsAppStoredMedia, Schema.Null])),
-    reaction: Schema.optionalKey(WhatsAppStoredReaction),
-    location: Schema.optionalKey(WhatsAppStoredLocation),
-    contacts: Schema.optionalKey(Schema.Array(WhatsAppStoredContactCard)),
-    reply: Schema.optionalKey(WhatsAppReceivedReply),
-    flowResponse: Schema.optionalKey(WhatsAppReceivedFlowResponse),
-    context: Schema.optionalKey(WhatsAppMessageReference),
-  }).annotate({ identifier: "WhatsAppMessageContent" }))();
-export type MessageContent = {
-  readonly text?: string | null;
-  readonly html?: string | null;
-  readonly markdown?: string | null;
-  readonly sms?: SmsMessageContent | null;
-  readonly whatsapp?: WhatsAppMessageContent | null;
-  readonly email?: {
-    readonly subject?: string | null;
-    readonly html?: string | null;
-    readonly text?: string | null;
-    readonly headers?: { readonly [x: string]: string } | null;
-    readonly tracking?: EmailTrackingOverrideV1;
-    readonly attachments?: ReadonlyArray<{
-      readonly filename: string;
-      readonly contentId?: string | null;
-      readonly isInline?: boolean | null;
-      readonly content?: string | null;
-      readonly mediaId?: MediaId | null;
-      readonly contentType: string;
-      readonly size: number;
-    }> | null;
-  } | null;
-  readonly structured?: WhatsAppStructuredContent | null;
-  readonly metadata?: { readonly [x: string]: JsonValue } | null;
-};
-export const MessageContent = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    markdown: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-    sms: Schema.optionalKey(Schema.Union([SmsMessageContent, Schema.Null])),
-    whatsapp: Schema.optionalKey(Schema.Union([WhatsAppMessageContent, Schema.Null])),
-    email: Schema.optionalKey(
-      Schema.Union([
-        Schema.Struct({
-          subject: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          html: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-          headers: Schema.optionalKey(
-            Schema.Union([Schema.Record(Schema.String, Schema.String), Schema.Null]),
-          ),
-          tracking: Schema.optionalKey(EmailTrackingOverrideV1),
-          attachments: Schema.optionalKey(
-            Schema.Union([
-              Schema.Array(
-                Schema.Struct({
-                  filename: Schema.String,
-                  contentId: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                  isInline: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
-                  content: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
-                  mediaId: Schema.optionalKey(Schema.Union([MediaId, Schema.Null])),
-                  contentType: Schema.String,
-                  size: Schema.Finite.check(
-                    Schema.isFinite().annotate({ expected: "a finite number" }),
-                  ),
-                }),
-              ),
-              Schema.Null,
-            ]),
-          ),
-        }),
-        Schema.Null,
-      ]),
-    ),
-    structured: Schema.optionalKey(Schema.Union([WhatsAppStructuredContent, Schema.Null])),
-    metadata: Schema.optionalKey(
-      Schema.Union([Schema.Record(Schema.String, JsonValue), Schema.Null]),
-    ),
-  }).annotate({ identifier: "MessageContent" }))();
 export type MessagesListQuery = {
   readonly limit?: number | null;
   readonly cursor?: string;
@@ -1220,7 +627,7 @@ export const MessagesSendHeaders = /* @__PURE__ */ (() =>
     "idempotency-key": Schema.optionalKey(
       Schema.String.annotate({
         description:
-          "Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.",
+          "Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response after the first send succeeds. While it is in progress, wait for Retry-After and retry with the same key and body. Reusing the key with different content also returns 409, without a retry hint.",
       }).check(
         Schema.isPattern(new globalThis.RegExp("^[\\s\\S]{1,255}$")).annotate({
           expected: "a string matching the RegExp ^[\\s\\S]{1,255}$",
@@ -1930,7 +1337,7 @@ export class MessagesGroup extends HttpApiGroup.make("Messages")
       .annotate(OpenApi.Summary, "Send a message")
       .annotate(
         OpenApi.Description,
-        "An email send whose namespace has no sending setup returns ValidationError: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError. Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.",
+        "An email send whose namespace has no sending setup returns ValidationError: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError. Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Once a send succeeds, repeating the request with the same `Idempotency-Key` and body returns the original receipt. While it is still in progress, a 409 includes a `Retry-After` header. Reusing the key for different content returns a 409 without a retry hint.",
       ),
     HttpApiEndpoint.get("messagesGet", "/v1/messages/:id", {
       params: MessagesGetPathParams,

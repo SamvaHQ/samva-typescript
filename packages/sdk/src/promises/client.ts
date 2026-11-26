@@ -59,6 +59,7 @@ import {
   Events as events,
   Feedback as feedback,
   Journeys as journeys,
+  Logs as logs,
   Mailboxes as mailboxes,
   Media as media,
   Messages as messages,
@@ -579,6 +580,7 @@ export interface SamvaRawClient {
   readonly feedback: typeof feedback;
   readonly whoami: typeof whoami;
   readonly journeys: typeof journeys;
+  readonly logs: typeof logs;
   readonly mailboxes: typeof mailboxes;
   readonly namespaces: typeof namespaces;
 }
@@ -595,6 +597,7 @@ export type PromiseMailboxesService = DirectService<typeof mailboxes> & {
 export interface SamvaClient {
   /** Bound, unmodified Hey API methods and their original result envelopes. */
   readonly raw: SamvaRawClient;
+  readonly logs: DirectService<typeof logs>;
   readonly messages: DirectService<PromiseMessagesTransport>;
   readonly scheduledMessages: DirectService<typeof scheduledMessages>;
   readonly brands: DirectService<typeof brands>;
@@ -727,6 +730,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
     feedback: createBoundService(feedback, clientInstance),
     whoami: createBoundService(whoami, clientInstance),
     journeys: createBoundService(journeys, clientInstance),
+    logs: createBoundService(logs, clientInstance),
     mailboxes: createBoundService(mailboxes, clientInstance),
     namespaces: createBoundService(namespaces, clientInstance),
   };
@@ -746,6 +750,7 @@ function makeClient(config: SamvaClientConfig | BoundClientConfig): SamvaClient 
   const promiseEmail = createPromiseEmailTransport(clientInstance);
   const result: SamvaClient = {
     raw,
+    logs: createDirectService(raw.logs),
     messages: createDirectService(promiseMessages),
     scheduledMessages: createDirectService(raw.scheduledMessages),
     brands: createDirectService(raw.brands),

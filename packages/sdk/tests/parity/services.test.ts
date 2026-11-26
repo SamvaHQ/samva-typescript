@@ -26,6 +26,7 @@ import {
   Events,
   Feedback,
   Journeys,
+  Logs,
   Mailboxes,
   Media,
   Messages,
@@ -62,6 +63,7 @@ import { feedbackOperations } from "../../src/effect/descriptors/feedback";
 import { integrationsOperations } from "../../src/effect/descriptors/integrations";
 import { integrationCatalogOperations } from "../../src/effect/descriptors/integrations-catalog";
 import { journeysOperations } from "../../src/effect/descriptors/journeys";
+import { logsOperations } from "../../src/effect/descriptors/logs";
 import { mailboxesOperations } from "../../src/effect/descriptors/mailboxes";
 import { mediaOperations } from "../../src/effect/descriptors/media";
 import { messagesOperations } from "../../src/effect/descriptors/messages";
@@ -121,6 +123,7 @@ const effectModules = {
   events: Events,
   feedback: Feedback,
   journeys: Journeys,
+  logs: Logs,
   mailboxes: Mailboxes,
   media: Media,
   messages: Messages,
@@ -165,6 +168,7 @@ const descriptorTables = {
   events: eventsOperations,
   feedback: feedbackOperations,
   journeys: journeysOperations,
+  logs: logsOperations,
   mailboxes: mailboxesOperations,
   media: mediaOperations,
   messages: messagesOperations,
@@ -194,6 +198,7 @@ const effectSchemaExports = {
   email: ["TrackingRecipientEmail"],
   events: ["CreateEventPayload"],
   feedback: ["SendPayload"],
+  logs: ["events", "streamCursor"],
   mailboxes: ["MailboxEventStreamError", "events"],
   templates: ["CreatePayload", "UpdatePayload"],
   webhooks: ["CreatePayload", "TestPayload", "UpdatePayload"],

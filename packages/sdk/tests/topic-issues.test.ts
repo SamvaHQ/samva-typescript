@@ -10,7 +10,6 @@ import {
   UserId,
   TemplateSourceError,
   ConflictError,
-  FlagDisabledError,
 } from "../src/effect/generated";
 import type {
   NewsletterIssuesOpen200,
@@ -376,13 +375,6 @@ describe("topic issues service transport parity", () => {
         id,
       }),
     },
-    {
-      status: 403,
-      body: new FlagDisabledError({
-        flag: "newsletters",
-        message: "Issue content is unavailable",
-      }),
-    },
   ])("preserves the tagged $status failure in both clients", async ({ body }) => {
     const fake = fakeSamvaApi(SamvaApi)({
       "Newsletter issues": { newsletterIssuesUpdate: () => Effect.fail(body) },
@@ -399,7 +391,6 @@ describe("topic issues service transport parity", () => {
         NewsletterIssues.update({ id, ...fenced, content }, { idempotencyKey: "edit-1" }).pipe(
           Effect.catchTags({
             ConflictError: Effect.succeed,
-            FlagDisabledError: Effect.succeed,
             TemplateSourceError: Effect.succeed,
           }),
         ),

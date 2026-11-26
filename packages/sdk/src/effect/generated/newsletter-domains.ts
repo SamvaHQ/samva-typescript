@@ -6,7 +6,6 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -126,9 +125,8 @@ export type NewsletterDomainsList400 = MalformedRequestError;
 export const NewsletterDomainsList400 = MalformedRequestError;
 export type NewsletterDomainsList401 = UnauthorizedError;
 export const NewsletterDomainsList401 = UnauthorizedError;
-export type NewsletterDomainsList403 = ForbiddenError | FlagDisabledError;
-export const NewsletterDomainsList403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewsletterDomainsList403 = ForbiddenError;
+export const NewsletterDomainsList403 = ForbiddenError;
 export type NewsletterDomainsList404 = ResourceNotFoundError;
 export const NewsletterDomainsList404 = ResourceNotFoundError;
 export type NewsletterDomainsList409 = ConflictError;
@@ -247,9 +245,8 @@ export type NewsletterDomainsAdd400 = MalformedRequestError;
 export const NewsletterDomainsAdd400 = MalformedRequestError;
 export type NewsletterDomainsAdd401 = UnauthorizedError;
 export const NewsletterDomainsAdd401 = UnauthorizedError;
-export type NewsletterDomainsAdd403 = ForbiddenError | FlagDisabledError;
-export const NewsletterDomainsAdd403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewsletterDomainsAdd403 = ForbiddenError;
+export const NewsletterDomainsAdd403 = ForbiddenError;
 export type NewsletterDomainsAdd404 = ResourceNotFoundError;
 export const NewsletterDomainsAdd404 = ResourceNotFoundError;
 export type NewsletterDomainsAdd409 = ConflictError;
@@ -352,9 +349,8 @@ export type NewsletterDomainsGet400 = MalformedRequestError;
 export const NewsletterDomainsGet400 = MalformedRequestError;
 export type NewsletterDomainsGet401 = UnauthorizedError;
 export const NewsletterDomainsGet401 = UnauthorizedError;
-export type NewsletterDomainsGet403 = ForbiddenError | FlagDisabledError;
-export const NewsletterDomainsGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewsletterDomainsGet403 = ForbiddenError;
+export const NewsletterDomainsGet403 = ForbiddenError;
 export type NewsletterDomainsGet404 = ResourceNotFoundError;
 export const NewsletterDomainsGet404 = ResourceNotFoundError;
 export type NewsletterDomainsGet409 = ConflictError;
@@ -474,9 +470,8 @@ export type NewsletterDomainsRemove400 = MalformedRequestError;
 export const NewsletterDomainsRemove400 = MalformedRequestError;
 export type NewsletterDomainsRemove401 = UnauthorizedError;
 export const NewsletterDomainsRemove401 = UnauthorizedError;
-export type NewsletterDomainsRemove403 = ForbiddenError | FlagDisabledError;
-export const NewsletterDomainsRemove403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewsletterDomainsRemove403 = ForbiddenError;
+export const NewsletterDomainsRemove403 = ForbiddenError;
 export type NewsletterDomainsRemove404 = ResourceNotFoundError;
 export const NewsletterDomainsRemove404 = ResourceNotFoundError;
 export type NewsletterDomainsRemove409 = ConflictError;

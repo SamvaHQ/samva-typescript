@@ -3232,16 +3232,16 @@ export const MailboxesApproveAction401 = UnauthorizedError;
 export type MailboxesApproveAction402 = PaymentRequiredError;
 export const MailboxesApproveAction402 = PaymentRequiredError;
 export type MailboxesApproveAction403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
-  | ForbiddenError;
+  | ForbiddenError
+  | FlagDisabledError;
 export const MailboxesApproveAction403 = /* @__PURE__ */ (() =>
   Schema.Union([
-    FlagDisabledError,
     MailboxSendRefusedError,
     OnboardingReviewRequiredError,
     ForbiddenError,
+    FlagDisabledError,
   ]))();
 export type MailboxesApproveAction404 = ResourceNotFoundError;
 export const MailboxesApproveAction404 = ResourceNotFoundError;
@@ -3278,17 +3278,11 @@ export const MailboxesCancelAction401 = UnauthorizedError;
 export type MailboxesCancelAction402 = PaymentRequiredError;
 export const MailboxesCancelAction402 = PaymentRequiredError;
 export type MailboxesCancelAction403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
 export const MailboxesCancelAction403 = /* @__PURE__ */ (() =>
-  Schema.Union([
-    FlagDisabledError,
-    MailboxSendRefusedError,
-    OnboardingReviewRequiredError,
-    ForbiddenError,
-  ]))();
+  Schema.Union([MailboxSendRefusedError, OnboardingReviewRequiredError, ForbiddenError]))();
 export type MailboxesCancelAction404 = ResourceNotFoundError;
 export const MailboxesCancelAction404 = ResourceNotFoundError;
 export type MailboxesCancelAction409 = MailboxSendConflictError | ConflictError;
@@ -3355,16 +3349,16 @@ export const MailboxesRetryAction401 = UnauthorizedError;
 export type MailboxesRetryAction402 = PaymentRequiredError;
 export const MailboxesRetryAction402 = PaymentRequiredError;
 export type MailboxesRetryAction403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
-  | ForbiddenError;
+  | ForbiddenError
+  | FlagDisabledError;
 export const MailboxesRetryAction403 = /* @__PURE__ */ (() =>
   Schema.Union([
-    FlagDisabledError,
     MailboxSendRefusedError,
     OnboardingReviewRequiredError,
     ForbiddenError,
+    FlagDisabledError,
   ]))();
 export type MailboxesRetryAction404 = ResourceNotFoundError;
 export const MailboxesRetryAction404 = ResourceNotFoundError;
@@ -3689,16 +3683,16 @@ export const MailboxesSendDraft401 = UnauthorizedError;
 export type MailboxesSendDraft402 = PaymentRequiredError;
 export const MailboxesSendDraft402 = PaymentRequiredError;
 export type MailboxesSendDraft403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
-  | ForbiddenError;
+  | ForbiddenError
+  | FlagDisabledError;
 export const MailboxesSendDraft403 = /* @__PURE__ */ (() =>
   Schema.Union([
-    FlagDisabledError,
     MailboxSendRefusedError,
     OnboardingReviewRequiredError,
     ForbiddenError,
+    FlagDisabledError,
   ]))();
 export type MailboxesSendDraft404 = ResourceNotFoundError;
 export const MailboxesSendDraft404 = ResourceNotFoundError;
@@ -4554,16 +4548,16 @@ export const MailboxesSendMessage401 = UnauthorizedError;
 export type MailboxesSendMessage402 = PaymentRequiredError;
 export const MailboxesSendMessage402 = PaymentRequiredError;
 export type MailboxesSendMessage403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
-  | ForbiddenError;
+  | ForbiddenError
+  | FlagDisabledError;
 export const MailboxesSendMessage403 = /* @__PURE__ */ (() =>
   Schema.Union([
-    FlagDisabledError,
     MailboxSendRefusedError,
     OnboardingReviewRequiredError,
     ForbiddenError,
+    FlagDisabledError,
   ]))();
 export type MailboxesSendMessage404 = ResourceNotFoundError;
 export const MailboxesSendMessage404 = ResourceNotFoundError;
@@ -4705,17 +4699,11 @@ export const MailboxesForward401 = UnauthorizedError;
 export type MailboxesForward402 = PaymentRequiredError;
 export const MailboxesForward402 = PaymentRequiredError;
 export type MailboxesForward403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
   | ForbiddenError;
 export const MailboxesForward403 = /* @__PURE__ */ (() =>
-  Schema.Union([
-    FlagDisabledError,
-    MailboxSendRefusedError,
-    OnboardingReviewRequiredError,
-    ForbiddenError,
-  ]))();
+  Schema.Union([MailboxSendRefusedError, OnboardingReviewRequiredError, ForbiddenError]))();
 export type MailboxesForward404 = ResourceNotFoundError;
 export const MailboxesForward404 = ResourceNotFoundError;
 export type MailboxesForward409 = MailboxSendConflictError | ConflictError;
@@ -4787,16 +4775,16 @@ export const MailboxesReply401 = UnauthorizedError;
 export type MailboxesReply402 = PaymentRequiredError;
 export const MailboxesReply402 = PaymentRequiredError;
 export type MailboxesReply403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
-  | ForbiddenError;
+  | ForbiddenError
+  | FlagDisabledError;
 export const MailboxesReply403 = /* @__PURE__ */ (() =>
   Schema.Union([
-    FlagDisabledError,
     MailboxSendRefusedError,
     OnboardingReviewRequiredError,
     ForbiddenError,
+    FlagDisabledError,
   ]))();
 export type MailboxesReply404 = ResourceNotFoundError;
 export const MailboxesReply404 = ResourceNotFoundError;
@@ -4847,16 +4835,16 @@ export const MailboxesReplyAll401 = UnauthorizedError;
 export type MailboxesReplyAll402 = PaymentRequiredError;
 export const MailboxesReplyAll402 = PaymentRequiredError;
 export type MailboxesReplyAll403 =
-  | FlagDisabledError
   | MailboxSendRefusedError
   | OnboardingReviewRequiredError
-  | ForbiddenError;
+  | ForbiddenError
+  | FlagDisabledError;
 export const MailboxesReplyAll403 = /* @__PURE__ */ (() =>
   Schema.Union([
-    FlagDisabledError,
     MailboxSendRefusedError,
     OnboardingReviewRequiredError,
     ForbiddenError,
+    FlagDisabledError,
   ]))();
 export type MailboxesReplyAll404 = ResourceNotFoundError;
 export const MailboxesReplyAll404 = ResourceNotFoundError;
@@ -5242,6 +5230,7 @@ export type MailboxesListThreadsQuery = {
   readonly unread?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozed?: boolean | null;
+  readonly order?: "wake";
 };
 export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -5267,7 +5256,7 @@ export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
     q: Schema.optionalKey(
       Schema.String.annotate({
         description:
-          "Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.",
+          "Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages. With no search, the list uses its requested sort order. New mail can take a few seconds to become searchable. Attachment contents are not searched.",
       }),
     ),
     state: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("done")])),
@@ -5276,6 +5265,12 @@ export const MailboxesListThreadsQuery = /* @__PURE__ */ (() =>
     unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    order: Schema.optionalKey(
+      Schema.Literal("wake").annotate({
+        description:
+          "With snoozed=true and no q, list earliest wake first, then thread ID ascending. Keep the same order when passing back a cursor. Search results use relevance order.",
+      }),
+    ),
   }))();
 export type MailboxesListThreads200 = MailboxThreadPage;
 export const MailboxesListThreads200 = MailboxThreadPage;
@@ -6156,6 +6151,7 @@ export type MailboxesListOrganizationThreadsQuery = {
   readonly unread?: boolean | null;
   readonly starred?: boolean | null;
   readonly snoozed?: boolean | null;
+  readonly order?: "wake";
   readonly mailboxId?: MailboxId | ReadonlyArray<MailboxId>;
   readonly kind?: "personal" | "shared";
   readonly conversation?: ConversationId;
@@ -6184,7 +6180,7 @@ export const MailboxesListOrganizationThreadsQuery = /* @__PURE__ */ (() =>
     q: Schema.optionalKey(
       Schema.String.annotate({
         description:
-          "Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.",
+          "Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages. With no search, the list uses its requested sort order. New mail can take a few seconds to become searchable. Attachment contents are not searched.",
       }),
     ),
     state: Schema.optionalKey(Schema.Union([Schema.Literal("active"), Schema.Literal("done")])),
@@ -6193,6 +6189,12 @@ export const MailboxesListOrganizationThreadsQuery = /* @__PURE__ */ (() =>
     unread: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     starred: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     snoozed: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
+    order: Schema.optionalKey(
+      Schema.Literal("wake").annotate({
+        description:
+          "With snoozed=true and no q, list earliest wake first, then thread ID ascending. Keep the same order when passing back a cursor. Search results use relevance order.",
+      }),
+    ),
     mailboxId: Schema.optionalKey(Schema.Union([MailboxId, Schema.Array(MailboxId)])),
     kind: Schema.optionalKey(Schema.Union([Schema.Literal("personal"), Schema.Literal("shared")])),
     conversation: Schema.optionalKey(ConversationId),
@@ -7515,7 +7517,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "List threads in a mailbox")
       .annotate(
         OpenApi.Description,
-        "Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once. Omit `folder` to list every folder. A thread's folder is set when it is created and does not move on later replies: a thread a send started stays in `sent`, so find replies with `unread: true` and no `folder`.",
+        "Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first. Use `snoozed=true&order=wake` for earliest wake first, with ascending thread ID for ties. The `after` and `before` filters always use last activity. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In an activity-ordered list, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once. Omit `folder` to list every folder. A thread's folder is set when it is created and does not move on later replies: a thread a send started stays in `sent`, so find replies with `unread: true` and no `folder`.",
       ),
     HttpApiEndpoint.get("mailboxesGetThread", "/v1/mailboxes/:id/threads/:threadId", {
       params: MailboxesGetThreadPathParams,
@@ -7820,7 +7822,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "List mailbox decisions awaiting you")
       .annotate(
         OpenApi.Description,
-        "Returns held actions this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.",
+        "Returns held actions this caller can approve across their visible mailboxes. Counts cover all actionable items across pages. The queue excludes the caller’s own proposals. Read Spam through the thread list and use the held-mail endpoint for malware metadata.",
       ),
     HttpApiEndpoint.get("mailboxesListSplits", "/v1/mailboxes/splits", {
       success: MailboxesListSplits200,
@@ -7937,7 +7939,7 @@ export class MailboxesGroup extends HttpApiGroup.make("Mailboxes")
       .annotate(OpenApi.Summary, "List threads across your mailboxes")
       .annotate(
         OpenApi.Description,
-        "Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes what the caller finished; state=done selects the caller's Done, closed shared threads, and personal-mailbox threads in the archived folder, without duplicates. Other filters and cursor pagination match the per-mailbox list.",
+        "Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Use `snoozed=true&order=wake` for earliest wake first, with ascending thread ID for ties. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes what the caller finished; state=done selects the caller's Done, closed shared threads, and personal-mailbox threads in the archived folder, without duplicates. Other filters and cursor pagination match the per-mailbox list.",
       ),
   )
   .annotate(

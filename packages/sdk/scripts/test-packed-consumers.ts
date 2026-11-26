@@ -69,10 +69,10 @@ const writeDeclarationProbe = async (directory: string): Promise<number> => {
   const declaredSubpaths = async (name: string): Promise<ReadonlyArray<string>> => {
     const manifest = JSON.parse(
       await readFile(join(directory, "node_modules", name, "package.json"), "utf8"),
-    ) as { readonly exports: Readonly<Record<string, { readonly types?: string }>> };
-    return Object.keys(manifest.exports)
-      .filter((key) => manifest.exports[key]?.types !== undefined)
-      .map((key) => (key === "." ? name : `${name}/${key.slice(2)}`));
+    ) as { readonly exports: Readonly<Record<string, unknown>> };
+    return Object.keys(manifest.exports).map((key) =>
+      key === "." ? name : `${name}/${key.slice(2)}`,
+    );
   };
 
   const lines = [
@@ -96,6 +96,7 @@ const writeDeclarationProbe = async (directory: string): Promise<number> => {
     lib: ["ES2024", "ESNext.Disposable", "DOM", "DOM.Iterable"],
     strict: true,
     skipLibCheck: false,
+    resolveJsonModule: true,
     noEmit: true,
     types: [],
   };
@@ -144,10 +145,14 @@ const transitiveJavaScript = async (entrypoint: string): Promise<ReadonlyMap<str
 };
 
 const temporaryRoot = await mkdtemp(join(tmpdir(), "samva-sdk-pack-"));
-const packDirectory = join(temporaryRoot, "pack");
-await mkdir(packDirectory);
-run(["bun", "pm", "pack", "--destination", packDirectory], sdkRoot);
-run(["bun", "pm", "pack", "--destination", packDirectory], webhooksRoot);
+const [releaseTarballs] = process.argv.slice(2);
+const packDirectory =
+  releaseTarballs === undefined ? join(temporaryRoot, "pack") : resolve(releaseTarballs);
+if (releaseTarballs === undefined) {
+  await mkdir(packDirectory);
+  run(["bun", "pm", "pack", "--destination", packDirectory], sdkRoot);
+  run(["bun", "pm", "pack", "--destination", packDirectory], webhooksRoot);
+}
 
 const tarballNames = await readdir(packDirectory);
 const tarballName = tarballNames.find((entry) => /^samva-\d/.test(entry));
@@ -193,7 +198,7 @@ const fetch: typeof globalThis.fetch = async (input: URL | RequestInfo) => {
   clientAttribution = request.headers.get("x-samva-client");
   if (requestPath.startsWith("/v1/policies/")) return Response.json({ ...policyConfiguration, version: 1 });
   if (requestPath.endsWith("/issues")) return Response.json({ projectId: null, revision: null, items: [] });
-  if (requestPath.includes("/domains")) return Response.json({ _tag: "FlagDisabledError", flag: "newsletters", message: "Publication is unavailable" }, { status: 403 });
+  if (requestPath.includes("/domains")) return Response.json({ _tag: "ForbiddenError", message: "Publication is unavailable" }, { status: 403 });
   return new Response(JSON.stringify({ contact: { id: "contact_test" }, created: true }), {
     status: 201,
     headers: { "content-type": "application/json" },
@@ -225,9 +230,9 @@ if (issues.projectId !== null || issues.revision !== null || issues.items.length
 }
 
 await client.newsletters.domains.list({ id: "nl_1234567890abcdef", limit: 2 }).then(
-  () => { throw new Error("Packed Promise publication domains accepted a disabled feature"); },
+  () => { throw new Error("Packed Promise publication domains accepted a forbidden request"); },
   (error: unknown) => {
-    if (!(error instanceof Error) || error.name !== "FlagDisabledError") {
+    if (!(error instanceof Error) || error.name !== "ForbiddenError") {
       throw new Error("Packed Promise publication domains lost the tagged error");
     }
   },
@@ -390,13 +395,13 @@ if (issues.projectId !== null || issues.revision !== null || issues.items.length
   throw new Error("Packed Effect newsletter issues proof failed");
 }
 
-const publicationFetch: typeof globalThis.fetch = async () => Response.json({ _tag: "FlagDisabledError", flag: "newsletters", message: "Publication is unavailable" }, { status: 403 });
+const publicationFetch: typeof globalThis.fetch = async () => Response.json({ _tag: "ForbiddenError", message: "Publication is unavailable" }, { status: 403 });
 const publicationFailure = await Effect.runPromise(NewsletterDomains.list({ id: "nl_1234567890abcdef", limit: 2 }).pipe(
-  Effect.catchTag("FlagDisabledError", Effect.succeed),
+  Effect.catchTag("ForbiddenError", Effect.succeed),
   Effect.provide(Client.layer({ apiKey: "samva_sk_test" })),
   Effect.provide(Layer.provide(FetchHttpClient.layer, Layer.succeed(FetchHttpClient.Fetch, publicationFetch))),
 ));
-if (!(publicationFailure instanceof Errors.FlagDisabledError) || publicationFailure.flag !== "newsletters" || EffectSdk.NewsletterDomains.list !== NewsletterDomains.list) {
+if (!(publicationFailure instanceof Errors.ForbiddenError) || EffectSdk.NewsletterDomains.list !== NewsletterDomains.list) {
   throw new Error("Packed Effect publication domains proof failed");
 }
 

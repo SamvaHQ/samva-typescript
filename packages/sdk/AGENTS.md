@@ -71,8 +71,11 @@ workspace call carries the workspace `revision` as `expectedRevision`, and Save 
 `expectedHead`. See https://samva.dev/docs/sml/create-and-publish-from-code.
 
 Use `client.policies` or `Policies` from `samva/effect/policies` to read, replace, or clear an
-organization, mailbox, or API key's decision rules. Policy writes require a person's OAuth session
-(`authToken` and `orgSlug`), not an API key. Each rule sets `decide` (a default) or `atLeast`
+organization, mailbox, or API key's decision rules. A permitted person can write with an OAuth
+session (`authToken` and `orgSlug`). A full-access, organization-wide API key owned by an
+organization owner or admin can change another key's policy and can only tighten mailbox policy.
+It can also change a hosted agent's definition policy and an integration tool's approval settings.
+Each rule sets `decide` (a default) or `atLeast`
 (a binding floor). Scope policy reads return a flat snapshot with `version`, initially `0` when
 unset. Replacement requires the observed `ifVersion`; `deletePolicy({ kind, id, ifVersion })`
 clears the configuration. Both return the next snapshot, and clear keeps the counter. On

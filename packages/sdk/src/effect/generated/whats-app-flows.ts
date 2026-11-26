@@ -8,7 +8,6 @@ import {
   ApiKeySecurityMiddleware,
   ConflictError,
   CredentialsError,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -286,9 +285,8 @@ export type WhatsappFlowsList400 = MalformedRequestError;
 export const WhatsappFlowsList400 = MalformedRequestError;
 export type WhatsappFlowsList401 = UnauthorizedError;
 export const WhatsappFlowsList401 = UnauthorizedError;
-export type WhatsappFlowsList403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsList403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsList403 = ForbiddenError;
+export const WhatsappFlowsList403 = ForbiddenError;
 export type WhatsappFlowsList422 = ValidationError;
 export const WhatsappFlowsList422 = ValidationError;
 export type WhatsappFlowsList500 = InternalError;
@@ -340,9 +338,8 @@ export type WhatsappFlowsCreate400 = MalformedRequestError;
 export const WhatsappFlowsCreate400 = MalformedRequestError;
 export type WhatsappFlowsCreate401 = UnauthorizedError;
 export const WhatsappFlowsCreate401 = UnauthorizedError;
-export type WhatsappFlowsCreate403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsCreate403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsCreate403 = ForbiddenError;
+export const WhatsappFlowsCreate403 = ForbiddenError;
 export type WhatsappFlowsCreate404 = ResourceNotFoundError;
 export const WhatsappFlowsCreate404 = ResourceNotFoundError;
 export type WhatsappFlowsCreate409 = ConflictError;
@@ -362,9 +359,8 @@ export type WhatsappFlowsGet400 = MalformedRequestError;
 export const WhatsappFlowsGet400 = MalformedRequestError;
 export type WhatsappFlowsGet401 = UnauthorizedError;
 export const WhatsappFlowsGet401 = UnauthorizedError;
-export type WhatsappFlowsGet403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsGet403 = ForbiddenError;
+export const WhatsappFlowsGet403 = ForbiddenError;
 export type WhatsappFlowsGet404 = ResourceNotFoundError;
 export const WhatsappFlowsGet404 = ResourceNotFoundError;
 export type WhatsappFlowsGet422 = ValidationError;
@@ -385,9 +381,8 @@ export type WhatsappFlowsSetEndpoint400 = MalformedRequestError;
 export const WhatsappFlowsSetEndpoint400 = MalformedRequestError;
 export type WhatsappFlowsSetEndpoint401 = UnauthorizedError;
 export const WhatsappFlowsSetEndpoint401 = UnauthorizedError;
-export type WhatsappFlowsSetEndpoint403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsSetEndpoint403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsSetEndpoint403 = ForbiddenError;
+export const WhatsappFlowsSetEndpoint403 = ForbiddenError;
 export type WhatsappFlowsSetEndpoint404 = ResourceNotFoundError;
 export const WhatsappFlowsSetEndpoint404 = ResourceNotFoundError;
 export type WhatsappFlowsSetEndpoint422 = ValidationError;
@@ -406,9 +401,8 @@ export type WhatsappFlowsRotateEndpointSecret400 = MalformedRequestError;
 export const WhatsappFlowsRotateEndpointSecret400 = MalformedRequestError;
 export type WhatsappFlowsRotateEndpointSecret401 = UnauthorizedError;
 export const WhatsappFlowsRotateEndpointSecret401 = UnauthorizedError;
-export type WhatsappFlowsRotateEndpointSecret403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsRotateEndpointSecret403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsRotateEndpointSecret403 = ForbiddenError;
+export const WhatsappFlowsRotateEndpointSecret403 = ForbiddenError;
 export type WhatsappFlowsRotateEndpointSecret404 = ResourceNotFoundError;
 export const WhatsappFlowsRotateEndpointSecret404 = ResourceNotFoundError;
 export type WhatsappFlowsRotateEndpointSecret422 = ValidationError;
@@ -427,9 +421,8 @@ export type WhatsappFlowsListRegistrations400 = MalformedRequestError;
 export const WhatsappFlowsListRegistrations400 = MalformedRequestError;
 export type WhatsappFlowsListRegistrations401 = UnauthorizedError;
 export const WhatsappFlowsListRegistrations401 = UnauthorizedError;
-export type WhatsappFlowsListRegistrations403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsListRegistrations403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsListRegistrations403 = ForbiddenError;
+export const WhatsappFlowsListRegistrations403 = ForbiddenError;
 export type WhatsappFlowsListRegistrations404 = ResourceNotFoundError;
 export const WhatsappFlowsListRegistrations404 = ResourceNotFoundError;
 export type WhatsappFlowsListRegistrations422 = ValidationError;
@@ -452,9 +445,8 @@ export type WhatsappFlowsRegister400 = MalformedRequestError;
 export const WhatsappFlowsRegister400 = MalformedRequestError;
 export type WhatsappFlowsRegister401 = UnauthorizedError;
 export const WhatsappFlowsRegister401 = UnauthorizedError;
-export type WhatsappFlowsRegister403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsRegister403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsRegister403 = ForbiddenError;
+export const WhatsappFlowsRegister403 = ForbiddenError;
 export type WhatsappFlowsRegister404 = ResourceNotFoundError;
 export const WhatsappFlowsRegister404 = ResourceNotFoundError;
 export type WhatsappFlowsRegister409 = ConflictError;
@@ -477,9 +469,8 @@ export type WhatsappFlowsListVersions400 = MalformedRequestError;
 export const WhatsappFlowsListVersions400 = MalformedRequestError;
 export type WhatsappFlowsListVersions401 = UnauthorizedError;
 export const WhatsappFlowsListVersions401 = UnauthorizedError;
-export type WhatsappFlowsListVersions403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsListVersions403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsListVersions403 = ForbiddenError;
+export const WhatsappFlowsListVersions403 = ForbiddenError;
 export type WhatsappFlowsListVersions404 = ResourceNotFoundError;
 export const WhatsappFlowsListVersions404 = ResourceNotFoundError;
 export type WhatsappFlowsListVersions422 = ValidationError;
@@ -512,9 +503,8 @@ export type WhatsappFlowsRecordVersion400 = MalformedRequestError;
 export const WhatsappFlowsRecordVersion400 = MalformedRequestError;
 export type WhatsappFlowsRecordVersion401 = UnauthorizedError;
 export const WhatsappFlowsRecordVersion401 = UnauthorizedError;
-export type WhatsappFlowsRecordVersion403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsRecordVersion403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsRecordVersion403 = ForbiddenError;
+export const WhatsappFlowsRecordVersion403 = ForbiddenError;
 export type WhatsappFlowsRecordVersion404 = ResourceNotFoundError;
 export const WhatsappFlowsRecordVersion404 = ResourceNotFoundError;
 export type WhatsappFlowsRecordVersion409 = ConflictError;
@@ -538,9 +528,8 @@ export type WhatsappFlowsRotateEncryptionKey400 = MalformedRequestError;
 export const WhatsappFlowsRotateEncryptionKey400 = MalformedRequestError;
 export type WhatsappFlowsRotateEncryptionKey401 = UnauthorizedError;
 export const WhatsappFlowsRotateEncryptionKey401 = UnauthorizedError;
-export type WhatsappFlowsRotateEncryptionKey403 = FlagDisabledError | ForbiddenError;
-export const WhatsappFlowsRotateEncryptionKey403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappFlowsRotateEncryptionKey403 = ForbiddenError;
+export const WhatsappFlowsRotateEncryptionKey403 = ForbiddenError;
 export type WhatsappFlowsRotateEncryptionKey404 = ResourceNotFoundError;
 export const WhatsappFlowsRotateEncryptionKey404 = ResourceNotFoundError;
 export type WhatsappFlowsRotateEncryptionKey422 = ValidationError;

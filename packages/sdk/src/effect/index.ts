@@ -36,6 +36,7 @@ export * as Email from "./email";
 export * as Events from "./events";
 export * as Feedback from "./feedback";
 export * as Journeys from "./journeys";
+export * as Logs from "./logs";
 export * as Mailboxes from "./mailboxes";
 export * as Media from "./media";
 export * as Messages from "./messages";

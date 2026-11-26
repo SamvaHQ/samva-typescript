@@ -259,12 +259,17 @@ export const MAILBOX_EVENT_STREAM_PING_MILLIS = 30_000;
  */
 export const MAILBOX_EVENT_STREAM_IDLE_MILLIS = 3 * MAILBOX_EVENT_STREAM_PING_MILLIS;
 
-type Frame =
+export type EventStreamFrame =
   | {
       readonly kind: "event";
       readonly cursor: string;
       readonly id: string;
-      readonly event: { readonly type: string; readonly timestamp: string; readonly data: unknown };
+      readonly event: {
+        readonly type: string;
+        readonly timestamp: string;
+        readonly data: unknown;
+        readonly match: unknown;
+      };
     }
   | { readonly kind: "live" | "progress"; readonly cursor: string }
   | { readonly kind: "pong" };
@@ -280,7 +285,7 @@ const frameText = (raw: unknown): string | undefined => {
   return undefined;
 };
 
-const decodeFrame = (raw: unknown): Frame | undefined => {
+const decodeFrame = (raw: unknown): EventStreamFrame | undefined => {
   const text = frameText(raw);
   if (text === undefined) return undefined;
   let parsed: unknown;
@@ -297,15 +302,21 @@ const decodeFrame = (raw: unknown): Frame | undefined => {
   if (parsed.kind !== "event" || typeof parsed.id !== "string" || !isRecord(parsed.event)) {
     return undefined;
   }
-  const { type, timestamp, data } = parsed.event;
+  const { type, timestamp, data, match } = parsed.event;
   if (typeof type !== "string" || typeof timestamp !== "string") return undefined;
-  return { kind: "event", cursor: parsed.cursor, id: parsed.id, event: { type, timestamp, data } };
+  return {
+    kind: "event",
+    cursor: parsed.cursor,
+    id: parsed.id,
+    event: { type, timestamp, data, match },
+  };
 };
 
 /** The events URL for an API origin: `https://api.samva.dev` → `wss://events.samva.dev/v1/…`. */
-export const mailboxEventsUrl = (
+export const eventStreamUrl = (
   connection: Pick<MailboxEventStreamConnection, "baseUrl">,
   options: Pick<MailboxEventStreamOptions, "eventsUrl" | "cursor" | "mailboxIds">,
+  path = MAILBOX_EVENT_STREAM_PATH,
 ): URL => {
   const invalid = (message: string) =>
     new MailboxEventStreamError({ _tag: "StreamClientError", message });
@@ -328,13 +339,18 @@ export const mailboxEventsUrl = (
   if (url.protocol !== "wss:" && url.protocol !== "ws:") {
     throw invalid("The events origin must be an http, https, ws, or wss URL.");
   }
-  url.pathname = MAILBOX_EVENT_STREAM_PATH;
+  url.pathname = path;
   url.search = "";
   url.hash = "";
   if (options.cursor !== undefined) url.searchParams.set("cursor", options.cursor);
   for (const id of options.mailboxIds ?? []) url.searchParams.append("mailboxId", id);
   return url;
 };
+
+export const mailboxEventsUrl = (
+  connection: Pick<MailboxEventStreamConnection, "baseUrl">,
+  options: Pick<MailboxEventStreamOptions, "eventsUrl" | "cursor" | "mailboxIds">,
+): URL => eventStreamUrl(connection, options);
 
 const DESCRIPTION: Record<MailboxEventStreamErrorTag, string> = {
   UnauthorizedError: "The credential is not valid. Sign in again or use an active API key.",
@@ -425,7 +441,7 @@ const fieldsOf = (value: unknown): MailboxEventStreamErrorFields | undefined => 
  * keep refusing the same request. `5xx`, `408`, and `429` retry, after the delay the host asked
  * for when it asked for one.
  */
-const refusalOutcome = (refusal: Refusal): Outcome => {
+export const refusalOutcome = (refusal: Refusal): Outcome => {
   const body = isRecord(refusal.body) ? refusal.body : {};
   const serverTag = typeof body._tag === "string" ? body._tag : undefined;
   const known = serverTag !== undefined && REFUSAL_TAGS.has(serverTag);
@@ -477,11 +493,13 @@ type Settled =
  * A resumable stream of mailbox events. Iterate it with `for await`; break out of the loop or call
  * {@link close} to end it.
  */
-export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
+export class EventStream<
+  Event extends { readonly cursor: string },
+> implements AsyncIterable<Event> {
   readonly #connection: MailboxEventStreamConnection;
   readonly #options: MailboxEventStreamOptions;
   readonly #stop = new AbortController();
-  readonly #queue: MailboxEvent[] = [];
+  readonly #queue: Event[] = [];
   #waiting: { resolve: () => void } | undefined;
   /** A reconnect waiting for the caller to drain what the last connection buffered. */
   #draining: { resolve: () => void } | undefined;
@@ -495,16 +513,23 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
   #callerSignal: AbortSignal | undefined;
   readonly #onCallerAbort = () => this.close();
   /** The last event handed to the caller, handled once the caller asks for the next one. */
-  #inHand: MailboxEvent | undefined;
+  #inHand: Event | undefined;
   #cursor: string | undefined;
   #unacked = 0;
 
-  constructor(connection: MailboxEventStreamConnection, options: MailboxEventStreamOptions = {}) {
+  constructor(
+    connection: MailboxEventStreamConnection,
+    options: MailboxEventStreamOptions,
+    private readonly path: string,
+    private readonly readEvent: (
+      frame: Extract<EventStreamFrame, { kind: "event" }>,
+    ) => Event | undefined,
+  ) {
     this.#connection = connection;
     this.#options = options;
     this.#cursor = options.cursor;
     // Fail before connecting when the URL cannot be built.
-    mailboxEventsUrl(connection, options);
+    eventStreamUrl(connection, options, path);
     if (options.signal?.aborted) this.close();
     else {
       this.#callerSignal = options.signal;
@@ -546,7 +571,7 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
     this.#wake();
   }
 
-  [Symbol.asyncIterator](): AsyncIterator<MailboxEvent> {
+  [Symbol.asyncIterator](): AsyncIterator<Event> {
     return {
       next: () => this.#next(),
       return: async () => {
@@ -556,7 +581,7 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
     };
   }
 
-  async #next(): Promise<IteratorResult<MailboxEvent>> {
+  async #next(): Promise<IteratorResult<Event>> {
     this.#settleInHand();
     if (!this.#started) {
       this.#started = true;
@@ -733,10 +758,14 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
         );
         return resolve({ kind: "stopped" });
       }
-      const url = mailboxEventsUrl(this.#connection, {
-        ...this.#options,
-        cursor: this.#resumeCursor(),
-      });
+      const url = eventStreamUrl(
+        this.#connection,
+        {
+          ...this.#options,
+          cursor: this.#resumeCursor(),
+        },
+        this.path,
+      );
       let opened = false;
       let settled = false;
       let idleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -803,13 +832,18 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
         }
         if (frame.kind === "pong") return;
         if (frame.kind === "event") {
-          this.#queue.push({
-            cursor: frame.cursor,
-            id: frame.id,
-            type: frame.event.type as MailboxEventType,
-            timestamp: frame.event.timestamp,
-            data: isRecord(frame.event.data) ? frame.event.data : {},
-          });
+          const event = this.readEvent(frame);
+          if (event === undefined) {
+            this.#fail(
+              new MailboxEventStreamError({
+                _tag: "StreamProtocolError",
+                message: DESCRIPTION.StreamProtocolError,
+                cursor: this.#cursor,
+              }),
+            );
+            return;
+          }
+          this.#queue.push(event);
           this.#wake();
           return;
         }
@@ -841,10 +875,14 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
    * are worth a retry.
    */
   async #diagnose(): Promise<Refusal | undefined> {
-    const url = mailboxEventsUrl(this.#connection, {
-      ...this.#options,
-      cursor: this.#resumeCursor(),
-    });
+    const url = eventStreamUrl(
+      this.#connection,
+      {
+        ...this.#options,
+        cursor: this.#resumeCursor(),
+      },
+      this.path,
+    );
     url.protocol = url.protocol === "wss:" ? "https:" : "http:";
     // One deadline covers the request and its body: a proxy that sends headers and stalls the
     // body must not hold the reconnect loop.
@@ -891,7 +929,7 @@ export class MailboxEventStream implements AsyncIterable<MailboxEvent> {
 }
 
 /** The refusal's JSON body, or undefined when it is not JSON; reads at most {@link REFUSAL_BODY_LIMIT}. */
-const readRefusalBody = async (response: Response): Promise<unknown> => {
+export const readRefusalBody = async (response: Response): Promise<unknown> => {
   const reader = response.body?.getReader();
   if (reader === undefined) return undefined;
   const chunks: Uint8Array[] = [];
@@ -921,3 +959,15 @@ const readRefusalBody = async (response: Response): Promise<unknown> => {
     return undefined;
   }
 };
+
+export class MailboxEventStream extends EventStream<MailboxEvent> {
+  constructor(connection: MailboxEventStreamConnection, options: MailboxEventStreamOptions = {}) {
+    super(connection, options, MAILBOX_EVENT_STREAM_PATH, (frame) => ({
+      cursor: frame.cursor,
+      id: frame.id,
+      type: frame.event.type as MailboxEventType,
+      timestamp: frame.event.timestamp,
+      data: isRecord(frame.event.data) ? frame.event.data : {},
+    }));
+  }
+}

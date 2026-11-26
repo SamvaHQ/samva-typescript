@@ -405,6 +405,7 @@ The Promise client exposes:
 - `integrationCatalog`
 - `integrations`
 - `journeys`
+- `logs`
 - `mailboxes`
 - `media`
 - `messages`

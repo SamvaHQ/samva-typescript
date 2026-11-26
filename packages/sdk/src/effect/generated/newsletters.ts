@@ -6,7 +6,6 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   ConflictError,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -64,9 +63,8 @@ export type NewslettersList400 = MalformedRequestError;
 export const NewslettersList400 = MalformedRequestError;
 export type NewslettersList401 = UnauthorizedError;
 export const NewslettersList401 = UnauthorizedError;
-export type NewslettersList403 = ForbiddenError | FlagDisabledError;
-export const NewslettersList403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewslettersList403 = ForbiddenError;
+export const NewslettersList403 = ForbiddenError;
 export type NewslettersList404 = ResourceNotFoundError;
 export const NewslettersList404 = ResourceNotFoundError;
 export type NewslettersList409 = ConflictError;
@@ -143,9 +141,8 @@ export type NewslettersCreate400 = MalformedRequestError;
 export const NewslettersCreate400 = MalformedRequestError;
 export type NewslettersCreate401 = UnauthorizedError;
 export const NewslettersCreate401 = UnauthorizedError;
-export type NewslettersCreate403 = ForbiddenError | FlagDisabledError;
-export const NewslettersCreate403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewslettersCreate403 = ForbiddenError;
+export const NewslettersCreate403 = ForbiddenError;
 export type NewslettersCreate404 = ResourceNotFoundError;
 export const NewslettersCreate404 = ResourceNotFoundError;
 export type NewslettersCreate409 = ConflictError;
@@ -165,9 +162,8 @@ export type NewslettersGet400 = MalformedRequestError;
 export const NewslettersGet400 = MalformedRequestError;
 export type NewslettersGet401 = UnauthorizedError;
 export const NewslettersGet401 = UnauthorizedError;
-export type NewslettersGet403 = ForbiddenError | FlagDisabledError;
-export const NewslettersGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewslettersGet403 = ForbiddenError;
+export const NewslettersGet403 = ForbiddenError;
 export type NewslettersGet404 = ResourceNotFoundError;
 export const NewslettersGet404 = ResourceNotFoundError;
 export type NewslettersGet409 = ConflictError;
@@ -205,9 +201,8 @@ export type NewslettersRemove400 = MalformedRequestError;
 export const NewslettersRemove400 = MalformedRequestError;
 export type NewslettersRemove401 = UnauthorizedError;
 export const NewslettersRemove401 = UnauthorizedError;
-export type NewslettersRemove403 = ForbiddenError | FlagDisabledError;
-export const NewslettersRemove403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewslettersRemove403 = ForbiddenError;
+export const NewslettersRemove403 = ForbiddenError;
 export type NewslettersRemove404 = ResourceNotFoundError;
 export const NewslettersRemove404 = ResourceNotFoundError;
 export type NewslettersRemove409 = ConflictError;
@@ -264,9 +259,8 @@ export type NewslettersUpdate400 = MalformedRequestError;
 export const NewslettersUpdate400 = MalformedRequestError;
 export type NewslettersUpdate401 = UnauthorizedError;
 export const NewslettersUpdate401 = UnauthorizedError;
-export type NewslettersUpdate403 = ForbiddenError | FlagDisabledError;
-export const NewslettersUpdate403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type NewslettersUpdate403 = ForbiddenError;
+export const NewslettersUpdate403 = ForbiddenError;
 export type NewslettersUpdate404 = ResourceNotFoundError;
 export const NewslettersUpdate404 = ResourceNotFoundError;
 export type NewslettersUpdate409 = ConflictError;

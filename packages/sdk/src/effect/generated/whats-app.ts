@@ -10,7 +10,6 @@ import {
   CampaignId,
   ConflictError,
   CredentialsError,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -29,19 +28,6 @@ import {
   __SamvaRuntimeSensitiveString,
 } from "./shared";
 
-export type PaginationMeta = {
-  readonly page: number;
-  readonly limit: number;
-  readonly total: number;
-  readonly totalPages: number;
-};
-export const PaginationMeta = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    page: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    limit: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    total: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-    totalPages: Schema.Finite.check(Schema.isFinite().annotate({ expected: "a finite number" })),
-  }).annotate({ identifier: "PaginationMeta" }))();
 export type WhatsAppServiceWindowId = string & EffectBrand.Brand<"WhatsAppServiceWindowId">;
 export const WhatsAppServiceWindowId = /* @__PURE__ */ (() =>
   Schema.String.check(
@@ -150,46 +136,28 @@ export const WhatsAppTemplateStats = /* @__PURE__ */ (() =>
     identifier: "WhatsAppTemplateStats",
   }))();
 export type WhatsappListBusinessAccountsQuery = {
-  readonly page?: number | null;
   readonly limit?: number | null;
+  readonly cursor?: string;
   readonly isActive?: boolean | null;
   readonly verificationStatus?: "pending" | "verified" | "failed" | "suspended";
   readonly namespaceId?: NamespaceId;
 };
 export const WhatsappListBusinessAccountsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    page: Schema.optionalKey(
-      Schema.Union([
-        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(10000).annotate({
-              expected: "a value less than or equal to 10000",
-            }),
-          ),
-        Schema.Null,
-      ]),
-    ),
     limit: Schema.optionalKey(
       Schema.Union([
-        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(1).annotate({
-              expected: "a value greater than or equal to 1",
-            }),
-          )
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
           .check(
             Schema.isLessThanOrEqualTo(100).annotate({
               expected: "a value less than or equal to 100",
             }),
-          ),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
         Schema.Null,
       ]),
     ),
+    cursor: Schema.optionalKey(Schema.String),
     isActive: Schema.optionalKey(Schema.Union([Schema.Boolean, Schema.Null])),
     verificationStatus: Schema.optionalKey(
       Schema.Union([
@@ -238,7 +206,7 @@ export type WhatsappListBusinessAccounts200 = {
     readonly createdAt: string;
     readonly updatedAt: string;
   }>;
-  readonly pagination: PaginationMeta;
+  readonly nextCursor: string | null;
 };
 export const WhatsappListBusinessAccounts200 = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -327,15 +295,14 @@ export const WhatsappListBusinessAccounts200 = /* @__PURE__ */ (() =>
         updatedAt: Schema.String,
       }),
     ),
-    pagination: PaginationMeta,
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }))();
 export type WhatsappListBusinessAccounts400 = MalformedRequestError;
 export const WhatsappListBusinessAccounts400 = MalformedRequestError;
 export type WhatsappListBusinessAccounts401 = UnauthorizedError;
 export const WhatsappListBusinessAccounts401 = UnauthorizedError;
-export type WhatsappListBusinessAccounts403 = ForbiddenError | FlagDisabledError;
-export const WhatsappListBusinessAccounts403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type WhatsappListBusinessAccounts403 = ForbiddenError;
+export const WhatsappListBusinessAccounts403 = ForbiddenError;
 export type WhatsappListBusinessAccounts422 = ValidationError;
 export const WhatsappListBusinessAccounts422 = ValidationError;
 export type WhatsappListBusinessAccounts500 = InternalError;
@@ -485,9 +452,8 @@ export type WhatsappConnectBusinessAccount401 = UnauthorizedError;
 export const WhatsappConnectBusinessAccount401 = UnauthorizedError;
 export type WhatsappConnectBusinessAccount402 = PaymentRequiredError;
 export const WhatsappConnectBusinessAccount402 = PaymentRequiredError;
-export type WhatsappConnectBusinessAccount403 = ForbiddenError | FlagDisabledError;
-export const WhatsappConnectBusinessAccount403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type WhatsappConnectBusinessAccount403 = ForbiddenError;
+export const WhatsappConnectBusinessAccount403 = ForbiddenError;
 export type WhatsappConnectBusinessAccount404 = ResourceNotFoundError;
 export const WhatsappConnectBusinessAccount404 = ResourceNotFoundError;
 export type WhatsappConnectBusinessAccount409 = ConflictError;
@@ -631,9 +597,8 @@ export type WhatsappGetBusinessAccount400 = MalformedRequestError;
 export const WhatsappGetBusinessAccount400 = MalformedRequestError;
 export type WhatsappGetBusinessAccount401 = UnauthorizedError;
 export const WhatsappGetBusinessAccount401 = UnauthorizedError;
-export type WhatsappGetBusinessAccount403 = FlagDisabledError | ForbiddenError;
-export const WhatsappGetBusinessAccount403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappGetBusinessAccount403 = ForbiddenError;
+export const WhatsappGetBusinessAccount403 = ForbiddenError;
 export type WhatsappGetBusinessAccount404 = ResourceNotFoundError;
 export const WhatsappGetBusinessAccount404 = ResourceNotFoundError;
 export type WhatsappGetBusinessAccount422 = ValidationError;
@@ -654,9 +619,8 @@ export type WhatsappDisconnectBusinessAccount400 = MalformedRequestError;
 export const WhatsappDisconnectBusinessAccount400 = MalformedRequestError;
 export type WhatsappDisconnectBusinessAccount401 = UnauthorizedError;
 export const WhatsappDisconnectBusinessAccount401 = UnauthorizedError;
-export type WhatsappDisconnectBusinessAccount403 = FlagDisabledError | ForbiddenError;
-export const WhatsappDisconnectBusinessAccount403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappDisconnectBusinessAccount403 = ForbiddenError;
+export const WhatsappDisconnectBusinessAccount403 = ForbiddenError;
 export type WhatsappDisconnectBusinessAccount404 = ResourceNotFoundError;
 export const WhatsappDisconnectBusinessAccount404 = ResourceNotFoundError;
 export type WhatsappDisconnectBusinessAccount422 = ValidationError;
@@ -810,9 +774,8 @@ export type WhatsappUpdateBusinessAccount400 = MalformedRequestError;
 export const WhatsappUpdateBusinessAccount400 = MalformedRequestError;
 export type WhatsappUpdateBusinessAccount401 = UnauthorizedError;
 export const WhatsappUpdateBusinessAccount401 = UnauthorizedError;
-export type WhatsappUpdateBusinessAccount403 = FlagDisabledError | ForbiddenError;
-export const WhatsappUpdateBusinessAccount403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappUpdateBusinessAccount403 = ForbiddenError;
+export const WhatsappUpdateBusinessAccount403 = ForbiddenError;
 export type WhatsappUpdateBusinessAccount404 = ResourceNotFoundError;
 export const WhatsappUpdateBusinessAccount404 = ResourceNotFoundError;
 export type WhatsappUpdateBusinessAccount422 = ValidationError;
@@ -950,9 +913,8 @@ export type WhatsappSetDefaultBusinessAccount400 = MalformedRequestError;
 export const WhatsappSetDefaultBusinessAccount400 = MalformedRequestError;
 export type WhatsappSetDefaultBusinessAccount401 = UnauthorizedError;
 export const WhatsappSetDefaultBusinessAccount401 = UnauthorizedError;
-export type WhatsappSetDefaultBusinessAccount403 = FlagDisabledError | ForbiddenError;
-export const WhatsappSetDefaultBusinessAccount403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappSetDefaultBusinessAccount403 = ForbiddenError;
+export const WhatsappSetDefaultBusinessAccount403 = ForbiddenError;
 export type WhatsappSetDefaultBusinessAccount404 = ResourceNotFoundError;
 export const WhatsappSetDefaultBusinessAccount404 = ResourceNotFoundError;
 export type WhatsappSetDefaultBusinessAccount422 = ValidationError;
@@ -1007,9 +969,8 @@ export type WhatsappSyncAccountStatus400 = MalformedRequestError;
 export const WhatsappSyncAccountStatus400 = MalformedRequestError;
 export type WhatsappSyncAccountStatus401 = UnauthorizedError;
 export const WhatsappSyncAccountStatus401 = UnauthorizedError;
-export type WhatsappSyncAccountStatus403 = FlagDisabledError | ForbiddenError;
-export const WhatsappSyncAccountStatus403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappSyncAccountStatus403 = ForbiddenError;
+export const WhatsappSyncAccountStatus403 = ForbiddenError;
 export type WhatsappSyncAccountStatus404 = ResourceNotFoundError;
 export const WhatsappSyncAccountStatus404 = ResourceNotFoundError;
 export type WhatsappSyncAccountStatus422 = ValidationError;
@@ -1034,9 +995,8 @@ export type WhatsappGetMediaDownloadUrl400 = MalformedRequestError;
 export const WhatsappGetMediaDownloadUrl400 = MalformedRequestError;
 export type WhatsappGetMediaDownloadUrl401 = UnauthorizedError;
 export const WhatsappGetMediaDownloadUrl401 = UnauthorizedError;
-export type WhatsappGetMediaDownloadUrl403 = FlagDisabledError | ForbiddenError;
-export const WhatsappGetMediaDownloadUrl403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappGetMediaDownloadUrl403 = ForbiddenError;
+export const WhatsappGetMediaDownloadUrl403 = ForbiddenError;
 export type WhatsappGetMediaDownloadUrl404 = ResourceNotFoundError;
 export const WhatsappGetMediaDownloadUrl404 = ResourceNotFoundError;
 export type WhatsappGetMediaDownloadUrl422 = ValidationError;
@@ -1097,9 +1057,8 @@ export type WhatsappGetServiceWindowBilling400 = MalformedRequestError;
 export const WhatsappGetServiceWindowBilling400 = MalformedRequestError;
 export type WhatsappGetServiceWindowBilling401 = UnauthorizedError;
 export const WhatsappGetServiceWindowBilling401 = UnauthorizedError;
-export type WhatsappGetServiceWindowBilling403 = FlagDisabledError | ForbiddenError;
-export const WhatsappGetServiceWindowBilling403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappGetServiceWindowBilling403 = ForbiddenError;
+export const WhatsappGetServiceWindowBilling403 = ForbiddenError;
 export type WhatsappGetServiceWindowBilling404 = ResourceNotFoundError;
 export const WhatsappGetServiceWindowBilling404 = ResourceNotFoundError;
 export type WhatsappGetServiceWindowBilling422 = ValidationError;
@@ -1144,9 +1103,8 @@ export type WhatsappGetServiceWindowStatus400 = MalformedRequestError;
 export const WhatsappGetServiceWindowStatus400 = MalformedRequestError;
 export type WhatsappGetServiceWindowStatus401 = UnauthorizedError;
 export const WhatsappGetServiceWindowStatus401 = UnauthorizedError;
-export type WhatsappGetServiceWindowStatus403 = FlagDisabledError | ForbiddenError;
-export const WhatsappGetServiceWindowStatus403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappGetServiceWindowStatus403 = ForbiddenError;
+export const WhatsappGetServiceWindowStatus403 = ForbiddenError;
 export type WhatsappGetServiceWindowStatus404 = ResourceNotFoundError;
 export const WhatsappGetServiceWindowStatus404 = ResourceNotFoundError;
 export type WhatsappGetServiceWindowStatus422 = ValidationError;
@@ -1224,9 +1182,8 @@ export type WhatsappGetStats400 = MalformedRequestError;
 export const WhatsappGetStats400 = MalformedRequestError;
 export type WhatsappGetStats401 = UnauthorizedError;
 export const WhatsappGetStats401 = UnauthorizedError;
-export type WhatsappGetStats403 = FlagDisabledError | ForbiddenError;
-export const WhatsappGetStats403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappGetStats403 = ForbiddenError;
+export const WhatsappGetStats403 = ForbiddenError;
 export type WhatsappGetStats422 = ValidationError;
 export const WhatsappGetStats422 = ValidationError;
 export type WhatsappGetStats500 = InternalError;
@@ -1254,9 +1211,8 @@ export type WhatsappGetTemplateStats400 = MalformedRequestError;
 export const WhatsappGetTemplateStats400 = MalformedRequestError;
 export type WhatsappGetTemplateStats401 = UnauthorizedError;
 export const WhatsappGetTemplateStats401 = UnauthorizedError;
-export type WhatsappGetTemplateStats403 = FlagDisabledError | ForbiddenError;
-export const WhatsappGetTemplateStats403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappGetTemplateStats403 = ForbiddenError;
+export const WhatsappGetTemplateStats403 = ForbiddenError;
 export type WhatsappGetTemplateStats422 = ValidationError;
 export const WhatsappGetTemplateStats422 = ValidationError;
 export type WhatsappGetTemplateStats500 = InternalError;
@@ -1283,7 +1239,7 @@ export class WhatsAppGroup extends HttpApiGroup.make("WhatsApp")
       .annotate(OpenApi.Summary, "List WhatsApp business accounts")
       .annotate(
         OpenApi.Description,
-        "Returns a paginated list of the organization's connected WhatsApp business accounts.",
+        "Lists connected WhatsApp business accounts, newest first. Pass nextCursor back as cursor to continue.",
       ),
     HttpApiEndpoint.post("whatsappConnectBusinessAccount", "/v1/whatsapp/business-accounts", {
       payload: WhatsappConnectBusinessAccountRequestJson,

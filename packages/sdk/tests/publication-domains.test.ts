@@ -3,7 +3,7 @@ import { Effect, Layer, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
-import { SamvaApi, OrganizationId, TopicId, FlagDisabledError } from "../src/effect/generated";
+import { SamvaApi, OrganizationId, TopicId, ForbiddenError } from "../src/effect/generated";
 import type { NewsletterDomainsAdd200 } from "../src/effect/generated/newsletter-domains";
 import * as NewsletterDomains from "../src/effect/newsletter-domains";
 import { createClient, type SamvaClient } from "../src/promises";
@@ -130,15 +130,14 @@ describe("publication domains transport parity", () => {
     },
   );
 
-  it("preserves the Preview access error in both clients", async () => {
+  it("preserves an authorization error in both clients", async () => {
     const body = {
-      _tag: "FlagDisabledError" as const,
-      flag: "newsletters",
+      _tag: "ForbiddenError" as const,
       message: "Publication is unavailable",
     };
     const fake = fakeSamvaApi(SamvaApi)({
       "Newsletter domains": {
-        newsletterDomainsAdd: () => Effect.fail(new FlagDisabledError(body)),
+        newsletterDomainsAdd: () => Effect.fail(new ForbiddenError(body)),
       },
     });
     const { fetch } = fake;
@@ -152,7 +151,7 @@ describe("publication domains transport parity", () => {
       await Effect.runPromise(
         provide(
           NewsletterDomains.add({ id, hostname }, { idempotencyKey }).pipe(
-            Effect.catchTag("FlagDisabledError", Effect.succeed),
+            Effect.catchTag("ForbiddenError", Effect.succeed),
           ),
           fetch,
         ),

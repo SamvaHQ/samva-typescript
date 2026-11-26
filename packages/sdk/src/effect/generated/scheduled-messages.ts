@@ -670,7 +670,7 @@ export class ScheduledMessagesGroup extends HttpApiGroup.make("Scheduled Message
       .annotate(OpenApi.Summary, "Resume a review-paused scheduled message")
       .annotate(
         OpenApi.Description,
-        "Explicitly resumes a scheduled message after onboarding review clearance. An overdue message requires either send_now or a new future scheduledFor value.",
+        "Explicitly resumes a scheduled message once Samva's email review approves the organization. An overdue message requires either send_now or a new future scheduledFor value.",
       ),
   )
   .annotate(OpenApi.Description, "One-off scheduled message timers") {}

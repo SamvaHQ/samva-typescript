@@ -11,7 +11,6 @@ import {
   ConflictError,
   DeliveryUnavailableError,
   ExternalServiceError,
-  FlagDisabledError,
   ForbiddenError,
   FromAddressRequiredError,
   GatewayTimeoutError,
@@ -114,12 +113,9 @@ export type SubscriptionsSubscribe401 = UnauthorizedError;
 export const SubscriptionsSubscribe401 = UnauthorizedError;
 export type SubscriptionsSubscribe402 = PaymentRequiredError;
 export const SubscriptionsSubscribe402 = PaymentRequiredError;
-export type SubscriptionsSubscribe403 =
-  | ForbiddenError
-  | OnboardingReviewRequiredError
-  | FlagDisabledError;
+export type SubscriptionsSubscribe403 = ForbiddenError | OnboardingReviewRequiredError;
 export const SubscriptionsSubscribe403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, OnboardingReviewRequiredError, FlagDisabledError]))();
+  Schema.Union([ForbiddenError, OnboardingReviewRequiredError]))();
 export type SubscriptionsSubscribe404 = ResourceNotFoundError;
 export const SubscriptionsSubscribe404 = ResourceNotFoundError;
 export type SubscriptionsSubscribe409 = ConflictError;

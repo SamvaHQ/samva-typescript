@@ -9,7 +9,6 @@ import {
   BillingProviderError,
   ConflictError,
   ContactId,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -457,9 +456,8 @@ export type JourneysCreate401 = UnauthorizedError;
 export const JourneysCreate401 = UnauthorizedError;
 export type JourneysCreate402 = PaymentRequiredError;
 export const JourneysCreate402 = PaymentRequiredError;
-export type JourneysCreate403 = FlagDisabledError | ForbiddenError;
-export const JourneysCreate403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type JourneysCreate403 = ForbiddenError;
+export const JourneysCreate403 = ForbiddenError;
 export type JourneysCreate404 = ResourceNotFoundError;
 export const JourneysCreate404 = ResourceNotFoundError;
 export type JourneysCreate409 = ConflictError;
@@ -573,9 +571,8 @@ export type JourneysReplaceDraft401 = UnauthorizedError;
 export const JourneysReplaceDraft401 = UnauthorizedError;
 export type JourneysReplaceDraft402 = PaymentRequiredError;
 export const JourneysReplaceDraft402 = PaymentRequiredError;
-export type JourneysReplaceDraft403 = FlagDisabledError | ForbiddenError;
-export const JourneysReplaceDraft403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type JourneysReplaceDraft403 = ForbiddenError;
+export const JourneysReplaceDraft403 = ForbiddenError;
 export type JourneysReplaceDraft404 = ResourceNotFoundError;
 export const JourneysReplaceDraft404 = ResourceNotFoundError;
 export type JourneysReplaceDraft409 = ConflictError;
@@ -625,9 +622,8 @@ export type JourneysPublish401 = UnauthorizedError;
 export const JourneysPublish401 = UnauthorizedError;
 export type JourneysPublish402 = PaymentRequiredError;
 export const JourneysPublish402 = PaymentRequiredError;
-export type JourneysPublish403 = FlagDisabledError | ForbiddenError;
-export const JourneysPublish403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type JourneysPublish403 = ForbiddenError;
+export const JourneysPublish403 = ForbiddenError;
 export type JourneysPublish404 = ResourceNotFoundError;
 export const JourneysPublish404 = ResourceNotFoundError;
 export type JourneysPublish409 = ConflictError;
@@ -650,9 +646,8 @@ export type JourneysResume401 = UnauthorizedError;
 export const JourneysResume401 = UnauthorizedError;
 export type JourneysResume402 = PaymentRequiredError;
 export const JourneysResume402 = PaymentRequiredError;
-export type JourneysResume403 = FlagDisabledError | ForbiddenError;
-export const JourneysResume403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type JourneysResume403 = ForbiddenError;
+export const JourneysResume403 = ForbiddenError;
 export type JourneysResume404 = ResourceNotFoundError;
 export const JourneysResume404 = ResourceNotFoundError;
 export type JourneysResume409 = ConflictError;

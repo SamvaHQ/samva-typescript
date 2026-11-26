@@ -39,12 +39,6 @@ export type ForbiddenError = {
   message: string;
 };
 
-export type FlagDisabledError = {
-  _tag: "FlagDisabledError";
-  flag: string;
-  message: string;
-};
-
 export type InternalError = {
   _tag: "InternalError";
   message: string;
@@ -394,13 +388,6 @@ export type CreateWhatsAppFlowPayload = {
   >;
 };
 
-export type PaginationMeta = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
 export type MessageDeliveryId = string;
 
 export type MoneyAmount = {
@@ -502,6 +489,12 @@ export type CreateNamespacePortalLinkPayload = {
   redirectUrl?: WhatsAppSetupLinkRedirectUrl | null | undefined;
   metadata?: NamespacePortalLinkMetadata | null | undefined;
   expiresIn?: number | null | undefined;
+};
+
+export type FlagDisabledError = {
+  _tag: "FlagDisabledError";
+  flag: string;
+  message: string;
 };
 
 export type NamespaceResource = {
@@ -1107,12 +1100,6 @@ export type SenderNotReadyError = {
   retryAfterSeconds?: number | null | undefined;
 };
 
-export type WhatsAppServiceWindowClosedError = {
-  _tag: "WhatsAppServiceWindowClosedError";
-  message: string;
-  closedAt: string | null;
-};
-
 export type OnboardingReviewRequiredError = {
   _tag: "OnboardingReviewRequiredError";
   message: string;
@@ -1139,6 +1126,12 @@ export type MailboxSendRefusedError = {
   _tag: "MailboxSendRefusedError";
   message: string;
   receipt: MailboxSendReceipt;
+};
+
+export type WhatsAppServiceWindowClosedError = {
+  _tag: "WhatsAppServiceWindowClosedError";
+  message: string;
+  closedAt: string | null;
 };
 
 export type MailboxPendingAction = MailboxSendAction | MailboxNonSendAction;
@@ -3387,7 +3380,7 @@ export type CreateTemplateFromBriefPayload = {
    */
   brief: string;
   /**
-   * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+   * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters.
    */
   channel?: "email" | "whatsapp" | null | undefined;
   name?: string | null | undefined;
@@ -3417,7 +3410,7 @@ export type SuggestTemplateStartersPayload = {
    */
   brief: string;
   /**
-   * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+   * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters.
    */
   channel?: "email" | "whatsapp" | null | undefined;
 };
@@ -3990,8 +3983,7 @@ export type Integration = {
   answerWithoutApproval: AnswerWithoutApproval;
   tools: Array<IntegrationToolView>;
   toolPage: {
-    nextOffset: number | null;
-    total: number;
+    nextCursor: string | null;
     revision: string;
   };
   installedBy: UserId | null;
@@ -4097,8 +4089,7 @@ export type IntegrationCatalogConnection = {
 
 export type IntegrationCatalogSearchPage = {
   items: Array<IntegrationCatalogSearchEntry>;
-  total: number;
-  nextOffset: number | null;
+  nextCursor: string | null;
 };
 
 export type IntegrationCatalogSearchEntry = {
@@ -4158,10 +4149,7 @@ export type RecipeReadinessResponse = {
   ready: boolean;
   channel: "email" | "whatsapp";
   availability: {
-    shopify: boolean;
-    journeys: boolean;
-    whatsapp: boolean;
-    plan: "granted" | "denied" | "unreachable" | "disabled" | null;
+    plan: "granted" | "denied" | "unreachable" | null;
   };
   shopify: {
     id: IntegrationAccountId;
@@ -7561,76 +7549,202 @@ export type OperationPage = {
   nextCursor: string | null;
 };
 
-export type MessageEventPage = {
-  items: Array<{
-    id: MessageEventId;
-    messageId: MessageId;
-    eventType: string;
-    status: string;
-    timestamp: string;
-    metadata?:
-      | {
-          [key: string]: JsonValue;
-        }
-      | null
-      | undefined;
-  }>;
-  nextCursor: string | null;
+export type LogDetail = MessageLogDetail | RejectedLogDetail;
+
+export type RejectedLogDetail = {
+  kind: "rejected";
+  line: LogLine;
+  apiRequest: LogApiRequest | null;
+  requestBody: string | null;
+  responseBody: string | null;
 };
 
-export type MessageEventId = string;
-
-export type ValidateEmailResponse = {
-  valid: true;
-  from: {
-    email: string;
-    name: string | null;
-  };
-  recipientCount: number;
-  content: {
-    source: "inline" | "template";
-    subject: string;
-    hasHtml: boolean;
-    hasText: boolean;
-  };
+export type LogApiRequest = {
+  requestId?: string | null | undefined;
+  method?: string | null | undefined;
+  endpoint?: string | null | undefined;
+  headers?:
+    | {
+        [key: string]: string;
+      }
+    | null
+    | undefined;
+  query?:
+    | {
+        [key: string]: string;
+      }
+    | null
+    | undefined;
+  ipAddress?: string | null | undefined;
+  userAgent?: string | null | undefined;
 };
 
-export type EmailSendMessagePayload = {
-  conversationId?: ConversationId | null | undefined;
-  metadata?: MessageMetadataWritable | undefined;
-  channel: "email";
-  to: EmailRecipients;
-  cc?: EmailCcRecipients | undefined;
-  bcc?: EmailBccRecipients | undefined;
-  from?: EmailSender | undefined;
-  email: EmailContent;
+export type LogLine = {
+  id: string;
+  cursor: string;
+  timestamp: string;
+  event:
+    | "accepted"
+    | "waiting"
+    | "received"
+    | "rejected"
+    | "created"
+    | "queued"
+    | "processing"
+    | "sent"
+    | "delivered"
+    | "read"
+    | "failed"
+    | "bounced"
+    | "complained"
+    | "replied"
+    | "forwarded"
+    | "deleted"
+    | "archived"
+    | "marked_spam"
+    | "agent_processing_started"
+    | "agent_processing_completed"
+    | "agent_handoff"
+    | "agent_escalation"
+    | "opened"
+    | "clicked"
+    | "unsubscribed"
+    | "whatsapp_read"
+    | "whatsapp_deleted"
+    | "retry_scheduled"
+    | "retry_attempted"
+    | "cost_calculated";
+  messageId: MessageId | null;
+  channel: "sms" | "whatsapp" | "email" | null;
+  direction: "outbound" | "inbound";
+  origin:
+    | "direct"
+    | "campaign"
+    | "scheduled"
+    | "mailbox"
+    | "forwarding"
+    | "journey"
+    | "businessApp"
+    | null;
+  from: LogSender | null;
+  recipient: string | null;
+  subject: string | null;
+  submission: LogSubmission | null;
+  requestId: string | null;
+  reason: string | null;
+  errorTag: string | null;
 };
 
-export type EmailContent = {
-  subject?: string | null | undefined;
-  html?: string | null | undefined;
-  text?: string | null | undefined;
-  attachments?: EmailAttachments | undefined;
-  publicationId?: TemplatePublicationId | undefined;
-  inputContractId?: TemplateInputContractId | undefined;
-  templateId?: TemplateId | null | undefined;
-  templateSlug?: string | null | undefined;
-  templateData?: TemplateDataWritable | undefined;
-  locale?: RenderLocale | undefined;
-  timeZone?: RenderTimeZone | undefined;
-  inReplyToMessageId?: MessageId | null | undefined;
-  replyTo?: ReplyToAddresses | undefined;
+export type LogSubmission = {
+  origin:
+    | "direct"
+    | "campaign"
+    | "scheduled"
+    | "mailbox"
+    | "forwarding"
+    | "journey"
+    | "businessApp";
+  transport: "http" | "smtp" | null;
+  credential: LogCredential | null;
   /**
-   * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
+   * The acting user, or null when unavailable. Present only for callers authenticated with a member session or a member-authorized OAuth token.
    */
-  topicId?: TopicId | null | undefined;
-  tracking?: EmailTrackingOverrideV1 | undefined;
-  footer?: EmailFooterOverride | undefined;
-  headers?: EmailCustomHeadersWritable | null | undefined;
+  user?: LogUser | null | undefined;
+  client: SubmissionClient | null;
 };
 
-export type MessageReceipt = {
-  id: MessageId;
+export type SubmissionClient = {
+  surface: "typescript-promise" | "typescript-effect" | "cli" | "mcp";
+  version: string;
+};
+
+export type LogUser = {
+  id: UserId;
+  email: string;
+  name: string;
+};
+
+export type LogCredential =
+  | {
+      kind: "api_key";
+      apiKeyId: ApiKeyId | null;
+      name: string | null;
+    }
+  | {
+      kind: "oauth";
+      clientId: string | null;
+      name: string | null;
+    }
+  | {
+      kind: "session";
+    };
+
+export type LogSender = {
+  address: string;
+  name: string | null;
+};
+
+export type MessageLogDetail = {
+  kind: "message";
+  requestBody: string | null;
+  responseBody: string | null;
+  deliveries: Array<{
+    scheduling: {
+      dueAt: string;
+      expiresAt: string;
+      waitReason:
+        | "rate"
+        | "daily-quota"
+        | "domain-health"
+        | "sending-paused"
+        | "upstream-unavailable"
+        | "retry"
+        | "campaign-paused"
+        | "domain-warming"
+        | "onboarding-review"
+        | "content-review"
+        | "screening-unavailable"
+        | null;
+      reviewExpectedAt: string | null;
+    } | null;
+    id: string;
+    messageId: string;
+    recipientId: string | null;
+    channel: "sms" | "whatsapp" | "email";
+    status:
+      | "pending"
+      | "scheduled"
+      | "queued"
+      | "processing"
+      | "sent"
+      | "delivered"
+      | "read"
+      | "failed"
+      | "bounced"
+      | "complained";
+    attemptCount: number;
+    maxAttempts: number;
+    queuedAt: string | null;
+    claimedAt: string | null;
+    lastAttemptAt: string | null;
+    nextRetryAt: string | null;
+    sentAt: string | null;
+    deliveredAt: string | null;
+    readAt: string | null;
+    failedAt: string | null;
+    terminalAt: string | null;
+    errorCode: string | null;
+    errorMessage: string | null;
+    errorDetails: DeliveryErrorDetails | null;
+    cost: string;
+    currency: string;
+    idempotencyKey: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  messageId: MessageId;
+  channel: "sms" | "whatsapp" | "email";
+  direction: "outbound" | "inbound";
   status:
     | "pending"
     | "scheduled"
@@ -7642,67 +7756,31 @@ export type MessageReceipt = {
     | "failed"
     | "bounced"
     | "complained";
-  waitReason:
-    | "rate"
-    | "daily-quota"
-    | "domain-health"
-    | "sending-paused"
-    | "upstream-unavailable"
-    | "retry"
-    | "campaign-paused"
-    | "domain-warming"
-    | "onboarding-review"
-    | "content-review"
-    | "screening-unavailable"
-    | null;
-  reviewExpectedAt: string | null;
-  skippedRecipients: Array<SkippedRecipient>;
+  recipients: Array<{
+    id: string;
+    address: string;
+  }>;
+  recipientCount: number;
+  from: LogSender | null;
+  submission: LogSubmission | null;
+  subject: string | null;
+  acceptedAt: string | null;
   createdAt: string;
+  updatedAt: string;
+  campaign: LogCampaign | null;
+  content: MessageContent;
+  apiRequest: LogApiRequest | null;
+  statusTimeline: LogStatusTimeline;
 };
 
-export type SendMessagePayload =
-  | EmailSendMessagePayload
-  | SmsSendMessagePayload
-  | WhatsAppSendMessagePayload;
-
-/**
- * Send WhatsApp messages from your connected business account.
- */
-export type WhatsAppSendMessagePayload = {
-  conversationId?: ConversationId | null | undefined;
-  metadata?: MessageMetadataWritable | undefined;
-  channel: "whatsapp";
-  to: WhatsAppRecipients;
-  whatsapp: WhatsAppContentWritable;
-};
-
-/**
- * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
- */
-export type SmsSendMessagePayload = {
-  conversationId?: ConversationId | null | undefined;
-  metadata?: MessageMetadataWritable | undefined;
-  channel: "sms";
-  to: SmsRecipients;
-  sms: SmsContentWritable;
-};
-
-export type EmailAddress = {
-  email: string;
-  name: string | null;
-};
-
-export type DeliveryErrorDetails = {
-  code?: string | null | undefined;
-  name?: string | null | undefined;
-  message?: string | null | undefined;
-  details?:
-    | {
-        [key: string]: string | number | null;
-      }
-    | null
-    | undefined;
-  retryable?: boolean | null | undefined;
+export type LogStatusTimeline = {
+  availability: "recorded" | "unavailable";
+  entries: Array<{
+    status: string;
+    at: string;
+    reason: string | null;
+    recipientId: string | null;
+  }>;
 };
 
 export type MessageContent = {
@@ -8058,6 +8136,160 @@ export type SmsMessageContent = {
   parts?: number | null | undefined;
 };
 
+export type LogCampaign = {
+  runId: string;
+  name: string;
+};
+
+export type DeliveryErrorDetails = {
+  code?: string | null | undefined;
+  name?: string | null | undefined;
+  message?: string | null | undefined;
+  details?:
+    | {
+        [key: string]: string | number | null;
+      }
+    | null
+    | undefined;
+  retryable?: boolean | null | undefined;
+};
+
+export type MessageLogPage = {
+  items: Array<LogLine>;
+  nextCursor: string | null;
+};
+
+export type MessageEventPage = {
+  items: Array<{
+    id: MessageEventId;
+    messageId: MessageId;
+    eventType: string;
+    status: string;
+    timestamp: string;
+    metadata?:
+      | {
+          [key: string]: JsonValue;
+        }
+      | null
+      | undefined;
+  }>;
+  nextCursor: string | null;
+};
+
+export type MessageEventId = string;
+
+export type ValidateEmailResponse = {
+  valid: true;
+  from: {
+    email: string;
+    name: string | null;
+  };
+  recipientCount: number;
+  content: {
+    source: "inline" | "template";
+    subject: string;
+    hasHtml: boolean;
+    hasText: boolean;
+  };
+};
+
+export type EmailSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "email";
+  to: EmailRecipients;
+  cc?: EmailCcRecipients | undefined;
+  bcc?: EmailBccRecipients | undefined;
+  from?: EmailSender | undefined;
+  email: EmailContent;
+};
+
+export type EmailContent = {
+  subject?: string | null | undefined;
+  html?: string | null | undefined;
+  text?: string | null | undefined;
+  attachments?: EmailAttachments | undefined;
+  publicationId?: TemplatePublicationId | undefined;
+  inputContractId?: TemplateInputContractId | undefined;
+  templateId?: TemplateId | null | undefined;
+  templateSlug?: string | null | undefined;
+  templateData?: TemplateDataWritable | undefined;
+  locale?: RenderLocale | undefined;
+  timeZone?: RenderTimeZone | undefined;
+  inReplyToMessageId?: MessageId | null | undefined;
+  replyTo?: ReplyToAddresses | undefined;
+  /**
+   * The topic for this send. Omit to inherit the template topic; null disables topic inheritance for a direct send. Campaigns require a topic.
+   */
+  topicId?: TopicId | null | undefined;
+  tracking?: EmailTrackingOverrideV1 | undefined;
+  footer?: EmailFooterOverride | undefined;
+  headers?: EmailCustomHeadersWritable | null | undefined;
+};
+
+export type MessageReceipt = {
+  id: MessageId;
+  status:
+    | "pending"
+    | "scheduled"
+    | "queued"
+    | "processing"
+    | "sent"
+    | "delivered"
+    | "read"
+    | "failed"
+    | "bounced"
+    | "complained";
+  waitReason:
+    | "rate"
+    | "daily-quota"
+    | "domain-health"
+    | "sending-paused"
+    | "upstream-unavailable"
+    | "retry"
+    | "campaign-paused"
+    | "domain-warming"
+    | "onboarding-review"
+    | "content-review"
+    | "screening-unavailable"
+    | null;
+  reviewExpectedAt: string | null;
+  skippedRecipients: Array<SkippedRecipient>;
+  createdAt: string;
+};
+
+export type SendMessagePayload =
+  | EmailSendMessagePayload
+  | SmsSendMessagePayload
+  | WhatsAppSendMessagePayload;
+
+/**
+ * Send WhatsApp messages from your connected business account.
+ */
+export type WhatsAppSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "whatsapp";
+  to: WhatsAppRecipients;
+  whatsapp: WhatsAppContentWritable;
+};
+
+/**
+ * The payload is accepted by the contract today and the endpoint answers 403 until the channel launches for your organization.
+ */
+export type SmsSendMessagePayload = {
+  conversationId?: ConversationId | null | undefined;
+  metadata?: MessageMetadataWritable | undefined;
+  channel: "sms";
+  to: SmsRecipients;
+  sms: SmsContentWritable;
+};
+
+export type EmailAddress = {
+  email: string;
+  name: string | null;
+};
+
 export type MessageDeliveryList = {
   id: MessageId;
   status:
@@ -8213,11 +8445,6 @@ export type MessageSubmission = {
   credential: SubmissionCredential | null;
   userId: UserId | null;
   client: SubmissionClient | null;
-};
-
-export type SubmissionClient = {
-  surface: "typescript-promise" | "typescript-effect" | "cli" | "mcp";
-  version: string;
 };
 
 export type SubmissionCredential =
@@ -8592,7 +8819,7 @@ export type MessagesSendData = {
   body: EmailSendMessagePayload | SmsSendMessagePayload | WhatsAppSendMessagePayload;
   headers?: {
     /**
-     * Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response; reusing the key with different content returns 409.
+     * Optional org-scoped key that makes a send idempotent. Repeating a request with the same key and identical payload replays the original 201 response after the first send succeeds. While it is in progress, wait for Retry-After and retry with the same key and body. Reusing the key with different content also returns 409, without a retry hint.
      */
     "idempotency-key"?: string | undefined;
   };
@@ -9260,6 +9487,128 @@ export type MessagesGetEventsResponses = {
 export type MessagesGetEventsResponse =
   MessagesGetEventsResponses[keyof MessagesGetEventsResponses];
 
+export type LogsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
+    after?: string | undefined;
+    orderBy?: "timestamp" | "recorded" | undefined;
+    order?: "asc" | "desc" | undefined;
+    since?: string | undefined;
+    until?: string | undefined;
+    status?: string | undefined;
+    event?: string | undefined;
+    channel?: "sms" | "whatsapp" | "email" | undefined;
+    direction?: "outbound" | "inbound" | undefined;
+    origin?:
+      | "direct"
+      | "campaign"
+      | "scheduled"
+      | "mailbox"
+      | "forwarding"
+      | "journey"
+      | "businessApp"
+      | undefined;
+    credential?: string | undefined;
+    from?: string | undefined;
+    messageId?: MessageId | undefined;
+    mailboxId?: MailboxId | undefined;
+    requestId?: string | undefined;
+  };
+  url: "/v1/logs";
+};
+
+export type LogsListErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type LogsListError = LogsListErrors[keyof LogsListErrors];
+
+export type LogsListResponses = {
+  /**
+   * MessageLogPage
+   */
+  200: MessageLogPage;
+};
+
+export type LogsListResponse = LogsListResponses[keyof LogsListResponses];
+
+export type LogsGetData = {
+  body?: never;
+  path: {
+    id: MessageId | string;
+  };
+  query?: never;
+  url: "/v1/logs/{id}";
+};
+
+export type LogsGetErrors = {
+  /**
+   * MalformedRequestError
+   */
+  400: MalformedRequestError;
+  /**
+   * UnauthorizedError
+   */
+  401: UnauthorizedError;
+  /**
+   * ForbiddenError
+   */
+  403: ForbiddenError;
+  /**
+   * ResourceNotFoundError
+   */
+  404: ResourceNotFoundError;
+  /**
+   * ValidationError
+   */
+  422: ValidationError;
+  /**
+   * InternalError
+   */
+  500: InternalError;
+  /**
+   * GatewayTimeoutError
+   */
+  504: GatewayTimeoutError;
+};
+
+export type LogsGetError = LogsGetErrors[keyof LogsGetErrors];
+
+export type LogsGetResponses = {
+  /**
+   * LogDetail
+   */
+  200: LogDetail;
+};
+
+export type LogsGetResponse = LogsGetResponses[keyof LogsGetResponses];
+
 export type OperationsListData = {
   body?: never;
   path?: never;
@@ -9749,9 +10098,9 @@ export type CampaignsPreviewErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -9814,9 +10163,9 @@ export type CampaignsSendTestErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | OnboardingReviewRequiredError | FlagDisabledError
+   * ForbiddenError | OnboardingReviewRequiredError
    */
-  403: ForbiddenError | OnboardingReviewRequiredError | FlagDisabledError;
+  403: ForbiddenError | OnboardingReviewRequiredError;
   /**
    * ResourceNotFoundError
    */
@@ -17387,9 +17736,9 @@ export type JourneysCreateErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -17612,9 +17961,9 @@ export type JourneysReplaceDraftErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -17679,9 +18028,9 @@ export type JourneysPublishErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -17797,9 +18146,9 @@ export type JourneysResumeErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -19175,9 +19524,9 @@ export type IntegrationCatalogRecipeConnectionHandoffErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -19468,9 +19817,9 @@ export type IntegrationCatalogRecipeSetupActivateErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -19599,9 +19948,9 @@ export type IntegrationCatalogRecipeWhatsAppChallengeBeginErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -19657,9 +20006,9 @@ export type IntegrationCatalogRecipeWhatsAppChallengeGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -19717,9 +20066,9 @@ export type IntegrationCatalogRecipeWhatsAppChallengeConfirmErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -19805,9 +20154,9 @@ export type IntegrationCatalogRecipeTestErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | FlagDisabledError | OnboardingReviewRequiredError
+   * ForbiddenError | OnboardingReviewRequiredError
    */
-  403: ForbiddenError | FlagDisabledError | OnboardingReviewRequiredError;
+  403: ForbiddenError | OnboardingReviewRequiredError;
   /**
    * ResourceNotFoundError
    */
@@ -20114,8 +20463,8 @@ export type IntegrationCatalogSearchData = {
       | "channel"
       | "other"
       | undefined;
-    offset?: number | undefined;
-    limit?: number | undefined;
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/integrations/catalog/search";
 };
@@ -20315,8 +20664,8 @@ export type IntegrationsListToolsData = {
     integrationId: IntegrationId;
   };
   query?: {
-    offset?: number | null | undefined;
-    revision?: string | undefined;
+    limit?: number | null | undefined;
+    cursor?: string | undefined;
   };
   url: "/v1/integrations/{integrationId}/tools";
 };
@@ -20364,11 +20713,8 @@ export type IntegrationsListToolsResponses = {
    * Success
    */
   200: {
-    nextOffset: number | null;
-    total: number;
-    revision: string;
-    offset: number;
     items: Array<IntegrationToolView>;
+    nextCursor: string | null;
   };
 };
 
@@ -20650,9 +20996,9 @@ export type SubscriptionsSubscribeErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | OnboardingReviewRequiredError | FlagDisabledError
+   * ForbiddenError | OnboardingReviewRequiredError
    */
-  403: ForbiddenError | OnboardingReviewRequiredError | FlagDisabledError;
+  403: ForbiddenError | OnboardingReviewRequiredError;
   /**
    * ResourceNotFoundError
    */
@@ -22390,9 +22736,9 @@ export type NewslettersListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22455,9 +22801,9 @@ export type NewslettersCreateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22514,9 +22860,9 @@ export type NewslettersRemoveErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22572,9 +22918,9 @@ export type NewslettersGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22633,9 +22979,9 @@ export type NewslettersUpdateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22689,9 +23035,9 @@ export type NewsletterIssuesListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22760,9 +23106,9 @@ export type NewsletterIssuesUpdateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -22928,9 +23274,9 @@ export type NewsletterIssuesCreateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -23086,9 +23432,9 @@ export type NewsletterIssuesOpenErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -23250,9 +23596,9 @@ export type NewsletterIssuesGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -23319,9 +23665,9 @@ export type NewsletterIssuesRemoveErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -23484,9 +23830,9 @@ export type NewsletterIssuesSaveErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -23624,9 +23970,9 @@ export type NewsletterIssuesCheckErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -23801,9 +24147,9 @@ export type NewsletterIssuesRenderErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -24052,9 +24398,9 @@ export type NewsletterIssuesHeadErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -24119,9 +24465,9 @@ export type NewsletterIssuesHistoryErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -24193,9 +24539,9 @@ export type NewsletterDomainsListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -24255,9 +24601,9 @@ export type NewsletterDomainsAddErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -24336,9 +24682,9 @@ export type NewsletterDomainsRemoveErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -24414,9 +24760,9 @@ export type NewsletterDomainsGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -25647,7 +25993,7 @@ export type TemplatesSuggestStartersData = {
      */
     brief: string;
     /**
-     * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+     * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters.
      */
     channel?: "email" | "whatsapp" | null | undefined;
   };
@@ -25703,7 +26049,7 @@ export type TemplatesCreateFromBriefData = {
      */
     brief: string;
     /**
-     * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.
+     * The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters.
      */
     channel?: "email" | "whatsapp" | null | undefined;
     name?: string | null | undefined;
@@ -32993,7 +33339,7 @@ export type MailboxesListOrganizationThreadsData = {
     senders?: string | Array<string> | undefined;
     excludeTrash?: boolean | null | undefined;
     /**
-     * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.
+     * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages. With no search, the list uses its requested sort order. New mail can take a few seconds to become searchable. Attachment contents are not searched.
      */
     q?: string | undefined;
     state?: "active" | "done" | undefined;
@@ -33002,6 +33348,10 @@ export type MailboxesListOrganizationThreadsData = {
     unread?: boolean | null | undefined;
     starred?: boolean | null | undefined;
     snoozed?: boolean | null | undefined;
+    /**
+     * With snoozed=true and no q, list earliest wake first, then thread ID ascending. Keep the same order when passing back a cursor. Search results use relevance order.
+     */
+    order?: "wake" | undefined;
     mailboxId?: MailboxId | Array<MailboxId> | undefined;
     kind?: "personal" | "shared" | undefined;
     conversation?: ConversationId | undefined;
@@ -33067,7 +33417,7 @@ export type MailboxesListThreadsData = {
     senders?: string | Array<string> | undefined;
     excludeTrash?: boolean | null | undefined;
     /**
-     * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages; omit q to list by recent activity. New mail can take a few seconds to become searchable. Attachment contents are not searched.
+     * Search subjects, participants, message text, and attachment filenames by semantic and keyword relevance. Filters narrow the search. Returns up to 100 best-matching threads across cursor pages. With no search, the list uses its requested sort order. New mail can take a few seconds to become searchable. Attachment contents are not searched.
      */
     q?: string | undefined;
     state?: "active" | "done" | undefined;
@@ -33076,6 +33426,10 @@ export type MailboxesListThreadsData = {
     unread?: boolean | null | undefined;
     starred?: boolean | null | undefined;
     snoozed?: boolean | null | undefined;
+    /**
+     * With snoozed=true and no q, list earliest wake first, then thread ID ascending. Keep the same order when passing back a cursor. Search results use relevance order.
+     */
+    order?: "wake" | undefined;
   };
   url: "/v1/mailboxes/{id}/threads";
 };
@@ -33884,9 +34238,9 @@ export type MailboxesSendMessageErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError;
   /**
    * ResourceNotFoundError
    */
@@ -34189,9 +34543,9 @@ export type MailboxesReplyErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError;
   /**
    * ResourceNotFoundError
    */
@@ -34271,9 +34625,9 @@ export type MailboxesReplyAllErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError;
   /**
    * ResourceNotFoundError
    */
@@ -34361,9 +34715,9 @@ export type MailboxesForwardErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -35164,9 +35518,9 @@ export type MailboxesSendDraftErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError;
   /**
    * ResourceNotFoundError
    */
@@ -35369,9 +35723,9 @@ export type MailboxesCancelActionErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -35447,9 +35801,9 @@ export type MailboxesRetryActionErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError;
   /**
    * ResourceNotFoundError
    */
@@ -35535,9 +35889,9 @@ export type MailboxesApproveActionErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError
+   * MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError
    */
-  403: FlagDisabledError | MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError;
+  403: MailboxSendRefusedError | OnboardingReviewRequiredError | ForbiddenError | FlagDisabledError;
   /**
    * ResourceNotFoundError
    */
@@ -36935,9 +37289,9 @@ export type WhatsappGetStatsErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ValidationError
    */
@@ -36994,9 +37348,9 @@ export type WhatsappGetTemplateStatsErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ValidationError
    */
@@ -37044,9 +37398,9 @@ export type WhatsappGetServiceWindowStatusErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37103,9 +37457,9 @@ export type WhatsappGetServiceWindowBillingErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37161,9 +37515,9 @@ export type WhatsappGetMediaDownloadUrlErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37202,8 +37556,8 @@ export type WhatsappListBusinessAccountsData = {
   body?: never;
   path?: never;
   query?: {
-    page?: number | null | undefined;
     limit?: number | null | undefined;
+    cursor?: string | undefined;
     isActive?: boolean | null | undefined;
     verificationStatus?: "pending" | "verified" | "failed" | "suspended" | undefined;
     namespaceId?: NamespaceId | undefined;
@@ -37221,9 +37575,9 @@ export type WhatsappListBusinessAccountsErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ValidationError
    */
@@ -37282,7 +37636,7 @@ export type WhatsappListBusinessAccountsResponses = {
       createdAt: string;
       updatedAt: string;
     }>;
-    pagination: PaginationMeta;
+    nextCursor: string | null;
   };
 };
 
@@ -37315,9 +37669,9 @@ export type WhatsappConnectBusinessAccountErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37411,9 +37765,9 @@ export type WhatsappDisconnectBusinessAccountErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37466,9 +37820,9 @@ export type WhatsappGetBusinessAccountErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37557,9 +37911,9 @@ export type WhatsappUpdateBusinessAccountErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37645,9 +37999,9 @@ export type WhatsappSetDefaultBusinessAccountErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37733,9 +38087,9 @@ export type WhatsappSyncAccountStatusErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37796,9 +38150,9 @@ export type WhatsappFlowsListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ValidationError
    */
@@ -37855,9 +38209,9 @@ export type WhatsappFlowsCreateErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37911,9 +38265,9 @@ export type WhatsappFlowsGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -37962,9 +38316,9 @@ export type WhatsappFlowsListVersionsErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38018,9 +38372,9 @@ export type WhatsappFlowsRecordVersionErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38079,9 +38433,9 @@ export type WhatsappFlowsListRegistrationsErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38134,9 +38488,9 @@ export type WhatsappFlowsRegisterErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38195,9 +38549,9 @@ export type WhatsappFlowsRotateEncryptionKeyErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38254,9 +38608,9 @@ export type WhatsappFlowsSetEndpointErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38307,9 +38661,9 @@ export type WhatsappFlowsRotateEndpointSecretErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38363,9 +38717,9 @@ export type WhatsappSetupLinksListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ValidationError
    */
@@ -38419,9 +38773,9 @@ export type WhatsappSetupLinksCreateErrors = {
    */
   402: PaymentRequiredError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38476,9 +38830,9 @@ export type WhatsappSetupLinksGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38529,9 +38883,9 @@ export type WhatsappSetupLinksRevokeErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38586,9 +38940,9 @@ export type TemplateRegistrationsListErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38646,9 +39000,9 @@ export type TemplateRegistrationsSubmitErrors = {
    */
   401: UnauthorizedError;
   /**
-   * ForbiddenError | FlagDisabledError
+   * ForbiddenError
    */
-  403: ForbiddenError | FlagDisabledError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */
@@ -38712,9 +39066,9 @@ export type TemplateRegistrationsGetErrors = {
    */
   401: UnauthorizedError;
   /**
-   * FlagDisabledError | ForbiddenError
+   * ForbiddenError
    */
-  403: FlagDisabledError | ForbiddenError;
+  403: ForbiddenError;
   /**
    * ResourceNotFoundError
    */

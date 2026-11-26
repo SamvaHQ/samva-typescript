@@ -139,7 +139,7 @@ export const generateRegistry = (input: unknown, overrides = registryOverrides) 
     .join("\n");
   const header = registryHeader;
   const registrySource =
-    `${header}/**\n * Explicit mapping between the public SDK facade and generated Effect client\n * operations. This is intentionally data rather than codegen so facade drift\n * is visible in review and test failures.\n */\nexport const SDK_SERVICE_OPERATIONS = ${JSON.stringify(services, null, 2)} as const;\n${sharedDeclarations}\n/** How each generated Effect operation is adapted to the Promise facade's direct input shape. */\nexport const SDK_OPERATION_CALLS = {${callEntries.join(",\n")}} as const;\n` +
+    `${header}/**\n * Maps the public SDK facade to generated Effect client operations. Update the\n * source in codegen/generate-registry.ts.\n */\nexport const SDK_SERVICE_OPERATIONS = ${JSON.stringify(services, null, 2)} as const;\n${sharedDeclarations}\n/** How each generated Effect operation is adapted to the Promise facade's direct input shape. */\nexport const SDK_OPERATION_CALLS = {${callEntries.join(",\n")}} as const;\n` +
     `export const SDK_EFFECT_MODULES = ${JSON.stringify(Object.fromEntries(Object.entries(modules).map(([filename, module]) => [filename, module.service])), null, 2)} as const;\n`;
   const domainSources = Object.entries(services).map(([service, operations]) => {
     const schemaFilename = serviceFilenames[service];

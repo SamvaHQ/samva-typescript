@@ -511,6 +511,10 @@ import type {
   JourneysUpdateResponses,
   JsonObjectWritable,
   JsonValueWritable,
+  LogsGetErrors,
+  LogsGetResponses,
+  LogsListErrors,
+  LogsListResponses,
   MailboxActionId,
   MailboxChannel,
   MailboxDraftId,
@@ -1323,7 +1327,7 @@ export class Messages {
   /**
    * Send a message
    *
-   * An email send whose namespace has no sending setup returns ValidationError: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError. Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Repeating an identical request with the same optional `Idempotency-Key` header returns the original receipt; reusing the key for different content returns a conflict.
+   * An email send whose namespace has no sending setup returns ValidationError: share the sender domain with namespaces, or use a sender owned by that namespace. Sending setup that has stopped after failure returns ValidationError; restart or reconcile the domain's sending setup. Setup still in progress returns ConflictError. Sends a message on the requested channel and returns its receipt (id, status, and why it waits when it does) with a 201 Created status. Requires `messages:create` or the send permission of the channel it sends on, such as `email:send`. `channel` selects the payload variant. Email and WhatsApp sends are available. Once a send succeeds, repeating the request with the same `Idempotency-Key` and body returns the original receipt. While it is still in progress, a 409 includes a `Retry-After` header. Reusing the key for different content returns a 409 without a retry hint.
    */
   public static send<ThrowOnError extends boolean = false>(
     parameters: EmailSendMessagePayload | SmsSendMessagePayload | WhatsAppSendMessagePayload,
@@ -1649,6 +1653,109 @@ export class Messages2 {
   static messages = Messages;
 }
 
+export class Logs {
+  /**
+   * List message log events
+   *
+   * Lists the organization's message events in its plan's log window. The default sort is by event timestamp. Use orderBy=recorded and order=asc to poll events in ingestion order, including events with older timestamps. Pass the last event's cursor as after. Keep the same sort and direction when paging.
+   */
+  public static list<ThrowOnError extends boolean = false>(
+    parameters?: {
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
+      after?: string | undefined;
+      orderBy?: "timestamp" | "recorded" | undefined;
+      order?: "asc" | "desc" | undefined;
+      since?: string | undefined;
+      until?: string | undefined;
+      status?: string | undefined;
+      event?: string | undefined;
+      channel?: "sms" | "whatsapp" | "email" | undefined;
+      direction?: "outbound" | "inbound" | undefined;
+      origin?:
+        | "direct"
+        | "campaign"
+        | "scheduled"
+        | "mailbox"
+        | "forwarding"
+        | "journey"
+        | "businessApp"
+        | undefined;
+      credential?: string | undefined;
+      from?: string | undefined;
+      messageId?: MessageId | undefined;
+      mailboxId?: MailboxId | undefined;
+      requestId?: string | undefined;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<LogsListResponses, LogsListErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
+            { in: "query", key: "after" },
+            { in: "query", key: "orderBy" },
+            { in: "query", key: "order" },
+            { in: "query", key: "since" },
+            { in: "query", key: "until" },
+            { in: "query", key: "status" },
+            { in: "query", key: "event" },
+            { in: "query", key: "channel" },
+            { in: "query", key: "direction" },
+            { in: "query", key: "origin" },
+            { in: "query", key: "credential" },
+            { in: "query", key: "from" },
+            { in: "query", key: "messageId" },
+            { in: "query", key: "mailboxId" },
+            { in: "query", key: "requestId" },
+          ],
+        },
+      ],
+    );
+    return requestWithPolicy(options?.client ?? client, "logsList", options, (headers, signal) =>
+      (options?.client ?? client).get<LogsListResponses, LogsListErrors, ThrowOnError>({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/logs",
+        ...options,
+        ...params,
+        headers: { ...headers, ...params.headers },
+        signal,
+      }),
+    );
+  }
+
+  /**
+   * Get message log detail
+   *
+   * Returns the message and its event timeline, or a rejected submission, by message, rejection, or request ID.
+   */
+  public static get<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: MessageId | string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<LogsGetResponses, LogsGetErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return requestWithPolicy(options?.client ?? client, "logsGet", options, (headers, signal) =>
+      (options?.client ?? client).get<LogsGetResponses, LogsGetErrors, ThrowOnError>({
+        security: [{ name: "x-api-key", type: "apiKey" }],
+        url: "/v1/logs/{id}",
+        ...options,
+        ...params,
+        headers: { ...headers, ...params.headers },
+        signal,
+      }),
+    );
+  }
+}
+
+export class Logs2 {
+  static logs = Logs;
+}
+
 export class Operations {
   /**
    * List asynchronous operations
@@ -1934,7 +2041,7 @@ export class ScheduledMessages {
   /**
    * Resume a review-paused scheduled message
    *
-   * Explicitly resumes a scheduled message after onboarding review clearance. An overdue message requires either send_now or a new future scheduledFor value.
+   * Explicitly resumes a scheduled message once Samva's email review approves the organization. An overdue message requires either send_now or a new future scheduledFor value.
    */
   public static resume<ThrowOnError extends boolean = false>(
     parameters: {
@@ -2650,9 +2757,9 @@ export class Campaigns2 {
 
 export class Email {
   /**
-   * Get email onboarding review status
+   * Get email review status
    *
-   * Returns the customer-safe organization review decision, workflow stage, next action, and current sending-identity clearances. An organization that has not been reviewed yet is returned in the blocked initial state.
+   * Returns whether the organization's email can send and where Samva's review of it stands: the decision, stage, stable block reason, next action, and current sending-identity clearances. Samva reviews some new organizations before their first email; while it does, `canSend` is false and `nextAction` is `wait_for_review`. Mailbox sends wait as `queued` with wait reason `onboarding-review` and go out once the review approves the organization; other sends are refused with `OnboardingReviewRequiredError`.
    */
   public static getOnboardingReview<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
@@ -2681,7 +2788,7 @@ export class Email {
   }
 
   /**
-   * Reapply for email onboarding review
+   * Reapply for email review
    *
    * Allows an organization owner or admin to submit a rejected organization for review again. The expected generation prevents acting on stale status.
    */
@@ -2721,7 +2828,7 @@ export class Email {
   }
 
   /**
-   * Respond to an email onboarding information request
+   * Respond to an email review information request
    *
    * Allows organization owners and admins to submit a text response and up to three evidence uploads for the current information request.
    */
@@ -8222,7 +8329,7 @@ export class Agents {
   /**
    * Create an agent
    *
-   * Creates an agent with a draft and returns it with status 201. The agent answers nothing until its draft is published. The default policy requires a person to approve replies and final actions. The namespace is set at creation and cannot change.
+   * Creates an agent with a draft and returns it with status 201. The agent answers nothing until its draft is published. The default policy requires a person to approve replies and final actions. API keys need organization-wide reach to create with a custom policy. The namespace is set at creation and cannot change.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -8389,7 +8496,7 @@ export class Agents {
   /**
    * Replace an agent draft
    *
-   * Replaces the whole draft and returns the agent with a new revision. The request names the revision it read; a stale revision returns 409. Published versions, and the conversations answered on them, do not change. An endpoint answers for one agent at a time: a draft that names an endpoint another agent answers on returns 409. A draft that pins a catalog model returns 402 unless your plan is Growth or Scale, and 422 when the model is not available or does not support the reasoning level.
+   * Replaces the whole draft and returns the agent with a new revision. The request names the revision it read; a stale revision returns 409. API keys need organization-wide reach to change the draft policy. Published versions, and the conversations answered on them, do not change. An endpoint answers for one agent at a time: a draft that names an endpoint another agent answers on returns 409. A draft that pins a catalog model returns 402 unless your plan is Growth or Scale, and 422 when the model is not available or does not support the reasoning level.
    */
   public static replaceDraft<ThrowOnError extends boolean = false>(
     parameters: {
@@ -8435,7 +8542,7 @@ export class Agents {
   /**
    * Publish an agent
    *
-   * Publishes the draft as the next immutable version. Each conversation moves to it from its next agent reply; a reply already running finishes on the version it started on. The request names the revision it read; a stale revision returns 409. Publishing a draft identical to the newest version changes nothing and answers published false. An endpoint answers for one agent at a time: publishing a draft whose endpoint another agent answers on returns 409. The published policy governs review of each proposed action.
+   * Publishes the draft as the next immutable version. API keys need organization-wide reach to publish a policy change. Each conversation moves to it from its next agent reply; a reply already running finishes on the version it started on. The request names the revision it read; a stale revision returns 409. Publishing a draft identical to the newest version changes nothing and answers published false. An endpoint answers for one agent at a time: publishing a draft whose endpoint another agent answers on returns 409. The published policy governs review of each proposed action.
    */
   public static publish<ThrowOnError extends boolean = false>(
     parameters: {
@@ -8522,7 +8629,7 @@ export class Agents {
   /**
    * Publish an agent module
    *
-   * Publishes a self-contained JavaScript module and its manifest as the next immutable version. Source is stored by its SHA-256 digest without execution. The revision protects the draft read by the publisher; a stale revision returns 409. Publishing the same manifest, source, and definition again returns published false. The manifest controls the model, endpoints, integration grants, and action policy. Draft instructions and knowledge remain editable builder data; the hosted runtime reads instructions and tools from the published module.
+   * Publishes a self-contained JavaScript module and its manifest as the next immutable version. API keys need organization-wide reach to publish a policy change. Source is stored by its SHA-256 digest without execution. The revision protects the draft read by the publisher; a stale revision returns 409. Publishing the same manifest, source, and definition again returns published false. The manifest controls the model, endpoints, integration grants, and action policy. Draft instructions and knowledge remain editable builder data; the hosted runtime reads instructions and tools from the published module.
    */
   public static publishVersion<ThrowOnError extends boolean = false>(
     parameters: {
@@ -9468,7 +9575,7 @@ export class IntegrationCatalog {
   /**
    * Read Shopify post-delivery check-in readiness
    *
-   * Checks selected resources and current feature availability. A namespace caller sees its reachable resources. Shopify account and plan fields are null, and full recipe readiness requires organization-wide access. Omit the email sender or WhatsApp account to see the sender or number selected for the publication and caller scope. Requires email:read and domains:read for email, or whatsappAccounts:read for WhatsApp.
+   * Checks selected resources and plan access. A namespace caller sees its reachable resources. Shopify account and plan fields are null, and full recipe readiness requires organization-wide access. Omit the email sender or WhatsApp account to see the sender or number selected for the publication and caller scope. Requires email:read and domains:read for email, or whatsappAccounts:read for WhatsApp.
    */
   public static recipeReadiness<ThrowOnError extends boolean = false>(
     parameters: {
@@ -9573,7 +9680,7 @@ export class IntegrationCatalog {
   /**
    * Search the integrations catalog
    *
-   * Searches the providers this organization can connect, by key, text or category. Each entry carries its connection requirements and whether it can connect. Follow nextOffset until it is null.
+   * Searches the providers this organization can connect, by key, text or category. Each entry carries its connection requirements and whether it can connect. Pass nextCursor back as cursor until it is null.
    */
   public static search<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -9595,8 +9702,8 @@ export class IntegrationCatalog {
         | "channel"
         | "other"
         | undefined;
-      offset?: number | undefined;
-      limit?: number | undefined;
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -9612,8 +9719,8 @@ export class IntegrationCatalog {
             { in: "query", key: "key" },
             { in: "query", key: "query" },
             { in: "query", key: "category" },
-            { in: "query", key: "offset" },
             { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
           ],
         },
       ],
@@ -9674,7 +9781,7 @@ export class Integrations {
   /**
    * List integrations
    *
-   * Returns a bounded page of installed integrations, newest first, with compact tool summaries. Follow nextCursor and each integration's toolPage.nextOffset for the complete inventory.
+   * Returns a bounded page of installed integrations, newest first, with compact tool summaries. Follow nextCursor and each integration's toolPage.nextCursor for the complete inventory.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -9763,13 +9870,13 @@ export class Integrations {
   /**
    * List integration tools
    *
-   * Returns a page of the tools an integration gives agents. Send the first page's revision with each later offset; if the integration's tools change during the read, the request returns 409 and the read restarts at offset zero.
+   * Returns a page of the tools an integration gives agents. Pass nextCursor back as cursor. If the integration's tools change during pagination, the request returns 409. Restart without a cursor.
    */
   public static listTools<ThrowOnError extends boolean = false>(
     parameters: {
       integrationId: IntegrationId;
-      offset?: number | null | undefined;
-      revision?: string | undefined;
+      limit?: number | null | undefined;
+      cursor?: string | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<IntegrationsListToolsResponses, IntegrationsListToolsErrors, ThrowOnError> {
@@ -9779,8 +9886,8 @@ export class Integrations {
         {
           args: [
             { in: "path", key: "integrationId" },
-            { in: "query", key: "offset" },
-            { in: "query", key: "revision" },
+            { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
           ],
         },
       ],
@@ -9808,7 +9915,7 @@ export class Integrations {
   /**
    * Read an integration tool descriptor
    *
-   * Returns one tool's full descriptor. A revision that no longer matches the integration's tools returns 409.
+   * Returns one tool's descriptor in chunks. Pass nextOffset back as offset with the same revision. A revision that no longer matches the integration's tools returns 409.
    */
   public static readTool<ThrowOnError extends boolean = false>(
     parameters: {
@@ -9925,7 +10032,7 @@ export class Integrations {
   /**
    * Update an integration
    *
-   * Changes an integration's settings, enabled tools, which tools run without approval, and whether replies using its data need approval. Only an organization owner may change answerWithoutApproval or a tool's runsWithoutApproval: false makes a read tool ask first, true lets a tool that changes something run, each for the tool's current effect. Fields not named keep their values. What an agent may do with the integration is the agent's grant.
+   * Changes an integration's settings, enabled tools, which tools run without approval, and whether replies using its data need approval. Changing answerWithoutApproval requires an organization owner and, for an API key, organization-wide reach. An organization owner or an API key with organization-wide reach can change a tool's runsWithoutApproval for its current effect. False makes a read tool ask first. True lets a tool that changes something run. Fields not named keep their values. What an agent may do with the integration is the agent's grant.
    */
   public static update<ThrowOnError extends boolean = false>(
     parameters: {
@@ -15506,9 +15613,9 @@ export class Organizations {
   }
 
   /**
-   * Get organization trust tier and sending limits
+   * Get the organization's sending limits
    *
-   * Returns the current trust tier, plan and probation sending limits, and measured probation graduation progress. Limits are additional to billing allowance, domain readiness, and enforcement. Graduation is evaluated on delivery events.
+   * Returns which sending limits apply to the organization and its progress toward the plan's limits. `tier` is `screened` while the organization waits for Samva's review before its first email, `probation` while a new organization sends on starting limits (`sendingLimits.probation`), and `established` once it sends on its plan's limits. `graduation` measures the delivery record a new organization needs before it moves to its plan's limits, and is checked as deliveries arrive. Billing allowance, domain readiness, and sending pauses apply as well.
    */
   public static getTrustTier<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
@@ -17266,7 +17373,7 @@ export class Mailboxes {
   /**
    * List mailbox decisions awaiting you
    *
-   * Returns held actions this caller can approve and quarantined messages this caller may release across their visible mailboxes. Counts cover all actionable items, independent of the current cursor page. Metadata only; isolated messages, self approvals, and decisions the credential cannot perform are excluded.
+   * Returns held actions this caller can approve across their visible mailboxes. Counts cover all actionable items across pages. The queue excludes the caller’s own proposals. Read Spam through the thread list and use the held-mail endpoint for malware metadata.
    */
   public static getNeedsYou<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -17362,7 +17469,7 @@ export class Mailboxes {
   /**
    * List threads across your mailboxes
    *
-   * Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes what the caller finished; state=done selects the caller's Done, closed shared threads, and personal-mailbox threads in the archived folder, without duplicates. Other filters and cursor pagination match the per-mailbox list.
+   * Lists only threads in mailboxes the caller can read. With `q`, semantic and keyword search returns the best-matching threads in relevance order, capped across cursor pages. Without `q`, threads use newest activity first. Use `snoozed=true&order=wake` for earliest wake first, with ascending thread ID for ties. Repeat mailboxId to narrow the scope; kind selects personal or shared mailboxes. conversation selects the threads of one conversation (the conversationId a thread reports), one per readable mailbox it reached. state=active excludes what the caller finished; state=done selects the caller's Done, closed shared threads, and personal-mailbox threads in the archived folder, without duplicates. Other filters and cursor pagination match the per-mailbox list.
    */
   public static listOrganizationThreads<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -17380,6 +17487,7 @@ export class Mailboxes {
       unread?: boolean | null | undefined;
       starred?: boolean | null | undefined;
       snoozed?: boolean | null | undefined;
+      order?: "wake" | undefined;
       mailboxId?: MailboxId | Array<MailboxId> | undefined;
       kind?: "personal" | "shared" | undefined;
       conversation?: ConversationId | undefined;
@@ -17409,6 +17517,7 @@ export class Mailboxes {
             { in: "query", key: "unread" },
             { in: "query", key: "starred" },
             { in: "query", key: "snoozed" },
+            { in: "query", key: "order" },
             { in: "query", key: "mailboxId" },
             { in: "query", key: "kind" },
             { in: "query", key: "conversation" },
@@ -17439,7 +17548,7 @@ export class Mailboxes {
   /**
    * List threads in a mailbox
    *
-   * Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first; `after` and `before` filter by last activity for polling. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In a list without `q`, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once. Omit `folder` to list every folder. A thread's folder is set when it is created and does not move on later replies: a thread a send started stays in `sent`, so find replies with `unread: true` and no `folder`.
+   * Returns thread summaries. With `q`, semantic and keyword search returns up to 100 best-matching threads in relevance order across cursor pages. It searches subjects, participants, message text including quoted history, and attachment filenames, not attachment contents. New mail can take a few seconds to become searchable. Other filters narrow the searchable set. Without `q`, threads use most recent activity first. Use `snoozed=true&order=wake` for earliest wake first, with ascending thread ID for ties. The `after` and `before` filters always use last activity. Pass `nextCursor` back as `cursor` for the next page; it is null on the last page. In an activity-ordered list, a thread that gains activity while you page moves ahead of the cursor, so a walk lists each thread at most once. Omit `folder` to list every folder. A thread's folder is set when it is created and does not move on later replies: a thread a send started stays in `sent`, so find replies with `unread: true` and no `folder`.
    */
   public static listThreads<ThrowOnError extends boolean = false>(
     parameters: {
@@ -17458,6 +17567,7 @@ export class Mailboxes {
       unread?: boolean | null | undefined;
       starred?: boolean | null | undefined;
       snoozed?: boolean | null | undefined;
+      order?: "wake" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<MailboxesListThreadsResponses, MailboxesListThreadsErrors, ThrowOnError> {
@@ -17481,6 +17591,7 @@ export class Mailboxes {
             { in: "query", key: "unread" },
             { in: "query", key: "starred" },
             { in: "query", key: "snoozed" },
+            { in: "query", key: "order" },
           ],
         },
       ],
@@ -20582,12 +20693,12 @@ export class Whatsapp {
   /**
    * List WhatsApp business accounts
    *
-   * Returns a paginated list of the organization's connected WhatsApp business accounts.
+   * Lists connected WhatsApp business accounts, newest first. Pass nextCursor back as cursor to continue.
    */
   public static listBusinessAccounts<ThrowOnError extends boolean = false>(
     parameters?: {
-      page?: number | null | undefined;
       limit?: number | null | undefined;
+      cursor?: string | undefined;
       isActive?: boolean | null | undefined;
       verificationStatus?: "pending" | "verified" | "failed" | "suspended" | undefined;
       namespaceId?: NamespaceId | undefined;
@@ -20603,8 +20714,8 @@ export class Whatsapp {
       [
         {
           args: [
-            { in: "query", key: "page" },
             { in: "query", key: "limit" },
+            { in: "query", key: "cursor" },
             { in: "query", key: "isActive" },
             { in: "query", key: "verificationStatus" },
             { in: "query", key: "namespaceId" },
@@ -21634,6 +21745,10 @@ Object.assign(Messages.validateEmail, { operation: "messagesValidateEmail" });
 Object.assign(Messages.getStatus, { operation: "messagesGetStatus" });
 
 Object.assign(Messages.getEvents, { operation: "messagesGetEvents" });
+
+Object.assign(Logs.list, { operation: "logsList" });
+
+Object.assign(Logs.get, { operation: "logsGet" });
 
 Object.assign(Operations.list, { operation: "operationsList" });
 

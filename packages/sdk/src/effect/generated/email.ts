@@ -5138,10 +5138,10 @@ export class EmailGroup extends HttpApiGroup.make("Email")
     })
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "email.getOnboardingReview")
-      .annotate(OpenApi.Summary, "Get email onboarding review status")
+      .annotate(OpenApi.Summary, "Get email review status")
       .annotate(
         OpenApi.Description,
-        "Returns the customer-safe organization review decision, workflow stage, next action, and current sending-identity clearances. An organization that has not been reviewed yet is returned in the blocked initial state.",
+        "Returns whether the organization's email can send and where Samva's review of it stands: the decision, stage, stable block reason, next action, and current sending-identity clearances. Samva reviews some new organizations before their first email; while it does, `canSend` is false and `nextAction` is `wait_for_review`. Mailbox sends wait as `queued` with wait reason `onboarding-review` and go out once the review approves the organization; other sends are refused with `OnboardingReviewRequiredError`.",
       ),
     HttpApiEndpoint.post("emailReapplyOnboardingReview", "/v1/email/onboarding-review/reapply", {
       payload: EmailReapplyOnboardingReviewRequestJson,
@@ -5158,7 +5158,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
     })
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "email.reapplyOnboardingReview")
-      .annotate(OpenApi.Summary, "Reapply for email onboarding review")
+      .annotate(OpenApi.Summary, "Reapply for email review")
       .annotate(
         OpenApi.Description,
         "Allows an organization owner or admin to submit a rejected organization for review again. The expected generation prevents acting on stale status.",
@@ -5182,7 +5182,7 @@ export class EmailGroup extends HttpApiGroup.make("Email")
     )
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "email.respondToOnboardingInformationRequest")
-      .annotate(OpenApi.Summary, "Respond to an email onboarding information request")
+      .annotate(OpenApi.Summary, "Respond to an email review information request")
       .annotate(
         OpenApi.Description,
         "Allows organization owners and admins to submit a text response and up to three evidence uploads for the current information request.",

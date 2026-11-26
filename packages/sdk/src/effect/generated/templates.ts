@@ -7876,7 +7876,7 @@ export const TemplatesCreateFromBriefRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]).annotate({
         description:
-          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.",
+          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters.",
       }),
     ),
     name: Schema.optionalKey(
@@ -8166,7 +8166,7 @@ export const TemplatesSuggestStartersRequestJson = /* @__PURE__ */ (() =>
         Schema.Null,
       ]).annotate({
         description:
-          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters and is available where WhatsApp is enabled for the organization.",
+          "The channel to start a template for. Defaults to email. WhatsApp starts from Samva's WhatsApp starters.",
       }),
     ),
   }))();

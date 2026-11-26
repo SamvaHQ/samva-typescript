@@ -109,7 +109,7 @@ export const integrationCatalogOperations = {
     group: "Integrations catalog",
     method: "GET",
     idempotent: false,
-    paginated: false,
+    paginated: true,
     call: { kind: "params" },
   },
   integrationCatalogList: {

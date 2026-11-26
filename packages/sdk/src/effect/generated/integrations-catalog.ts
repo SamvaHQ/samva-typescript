@@ -14,7 +14,6 @@ import {
   EmailDomainId,
   EmailSenderId,
   ExternalServiceError,
-  FlagDisabledError,
   ForbiddenError,
   FromAddressRequiredError,
   GatewayTimeoutError,
@@ -500,12 +499,7 @@ export const IntegrationCatalogConnection = /* @__PURE__ */ (() =>
 export type RecipeReadinessResponse = {
   readonly ready: boolean;
   readonly channel: "email" | "whatsapp";
-  readonly availability: {
-    readonly shopify: boolean;
-    readonly journeys: boolean;
-    readonly whatsapp: boolean;
-    readonly plan: "granted" | "denied" | "unreachable" | "disabled" | null;
-  };
+  readonly availability: { readonly plan: "granted" | "denied" | "unreachable" | null };
   readonly shopify: {
     readonly id: IntegrationAccountId;
     readonly status: AccountStatus;
@@ -544,15 +538,11 @@ export const RecipeReadinessResponse = /* @__PURE__ */ (() =>
     ready: Schema.Boolean,
     channel: Schema.Union([Schema.Literal("email"), Schema.Literal("whatsapp")]),
     availability: Schema.Struct({
-      shopify: Schema.Boolean,
-      journeys: Schema.Boolean,
-      whatsapp: Schema.Boolean,
       plan: Schema.Union([
         Schema.Union([
           Schema.Literal("granted"),
           Schema.Literal("denied"),
           Schema.Literal("unreachable"),
-          Schema.Literal("disabled"),
         ]),
         Schema.Null,
       ]),
@@ -636,37 +626,12 @@ export const RecipeReadinessResponse = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "RecipeReadinessResponse" }))();
 export type IntegrationCatalogSearchPage = {
   readonly items: ReadonlyArray<IntegrationCatalogSearchEntry>;
-  readonly total: number;
-  readonly nextOffset: number | null;
+  readonly nextCursor: string | null;
 };
 export const IntegrationCatalogSearchPage = /* @__PURE__ */ (() =>
   Schema.Struct({
     items: Schema.Array(IntegrationCatalogSearchEntry),
-    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    nextOffset: Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
-    ]),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }).annotate({ identifier: "IntegrationCatalogSearchPage" }))();
 export type IntegrationCatalogEntry = {
   readonly id: string;
@@ -1018,9 +983,8 @@ export type IntegrationCatalogRecipeConnectionHandoff400 = MalformedRequestError
 export const IntegrationCatalogRecipeConnectionHandoff400 = MalformedRequestError;
 export type IntegrationCatalogRecipeConnectionHandoff401 = UnauthorizedError;
 export const IntegrationCatalogRecipeConnectionHandoff401 = UnauthorizedError;
-export type IntegrationCatalogRecipeConnectionHandoff403 = ForbiddenError | FlagDisabledError;
-export const IntegrationCatalogRecipeConnectionHandoff403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type IntegrationCatalogRecipeConnectionHandoff403 = ForbiddenError;
+export const IntegrationCatalogRecipeConnectionHandoff403 = ForbiddenError;
 export type IntegrationCatalogRecipeConnectionHandoff404 = ResourceNotFoundError;
 export const IntegrationCatalogRecipeConnectionHandoff404 = ResourceNotFoundError;
 export type IntegrationCatalogRecipeConnectionHandoff422 = ValidationError;
@@ -1156,12 +1120,9 @@ export type IntegrationCatalogRecipeTest401 = UnauthorizedError;
 export const IntegrationCatalogRecipeTest401 = UnauthorizedError;
 export type IntegrationCatalogRecipeTest402 = PaymentRequiredError;
 export const IntegrationCatalogRecipeTest402 = PaymentRequiredError;
-export type IntegrationCatalogRecipeTest403 =
-  | ForbiddenError
-  | FlagDisabledError
-  | OnboardingReviewRequiredError;
+export type IntegrationCatalogRecipeTest403 = ForbiddenError | OnboardingReviewRequiredError;
 export const IntegrationCatalogRecipeTest403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError, OnboardingReviewRequiredError]))();
+  Schema.Union([ForbiddenError, OnboardingReviewRequiredError]))();
 export type IntegrationCatalogRecipeTest404 = ResourceNotFoundError;
 export const IntegrationCatalogRecipeTest404 = ResourceNotFoundError;
 export type IntegrationCatalogRecipeTest409 = ConflictError;
@@ -1276,9 +1237,8 @@ export type IntegrationCatalogRecipeWhatsAppChallengeBegin400 = MalformedRequest
 export const IntegrationCatalogRecipeWhatsAppChallengeBegin400 = MalformedRequestError;
 export type IntegrationCatalogRecipeWhatsAppChallengeBegin401 = UnauthorizedError;
 export const IntegrationCatalogRecipeWhatsAppChallengeBegin401 = UnauthorizedError;
-export type IntegrationCatalogRecipeWhatsAppChallengeBegin403 = ForbiddenError | FlagDisabledError;
-export const IntegrationCatalogRecipeWhatsAppChallengeBegin403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type IntegrationCatalogRecipeWhatsAppChallengeBegin403 = ForbiddenError;
+export const IntegrationCatalogRecipeWhatsAppChallengeBegin403 = ForbiddenError;
 export type IntegrationCatalogRecipeWhatsAppChallengeBegin404 = ResourceNotFoundError;
 export const IntegrationCatalogRecipeWhatsAppChallengeBegin404 = ResourceNotFoundError;
 export type IntegrationCatalogRecipeWhatsAppChallengeBegin409 = ConflictError;
@@ -1314,9 +1274,8 @@ export type IntegrationCatalogRecipeWhatsAppChallengeGet400 = MalformedRequestEr
 export const IntegrationCatalogRecipeWhatsAppChallengeGet400 = MalformedRequestError;
 export type IntegrationCatalogRecipeWhatsAppChallengeGet401 = UnauthorizedError;
 export const IntegrationCatalogRecipeWhatsAppChallengeGet401 = UnauthorizedError;
-export type IntegrationCatalogRecipeWhatsAppChallengeGet403 = ForbiddenError | FlagDisabledError;
-export const IntegrationCatalogRecipeWhatsAppChallengeGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type IntegrationCatalogRecipeWhatsAppChallengeGet403 = ForbiddenError;
+export const IntegrationCatalogRecipeWhatsAppChallengeGet403 = ForbiddenError;
 export type IntegrationCatalogRecipeWhatsAppChallengeGet404 = ResourceNotFoundError;
 export const IntegrationCatalogRecipeWhatsAppChallengeGet404 = ResourceNotFoundError;
 export type IntegrationCatalogRecipeWhatsAppChallengeGet409 = ConflictError;
@@ -1363,11 +1322,8 @@ export type IntegrationCatalogRecipeWhatsAppChallengeConfirm400 = MalformedReque
 export const IntegrationCatalogRecipeWhatsAppChallengeConfirm400 = MalformedRequestError;
 export type IntegrationCatalogRecipeWhatsAppChallengeConfirm401 = UnauthorizedError;
 export const IntegrationCatalogRecipeWhatsAppChallengeConfirm401 = UnauthorizedError;
-export type IntegrationCatalogRecipeWhatsAppChallengeConfirm403 =
-  | ForbiddenError
-  | FlagDisabledError;
-export const IntegrationCatalogRecipeWhatsAppChallengeConfirm403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type IntegrationCatalogRecipeWhatsAppChallengeConfirm403 = ForbiddenError;
+export const IntegrationCatalogRecipeWhatsAppChallengeConfirm403 = ForbiddenError;
 export type IntegrationCatalogRecipeWhatsAppChallengeConfirm404 = ResourceNotFoundError;
 export const IntegrationCatalogRecipeWhatsAppChallengeConfirm404 = ResourceNotFoundError;
 export type IntegrationCatalogRecipeWhatsAppChallengeConfirm409 = ConflictError;
@@ -1680,9 +1636,8 @@ export type IntegrationCatalogRecipeSetupActivate401 = UnauthorizedError;
 export const IntegrationCatalogRecipeSetupActivate401 = UnauthorizedError;
 export type IntegrationCatalogRecipeSetupActivate402 = PaymentRequiredError;
 export const IntegrationCatalogRecipeSetupActivate402 = PaymentRequiredError;
-export type IntegrationCatalogRecipeSetupActivate403 = ForbiddenError | FlagDisabledError;
-export const IntegrationCatalogRecipeSetupActivate403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type IntegrationCatalogRecipeSetupActivate403 = ForbiddenError;
+export const IntegrationCatalogRecipeSetupActivate403 = ForbiddenError;
 export type IntegrationCatalogRecipeSetupActivate404 = ResourceNotFoundError;
 export const IntegrationCatalogRecipeSetupActivate404 = ResourceNotFoundError;
 export type IntegrationCatalogRecipeSetupActivate409 = ConflictError;
@@ -1713,8 +1668,8 @@ export type IntegrationCatalogSearchQuery = {
     | "dns"
     | "channel"
     | "other";
-  readonly offset?: number;
-  readonly limit?: number;
+  readonly limit?: number | null;
+  readonly cursor?: string;
 };
 export const IntegrationCatalogSearchQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -1744,32 +1699,20 @@ export const IntegrationCatalogSearchQuery = /* @__PURE__ */ (() =>
         Schema.Literal("other"),
       ]),
     ),
-    offset: Schema.optionalKey(
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-    ),
     limit: Schema.optionalKey(
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(1).annotate({
-            expected: "a value greater than or equal to 1",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(100).annotate({
-            expected: "a value less than or equal to 100",
-          }),
-        ),
+      Schema.Union([
+        Schema.Finite.annotate({ description: "Items per page, at most 100." })
+          .check(Schema.isInt().annotate({ expected: "an integer" }))
+          .check(
+            Schema.isLessThanOrEqualTo(100).annotate({
+              expected: "a value less than or equal to 100",
+            }),
+          )
+          .check(Schema.isGreaterThan(0).annotate({ expected: "a value greater than 0" })),
+        Schema.Null,
+      ]),
     ),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type IntegrationCatalogSearch200 = IntegrationCatalogSearchPage;
 export const IntegrationCatalogSearch200 = IntegrationCatalogSearchPage;
@@ -2067,7 +2010,7 @@ export class IntegrationsCatalogGroup extends HttpApiGroup.make("Integrations ca
       .annotate(OpenApi.Summary, "Read Shopify post-delivery check-in readiness")
       .annotate(
         OpenApi.Description,
-        "Checks selected resources and current feature availability. A namespace caller sees its reachable resources. Shopify account and plan fields are null, and full recipe readiness requires organization-wide access. Omit the email sender or WhatsApp account to see the sender or number selected for the publication and caller scope. Requires email:read and domains:read for email, or whatsappAccounts:read for WhatsApp.",
+        "Checks selected resources and plan access. A namespace caller sees its reachable resources. Shopify account and plan fields are null, and full recipe readiness requires organization-wide access. Omit the email sender or WhatsApp account to see the sender or number selected for the publication and caller scope. Requires email:read and domains:read for email, or whatsappAccounts:read for WhatsApp.",
       ),
     HttpApiEndpoint.get(
       "integrationCatalogRecipeSetupsList",
@@ -2186,7 +2129,7 @@ export class IntegrationsCatalogGroup extends HttpApiGroup.make("Integrations ca
       .annotate(OpenApi.Summary, "Search the integrations catalog")
       .annotate(
         OpenApi.Description,
-        "Searches the providers this organization can connect, by key, text or category. Each entry carries its connection requirements and whether it can connect. Follow nextOffset until it is null.",
+        "Searches the providers this organization can connect, by key, text or category. Each entry carries its connection requirements and whether it can connect. Pass nextCursor back as cursor until it is null.",
       ),
   )
   .annotate(OpenApi.Description, "Providers an organization can connect") {}

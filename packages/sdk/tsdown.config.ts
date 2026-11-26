@@ -33,6 +33,7 @@ export default defineConfig({
     "src/effect/events.ts",
     "src/effect/feedback.ts",
     "src/effect/journeys.ts",
+    "src/effect/logs.ts",
     "src/effect/mailboxes.ts",
     "src/effect/policies.ts",
     "src/effect/media.ts",

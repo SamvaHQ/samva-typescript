@@ -7,7 +7,6 @@ import {
   ApiKeySecurityMiddleware,
   ConflictError,
   CredentialsError,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -149,9 +148,8 @@ export type TemplateRegistrationsList400 = MalformedRequestError;
 export const TemplateRegistrationsList400 = MalformedRequestError;
 export type TemplateRegistrationsList401 = UnauthorizedError;
 export const TemplateRegistrationsList401 = UnauthorizedError;
-export type TemplateRegistrationsList403 = FlagDisabledError | ForbiddenError;
-export const TemplateRegistrationsList403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type TemplateRegistrationsList403 = ForbiddenError;
+export const TemplateRegistrationsList403 = ForbiddenError;
 export type TemplateRegistrationsList404 = ResourceNotFoundError;
 export const TemplateRegistrationsList404 = ResourceNotFoundError;
 export type TemplateRegistrationsList422 = ValidationError;
@@ -183,9 +181,8 @@ export type TemplateRegistrationsSubmit400 = MalformedRequestError;
 export const TemplateRegistrationsSubmit400 = MalformedRequestError;
 export type TemplateRegistrationsSubmit401 = UnauthorizedError;
 export const TemplateRegistrationsSubmit401 = UnauthorizedError;
-export type TemplateRegistrationsSubmit403 = ForbiddenError | FlagDisabledError;
-export const TemplateRegistrationsSubmit403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type TemplateRegistrationsSubmit403 = ForbiddenError;
+export const TemplateRegistrationsSubmit403 = ForbiddenError;
 export type TemplateRegistrationsSubmit404 = ResourceNotFoundError;
 export const TemplateRegistrationsSubmit404 = ResourceNotFoundError;
 export type TemplateRegistrationsSubmit409 = ConflictError;
@@ -213,9 +210,8 @@ export type TemplateRegistrationsGet400 = MalformedRequestError;
 export const TemplateRegistrationsGet400 = MalformedRequestError;
 export type TemplateRegistrationsGet401 = UnauthorizedError;
 export const TemplateRegistrationsGet401 = UnauthorizedError;
-export type TemplateRegistrationsGet403 = FlagDisabledError | ForbiddenError;
-export const TemplateRegistrationsGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type TemplateRegistrationsGet403 = ForbiddenError;
+export const TemplateRegistrationsGet403 = ForbiddenError;
 export type TemplateRegistrationsGet404 = ResourceNotFoundError;
 export const TemplateRegistrationsGet404 = ResourceNotFoundError;
 export type TemplateRegistrationsGet422 = ValidationError;

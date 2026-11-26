@@ -2,6 +2,7 @@
 // Do not edit directly.
 
 import type * as Wire from "../client/types.gen";
+import { samvaRequestId, withRequestIdMessage } from "../request-id";
 
 export type SamvaApiErrorTag =
   | "AnalyticsQueryError"
@@ -56,13 +57,16 @@ export abstract class SamvaApiError<Tag extends SamvaApiErrorTag = SamvaApiError
   readonly request: Request | undefined;
   readonly response: Response | undefined;
   readonly status: number | undefined;
+  readonly requestId: string | undefined;
 
   protected constructor(message: string, context: SamvaApiErrorContext = {}) {
-    super(message);
+    const requestId = samvaRequestId(context.response?.headers.get("x-samva-request-id"));
+    super(withRequestIdMessage(message, requestId));
     this.name = new.target.name;
     this.request = redactRequest(context.request);
     this.response = context.response;
     this.status = context.response?.status;
+    this.requestId = requestId;
   }
 }
 
@@ -73,15 +77,24 @@ export class SamvaTransportError extends Error {
   readonly request: Request | undefined;
   readonly response: Response | undefined;
   readonly status: number | undefined;
+  readonly requestId: string | undefined;
   override readonly cause: unknown;
 
   constructor(cause: unknown, context: SamvaApiErrorContext = {}) {
-    super(cause instanceof Error ? cause.message : "Samva request failed", { cause });
+    const requestId = samvaRequestId(context.response?.headers.get("x-samva-request-id"));
+    super(
+      withRequestIdMessage(
+        cause instanceof Error ? cause.message : "Samva request failed",
+        requestId,
+      ),
+      { cause },
+    );
     this.name = "SamvaTransportError";
     this.cause = cause;
     this.request = redactRequest(context.request);
     this.response = context.response;
     this.status = context.response?.status;
+    this.requestId = requestId;
   }
 }
 
@@ -119,7 +132,7 @@ export class AnalyticsQueryError extends SamvaApiError<"AnalyticsQueryError"> {
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("AnalyticsQueryError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -136,7 +149,7 @@ export class BillingProviderError extends SamvaApiError<"BillingProviderError"> 
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("BillingProviderError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -155,7 +168,7 @@ export class BrandAddressRequiredError extends SamvaApiError<"BrandAddressRequir
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("BrandAddressRequiredError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -172,7 +185,7 @@ export class CampaignFooterRequiredError extends SamvaApiError<"CampaignFooterRe
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("CampaignFooterRequiredError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -190,7 +203,7 @@ export class ConflictError extends SamvaApiError<"ConflictError"> {
 
   constructor(payload: Omit<ConflictErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("ConflictError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -206,7 +219,7 @@ export class CredentialsError extends SamvaApiError<"CredentialsError"> {
 
   constructor(payload: Omit<CredentialsErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("CredentialsError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -225,7 +238,7 @@ export class DeliveryUnavailableError extends SamvaApiError<"DeliveryUnavailable
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("DeliveryUnavailableError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -243,7 +256,7 @@ export class EmailChannelError extends SamvaApiError<"EmailChannelError"> {
 
   constructor(payload: Omit<EmailChannelErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("EmailChannelError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -260,7 +273,7 @@ export class ExternalServiceError extends SamvaApiError<"ExternalServiceError"> 
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("ExternalServiceError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -276,7 +289,7 @@ export class FlagDisabledError extends SamvaApiError<"FlagDisabledError"> {
 
   constructor(payload: Omit<FlagDisabledErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("FlagDisabledError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -290,7 +303,7 @@ export class ForbiddenError extends SamvaApiError<"ForbiddenError"> {
 
   constructor(payload: Omit<ForbiddenErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("ForbiddenError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -311,7 +324,7 @@ export class FromAddressRequiredError extends SamvaApiError<"FromAddressRequired
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("FromAddressRequiredError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -330,7 +343,7 @@ export class GatewayTimeoutError extends SamvaApiError<"GatewayTimeoutError"> {
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("GatewayTimeoutError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -344,7 +357,7 @@ export class InternalError extends SamvaApiError<"InternalError"> {
 
   constructor(payload: Omit<InternalErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("InternalError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -367,7 +380,7 @@ export class MailboxSendConflictError extends SamvaApiError<"MailboxSendConflict
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("MailboxSendConflictError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -386,7 +399,7 @@ export class MailboxSendRefusedError extends SamvaApiError<"MailboxSendRefusedEr
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("MailboxSendRefusedError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -405,7 +418,7 @@ export class MalformedRequestError extends SamvaApiError<"MalformedRequestError"
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("MalformedRequestError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -466,7 +479,7 @@ export class OnboardingReviewRequiredError extends SamvaApiError<"OnboardingRevi
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("OnboardingReviewRequiredError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -489,7 +502,7 @@ export class PaymentRequiredError extends SamvaApiError<"PaymentRequiredError"> 
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("PaymentRequiredError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -505,7 +518,7 @@ export class RateLimitedError extends SamvaApiError<"RateLimitedError"> {
 
   constructor(payload: Omit<RateLimitedErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("RateLimitedError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -526,7 +539,7 @@ export class ResourceNotFoundError extends SamvaApiError<"ResourceNotFoundError"
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("ResourceNotFoundError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -547,7 +560,7 @@ export class SenderNotReadyError extends SamvaApiError<"SenderNotReadyError"> {
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("SenderNotReadyError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -566,7 +579,7 @@ export class ServiceUnavailableError extends SamvaApiError<"ServiceUnavailableEr
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("ServiceUnavailableError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -583,7 +596,7 @@ export class ShareLinkUnavailable extends SamvaApiError<"ShareLinkUnavailable"> 
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("ShareLinkUnavailable", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -601,7 +614,7 @@ export class SlugTaken extends SamvaApiError<"SlugTaken"> {
 
   constructor(payload: Omit<SlugTakenPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("SlugTaken", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -620,7 +633,7 @@ export class TemplateInUseError extends SamvaApiError<"TemplateInUseError"> {
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("TemplateInUseError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -689,7 +702,7 @@ export class TemplateSourceError extends SamvaApiError<"TemplateSourceError"> {
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("TemplateSourceError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -703,7 +716,7 @@ export class UnauthorizedError extends SamvaApiError<"UnauthorizedError"> {
 
   constructor(payload: Omit<UnauthorizedErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("UnauthorizedError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -719,7 +732,7 @@ export class ValidationError extends SamvaApiError<"ValidationError"> {
 
   constructor(payload: Omit<ValidationErrorPayload, "_tag">, context: SamvaApiErrorContext = {}) {
     super(messageOf("ValidationError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -744,7 +757,7 @@ export class WhatsAppChannelError extends SamvaApiError<"WhatsAppChannelError"> 
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("WhatsAppChannelError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -763,7 +776,7 @@ export class WhatsAppServiceWindowClosedError extends SamvaApiError<"WhatsAppSer
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("WhatsAppServiceWindowClosedError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 
@@ -782,7 +795,7 @@ export class WhatsAppSetupLinkUnavailableError extends SamvaApiError<"WhatsAppSe
     context: SamvaApiErrorContext = {},
   ) {
     super(messageOf("WhatsAppSetupLinkUnavailableError", payload), context);
-    Object.assign(this, payload);
+    Object.assign(this, payload, { message: this.message, requestId: this.requestId });
   }
 }
 

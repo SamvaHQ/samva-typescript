@@ -73,11 +73,7 @@ export type Integration = {
   readonly supportsContactAccounts: boolean;
   readonly answerWithoutApproval: AnswerWithoutApproval;
   readonly tools: ReadonlyArray<IntegrationToolView>;
-  readonly toolPage: {
-    readonly nextOffset: number | null;
-    readonly total: number;
-    readonly revision: string;
-  };
+  readonly toolPage: { readonly nextCursor: string | null; readonly revision: string };
   readonly installedBy: UserId | null;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -93,31 +89,7 @@ export const Integration = /* @__PURE__ */ (() =>
     answerWithoutApproval: AnswerWithoutApproval,
     tools: Schema.Array(IntegrationToolView),
     toolPage: Schema.Struct({
-      nextOffset: Schema.Union([
-        Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-          .check(
-            Schema.isGreaterThanOrEqualTo(0).annotate({
-              expected: "a value greater than or equal to 0",
-            }),
-          )
-          .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
-            }),
-          ),
-        Schema.Null,
-      ]),
-      total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
+      nextCursor: Schema.Union([Schema.String, Schema.Null]),
       revision: Schema.String.check(
         Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
           expected: "a string matching the RegExp ^[a-f0-9]{64}$",
@@ -284,88 +256,37 @@ export type IntegrationsListToolsPathParams = { readonly integrationId: Integrat
 export const IntegrationsListToolsPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ integrationId: IntegrationId }))();
 export type IntegrationsListToolsQuery = {
-  readonly offset?: number | null;
-  readonly revision?: string;
+  readonly limit?: number | null;
+  readonly cursor?: string;
 };
 export const IntegrationsListToolsQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
-    offset: Schema.optionalKey(
+    limit: Schema.optionalKey(
       Schema.Union([
         Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
           .check(
-            Schema.isGreaterThanOrEqualTo(0).annotate({
-              expected: "a value greater than or equal to 0",
+            Schema.isGreaterThanOrEqualTo(1).annotate({
+              expected: "a value greater than or equal to 1",
             }),
           )
           .check(
-            Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-              expected: "a value less than or equal to 9007199254740991",
+            Schema.isLessThanOrEqualTo(50).annotate({
+              expected: "a value less than or equal to 50",
             }),
           ),
         Schema.Null,
       ]),
     ),
-    revision: Schema.optionalKey(
-      Schema.String.check(
-        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
-          expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-        }),
-      ),
-    ),
+    cursor: Schema.optionalKey(Schema.String),
   }))();
 export type IntegrationsListTools200 = {
-  readonly nextOffset: number | null;
-  readonly total: number;
-  readonly revision: string;
-  readonly offset: number;
   readonly items: ReadonlyArray<IntegrationToolView>;
+  readonly nextCursor: string | null;
 };
 export const IntegrationsListTools200 = /* @__PURE__ */ (() =>
   Schema.Struct({
-    nextOffset: Schema.Union([
-      Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-        .check(
-          Schema.isGreaterThanOrEqualTo(0).annotate({
-            expected: "a value greater than or equal to 0",
-          }),
-        )
-        .check(
-          Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-            expected: "a value less than or equal to 9007199254740991",
-          }),
-        ),
-      Schema.Null,
-    ]),
-    total: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    revision: Schema.String.check(
-      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{64}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{64}$",
-      }),
-    ),
-    offset: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
-      .check(
-        Schema.isGreaterThanOrEqualTo(0).annotate({
-          expected: "a value greater than or equal to 0",
-        }),
-      )
-      .check(
-        Schema.isLessThanOrEqualTo(9007199254740991).annotate({
-          expected: "a value less than or equal to 9007199254740991",
-        }),
-      ),
-    items: Schema.Array(IntegrationToolView).check(
-      Schema.isMaxLength(50).annotate({ expected: "a value with a length of at most 50" }),
-    ),
+    items: Schema.Array(IntegrationToolView),
+    nextCursor: Schema.Union([Schema.String, Schema.Null]),
   }))();
 export type IntegrationsListTools400 = MalformedRequestError;
 export const IntegrationsListTools400 = MalformedRequestError;
@@ -513,7 +434,7 @@ export class IntegrationsGroup extends HttpApiGroup.make("Integrations")
       .annotate(OpenApi.Summary, "List integrations")
       .annotate(
         OpenApi.Description,
-        "Returns a bounded page of installed integrations, newest first, with compact tool summaries. Follow nextCursor and each integration's toolPage.nextOffset for the complete inventory.",
+        "Returns a bounded page of installed integrations, newest first, with compact tool summaries. Follow nextCursor and each integration's toolPage.nextCursor for the complete inventory.",
       ),
     HttpApiEndpoint.post("integrationsInstall", "/v1/integrations", {
       payload: IntegrationsInstallRequestJson,
@@ -596,7 +517,7 @@ export class IntegrationsGroup extends HttpApiGroup.make("Integrations")
       .annotate(OpenApi.Summary, "Update an integration")
       .annotate(
         OpenApi.Description,
-        "Changes an integration's settings, enabled tools, which tools run without approval, and whether replies using its data need approval. Only an organization owner may change answerWithoutApproval or a tool's runsWithoutApproval: false makes a read tool ask first, true lets a tool that changes something run, each for the tool's current effect. Fields not named keep their values. What an agent may do with the integration is the agent's grant.",
+        "Changes an integration's settings, enabled tools, which tools run without approval, and whether replies using its data need approval. Changing answerWithoutApproval requires an organization owner and, for an API key, organization-wide reach. An organization owner or an API key with organization-wide reach can change a tool's runsWithoutApproval for its current effect. False makes a read tool ask first. True lets a tool that changes something run. Fields not named keep their values. What an agent may do with the integration is the agent's grant.",
       ),
     HttpApiEndpoint.get("integrationsListTools", "/v1/integrations/:integrationId/tools", {
       params: IntegrationsListToolsPathParams,
@@ -618,7 +539,7 @@ export class IntegrationsGroup extends HttpApiGroup.make("Integrations")
       .annotate(OpenApi.Summary, "List integration tools")
       .annotate(
         OpenApi.Description,
-        "Returns a page of the tools an integration gives agents. Send the first page's revision with each later offset; if the integration's tools change during the read, the request returns 409 and the read restarts at offset zero.",
+        "Returns a page of the tools an integration gives agents. Pass nextCursor back as cursor. If the integration's tools change during pagination, the request returns 409. Restart without a cursor.",
       ),
     HttpApiEndpoint.get("integrationsReadTool", "/v1/integrations/:integrationId/tools/:tool", {
       params: IntegrationsReadToolPathParams,
@@ -640,7 +561,7 @@ export class IntegrationsGroup extends HttpApiGroup.make("Integrations")
       .annotate(OpenApi.Summary, "Read an integration tool descriptor")
       .annotate(
         OpenApi.Description,
-        "Returns one tool's full descriptor. A revision that no longer matches the integration's tools returns 409.",
+        "Returns one tool's descriptor in chunks. Pass nextOffset back as offset with the same revision. A revision that no longer matches the integration's tools returns 409.",
       ),
   )
   .annotate(OpenApi.Description, "Apps installed for hosted agents, on connected accounts") {}

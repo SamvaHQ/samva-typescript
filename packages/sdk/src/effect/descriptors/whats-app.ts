@@ -39,7 +39,7 @@ export const whatsappOperations = {
     group: "WhatsApp",
     method: "GET",
     idempotent: false,
-    paginated: false,
+    paginated: true,
     call: { kind: "params" },
   },
   whatsappConnectBusinessAccount: {

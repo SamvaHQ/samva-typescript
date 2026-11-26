@@ -3,7 +3,7 @@ import { Effect, Layer, Redacted, Schema } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import * as Client from "../src/effect/client";
-import { FlagDisabledError, SamvaApi } from "../src/effect/generated";
+import { ForbiddenError, SamvaApi } from "../src/effect/generated";
 import { CreatedWhatsAppSetupLink } from "../src/effect/generated/whats-app-setup-links";
 import * as Registrations from "../src/effect/template-registrations";
 import * as WhatsApp from "../src/effect/whatsapp";
@@ -29,7 +29,7 @@ const templateId = "tmpl_1234567890abcdef";
 
 describe("WhatsApp management transport parity", () => {
   it("reads accounts, flows, setup links, and registrations through both clients", async () => {
-    const accounts = { items: [], pagination: { page: 1, limit: 2, total: 0, totalPages: 0 } };
+    const accounts = { items: [], nextCursor: "accounts-next" };
     const records = { data: [] };
     const links = { items: [], nextCursor: null };
     const fake = fakeSamvaApi(SamvaApi)({
@@ -39,13 +39,15 @@ describe("WhatsApp management transport parity", () => {
       "Template registrations": { templateRegistrationsList: () => Effect.succeed(records) },
     });
     const client = createClient({ apiKey: "samva_sk_test", fetch: fake.fetch });
-    expect(await client.whatsapp.listBusinessAccounts({ page: 1, limit: 2 })).toEqual(accounts);
+    expect(
+      await client.whatsapp.listBusinessAccounts({ limit: 2, cursor: "accounts-cursor" }),
+    ).toEqual(accounts);
     expect(await client.whatsappFlows.list()).toEqual(records);
     expect(await client.whatsappSetupLinks.list({ limit: 2, cursor: "next" })).toEqual(links);
     expect(await client.templateRegistrations.list({ id: templateId })).toEqual(records);
     expect(
       await Effect.runPromise(
-        provide(WhatsApp.listBusinessAccounts({ page: 1, limit: 2 }), fake.fetch),
+        provide(WhatsApp.listBusinessAccounts({ limit: 2, cursor: "accounts-cursor" }), fake.fetch),
       ),
     ).toEqual(accounts);
     expect(await Effect.runPromise(provide(Flows.list(), fake.fetch))).toEqual(records);
@@ -57,7 +59,7 @@ describe("WhatsApp management transport parity", () => {
     ).toEqual(records);
     fake.assertComplete();
     const expected = [
-      { path: "/v1/whatsapp/business-accounts", query: { page: "1", limit: "2" } },
+      { path: "/v1/whatsapp/business-accounts", query: { limit: "2", cursor: "accounts-cursor" } },
       { path: "/v1/whatsapp/flows", query: {} },
       { path: "/v1/whatsapp/setup-links", query: { limit: "2", cursor: "next" } },
       { path: `/v1/templates/${templateId}/registrations`, query: {} },
@@ -121,11 +123,10 @@ describe("WhatsApp management transport parity", () => {
     );
   });
 
-  it("encodes a signup code before the channel gate", async () => {
+  it("keeps signup codes redacted in Effect and encodes them on the wire", async () => {
     const body = {
-      _tag: "FlagDisabledError" as const,
-      flag: "whatsapp",
-      message: "WhatsApp is disabled",
+      _tag: "ForbiddenError" as const,
+      message: "The API key lacks permission to connect an account",
     };
     const input = {
       code: "fixture-signup-code",
@@ -136,7 +137,7 @@ describe("WhatsApp management transport parity", () => {
       WhatsApp: {
         whatsappConnectBusinessAccount: ({ payload }) => {
           expect(Redacted.value(payload.code)).toBe(input.code);
-          return Effect.fail(new FlagDisabledError(body));
+          return Effect.fail(new ForbiddenError(body));
         },
       },
     });
@@ -150,7 +151,7 @@ describe("WhatsApp management transport parity", () => {
       await Effect.runPromise(
         provide(
           WhatsApp.connectBusinessAccount({ ...input, code: Redacted.make(input.code) }).pipe(
-            Effect.catchTag("FlagDisabledError", Effect.succeed),
+            Effect.catchTag("ForbiddenError", Effect.succeed),
           ),
           fake.fetch,
         ),
@@ -187,29 +188,6 @@ describe("WhatsApp management transport parity", () => {
     expect(Redacted.isRedacted(effect.url)).toBe(true);
     expect(Redacted.value(effect.url)).toBe(body.url);
     expect(JSON.stringify(effect)).not.toContain("fixture-secret");
-    fake.assertComplete();
-  });
-
-  it("preserves the WhatsApp channel gate in both clients", async () => {
-    const body = {
-      _tag: "FlagDisabledError" as const,
-      flag: "whatsapp",
-      message: "WhatsApp is disabled",
-    };
-    const fake = fakeSamvaApi(SamvaApi)({
-      "WhatsApp flows": { whatsappFlowsList: () => Effect.fail(new FlagDisabledError(body)) },
-    });
-    await expect(
-      createClient({ apiKey: "samva_sk_test", fetch: fake.fetch }).whatsappFlows.list(),
-    ).rejects.toMatchObject(body);
-    expect(
-      await Effect.runPromise(
-        provide(
-          Flows.list().pipe(Effect.catchTag("FlagDisabledError", Effect.succeed)),
-          fake.fetch,
-        ),
-      ),
-    ).toMatchObject(body);
     fake.assertComplete();
   });
 });

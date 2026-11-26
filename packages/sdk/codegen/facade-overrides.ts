@@ -14,6 +14,7 @@ const facadePreambles: Readonly<Record<string, string>> = {
     'export {\n  CreateTemplatePayload as CreatePayload,\n  UpdateTemplatePayload as UpdatePayload,\n} from "./generated/shared";',
   mailboxes:
     'export { events } from "./internal/mailbox-events";\nexport {\n  type MailboxEvent,\n  MailboxEventStreamError,\n  type MailboxEventStreamErrorFields,\n  type MailboxEventStreamErrorReason,\n  type MailboxEventStreamErrorTag,\n  type MailboxEventStreamFailure,\n  type MailboxEventStreamOptions,\n  type MailboxEventStreamReconnect,\n  type MailboxEventType,\n} from "../mailbox-events";',
+  logs: 'export { events, streamCursor, type LogEvent, type LogEventStreamOptions } from "./internal/log-events";',
   feedback: 'export { SendFeedback as SendPayload } from "./generated/shared";',
   events: 'export { CreateEventPayload } from "./generated/shared";',
   contacts: 'import { ContactEventsGroup } from "./generated/contact-events";',

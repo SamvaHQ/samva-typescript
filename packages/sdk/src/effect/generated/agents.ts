@@ -851,7 +851,7 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
       .annotate(OpenApi.Summary, "Create an agent")
       .annotate(
         OpenApi.Description,
-        "Creates an agent with a draft and returns it with status 201. The agent answers nothing until its draft is published. The default policy requires a person to approve replies and final actions. The namespace is set at creation and cannot change.",
+        "Creates an agent with a draft and returns it with status 201. The agent answers nothing until its draft is published. The default policy requires a person to approve replies and final actions. API keys need organization-wide reach to create with a custom policy. The namespace is set at creation and cannot change.",
       ),
     HttpApiEndpoint.get("agentsGet", "/v1/agents/:id", {
       params: AgentsGetPathParams,
@@ -956,7 +956,7 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
       .annotate(OpenApi.Summary, "Replace an agent draft")
       .annotate(
         OpenApi.Description,
-        "Replaces the whole draft and returns the agent with a new revision. The request names the revision it read; a stale revision returns 409. Published versions, and the conversations answered on them, do not change. An endpoint answers for one agent at a time: a draft that names an endpoint another agent answers on returns 409. A draft that pins a catalog model returns 402 unless your plan is Growth or Scale, and 422 when the model is not available or does not support the reasoning level.",
+        "Replaces the whole draft and returns the agent with a new revision. The request names the revision it read; a stale revision returns 409. API keys need organization-wide reach to change the draft policy. Published versions, and the conversations answered on them, do not change. An endpoint answers for one agent at a time: a draft that names an endpoint another agent answers on returns 409. A draft that pins a catalog model returns 402 unless your plan is Growth or Scale, and 422 when the model is not available or does not support the reasoning level.",
       ),
     HttpApiEndpoint.post("agentsPublish", "/v1/agents/:id/publish", {
       params: AgentsPublishPathParams,
@@ -979,7 +979,7 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
       .annotate(OpenApi.Summary, "Publish an agent")
       .annotate(
         OpenApi.Description,
-        "Publishes the draft as the next immutable version. Each conversation moves to it from its next agent reply; a reply already running finishes on the version it started on. The request names the revision it read; a stale revision returns 409. Publishing a draft identical to the newest version changes nothing and answers published false. An endpoint answers for one agent at a time: publishing a draft whose endpoint another agent answers on returns 409. The published policy governs review of each proposed action.",
+        "Publishes the draft as the next immutable version. API keys need organization-wide reach to publish a policy change. Each conversation moves to it from its next agent reply; a reply already running finishes on the version it started on. The request names the revision it read; a stale revision returns 409. Publishing a draft identical to the newest version changes nothing and answers published false. An endpoint answers for one agent at a time: publishing a draft whose endpoint another agent answers on returns 409. The published policy governs review of each proposed action.",
       ),
     HttpApiEndpoint.post("agentsRerunTests", "/v1/agents/:id/tests/rerun", {
       params: AgentsRerunTestsPathParams,
@@ -1044,7 +1044,7 @@ export class AgentsGroup extends HttpApiGroup.make("Agents")
       .annotate(OpenApi.Summary, "Publish an agent module")
       .annotate(
         OpenApi.Description,
-        "Publishes a self-contained JavaScript module and its manifest as the next immutable version. Source is stored by its SHA-256 digest without execution. The revision protects the draft read by the publisher; a stale revision returns 409. Publishing the same manifest, source, and definition again returns published false. The manifest controls the model, endpoints, integration grants, and action policy. Draft instructions and knowledge remain editable builder data; the hosted runtime reads instructions and tools from the published module.",
+        "Publishes a self-contained JavaScript module and its manifest as the next immutable version. API keys need organization-wide reach to publish a policy change. Source is stored by its SHA-256 digest without execution. The revision protects the draft read by the publisher; a stale revision returns 409. Publishing the same manifest, source, and definition again returns published false. The manifest controls the model, endpoints, integration grants, and action policy. Draft instructions and knowledge remain editable builder data; the hosted runtime reads instructions and tools from the published module.",
       ),
     HttpApiEndpoint.get("agentsGetVersion", "/v1/agents/:id/versions/:version", {
       params: AgentsGetVersionPathParams,

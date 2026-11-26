@@ -7,7 +7,6 @@ import * as Schema from "effect/Schema";
 import {
   ApiKeySecurityMiddleware,
   BillingProviderError,
-  FlagDisabledError,
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
@@ -141,9 +140,8 @@ export type WhatsappSetupLinksList400 = MalformedRequestError;
 export const WhatsappSetupLinksList400 = MalformedRequestError;
 export type WhatsappSetupLinksList401 = UnauthorizedError;
 export const WhatsappSetupLinksList401 = UnauthorizedError;
-export type WhatsappSetupLinksList403 = ForbiddenError | FlagDisabledError;
-export const WhatsappSetupLinksList403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type WhatsappSetupLinksList403 = ForbiddenError;
+export const WhatsappSetupLinksList403 = ForbiddenError;
 export type WhatsappSetupLinksList422 = ValidationError;
 export const WhatsappSetupLinksList422 = ValidationError;
 export type WhatsappSetupLinksList500 = InternalError;
@@ -171,9 +169,8 @@ export type WhatsappSetupLinksCreate401 = UnauthorizedError;
 export const WhatsappSetupLinksCreate401 = UnauthorizedError;
 export type WhatsappSetupLinksCreate402 = PaymentRequiredError;
 export const WhatsappSetupLinksCreate402 = PaymentRequiredError;
-export type WhatsappSetupLinksCreate403 = ForbiddenError | FlagDisabledError;
-export const WhatsappSetupLinksCreate403 = /* @__PURE__ */ (() =>
-  Schema.Union([ForbiddenError, FlagDisabledError]))();
+export type WhatsappSetupLinksCreate403 = ForbiddenError;
+export const WhatsappSetupLinksCreate403 = ForbiddenError;
 export type WhatsappSetupLinksCreate404 = ResourceNotFoundError;
 export const WhatsappSetupLinksCreate404 = ResourceNotFoundError;
 export type WhatsappSetupLinksCreate422 = ValidationError;
@@ -193,9 +190,8 @@ export type WhatsappSetupLinksGet400 = MalformedRequestError;
 export const WhatsappSetupLinksGet400 = MalformedRequestError;
 export type WhatsappSetupLinksGet401 = UnauthorizedError;
 export const WhatsappSetupLinksGet401 = UnauthorizedError;
-export type WhatsappSetupLinksGet403 = FlagDisabledError | ForbiddenError;
-export const WhatsappSetupLinksGet403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappSetupLinksGet403 = ForbiddenError;
+export const WhatsappSetupLinksGet403 = ForbiddenError;
 export type WhatsappSetupLinksGet404 = ResourceNotFoundError;
 export const WhatsappSetupLinksGet404 = ResourceNotFoundError;
 export type WhatsappSetupLinksGet422 = ValidationError;
@@ -213,9 +209,8 @@ export type WhatsappSetupLinksRevoke400 = MalformedRequestError;
 export const WhatsappSetupLinksRevoke400 = MalformedRequestError;
 export type WhatsappSetupLinksRevoke401 = UnauthorizedError;
 export const WhatsappSetupLinksRevoke401 = UnauthorizedError;
-export type WhatsappSetupLinksRevoke403 = FlagDisabledError | ForbiddenError;
-export const WhatsappSetupLinksRevoke403 = /* @__PURE__ */ (() =>
-  Schema.Union([FlagDisabledError, ForbiddenError]))();
+export type WhatsappSetupLinksRevoke403 = ForbiddenError;
+export const WhatsappSetupLinksRevoke403 = ForbiddenError;
 export type WhatsappSetupLinksRevoke404 = ResourceNotFoundError;
 export const WhatsappSetupLinksRevoke404 = ResourceNotFoundError;
 export type WhatsappSetupLinksRevoke410 = WhatsAppSetupLinkUnavailableError;

@@ -652,7 +652,7 @@ const operationMetadata65 = {
 } as const;
 
 const operationMetadata66 = {
-  group: "Journeys",
+  group: "Integrations catalog",
   method: "GET",
   idempotent: false,
   paginated: true,
@@ -660,55 +660,55 @@ const operationMetadata66 = {
 
 const operationMetadata67 = {
   group: "Journeys",
-  method: "POST",
+  method: "GET",
   idempotent: false,
-  paginated: false,
+  paginated: true,
 } as const;
 
 const operationMetadata68 = {
   group: "Journeys",
-  method: "GET",
+  method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata69 = {
   group: "Journeys",
-  method: "DELETE",
+  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata70 = {
   group: "Journeys",
-  method: "PATCH",
+  method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata71 = {
   group: "Journeys",
-  method: "PUT",
+  method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata72 = {
-  group: "Mailboxes",
+  group: "Journeys",
+  method: "PUT",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata73 = {
+  group: "Logs",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata73 = {
-  group: "Mailboxes",
-  method: "POST",
-  idempotent: true,
-  paginated: false,
-} as const;
-
 const operationMetadata74 = {
-  group: "Mailboxes",
+  group: "Logs",
   method: "GET",
   idempotent: false,
   paginated: false,
@@ -716,266 +716,266 @@ const operationMetadata74 = {
 
 const operationMetadata75 = {
   group: "Mailboxes",
-  method: "DELETE",
+  method: "GET",
   idempotent: false,
-  paginated: false,
+  paginated: true,
 } as const;
 
 const operationMetadata76 = {
   group: "Mailboxes",
-  method: "PATCH",
-  idempotent: false,
+  method: "POST",
+  idempotent: true,
   paginated: false,
 } as const;
 
 const operationMetadata77 = {
   group: "Mailboxes",
-  method: "POST",
+  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata78 = {
   group: "Mailboxes",
-  method: "PUT",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata79 = {
-  group: "Media",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata80 = {
-  group: "Media",
-  method: "GET",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata81 = {
-  group: "Media",
   method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata82 = {
-  group: "Messages",
-  method: "GET",
+const operationMetadata79 = {
+  group: "Mailboxes",
+  method: "PATCH",
   idempotent: false,
-  paginated: true,
+  paginated: false,
+} as const;
+
+const operationMetadata80 = {
+  group: "Mailboxes",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata81 = {
+  group: "Mailboxes",
+  method: "PUT",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata82 = {
+  group: "Media",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
 } as const;
 
 const operationMetadata83 = {
-  group: "Messages",
-  method: "POST",
-  idempotent: true,
+  group: "Media",
+  method: "GET",
+  idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata84 = {
-  group: "Messages",
-  method: "GET",
+  group: "Media",
+  method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata85 = {
   group: "Messages",
-  method: "DELETE",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata86 = {
-  group: "Scheduled Messages",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata87 = {
-  group: "Scheduled Messages",
+const operationMetadata86 = {
+  group: "Messages",
   method: "POST",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata88 = {
-  group: "Scheduled Messages",
+const operationMetadata87 = {
+  group: "Messages",
   method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata88 = {
+  group: "Messages",
+  method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata89 = {
   group: "Scheduled Messages",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata90 = {
-  group: "Messages",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata91 = {
-  group: "Namespaces",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
+const operationMetadata90 = {
+  group: "Scheduled Messages",
+  method: "POST",
+  idempotent: true,
+  paginated: false,
+} as const;
+
+const operationMetadata91 = {
+  group: "Scheduled Messages",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
 const operationMetadata92 = {
-  group: "Namespaces",
+  group: "Scheduled Messages",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata93 = {
-  group: "Namespaces",
-  method: "GET",
+  group: "Messages",
+  method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata94 = {
   group: "Namespaces",
-  method: "DELETE",
+  method: "GET",
   idempotent: false,
-  paginated: false,
+  paginated: true,
 } as const;
 
 const operationMetadata95 = {
   group: "Namespaces",
-  method: "PATCH",
+  method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata96 = {
-  group: "Newsletters",
+  group: "Namespaces",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata97 = {
-  group: "Newsletters",
-  method: "POST",
-  idempotent: true,
+  group: "Namespaces",
+  method: "DELETE",
+  idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata98 = {
-  group: "Newsletters",
-  method: "DELETE",
-  idempotent: true,
+  group: "Namespaces",
+  method: "PATCH",
+  idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata99 = {
   group: "Newsletters",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata100 = {
+  group: "Newsletters",
+  method: "POST",
+  idempotent: true,
+  paginated: false,
+} as const;
+
+const operationMetadata101 = {
+  group: "Newsletters",
+  method: "DELETE",
+  idempotent: true,
+  paginated: false,
+} as const;
+
+const operationMetadata102 = {
+  group: "Newsletters",
   method: "PATCH",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata100 = {
+const operationMetadata103 = {
   group: "Newsletter domains",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata101 = {
+const operationMetadata104 = {
   group: "Newsletter domains",
   method: "POST",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata102 = {
+const operationMetadata105 = {
   group: "Newsletter domains",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata103 = {
+const operationMetadata106 = {
   group: "Newsletter domains",
   method: "DELETE",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata104 = {
+const operationMetadata107 = {
   group: "Newsletter issues",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata105 = {
+const operationMetadata108 = {
   group: "Newsletter issues",
   method: "POST",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata106 = {
+const operationMetadata109 = {
   group: "Newsletter issues",
   method: "PATCH",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata107 = {
+const operationMetadata110 = {
   group: "Operations",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata108 = {
-  group: "Operations",
-  method: "GET",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata109 = {
-  group: "Operations",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata110 = {
-  group: "Organizations",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
 const operationMetadata111 = {
-  group: "Organizations",
+  group: "Operations",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata112 = {
-  group: "Organizations",
-  method: "PATCH",
+  group: "Operations",
+  method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
@@ -983,305 +983,333 @@ const operationMetadata112 = {
 const operationMetadata113 = {
   group: "Organizations",
   method: "POST",
-  idempotent: true,
+  idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata114 = {
-  group: "Policies",
+  group: "Organizations",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata115 = {
+  group: "Organizations",
+  method: "PATCH",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata116 = {
+  group: "Organizations",
+  method: "POST",
+  idempotent: true,
+  paginated: false,
+} as const;
+
+const operationMetadata117 = {
+  group: "Policies",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata118 = {
   group: "Policies",
   method: "PUT",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata116 = {
+const operationMetadata119 = {
   group: "Policies",
   method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata117 = {
+const operationMetadata120 = {
   group: "Subscriptions",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata118 = {
+const operationMetadata121 = {
   group: "Template share links",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata119 = {
+const operationMetadata122 = {
   group: "Template share links",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata120 = {
+const operationMetadata123 = {
   group: "Template share links",
   method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata121 = {
+const operationMetadata124 = {
   group: "Template share links",
   method: "PATCH",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata122 = {
-  group: "Templates",
-  method: "GET",
-  idempotent: false,
-  paginated: true,
-} as const;
-
-const operationMetadata123 = {
-  group: "Templates",
-  method: "POST",
-  idempotent: true,
-  paginated: false,
-} as const;
-
-const operationMetadata124 = {
-  group: "Templates",
-  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata125 = {
   group: "Templates",
-  method: "DELETE",
+  method: "GET",
   idempotent: false,
-  paginated: false,
+  paginated: true,
 } as const;
 
 const operationMetadata126 = {
   group: "Templates",
-  method: "PATCH",
-  idempotent: false,
+  method: "POST",
+  idempotent: true,
   paginated: false,
 } as const;
 
 const operationMetadata127 = {
   group: "Templates",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata128 = {
-  group: "Template registrations",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
+const operationMetadata128 = {
+  group: "Templates",
+  method: "DELETE",
+  idempotent: false,
+  paginated: false,
+} as const;
+
 const operationMetadata129 = {
-  group: "Template registrations",
-  method: "POST",
+  group: "Templates",
+  method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata130 = {
   group: "Templates",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata131 = {
+  group: "Template registrations",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata132 = {
+  group: "Template registrations",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata133 = {
+  group: "Templates",
   method: "PATCH",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata131 = {
+const operationMetadata134 = {
   group: "Templates",
   method: "PUT",
   idempotent: true,
   paginated: false,
 } as const;
 
-const operationMetadata132 = {
-  group: "Topics",
-  method: "GET",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata133 = {
-  group: "Topics",
-  method: "POST",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata134 = {
-  group: "Topics",
-  method: "DELETE",
-  idempotent: false,
-  paginated: false,
-} as const;
-
 const operationMetadata135 = {
   group: "Topics",
-  method: "PATCH",
+  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata136 = {
-  group: "Topic forms",
-  method: "GET",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata137 = {
-  group: "Topic forms",
+  group: "Topics",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata138 = {
-  group: "Topic forms",
+const operationMetadata137 = {
+  group: "Topics",
   method: "DELETE",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata138 = {
+  group: "Topics",
+  method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata139 = {
   group: "Topic forms",
-  method: "PATCH",
+  method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata140 = {
+  group: "Topic forms",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata141 = {
+  group: "Topic forms",
+  method: "DELETE",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata142 = {
+  group: "Topic forms",
+  method: "PATCH",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata143 = {
   group: "Topics",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata141 = {
+const operationMetadata144 = {
   group: "Webhooks",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata142 = {
+const operationMetadata145 = {
   group: "Webhooks",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata143 = {
-  group: "Webhooks",
-  method: "GET",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata144 = {
-  group: "Webhooks",
-  method: "DELETE",
-  idempotent: false,
-  paginated: false,
-} as const;
-
-const operationMetadata145 = {
-  group: "Webhooks",
-  method: "PATCH",
-  idempotent: false,
-  paginated: false,
-} as const;
-
 const operationMetadata146 = {
-  group: "WhatsApp",
+  group: "Webhooks",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata147 = {
-  group: "WhatsApp",
-  method: "POST",
+  group: "Webhooks",
+  method: "DELETE",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata148 = {
-  group: "WhatsApp",
-  method: "DELETE",
+  group: "Webhooks",
+  method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
 const operationMetadata149 = {
   group: "WhatsApp",
+  method: "GET",
+  idempotent: false,
+  paginated: true,
+} as const;
+
+const operationMetadata150 = {
+  group: "WhatsApp",
+  method: "POST",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata151 = {
+  group: "WhatsApp",
+  method: "GET",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata152 = {
+  group: "WhatsApp",
+  method: "DELETE",
+  idempotent: false,
+  paginated: false,
+} as const;
+
+const operationMetadata153 = {
+  group: "WhatsApp",
   method: "PATCH",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata150 = {
+const operationMetadata154 = {
   group: "WhatsApp flows",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata151 = {
+const operationMetadata155 = {
   group: "WhatsApp flows",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata152 = {
+const operationMetadata156 = {
   group: "WhatsApp flows",
   method: "PUT",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata153 = {
+const operationMetadata157 = {
   group: "WhatsApp setup links",
   method: "GET",
   idempotent: false,
   paginated: true,
 } as const;
 
-const operationMetadata154 = {
+const operationMetadata158 = {
   group: "WhatsApp setup links",
   method: "POST",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata155 = {
+const operationMetadata159 = {
   group: "WhatsApp setup links",
   method: "GET",
   idempotent: false,
   paginated: false,
 } as const;
 
-const operationMetadata156 = {
+const operationMetadata160 = {
   group: "Whoami",
   method: "GET",
   idempotent: false,
@@ -1473,7 +1501,7 @@ export const SamvaOperations = {
   integrationsGet: operationMetadata60,
   integrationsRemove: operationMetadata61,
   integrationsUpdate: operationMetadata62,
-  integrationsListTools: operationMetadata60,
+  integrationsListTools: operationMetadata58,
   integrationsReadTool: operationMetadata60,
   integrationCatalogList: operationMetadata63,
   integrationCatalogPrepare: operationMetadata64,
@@ -1491,265 +1519,267 @@ export const SamvaOperations = {
   integrationCatalogRecipeSetupGet: operationMetadata63,
   integrationCatalogRecipeSetupReplace: operationMetadata65,
   integrationCatalogRecipeSetupActivate: operationMetadata64,
-  integrationCatalogSearch: operationMetadata63,
-  journeysList: operationMetadata66,
-  journeysCreate: operationMetadata67,
-  journeysGet: operationMetadata68,
-  journeysRemove: operationMetadata69,
-  journeysUpdate: operationMetadata70,
-  journeysArchive: operationMetadata67,
-  journeysReplaceDraft: operationMetadata71,
-  journeysPause: operationMetadata67,
-  journeysPublish: operationMetadata67,
-  journeysResume: operationMetadata67,
-  journeysListRuns: operationMetadata66,
-  journeysGetRun: operationMetadata68,
-  journeysStats: operationMetadata68,
-  journeysGetVersion: operationMetadata68,
-  mailboxesList: operationMetadata72,
-  mailboxesCreate: operationMetadata73,
-  mailboxesGet: operationMetadata74,
-  mailboxesRemove: operationMetadata75,
-  mailboxesUpdate: operationMetadata76,
-  mailboxesListActions: operationMetadata72,
-  mailboxesGetAction: operationMetadata74,
-  mailboxesApproveAction: operationMetadata77,
-  mailboxesCancelAction: operationMetadata77,
-  mailboxesDenyAction: operationMetadata77,
-  mailboxesRetryAction: operationMetadata77,
-  mailboxesListAddresses: operationMetadata74,
-  mailboxesGetAgentActivity: operationMetadata74,
-  mailboxesListDrafts: operationMetadata72,
-  mailboxesCreateDraft: operationMetadata77,
-  mailboxesGetDraft: operationMetadata74,
-  mailboxesDeleteDraft: operationMetadata75,
-  mailboxesUpdateDraft: operationMetadata76,
-  mailboxesScheduleDraft: operationMetadata77,
-  mailboxesSendDraft: operationMetadata73,
-  mailboxesCreateEndpoint: operationMetadata77,
-  mailboxesRemoveEndpoint: operationMetadata75,
-  mailboxesUpdateEndpoint: operationMetadata76,
-  mailboxesListEvents: operationMetadata72,
-  mailboxesListFolders: operationMetadata74,
-  mailboxesListGrants: operationMetadata72,
-  mailboxesCreateGrant: operationMetadata77,
-  mailboxesRevokeGrant: operationMetadata75,
-  mailboxesUpdateGrant: operationMetadata76,
-  mailboxesListImports: operationMetadata74,
-  mailboxesGetImport: operationMetadata74,
-  mailboxesDiscardImport: operationMetadata75,
-  mailboxesStartImport: operationMetadata77,
-  mailboxesDiscardImportUpload: operationMetadata75,
-  mailboxesCompleteImportUpload: operationMetadata77,
-  mailboxesSignImportUploadParts: operationMetadata77,
-  mailboxesCreateImportUpload: operationMetadata77,
-  mailboxesListLabels: operationMetadata74,
-  mailboxesCreateLabel: operationMetadata77,
-  mailboxesDeleteLabel: operationMetadata75,
-  mailboxesUpdateLabel: operationMetadata76,
-  mailboxesSendMessage: operationMetadata73,
-  mailboxesGetMessage: operationMetadata74,
-  mailboxesGetMessageAttachment: operationMetadata74,
-  mailboxesCopyMessageAttachment: operationMetadata77,
-  mailboxesForward: operationMetadata73,
-  mailboxesGetMessageRaw: operationMetadata74,
-  mailboxesReply: operationMetadata73,
-  mailboxesReplyAll: operationMetadata73,
-  mailboxesPause: operationMetadata77,
-  mailboxesResume: operationMetadata77,
-  mailboxesListScheduledSends: operationMetadata72,
-  mailboxesUnscheduleSend: operationMetadata75,
-  mailboxesRescheduleSend: operationMetadata76,
-  mailboxesSendScheduledNow: operationMetadata77,
-  mailboxesEmptySpam: operationMetadata77,
-  mailboxesListSpamHeld: operationMetadata72,
-  mailboxesDiscardSpamHeld: operationMetadata77,
-  mailboxesListThreads: operationMetadata72,
-  mailboxesGetThread: operationMetadata74,
-  mailboxesDeleteThread: operationMetadata75,
-  mailboxesUpdateThread: operationMetadata76,
-  mailboxesGetThreadContent: operationMetadata72,
-  mailboxesAddThreadLabels: operationMetadata77,
-  mailboxesRemoveThreadLabels: operationMetadata75,
-  mailboxesListThreadMessages: operationMetadata72,
-  mailboxesListThreadNotes: operationMetadata72,
-  mailboxesCreateNote: operationMetadata77,
-  mailboxesDeleteNote: operationMetadata75,
-  mailboxesUpdateNote: operationMetadata76,
-  mailboxesEmptyTrash: operationMetadata77,
-  mailboxesListOrganizationDrafts: operationMetadata72,
-  mailboxesGetNeedsYou: operationMetadata72,
-  mailboxesListSplits: operationMetadata74,
-  mailboxesCreateSplit: operationMetadata77,
-  mailboxesUpdateSplit: operationMetadata78,
-  mailboxesDeleteSplit: operationMetadata75,
-  mailboxesCountSplits: operationMetadata74,
-  mailboxesListOrganizationThreads: operationMetadata72,
-  mediaCreate: operationMetadata79,
-  mediaGetById: operationMetadata80,
-  mediaRemove: operationMetadata81,
-  mediaComplete: operationMetadata79,
-  mediaDownloadUrl: operationMetadata80,
-  messagesList: operationMetadata82,
-  messagesSend: operationMetadata83,
-  messagesGet: operationMetadata84,
-  messagesRemove: operationMetadata85,
-  messagesGetContent: operationMetadata84,
-  messagesListDeliveries: operationMetadata84,
-  messagesGetEmail: operationMetadata84,
-  messagesGetEvents: operationMetadata82,
-  messagesGetStatus: operationMetadata84,
-  scheduledMessagesList: operationMetadata86,
-  scheduledMessagesCreate: operationMetadata87,
-  scheduledMessagesGet: operationMetadata88,
-  scheduledMessagesCancel: operationMetadata89,
-  scheduledMessagesResume: operationMetadata89,
-  messagesValidateEmail: operationMetadata90,
-  namespacesList: operationMetadata91,
-  namespacesCreate: operationMetadata92,
-  namespacesGet: operationMetadata93,
-  namespacesRemove: operationMetadata94,
-  namespacesUpdate: operationMetadata95,
-  namespacesListPortalLinks: operationMetadata91,
-  namespacesCreatePortalLink: operationMetadata92,
-  namespacesRevokePortalLink: operationMetadata94,
-  namespacesAssignResource: operationMetadata92,
-  namespacesRemoveResource: operationMetadata94,
-  namespacesGetUsage: operationMetadata93,
-  newslettersList: operationMetadata96,
-  newslettersCreate: operationMetadata97,
-  newslettersGet: operationMetadata96,
-  newslettersRemove: operationMetadata98,
-  newslettersUpdate: operationMetadata99,
-  newsletterDomainsList: operationMetadata100,
-  newsletterDomainsAdd: operationMetadata101,
-  newsletterDomainsGet: operationMetadata102,
-  newsletterDomainsRemove: operationMetadata103,
-  newsletterIssuesList: operationMetadata104,
-  newsletterIssuesCreate: operationMetadata105,
-  newsletterIssuesUpdate: operationMetadata106,
-  newsletterIssuesCheck: operationMetadata105,
-  newsletterIssuesGet: operationMetadata104,
-  newsletterIssuesHead: operationMetadata104,
-  newsletterIssuesHistory: operationMetadata104,
-  newsletterIssuesRemove: operationMetadata105,
-  newsletterIssuesRender: operationMetadata105,
-  newsletterIssuesSave: operationMetadata105,
-  newsletterIssuesOpen: operationMetadata104,
-  operationsList: operationMetadata107,
-  operationsGet: operationMetadata108,
-  operationsRetry: operationMetadata109,
-  organizationsCreate: operationMetadata110,
-  organizationsGet: operationMetadata111,
-  organizationsUpdate: operationMetadata112,
-  organizationsCreateAvatarUpload: operationMetadata110,
-  organizationsGetProfile: operationMetadata111,
-  organizationsDelete: operationMetadata113,
-  organizationsAssignPersonalMailbox: operationMetadata110,
-  organizationsInviteMember: operationMetadata110,
-  organizationsGetPersonalMailboxAddressOptions: operationMetadata111,
-  organizationsListPersonalMailboxAssignments: operationMetadata111,
-  organizationsGetTrustTier: operationMetadata111,
-  organizationsGetUsage: operationMetadata111,
-  policiesGetPolicy: operationMetadata114,
-  policiesSetPolicy: operationMetadata115,
-  policiesDeletePolicy: operationMetadata116,
-  subscriptionsSubscribe: operationMetadata117,
-  templateShareLinksGet: operationMetadata118,
-  templateShareLinksCreate: operationMetadata119,
-  templateShareLinksDelete: operationMetadata120,
-  templateShareLinksRename: operationMetadata121,
-  templateShareLinksUpdate: operationMetadata119,
-  templatesList: operationMetadata122,
-  templatesCreate: operationMetadata123,
-  templatesGetById: operationMetadata124,
-  templatesDelete: operationMetadata125,
-  templatesUpdate: operationMetadata126,
-  templatesListInputContracts: operationMetadata122,
-  templatesGetInputContract: operationMetadata124,
-  templatesPublish: operationMetadata127,
-  templatesGetPublication: operationMetadata124,
-  templatesRenderPublication: operationMetadata127,
-  templateRegistrationsList: operationMetadata128,
-  templateRegistrationsSubmit: operationMetadata129,
-  templateRegistrationsGet: operationMetadata128,
-  templatesGetGitRepository: operationMetadata124,
-  templatesIssueGitCredential: operationMetadata127,
-  templatesOpenWorkspace: operationMetadata127,
-  templatesPatchWorkspace: operationMetadata130,
-  templatesPutWorkspaceAsset: operationMetadata131,
-  templatesCheckWorkspace: operationMetadata127,
-  templatesResolveWorkspaceConflict: operationMetadata123,
-  templatesDiffWorkspace: operationMetadata127,
-  templatesRenderWorkspaceFixture: operationMetadata127,
-  templatesWorkspaceHistory: operationMetadata124,
-  templatesAttachWorkspaceResource: operationMetadata123,
-  templatesRemoveWorkspaceResource: operationMetadata123,
-  templatesRestoreWorkspace: operationMetadata123,
-  templatesSaveWorkspace: operationMetadata123,
-  templatesListFamilies: operationMetadata122,
-  templatesCreateFamily: operationMetadata127,
-  templatesGetFamily: operationMetadata124,
-  templatesDeleteFamily: operationMetadata125,
-  templatesRenameFamily: operationMetadata126,
-  templatesAttachFamilyMember: operationMetadata127,
-  templatesDetachFamilyMember: operationMetadata125,
-  templatesCreateFamilyFromTemplate: operationMetadata127,
-  templatesCreateFromBrief: operationMetadata123,
-  templatesCreateFromWebsite: operationMetadata123,
-  templatesDeleteProject: operationMetadata125,
-  templatesAddEntry: operationMetadata127,
-  templatesSuggestStarters: operationMetadata127,
-  topicsList: operationMetadata132,
-  topicsCreate: operationMetadata133,
-  topicsGet: operationMetadata132,
-  topicsRemove: operationMetadata134,
-  topicsUpdate: operationMetadata135,
-  topicsSetDefault: operationMetadata133,
-  topicFormsList: operationMetadata136,
-  topicFormsCreate: operationMetadata137,
-  topicFormsGet: operationMetadata136,
-  topicFormsRemove: operationMetadata138,
-  topicFormsUpdate: operationMetadata139,
-  topicsListSubscriptions: operationMetadata140,
-  topicsSetSubscriptions: operationMetadata133,
-  topicsCheckSubscription: operationMetadata132,
-  webhooksList: operationMetadata141,
-  webhooksCreate: operationMetadata142,
-  webhooksGet: operationMetadata143,
-  webhooksRemove: operationMetadata144,
-  webhooksUpdate: operationMetadata145,
-  webhooksRetryDelivery: operationMetadata142,
-  webhooksGetLogs: operationMetadata141,
-  webhooksRegenerateSecret: operationMetadata142,
-  webhooksGetSecret: operationMetadata143,
-  webhooksGetStats: operationMetadata143,
-  webhooksTest: operationMetadata142,
-  whatsappListBusinessAccounts: operationMetadata146,
-  whatsappConnectBusinessAccount: operationMetadata147,
-  whatsappGetBusinessAccount: operationMetadata146,
-  whatsappDisconnectBusinessAccount: operationMetadata148,
-  whatsappUpdateBusinessAccount: operationMetadata149,
-  whatsappSetDefaultBusinessAccount: operationMetadata147,
-  whatsappSyncAccountStatus: operationMetadata147,
-  whatsappFlowsList: operationMetadata150,
-  whatsappFlowsCreate: operationMetadata151,
-  whatsappFlowsGet: operationMetadata150,
-  whatsappFlowsSetEndpoint: operationMetadata152,
-  whatsappFlowsRotateEndpointSecret: operationMetadata151,
-  whatsappFlowsListRegistrations: operationMetadata150,
-  whatsappFlowsRegister: operationMetadata151,
-  whatsappFlowsListVersions: operationMetadata150,
-  whatsappFlowsRecordVersion: operationMetadata151,
-  whatsappFlowsRotateEncryptionKey: operationMetadata151,
-  whatsappGetMediaDownloadUrl: operationMetadata146,
-  whatsappGetServiceWindowBilling: operationMetadata146,
-  whatsappGetServiceWindowStatus: operationMetadata146,
-  whatsappSetupLinksList: operationMetadata153,
-  whatsappSetupLinksCreate: operationMetadata154,
-  whatsappSetupLinksGet: operationMetadata155,
-  whatsappSetupLinksRevoke: operationMetadata154,
-  whatsappGetStats: operationMetadata146,
-  whatsappGetTemplateStats: operationMetadata146,
-  whoamiGet: operationMetadata156,
+  integrationCatalogSearch: operationMetadata66,
+  journeysList: operationMetadata67,
+  journeysCreate: operationMetadata68,
+  journeysGet: operationMetadata69,
+  journeysRemove: operationMetadata70,
+  journeysUpdate: operationMetadata71,
+  journeysArchive: operationMetadata68,
+  journeysReplaceDraft: operationMetadata72,
+  journeysPause: operationMetadata68,
+  journeysPublish: operationMetadata68,
+  journeysResume: operationMetadata68,
+  journeysListRuns: operationMetadata67,
+  journeysGetRun: operationMetadata69,
+  journeysStats: operationMetadata69,
+  journeysGetVersion: operationMetadata69,
+  logsList: operationMetadata73,
+  logsGet: operationMetadata74,
+  mailboxesList: operationMetadata75,
+  mailboxesCreate: operationMetadata76,
+  mailboxesGet: operationMetadata77,
+  mailboxesRemove: operationMetadata78,
+  mailboxesUpdate: operationMetadata79,
+  mailboxesListActions: operationMetadata75,
+  mailboxesGetAction: operationMetadata77,
+  mailboxesApproveAction: operationMetadata80,
+  mailboxesCancelAction: operationMetadata80,
+  mailboxesDenyAction: operationMetadata80,
+  mailboxesRetryAction: operationMetadata80,
+  mailboxesListAddresses: operationMetadata77,
+  mailboxesGetAgentActivity: operationMetadata77,
+  mailboxesListDrafts: operationMetadata75,
+  mailboxesCreateDraft: operationMetadata80,
+  mailboxesGetDraft: operationMetadata77,
+  mailboxesDeleteDraft: operationMetadata78,
+  mailboxesUpdateDraft: operationMetadata79,
+  mailboxesScheduleDraft: operationMetadata80,
+  mailboxesSendDraft: operationMetadata76,
+  mailboxesCreateEndpoint: operationMetadata80,
+  mailboxesRemoveEndpoint: operationMetadata78,
+  mailboxesUpdateEndpoint: operationMetadata79,
+  mailboxesListEvents: operationMetadata75,
+  mailboxesListFolders: operationMetadata77,
+  mailboxesListGrants: operationMetadata75,
+  mailboxesCreateGrant: operationMetadata80,
+  mailboxesRevokeGrant: operationMetadata78,
+  mailboxesUpdateGrant: operationMetadata79,
+  mailboxesListImports: operationMetadata77,
+  mailboxesGetImport: operationMetadata77,
+  mailboxesDiscardImport: operationMetadata78,
+  mailboxesStartImport: operationMetadata80,
+  mailboxesDiscardImportUpload: operationMetadata78,
+  mailboxesCompleteImportUpload: operationMetadata80,
+  mailboxesSignImportUploadParts: operationMetadata80,
+  mailboxesCreateImportUpload: operationMetadata80,
+  mailboxesListLabels: operationMetadata77,
+  mailboxesCreateLabel: operationMetadata80,
+  mailboxesDeleteLabel: operationMetadata78,
+  mailboxesUpdateLabel: operationMetadata79,
+  mailboxesSendMessage: operationMetadata76,
+  mailboxesGetMessage: operationMetadata77,
+  mailboxesGetMessageAttachment: operationMetadata77,
+  mailboxesCopyMessageAttachment: operationMetadata80,
+  mailboxesForward: operationMetadata76,
+  mailboxesGetMessageRaw: operationMetadata77,
+  mailboxesReply: operationMetadata76,
+  mailboxesReplyAll: operationMetadata76,
+  mailboxesPause: operationMetadata80,
+  mailboxesResume: operationMetadata80,
+  mailboxesListScheduledSends: operationMetadata75,
+  mailboxesUnscheduleSend: operationMetadata78,
+  mailboxesRescheduleSend: operationMetadata79,
+  mailboxesSendScheduledNow: operationMetadata80,
+  mailboxesEmptySpam: operationMetadata80,
+  mailboxesListSpamHeld: operationMetadata75,
+  mailboxesDiscardSpamHeld: operationMetadata80,
+  mailboxesListThreads: operationMetadata75,
+  mailboxesGetThread: operationMetadata77,
+  mailboxesDeleteThread: operationMetadata78,
+  mailboxesUpdateThread: operationMetadata79,
+  mailboxesGetThreadContent: operationMetadata75,
+  mailboxesAddThreadLabels: operationMetadata80,
+  mailboxesRemoveThreadLabels: operationMetadata78,
+  mailboxesListThreadMessages: operationMetadata75,
+  mailboxesListThreadNotes: operationMetadata75,
+  mailboxesCreateNote: operationMetadata80,
+  mailboxesDeleteNote: operationMetadata78,
+  mailboxesUpdateNote: operationMetadata79,
+  mailboxesEmptyTrash: operationMetadata80,
+  mailboxesListOrganizationDrafts: operationMetadata75,
+  mailboxesGetNeedsYou: operationMetadata75,
+  mailboxesListSplits: operationMetadata77,
+  mailboxesCreateSplit: operationMetadata80,
+  mailboxesUpdateSplit: operationMetadata81,
+  mailboxesDeleteSplit: operationMetadata78,
+  mailboxesCountSplits: operationMetadata77,
+  mailboxesListOrganizationThreads: operationMetadata75,
+  mediaCreate: operationMetadata82,
+  mediaGetById: operationMetadata83,
+  mediaRemove: operationMetadata84,
+  mediaComplete: operationMetadata82,
+  mediaDownloadUrl: operationMetadata83,
+  messagesList: operationMetadata85,
+  messagesSend: operationMetadata86,
+  messagesGet: operationMetadata87,
+  messagesRemove: operationMetadata88,
+  messagesGetContent: operationMetadata87,
+  messagesListDeliveries: operationMetadata87,
+  messagesGetEmail: operationMetadata87,
+  messagesGetEvents: operationMetadata85,
+  messagesGetStatus: operationMetadata87,
+  scheduledMessagesList: operationMetadata89,
+  scheduledMessagesCreate: operationMetadata90,
+  scheduledMessagesGet: operationMetadata91,
+  scheduledMessagesCancel: operationMetadata92,
+  scheduledMessagesResume: operationMetadata92,
+  messagesValidateEmail: operationMetadata93,
+  namespacesList: operationMetadata94,
+  namespacesCreate: operationMetadata95,
+  namespacesGet: operationMetadata96,
+  namespacesRemove: operationMetadata97,
+  namespacesUpdate: operationMetadata98,
+  namespacesListPortalLinks: operationMetadata94,
+  namespacesCreatePortalLink: operationMetadata95,
+  namespacesRevokePortalLink: operationMetadata97,
+  namespacesAssignResource: operationMetadata95,
+  namespacesRemoveResource: operationMetadata97,
+  namespacesGetUsage: operationMetadata96,
+  newslettersList: operationMetadata99,
+  newslettersCreate: operationMetadata100,
+  newslettersGet: operationMetadata99,
+  newslettersRemove: operationMetadata101,
+  newslettersUpdate: operationMetadata102,
+  newsletterDomainsList: operationMetadata103,
+  newsletterDomainsAdd: operationMetadata104,
+  newsletterDomainsGet: operationMetadata105,
+  newsletterDomainsRemove: operationMetadata106,
+  newsletterIssuesList: operationMetadata107,
+  newsletterIssuesCreate: operationMetadata108,
+  newsletterIssuesUpdate: operationMetadata109,
+  newsletterIssuesCheck: operationMetadata108,
+  newsletterIssuesGet: operationMetadata107,
+  newsletterIssuesHead: operationMetadata107,
+  newsletterIssuesHistory: operationMetadata107,
+  newsletterIssuesRemove: operationMetadata108,
+  newsletterIssuesRender: operationMetadata108,
+  newsletterIssuesSave: operationMetadata108,
+  newsletterIssuesOpen: operationMetadata107,
+  operationsList: operationMetadata110,
+  operationsGet: operationMetadata111,
+  operationsRetry: operationMetadata112,
+  organizationsCreate: operationMetadata113,
+  organizationsGet: operationMetadata114,
+  organizationsUpdate: operationMetadata115,
+  organizationsCreateAvatarUpload: operationMetadata113,
+  organizationsGetProfile: operationMetadata114,
+  organizationsDelete: operationMetadata116,
+  organizationsAssignPersonalMailbox: operationMetadata113,
+  organizationsInviteMember: operationMetadata113,
+  organizationsGetPersonalMailboxAddressOptions: operationMetadata114,
+  organizationsListPersonalMailboxAssignments: operationMetadata114,
+  organizationsGetTrustTier: operationMetadata114,
+  organizationsGetUsage: operationMetadata114,
+  policiesGetPolicy: operationMetadata117,
+  policiesSetPolicy: operationMetadata118,
+  policiesDeletePolicy: operationMetadata119,
+  subscriptionsSubscribe: operationMetadata120,
+  templateShareLinksGet: operationMetadata121,
+  templateShareLinksCreate: operationMetadata122,
+  templateShareLinksDelete: operationMetadata123,
+  templateShareLinksRename: operationMetadata124,
+  templateShareLinksUpdate: operationMetadata122,
+  templatesList: operationMetadata125,
+  templatesCreate: operationMetadata126,
+  templatesGetById: operationMetadata127,
+  templatesDelete: operationMetadata128,
+  templatesUpdate: operationMetadata129,
+  templatesListInputContracts: operationMetadata125,
+  templatesGetInputContract: operationMetadata127,
+  templatesPublish: operationMetadata130,
+  templatesGetPublication: operationMetadata127,
+  templatesRenderPublication: operationMetadata130,
+  templateRegistrationsList: operationMetadata131,
+  templateRegistrationsSubmit: operationMetadata132,
+  templateRegistrationsGet: operationMetadata131,
+  templatesGetGitRepository: operationMetadata127,
+  templatesIssueGitCredential: operationMetadata130,
+  templatesOpenWorkspace: operationMetadata130,
+  templatesPatchWorkspace: operationMetadata133,
+  templatesPutWorkspaceAsset: operationMetadata134,
+  templatesCheckWorkspace: operationMetadata130,
+  templatesResolveWorkspaceConflict: operationMetadata126,
+  templatesDiffWorkspace: operationMetadata130,
+  templatesRenderWorkspaceFixture: operationMetadata130,
+  templatesWorkspaceHistory: operationMetadata127,
+  templatesAttachWorkspaceResource: operationMetadata126,
+  templatesRemoveWorkspaceResource: operationMetadata126,
+  templatesRestoreWorkspace: operationMetadata126,
+  templatesSaveWorkspace: operationMetadata126,
+  templatesListFamilies: operationMetadata125,
+  templatesCreateFamily: operationMetadata130,
+  templatesGetFamily: operationMetadata127,
+  templatesDeleteFamily: operationMetadata128,
+  templatesRenameFamily: operationMetadata129,
+  templatesAttachFamilyMember: operationMetadata130,
+  templatesDetachFamilyMember: operationMetadata128,
+  templatesCreateFamilyFromTemplate: operationMetadata130,
+  templatesCreateFromBrief: operationMetadata126,
+  templatesCreateFromWebsite: operationMetadata126,
+  templatesDeleteProject: operationMetadata128,
+  templatesAddEntry: operationMetadata130,
+  templatesSuggestStarters: operationMetadata130,
+  topicsList: operationMetadata135,
+  topicsCreate: operationMetadata136,
+  topicsGet: operationMetadata135,
+  topicsRemove: operationMetadata137,
+  topicsUpdate: operationMetadata138,
+  topicsSetDefault: operationMetadata136,
+  topicFormsList: operationMetadata139,
+  topicFormsCreate: operationMetadata140,
+  topicFormsGet: operationMetadata139,
+  topicFormsRemove: operationMetadata141,
+  topicFormsUpdate: operationMetadata142,
+  topicsListSubscriptions: operationMetadata143,
+  topicsSetSubscriptions: operationMetadata136,
+  topicsCheckSubscription: operationMetadata135,
+  webhooksList: operationMetadata144,
+  webhooksCreate: operationMetadata145,
+  webhooksGet: operationMetadata146,
+  webhooksRemove: operationMetadata147,
+  webhooksUpdate: operationMetadata148,
+  webhooksRetryDelivery: operationMetadata145,
+  webhooksGetLogs: operationMetadata144,
+  webhooksRegenerateSecret: operationMetadata145,
+  webhooksGetSecret: operationMetadata146,
+  webhooksGetStats: operationMetadata146,
+  webhooksTest: operationMetadata145,
+  whatsappListBusinessAccounts: operationMetadata149,
+  whatsappConnectBusinessAccount: operationMetadata150,
+  whatsappGetBusinessAccount: operationMetadata151,
+  whatsappDisconnectBusinessAccount: operationMetadata152,
+  whatsappUpdateBusinessAccount: operationMetadata153,
+  whatsappSetDefaultBusinessAccount: operationMetadata150,
+  whatsappSyncAccountStatus: operationMetadata150,
+  whatsappFlowsList: operationMetadata154,
+  whatsappFlowsCreate: operationMetadata155,
+  whatsappFlowsGet: operationMetadata154,
+  whatsappFlowsSetEndpoint: operationMetadata156,
+  whatsappFlowsRotateEndpointSecret: operationMetadata155,
+  whatsappFlowsListRegistrations: operationMetadata154,
+  whatsappFlowsRegister: operationMetadata155,
+  whatsappFlowsListVersions: operationMetadata154,
+  whatsappFlowsRecordVersion: operationMetadata155,
+  whatsappFlowsRotateEncryptionKey: operationMetadata155,
+  whatsappGetMediaDownloadUrl: operationMetadata151,
+  whatsappGetServiceWindowBilling: operationMetadata151,
+  whatsappGetServiceWindowStatus: operationMetadata151,
+  whatsappSetupLinksList: operationMetadata157,
+  whatsappSetupLinksCreate: operationMetadata158,
+  whatsappSetupLinksGet: operationMetadata159,
+  whatsappSetupLinksRevoke: operationMetadata158,
+  whatsappGetStats: operationMetadata151,
+  whatsappGetTemplateStats: operationMetadata151,
+  whoamiGet: operationMetadata160,
 } as const;

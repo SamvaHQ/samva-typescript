@@ -881,10 +881,10 @@ export class OrganizationsGroup extends HttpApiGroup.make("Organizations")
     })
       .middleware(ApiKeySecurityMiddleware)
       .annotate(OpenApi.Identifier, "organizations.getTrustTier")
-      .annotate(OpenApi.Summary, "Get organization trust tier and sending limits")
+      .annotate(OpenApi.Summary, "Get the organization's sending limits")
       .annotate(
         OpenApi.Description,
-        "Returns the current trust tier, plan and probation sending limits, and measured probation graduation progress. Limits are additional to billing allowance, domain readiness, and enforcement. Graduation is evaluated on delivery events.",
+        "Returns which sending limits apply to the organization and its progress toward the plan's limits. `tier` is `screened` while the organization waits for Samva's review before its first email, `probation` while a new organization sends on starting limits (`sendingLimits.probation`), and `established` once it sends on its plan's limits. `graduation` measures the delivery record a new organization needs before it moves to its plan's limits, and is checked as deliveries arrive. Billing allowance, domain readiness, and sending pauses apply as well.",
       ),
     HttpApiEndpoint.get("organizationsGetUsage", "/v1/organizations/usage", {
       query: OrganizationsGetUsageQuery,

@@ -18,7 +18,7 @@ export const integrationsOperations = {
     group: "Integrations",
     method: "GET",
     idempotent: false,
-    paginated: false,
+    paginated: true,
     call: { kind: "pathParams", paths: ["integrationId"] },
   },
   integrationsReadTool: {

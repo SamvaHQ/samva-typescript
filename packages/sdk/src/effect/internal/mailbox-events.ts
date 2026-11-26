@@ -1,15 +1,16 @@
 import { Cause, Effect, Exit, Stream } from "effect";
 
 import {
-  type MailboxEvent,
+  type EventStream,
+  type MailboxEventStreamConnection,
   MailboxEventStream,
+  type MailboxEventStreamOptions,
   MailboxEventStreamError,
   type MailboxEventStreamFailure,
-  type MailboxEventStreamOptions,
 } from "../../mailbox-events";
 import { Service } from "./client";
 
-const toStreamError = (cause: unknown): MailboxEventStreamFailure =>
+export const toStreamError = (cause: unknown): MailboxEventStreamFailure =>
   // A MailboxEventStreamError's `_tag` is one of the union's members.
   cause instanceof MailboxEventStreamError
     ? (cause as MailboxEventStreamFailure)
@@ -22,16 +23,16 @@ const toStreamError = (cause: unknown): MailboxEventStreamFailure =>
  * The stream fails with a {@link MailboxEventStreamFailure}, which `Effect.catchTag` narrows by the
  * `_tag` of the host's refusal.
  */
-export const events = (
-  options: Omit<MailboxEventStreamOptions, "signal"> = {},
-): Stream.Stream<MailboxEvent, MailboxEventStreamFailure, Service> =>
+export const streamEvents = <Event extends { readonly cursor: string }>(
+  open: (connection: MailboxEventStreamConnection) => EventStream<Event>,
+): Stream.Stream<Event, MailboxEventStreamFailure, Service> =>
   Stream.scoped(
     Stream.unwrap(
       Effect.gen(function* () {
         const client = yield* Service;
         const stream = yield* Effect.acquireRelease(
           Effect.try({
-            try: () => new MailboxEventStream(client.connection, options),
+            try: () => open(client.connection),
             catch: toStreamError,
           }),
           (opened, exit) =>
@@ -49,3 +50,6 @@ export const events = (
       }),
     ),
   );
+
+export const events = (options: Omit<MailboxEventStreamOptions, "signal"> = {}) =>
+  streamEvents((connection) => new MailboxEventStream(connection, options));

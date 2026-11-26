@@ -21,6 +21,7 @@ import { FeedbackGroup } from "./feedback";
 import { IntegrationsGroup } from "./integrations";
 import { IntegrationsCatalogGroup } from "./integrations-catalog";
 import { JourneysGroup } from "./journeys";
+import { LogsGroup } from "./logs";
 import { MailboxesGroup } from "./mailboxes";
 import { MediaGroup } from "./media";
 import { MessagesGroup } from "./messages";
@@ -83,6 +84,8 @@ export * from "./integrations";
 export * from "./integrations-catalog";
 
 export * from "./journeys";
+
+export * from "./logs";
 
 export * from "./mailboxes";
 
@@ -156,6 +159,7 @@ export class SamvaApi extends HttpApi.make("SamvaApi")
     IntegrationsGroup,
     IntegrationsCatalogGroup,
     JourneysGroup,
+    LogsGroup,
     MailboxesGroup,
     MediaGroup,
     MessagesGroup,

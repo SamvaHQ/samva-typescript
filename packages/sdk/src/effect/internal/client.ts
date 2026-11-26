@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Redacted } from "effect";
+import { Context, Effect, Layer, Predicate, Redacted } from "effect";
 import {
   HttpApi,
   HttpApiClient,
@@ -13,6 +13,7 @@ import * as HttpClientRequest from "effect/http/HttpClientRequest";
 import { CLIENT_ATTRIBUTION_HEADER, clientAttribution } from "../../client-attribution";
 import { MediaUploadError, uploadContentType } from "../../inline-attachments";
 import type { MailboxEventStreamConnection } from "../../mailbox-events";
+import { samvaRequestId, withRequestIdMessage } from "../../request-id";
 import {
   DEFAULT_UPLOAD_TIMEOUT_MS,
   resolveTimeout,
@@ -145,6 +146,35 @@ const AuthorizationClient = HttpApiMiddleware.layerClient(
   ({ next, request }) => next(request),
 );
 
+const ResponseRequestId = Context.Reference<{ value: string | undefined } | undefined>(
+  "samva/ResponseRequestId",
+  { defaultValue: () => undefined },
+);
+
+const withResponseRequestId = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+  Effect.suspend(() => {
+    const requestId: { value: string | undefined } = { value: undefined };
+    return effect.pipe(
+      Effect.mapError((error) => {
+        if (
+          requestId.value === undefined ||
+          !Predicate.isObject(error) ||
+          typeof error.message !== "string"
+        )
+          return error;
+        Object.defineProperties(error, {
+          requestId: { value: requestId.value, enumerable: true, configurable: true },
+          message: {
+            value: withRequestIdMessage(error.message, requestId.value),
+            configurable: true,
+          },
+        });
+        return error;
+      }),
+      Effect.provideService(ResponseRequestId, requestId),
+    );
+  });
+
 const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpClient> =>
   Effect.gen(function* () {
     const baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
@@ -158,6 +188,12 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
     );
     const storage = yield* HttpClient.HttpClient;
     const httpClient = storage.pipe(
+      HttpClient.tap((response) =>
+        Effect.map(ResponseRequestId, (requestId) => {
+          if (requestId !== undefined)
+            requestId.value = samvaRequestId(response.headers["x-samva-request-id"]);
+        }),
+      ),
       HttpClient.mapRequest((request) => {
         let attributed = HttpClientRequest.setHeader(
           request,
@@ -249,7 +285,9 @@ const make = (config: Config): Effect.Effect<Interface, never, HttpClient.HttpCl
             ? Effect.die(new Error(`${name} is not an endpoint of ${group.identifier}`))
             : // The group client is a heterogeneous record keyed by endpoint name, so the
               // lookup erases the endpoint's own success and failure types.
-              Effect.succeed(call as OperationCall<typeof name>);
+              Effect.succeed(((request) => withResponseRequestId(call(request))) as OperationCall<
+                typeof name
+              >);
         }),
       connection: {
         baseUrl,
