@@ -269,8 +269,10 @@ export type MessageReceivedEvent = {
           readonly [x: string]: JsonValue;
         })
       | null;
+    readonly replyToMetadata?: { readonly [x: string]: JsonValue };
     readonly whatsapp?:
       | ({
+          readonly appHandlesFlowSubmission?: true;
           readonly text?: string | null;
           readonly template?:
             | ({
@@ -318,7 +320,10 @@ export type MessageReceivedEvent = {
                           | null;
                         readonly coupon_code?: string | null;
                         readonly action?:
-                          | ({ readonly flow_token: string } & { readonly [x: string]: JsonValue })
+                          | ({
+                              readonly flow_token: string;
+                              readonly flow_action_data?: { readonly [x: string]: JsonValue };
+                            } & { readonly [x: string]: JsonValue })
                           | null;
                       } & { readonly [x: string]: JsonValue }
                     >;
@@ -518,6 +523,7 @@ export type MessageReceivedEvent = {
           } & { readonly [x: string]: JsonValue };
           readonly flowResponse?: {
             readonly flowToken: string | null;
+            readonly submissionHandler?: "app";
             readonly response: { readonly [x: string]: JsonValue };
             readonly body?: string;
           } & { readonly [x: string]: JsonValue };
@@ -1074,6 +1080,7 @@ export type MailboxMessageReceivedEvent = {
     readonly mailboxId: string;
     readonly namespaceId: string | null;
     readonly message: {
+      readonly flowSubmissionHandledBy?: "app";
       readonly id: string;
       readonly campaign?:
         | ({ readonly campaignId: string; readonly runId: string } & {
@@ -1131,6 +1138,7 @@ export type MailboxMessageSentEvent = {
         | "system";
     } & { readonly [x: string]: JsonValue };
     readonly message: {
+      readonly flowSubmissionHandledBy?: "app";
       readonly id: string;
       readonly campaign?:
         | ({ readonly campaignId: string; readonly runId: string } & {

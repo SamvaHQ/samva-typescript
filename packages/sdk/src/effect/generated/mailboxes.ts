@@ -1501,6 +1501,7 @@ export type MailboxChatMessage = {
   readonly template: MailboxChatMessageTemplate | null;
   readonly summary: string | null;
   readonly contextMessageId: MessageId | null;
+  readonly flowSubmissionHandledBy?: "app";
 };
 export const MailboxChatMessage = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -1537,6 +1538,7 @@ export const MailboxChatMessage = /* @__PURE__ */ (() =>
     template: Schema.Union([MailboxChatMessageTemplate, Schema.Null]),
     summary: Schema.Union([Schema.String, Schema.Null]),
     contextMessageId: Schema.Union([MessageId, Schema.Null]),
+    flowSubmissionHandledBy: Schema.optionalKey(Schema.Literal("app")),
   }).annotate({ identifier: "MailboxChatMessage" }))();
 export type MailboxThreadSummary = {
   readonly id: MailboxThreadId;

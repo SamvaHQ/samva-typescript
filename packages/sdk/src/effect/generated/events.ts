@@ -226,7 +226,7 @@ export class EventsGroup extends HttpApiGroup.make("Events")
       .annotate(OpenApi.Summary, "Record a contact event")
       .annotate(
         OpenApi.Description,
-        "Records a custom contact event. Identify the contact by exactly one ID, external ID, or email. A missing email or external ID creates a contact; an unknown contact ID returns 404. An organization-scoped idempotency key replays the original event. Event names use letters, digits, underscores, hyphens, and dots, up to 255 characters; contact. and samva. prefixes are reserved. Properties allow at most 50 keys and 32 KiB of UTF-8 JSON. Events are retained for 90 days.",
+        "Records a custom contact event. Identify the contact by exactly one ID, external ID, email, or E.164 phone number. An unmatched external ID, email, or phone number creates a contact; an unknown contact ID returns 404. An idempotency key replays the original event in the credential’s scope. Event names use letters, digits, underscores, hyphens, and dots, up to 255 characters; contact. and samva. prefixes are reserved. Properties allow at most 50 keys and 32 KiB of UTF-8 JSON. Events are retained for 90 days.",
       ),
     HttpApiEndpoint.post("eventsBatch", "/v1/events/batch", {
       headers: EventsBatchHeaders,

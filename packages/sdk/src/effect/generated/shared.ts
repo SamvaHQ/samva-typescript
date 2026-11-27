@@ -1668,12 +1668,14 @@ export const WhatsAppReceivedReply = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "WhatsAppReceivedReply" }))();
 export type WhatsAppReceivedFlowResponse = {
   readonly flowToken: string | null;
+  readonly submissionHandler?: "app";
   readonly response: { readonly [x: string]: JsonValue };
   readonly body?: string;
 };
 export const WhatsAppReceivedFlowResponse = /* @__PURE__ */ (() =>
   Schema.Struct({
     flowToken: Schema.Union([Schema.String, Schema.Null]),
+    submissionHandler: Schema.optionalKey(Schema.Literal("app")),
     response: Schema.Record(Schema.String, JsonValue),
     body: Schema.optionalKey(Schema.String),
   }).annotate({ identifier: "WhatsAppReceivedFlowResponse" }))();
@@ -2013,6 +2015,12 @@ export const WhatsAppTextContent = /* @__PURE__ */ (() =>
 export type WhatsAppTemplateData = { readonly [x: string]: JsonValue };
 export const WhatsAppTemplateData = /* @__PURE__ */ (() =>
   Schema.Record(Schema.String, JsonValue).annotate({ identifier: "WhatsAppTemplateData" }))();
+export type JsonObject_1 = { readonly [x: string]: JsonValue };
+export const JsonObject_1 = /* @__PURE__ */ (() =>
+  Schema.Record(Schema.String, JsonValue).annotate({
+    description: "Initial screen data for a navigate Flow button.",
+    identifier: "JsonObject_1",
+  }))();
 export type WhatsAppImageLink = {
   readonly type: "image";
   readonly caption?: string;
@@ -3493,21 +3501,6 @@ export const ReapplyOnboardingReviewInput = /* @__PURE__ */ (() =>
         }),
       ),
   }).annotate({ identifier: "ReapplyOnboardingReviewInput" }))();
-export type RecordWhatsAppFlowVersionPayload = {
-  readonly commitSha: string;
-  readonly expectedWorkspaceRevision: string;
-};
-export const RecordWhatsAppFlowVersionPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    commitSha: Schema.String.check(
-      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    expectedWorkspaceRevision: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-  }).annotate({ identifier: "RecordWhatsAppFlowVersionPayload" }))();
 export type RescheduleMailboxSend = {
   readonly idempotencyKey: string;
   readonly base: string;
@@ -3985,11 +3978,51 @@ export const ContactConsent = /* @__PURE__ */ (() =>
     capturedAt: Schema.String,
     proof: Schema.Union([JsonObject, Schema.Null]),
   }).annotate({ identifier: "ContactConsent" }))();
-export type JourneyWebhookConfig = { readonly data?: JsonObject };
+export type JourneyWebhookConfig = {
+  readonly data?: JsonObject;
+  readonly eventBindings?: { readonly [x: string]: string };
+};
 export const JourneyWebhookConfig = /* @__PURE__ */ (() =>
-  Schema.Struct({ data: Schema.optionalKey(JsonObject) }).annotate({
-    identifier: "JourneyWebhookConfig",
-  }))();
+  Schema.Struct({
+    data: Schema.optionalKey(JsonObject),
+    eventBindings: Schema.optionalKey(
+      Schema.Record(
+        Schema.String,
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ).check(
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+          }),
+        ),
+      ).check(
+        Schema.isPropertyNames(
+          Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+        ).annotate({ expected: "an object with property names matching the schema" }),
+      ),
+    ),
+  }).annotate({ identifier: "JourneyWebhookConfig" }))();
+export type RecordWhatsAppFlowVersionPayload =
+  | { readonly commitSha: string; readonly expectedWorkspaceRevision: string }
+  | { readonly flowJson: JsonObject };
+export const RecordWhatsAppFlowVersionPayload = /* @__PURE__ */ (() =>
+  Schema.Union([
+    Schema.Struct({
+      commitSha: Schema.String.check(
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      expectedWorkspaceRevision: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+    }),
+    Schema.Struct({ flowJson: JsonObject }),
+  ]).annotate({ identifier: "RecordWhatsAppFlowVersionPayload" }))();
 export type SetContactConsent = {
   readonly status: "opted_in" | "opted_out";
   readonly source: string;
@@ -4059,15 +4092,37 @@ export const ContactEvent = /* @__PURE__ */ (() =>
     recordedAt: Schema.String,
   }).annotate({ identifier: "ContactEvent" }))();
 export type ContactEventReference =
-  | { readonly id: ContactId; readonly externalId?: never; readonly email?: never }
-  | { readonly externalId: string; readonly id?: never; readonly email?: never }
-  | { readonly email: string; readonly id?: never; readonly externalId?: never };
+  | {
+      readonly id: ContactId;
+      readonly externalId?: never;
+      readonly email?: never;
+      readonly phone?: never;
+    }
+  | {
+      readonly externalId: string;
+      readonly id?: never;
+      readonly email?: never;
+      readonly phone?: never;
+    }
+  | {
+      readonly email: string;
+      readonly id?: never;
+      readonly externalId?: never;
+      readonly phone?: never;
+    }
+  | {
+      readonly phone: string;
+      readonly id?: never;
+      readonly externalId?: never;
+      readonly email?: never;
+    };
 export const ContactEventReference = /* @__PURE__ */ (() =>
   Schema.Union([
     Schema.Struct({
       id: ContactId,
       externalId: Schema.optionalKey(Schema.Never),
       email: Schema.optionalKey(Schema.Never),
+      phone: Schema.optionalKey(Schema.Never),
     }),
     Schema.Struct({
       externalId: Schema.String.check(
@@ -4075,11 +4130,23 @@ export const ContactEventReference = /* @__PURE__ */ (() =>
       ),
       id: Schema.optionalKey(Schema.Never),
       email: Schema.optionalKey(Schema.Never),
+      phone: Schema.optionalKey(Schema.Never),
     }),
     Schema.Struct({
       email: Schema.String,
       id: Schema.optionalKey(Schema.Never),
       externalId: Schema.optionalKey(Schema.Never),
+      phone: Schema.optionalKey(Schema.Never),
+    }),
+    Schema.Struct({
+      phone: Schema.String.check(
+        Schema.isPattern(new globalThis.RegExp("^\\+[1-9]\\d{1,14}$", "u")).annotate({
+          expected: "a string matching the RegExp ^\\+[1-9]\\d{1,14}$",
+        }),
+      ),
+      id: Schema.optionalKey(Schema.Never),
+      externalId: Schema.optionalKey(Schema.Never),
+      email: Schema.optionalKey(Schema.Never),
     }),
   ]).annotate({ identifier: "ContactEventReference" }))();
 export type EmailRecipient =
@@ -5726,6 +5793,7 @@ export type JourneySendEmailConfig = {
   readonly publicationId?: TemplatePublicationId;
   readonly senderId?: EmailSenderId;
   readonly templateData?: JsonObject;
+  readonly eventBindings?: { readonly [x: string]: string };
 };
 export const JourneySendEmailConfig = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -5740,6 +5808,26 @@ export const JourneySendEmailConfig = /* @__PURE__ */ (() =>
     publicationId: Schema.optionalKey(TemplatePublicationId),
     senderId: Schema.optionalKey(EmailSenderId),
     templateData: Schema.optionalKey(JsonObject),
+    eventBindings: Schema.optionalKey(
+      Schema.Record(
+        Schema.String,
+        Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ).check(
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+          }),
+        ),
+      ).check(
+        Schema.isPropertyNames(
+          Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ),
+        ).annotate({ expected: "an object with property names matching the schema" }),
+      ),
+    ),
   }).annotate({ identifier: "JourneySendEmailConfig" }))();
 export type TopicCreatePayload = {
   readonly name: string;
@@ -6639,6 +6727,7 @@ export type WhatsAppTemplateIdContent = {
   readonly templateId: TemplateId;
   readonly templateData?: WhatsAppTemplateData;
   readonly flowToken?: string;
+  readonly flowActionData?: JsonObject_1;
 };
 export const WhatsAppTemplateIdContent = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -6662,11 +6751,13 @@ export const WhatsAppTemplateIdContent = /* @__PURE__ */ (() =>
           }),
         ),
     ),
+    flowActionData: Schema.optionalKey(JsonObject_1),
   }).annotate({ identifier: "WhatsAppTemplateIdContent" }))();
 export type WhatsAppTemplateSlugContent = {
   readonly templateSlug: string;
   readonly templateData?: WhatsAppTemplateData;
   readonly flowToken?: string;
+  readonly flowActionData?: JsonObject_1;
 };
 export const WhatsAppTemplateSlugContent = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -6694,6 +6785,7 @@ export const WhatsAppTemplateSlugContent = /* @__PURE__ */ (() =>
           }),
         ),
     ),
+    flowActionData: Schema.optionalKey(JsonObject_1),
   }).annotate({ identifier: "WhatsAppTemplateSlugContent" }))();
 export type WhatsAppLocationContent = { readonly location: WhatsAppLocation };
 export const WhatsAppLocationContent = /* @__PURE__ */ (() =>
@@ -6777,6 +6869,7 @@ export type CreateWhatsAppFlowPayload = {
     | "SURVEY"
     | "OTHER"
   >;
+  readonly submissionHandler?: "agent" | "app";
 };
 export const CreateWhatsAppFlowPayload = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -6802,6 +6895,9 @@ export const CreateWhatsAppFlowPayload = /* @__PURE__ */ (() =>
         Schema.Literal("OTHER"),
       ]),
     ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
+    submissionHandler: Schema.optionalKey(
+      Schema.Union([Schema.Literal("agent"), Schema.Literal("app")]),
+    ),
   }).annotate({ identifier: "CreateWhatsAppFlowPayload" }))();
 export type Operation = {
   readonly id: OperationId;
@@ -7639,11 +7735,34 @@ export const JourneyTrigger = /* @__PURE__ */ (() =>
   ]).annotate({ identifier: "JourneyTrigger" }))();
 export type JourneyWaitForEventConfig = {
   readonly eventName: JourneyEventName;
+  readonly correlation?: { readonly eventProperty: string; readonly entryProperty: string };
   readonly timeoutSeconds: number;
 };
 export const JourneyWaitForEventConfig = /* @__PURE__ */ (() =>
   Schema.Struct({
     eventName: JourneyEventName,
+    correlation: Schema.optionalKey(
+      Schema.Struct({
+        eventProperty: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ).check(
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+          }),
+        ),
+        entryProperty: Schema.String.check(
+          Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+        ).check(
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+          }),
+        ),
+      }),
+    ),
     timeoutSeconds: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
         Schema.isLessThanOrEqualTo(7776000).annotate({
@@ -7734,6 +7853,23 @@ export const JourneyCustomFieldPredicate = /* @__PURE__ */ (() =>
     ),
     comparison: JourneyComparison,
   }).annotate({ identifier: "JourneyCustomFieldPredicate" }))();
+export type JourneyEntryEventPropertyPredicate = {
+  readonly type: "entry_event_property";
+  readonly property: string;
+  readonly comparison: JourneyComparison;
+};
+export const JourneyEntryEventPropertyPredicate = /* @__PURE__ */ (() =>
+  Schema.Struct({
+    type: Schema.Literal("entry_event_property"),
+    property: Schema.String.check(
+      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+    ).check(
+      Schema.isPattern(new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u")).annotate(
+        { expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$" },
+      ),
+    ),
+    comparison: JourneyComparison,
+  }).annotate({ identifier: "JourneyEntryEventPropertyPredicate" }))();
 export type WhatsAppListMessage = {
   readonly type: "list";
   readonly header?: WhatsAppTextHeader;
@@ -8209,6 +8345,7 @@ export type JourneySendWhatsAppConfig = {
     readonly templateChannelVariantId: TemplateChannelVariantId;
   };
   readonly eventBindings?: { readonly [x: string]: string };
+  readonly flowActionDataBinding?: string;
 };
 export const JourneySendWhatsAppConfig = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -8249,6 +8386,20 @@ export const JourneySendWhatsAppConfig = /* @__PURE__ */ (() =>
         ).annotate({ expected: "an object with property names matching the schema" }),
       ),
     ),
+    flowActionDataBinding: Schema.optionalKey(
+      Schema.String.annotate({
+        description:
+          "Entry-event property path to the JSON object that initializes a navigate Flow button.",
+      })
+        .check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }))
+        .check(
+          Schema.isPattern(
+            new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+          ).annotate({
+            expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+          }),
+        ),
+    ),
   }).annotate({ identifier: "JourneySendWhatsAppConfig" }))();
 export type JourneyWaitForEventNode = {
   readonly type: "wait_for_event";
@@ -8265,13 +8416,15 @@ export type JourneyPredicate =
   | JourneyTagPredicate
   | JourneyPropertyPredicate
   | JourneyCustomFieldPredicate
-  | JourneyEventPredicate;
+  | JourneyEventPredicate
+  | JourneyEntryEventPropertyPredicate;
 export const JourneyPredicate = /* @__PURE__ */ (() =>
   Schema.Union([
     JourneyTagPredicate,
     JourneyPropertyPredicate,
     JourneyCustomFieldPredicate,
     JourneyEventPredicate,
+    JourneyEntryEventPropertyPredicate,
   ]).annotate({ identifier: "JourneyPredicate" }))();
 export class MailboxSendRefusedError extends Schema.TaggedError<MailboxSendRefusedError>()(
   "MailboxSendRefusedError",
@@ -8857,6 +9010,7 @@ export const AgentModuleBundle = /* @__PURE__ */ (() =>
     identifier: "AgentModuleBundle",
   }))();
 export type WhatsAppMessageContent = {
+  readonly appHandlesFlowSubmission?: true;
   readonly text?: string | null;
   readonly template?: {
     readonly name: string;
@@ -8886,7 +9040,10 @@ export type WhatsAppMessageContent = {
         readonly document?: { readonly link: string; readonly filename?: string | null } | null;
         readonly video?: { readonly link: string } | null;
         readonly coupon_code?: string | null;
-        readonly action?: { readonly flow_token: string } | null;
+        readonly action?: {
+          readonly flow_token: string;
+          readonly flow_action_data?: JsonObject;
+        } | null;
       }>;
     }>;
   } | null;
@@ -8901,6 +9058,7 @@ export type WhatsAppMessageContent = {
 };
 export const WhatsAppMessageContent = /* @__PURE__ */ (() =>
   Schema.Struct({
+    appHandlesFlowSubmission: Schema.optionalKey(Schema.Literal(true)),
     text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
     template: Schema.optionalKey(
       Schema.Union([
@@ -8972,7 +9130,13 @@ export const WhatsAppMessageContent = /* @__PURE__ */ (() =>
                   ),
                   coupon_code: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
                   action: Schema.optionalKey(
-                    Schema.Union([Schema.Struct({ flow_token: Schema.String }), Schema.Null]),
+                    Schema.Union([
+                      Schema.Struct({
+                        flow_token: Schema.String,
+                        flow_action_data: Schema.optionalKey(JsonObject),
+                      }),
+                      Schema.Null,
+                    ]),
                   ),
                 }),
               ),
@@ -9168,7 +9332,9 @@ export type JourneyDefinition = {
   readonly nodes: { readonly [x: string]: JourneyNode };
   readonly goal?: JourneyGoal;
   readonly reentry?: boolean;
-  readonly enrollment?: { readonly type: "shopify_order"; readonly shop: ShopifyShop };
+  readonly enrollment?:
+    | { readonly type: "shopify_order"; readonly shop: ShopifyShop }
+    | { readonly type: "event_property"; readonly property: string };
 };
 export const JourneyDefinition = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -9182,7 +9348,21 @@ export const JourneyDefinition = /* @__PURE__ */ (() =>
     goal: Schema.optionalKey(JourneyGoal),
     reentry: Schema.optionalKey(Schema.Boolean),
     enrollment: Schema.optionalKey(
-      Schema.Struct({ type: Schema.Literal("shopify_order"), shop: ShopifyShop }),
+      Schema.Union([
+        Schema.Struct({ type: Schema.Literal("shopify_order"), shop: ShopifyShop }),
+        Schema.Struct({
+          type: Schema.Literal("event_property"),
+          property: Schema.String.check(
+            Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+          ).check(
+            Schema.isPattern(
+              new globalThis.RegExp("^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$", "u"),
+            ).annotate({
+              expected: "a string matching the RegExp ^[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*$",
+            }),
+          ),
+        }),
+      ]),
     ),
   }).annotate({ identifier: "JourneyDefinition" }))();
 export type SendMessagePayload =
@@ -9197,12 +9377,15 @@ export const SendMessagePayload = /* @__PURE__ */ (() =>
   ]).annotate({ identifier: "SendMessagePayload" }))();
 export type CreateJourneyPayload = {
   readonly name: JourneyName;
+  readonly namespaceId?: NamespaceId;
   readonly definition: JourneyDefinition;
 };
 export const CreateJourneyPayload = /* @__PURE__ */ (() =>
-  Schema.Struct({ name: JourneyName, definition: JourneyDefinition }).annotate({
-    identifier: "CreateJourneyPayload",
-  }))();
+  Schema.Struct({
+    name: JourneyName,
+    namespaceId: Schema.optionalKey(NamespaceId),
+    definition: JourneyDefinition,
+  }).annotate({ identifier: "CreateJourneyPayload" }))();
 export type ReplaceJourneyDraftPayload = {
   readonly revision: string;
   readonly definition: JourneyDefinition;

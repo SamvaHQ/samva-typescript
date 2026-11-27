@@ -1,3 +1,27 @@
+## samva@0.53.0
+
+### Run WhatsApp Flows in a namespace
+
+Use a namespace-scoped API key to create a Flow in your namespace's template project and register
+it on your WhatsApp business account. Pass `flowJson` when recording a version, or run
+`samva whatsapp flows publish <flow-id> --file ./flow.json`.
+
+Pass `flowActionData` when sending a template with a navigate Flow button to supply data for its
+first screen. Set `submissionHandler: "app"` when creating the Flow to receive completions without
+a hosted-agent reply. WhatsApp `message.received` webhooks include `conversationId` and provide
+`replyToMetadata` when Samva can match the reply to the original send.
+
+### Use the entry event in journey steps and branches
+
+Journey steps can read the event that enrolled a run. An email step's `eventBindings` maps
+top-level template variables to event paths, such as `{ "reviewUrl": "order.reviewUrl" }`. A
+WhatsApp step's `flowActionDataBinding` copies an object from the event into a navigate Flow
+button's first screen. A branch condition of type `entry_event_property` compares a property of
+the entry event with the existing journey comparisons, including `exists`.
+
+A step fails when a bound path is missing, and the error names the variable and the event path.
+The SDK types include the new fields.
+
 ## samva@0.52.0
 
 ### List snoozed threads by wake time

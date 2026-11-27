@@ -11,6 +11,7 @@ import {
   ForbiddenError,
   GatewayTimeoutError,
   InternalError,
+  JsonObject,
   MalformedRequestError,
   ResourceNotFoundError,
   ServiceUnavailableError,
@@ -226,6 +227,7 @@ export type WhatsAppFlow = {
     | "SURVEY"
     | "OTHER"
   >;
+  readonly submissionHandler?: "agent" | "app";
   readonly endpoint: WhatsAppFlowEndpoint | null;
   readonly currentVersion: WhatsAppFlowVersion | null;
   readonly createdAt: string;
@@ -256,6 +258,9 @@ export const WhatsAppFlow = /* @__PURE__ */ (() =>
         Schema.Literal("SURVEY"),
         Schema.Literal("OTHER"),
       ]),
+    ),
+    submissionHandler: Schema.optionalKey(
+      Schema.Union([Schema.Literal("agent"), Schema.Literal("app")]),
     ),
     endpoint: Schema.Union([WhatsAppFlowEndpoint, Schema.Null]),
     currentVersion: Schema.Union([WhatsAppFlowVersion, Schema.Null]),
@@ -306,6 +311,7 @@ export type WhatsappFlowsCreateRequestJson = {
     | "SURVEY"
     | "OTHER"
   >;
+  readonly submissionHandler?: "agent" | "app";
 };
 export const WhatsappFlowsCreateRequestJson = /* @__PURE__ */ (() =>
   Schema.Struct({
@@ -331,6 +337,9 @@ export const WhatsappFlowsCreateRequestJson = /* @__PURE__ */ (() =>
         Schema.Literal("OTHER"),
       ]),
     ).check(Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" })),
+    submissionHandler: Schema.optionalKey(
+      Schema.Union([Schema.Literal("agent"), Schema.Literal("app")]),
+    ),
   }))();
 export type WhatsappFlowsCreate201 = WhatsAppFlow;
 export const WhatsappFlowsCreate201 = WhatsAppFlow;
@@ -482,21 +491,23 @@ export const WhatsappFlowsListVersions504 = GatewayTimeoutError;
 export type WhatsappFlowsRecordVersionPathParams = { readonly id: WhatsAppFlowId };
 export const WhatsappFlowsRecordVersionPathParams = /* @__PURE__ */ (() =>
   Schema.Struct({ id: WhatsAppFlowId }))();
-export type WhatsappFlowsRecordVersionRequestJson = {
-  readonly commitSha: string;
-  readonly expectedWorkspaceRevision: string;
-};
+export type WhatsappFlowsRecordVersionRequestJson =
+  | { readonly commitSha: string; readonly expectedWorkspaceRevision: string }
+  | { readonly flowJson: JsonObject };
 export const WhatsappFlowsRecordVersionRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({
-    commitSha: Schema.String.check(
-      Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
-        expected: "a string matching the RegExp ^[a-f0-9]{40}$",
-      }),
-    ),
-    expectedWorkspaceRevision: Schema.String.check(
-      Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
-    ),
-  }))();
+  Schema.Union([
+    Schema.Struct({
+      commitSha: Schema.String.check(
+        Schema.isPattern(new globalThis.RegExp("^[a-f0-9]{40}$", "u")).annotate({
+          expected: "a string matching the RegExp ^[a-f0-9]{40}$",
+        }),
+      ),
+      expectedWorkspaceRevision: Schema.String.check(
+        Schema.isMinLength(1).annotate({ expected: "a value with a length of at least 1" }),
+      ),
+    }),
+    Schema.Struct({ flowJson: JsonObject }),
+  ]))();
 export type WhatsappFlowsRecordVersion201 = WhatsAppFlowVersion;
 export const WhatsappFlowsRecordVersion201 = WhatsAppFlowVersion;
 export type WhatsappFlowsRecordVersion400 = MalformedRequestError;
@@ -560,7 +571,7 @@ export class WhatsAppFlowsGroup extends HttpApiGroup.make("WhatsApp flows")
       .annotate(OpenApi.Summary, "List flows")
       .annotate(
         OpenApi.Description,
-        "Returns the organization's flows, newest first, each with its current version.",
+        "Returns flows visible to the caller, newest first, each with its current version.",
       ),
     HttpApiEndpoint.post("whatsappFlowsCreate", "/v1/whatsapp/flows", {
       payload: WhatsappFlowsCreateRequestJson,
@@ -581,7 +592,7 @@ export class WhatsAppFlowsGroup extends HttpApiGroup.make("WhatsApp flows")
       .annotate(OpenApi.Summary, "Create a flow")
       .annotate(
         OpenApi.Description,
-        "Creates a WhatsApp flow whose versions read `flows/<handle>.json` in the template project. The handle is unique in the organization; the categories are Meta's and go with every version to Meta.",
+        "Creates a WhatsApp flow whose versions read `flows/<handle>.json` in the template project. The handle is unique in its namespace or at organization level; the categories are Meta's and go with every version to Meta.",
       ),
     HttpApiEndpoint.get("whatsappFlowsGet", "/v1/whatsapp/flows/:id", {
       params: WhatsappFlowsGetPathParams,
@@ -726,7 +737,7 @@ export class WhatsAppFlowsGroup extends HttpApiGroup.make("WhatsApp flows")
       .annotate(OpenApi.Summary, "Record a flow version")
       .annotate(
         OpenApi.Description,
-        "Reads the flow's file at a commit on the project's default branch, checks it is Flow JSON Samva sends, and records it as the flow's current version. The same content returns the version that already recorded it.",
+        "Supply Flow JSON to commit the flow's file and record its version, or name a commit and workspace revision to record a file already on the project's default branch. The same content returns the version that already recorded it.",
       ),
     HttpApiEndpoint.post(
       "whatsappFlowsRotateEncryptionKey",

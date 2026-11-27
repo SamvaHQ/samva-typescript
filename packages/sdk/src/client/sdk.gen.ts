@@ -7571,7 +7571,7 @@ export class Events {
   /**
    * Record a contact event
    *
-   * Records a custom contact event. Identify the contact by exactly one ID, external ID, or email. A missing email or external ID creates a contact; an unknown contact ID returns 404. An organization-scoped idempotency key replays the original event. Event names use letters, digits, underscores, hyphens, and dots, up to 255 characters; contact. and samva. prefixes are reserved. Properties allow at most 50 keys and 32 KiB of UTF-8 JSON. Events are retained for 90 days.
+   * Records a custom contact event. Identify the contact by exactly one ID, external ID, email, or E.164 phone number. An unmatched external ID, email, or phone number creates a contact; an unknown contact ID returns 404. An idempotency key replays the original event in the credential’s scope. Event names use letters, digits, underscores, hyphens, and dots, up to 255 characters; contact. and samva. prefixes are reserved. Properties allow at most 50 keys and 32 KiB of UTF-8 JSON. Events are retained for 90 days.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -7697,10 +7697,11 @@ export class Journeys {
   /**
    * List journeys
    *
-   * Returns the organization's journeys, newest first, optionally filtered by status. Pass nextCursor back as cursor for the next page.
+   * Returns the journeys the caller can access, newest first. Filter by namespaceId or status. Pass nextCursor back as cursor for the next page.
    */
   public static list<ThrowOnError extends boolean = false>(
     parameters?: {
+      namespaceId?: NamespaceId | undefined;
       status?: JourneyStatus | undefined;
       limit?: number | null | undefined;
       cursor?: string | undefined;
@@ -7712,6 +7713,7 @@ export class Journeys {
       [
         {
           args: [
+            { in: "query", key: "namespaceId" },
             { in: "query", key: "status" },
             { in: "query", key: "limit" },
             { in: "query", key: "cursor" },
@@ -7738,11 +7740,12 @@ export class Journeys {
   /**
    * Create a journey
    *
-   * Creates a draft journey from a definition: a trigger, a root node, and a graph of at most 200 nodes that is acyclic and fully reachable. Templates, senders, and groups the definition names must belong to the organization. Requires a plan that includes journeys.
+   * Creates a draft journey from a definition: a trigger, a root node, and a graph of at most 200 nodes that is acyclic and fully reachable. A namespace key creates in its own namespace. An organization key can pass namespaceId to place the journey in a namespace. The journey can use resources available in its scope. Requires a plan that includes journeys.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
       name: JourneyName;
+      namespaceId?: NamespaceId | undefined;
       definition: JourneyDefinitionWritable;
     },
     options?: Options<never, ThrowOnError>,
@@ -7753,6 +7756,7 @@ export class Journeys {
         {
           args: [
             { in: "body", key: "name" },
+            { in: "body", key: "namespaceId" },
             { in: "body", key: "definition" },
           ],
         },
@@ -20998,7 +21002,7 @@ export class WhatsappFlows {
   /**
    * List flows
    *
-   * Returns the organization's flows, newest first, each with its current version.
+   * Returns flows visible to the caller, newest first, each with its current version.
    */
   public static list<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
@@ -21025,7 +21029,7 @@ export class WhatsappFlows {
   /**
    * Create a flow
    *
-   * Creates a WhatsApp flow whose versions read `flows/<handle>.json` in the template project. The handle is unique in the organization; the categories are Meta's and go with every version to Meta.
+   * Creates a WhatsApp flow whose versions read `flows/<handle>.json` in the template project. The handle is unique in its namespace or at organization level; the categories are Meta's and go with every version to Meta.
    */
   public static create<ThrowOnError extends boolean = false>(
     parameters: {
@@ -21041,6 +21045,7 @@ export class WhatsappFlows {
         | "SURVEY"
         | "OTHER"
       >;
+      submissionHandler?: "agent" | "app" | undefined;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<WhatsappFlowsCreateResponses, WhatsappFlowsCreateErrors, ThrowOnError> {
@@ -21052,6 +21057,7 @@ export class WhatsappFlows {
             { in: "body", key: "projectId" },
             { in: "body", key: "handle" },
             { in: "body", key: "categories" },
+            { in: "body", key: "submissionHandler" },
           ],
         },
       ],
@@ -21148,13 +21154,19 @@ export class WhatsappFlows {
   /**
    * Record a flow version
    *
-   * Reads the flow's file at a commit on the project's default branch, checks it is Flow JSON Samva sends, and records it as the flow's current version. The same content returns the version that already recorded it.
+   * Supply Flow JSON to commit the flow's file and record its version, or name a commit and workspace revision to record a file already on the project's default branch. The same content returns the version that already recorded it.
    */
   public static recordVersion<ThrowOnError extends boolean = false>(
     parameters: {
       id: WhatsAppFlowId;
-      commitSha: string;
-      expectedWorkspaceRevision: string;
+      body:
+        | {
+            commitSha: string;
+            expectedWorkspaceRevision: string;
+          }
+        | {
+            flowJson: JsonObjectWritable;
+          };
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<
@@ -21168,8 +21180,7 @@ export class WhatsappFlows {
         {
           args: [
             { in: "path", key: "id" },
-            { in: "body", key: "commitSha" },
-            { in: "body", key: "expectedWorkspaceRevision" },
+            { key: "body", map: "body" },
           ],
         },
       ],
@@ -21188,7 +21199,6 @@ export class WhatsappFlows {
           url: "/v1/whatsapp/flows/{id}/versions",
           ...options,
           ...params,
-          body: params.body ?? {},
           headers: { "Content-Type": "application/json", ...headers, ...params.headers },
           signal,
         }),

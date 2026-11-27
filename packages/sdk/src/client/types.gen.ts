@@ -336,9 +336,21 @@ export type WhatsAppFlowVersion = {
   createdAt: string;
 };
 
-export type RecordWhatsAppFlowVersionPayload = {
-  commitSha: string;
-  expectedWorkspaceRevision: string;
+export type RecordWhatsAppFlowVersionPayload =
+  | {
+      commitSha: string;
+      expectedWorkspaceRevision: string;
+    }
+  | {
+      flowJson: JsonObject;
+    };
+
+export type JsonObject = {
+  [key: string]: JsonValue;
+};
+
+export type JsonObjectWritable = {
+  [key: string]: JsonValueWritable | undefined;
 };
 
 export type WhatsAppFlow = {
@@ -356,6 +368,7 @@ export type WhatsAppFlow = {
     | "SURVEY"
     | "OTHER"
   >;
+  submissionHandler?: "agent" | "app" | undefined;
   endpoint: WhatsAppFlowEndpoint | null;
   currentVersion: WhatsAppFlowVersion | null;
   createdAt: string;
@@ -386,6 +399,7 @@ export type CreateWhatsAppFlowPayload = {
     | "SURVEY"
     | "OTHER"
   >;
+  submissionHandler?: "agent" | "app" | undefined;
 };
 
 export type MessageDeliveryId = string;
@@ -1032,14 +1046,6 @@ export type MailboxChatTemplate = {
   templateData: JsonObject | null;
 };
 
-export type JsonObject = {
-  [key: string]: JsonValue;
-};
-
-export type JsonObjectWritable = {
-  [key: string]: JsonValueWritable | undefined;
-};
-
 export type MailboxSmsEndpointBinding = {
   channel: "sms";
   phoneNumberId: SmsPhoneNumberId;
@@ -1477,6 +1483,7 @@ export type MailboxChatMessage = {
   template: MailboxChatMessageTemplate | null;
   summary: string | null;
   contextMessageId: MessageId | null;
+  flowSubmissionHandledBy?: "app" | undefined;
 };
 
 export type MailboxChatMessageTemplate = {
@@ -4826,6 +4833,7 @@ export type RunAgentTestPayload = {
 
 export type JourneyRunDetail = {
   id: JourneyRunId;
+  namespaceId?: NamespaceId | null | undefined;
   journeyId: JourneyId;
   version: number;
   contactId: ContactId;
@@ -4882,6 +4890,7 @@ export type JourneyRunPage = {
 
 export type JourneyRun = {
   id: JourneyRunId;
+  namespaceId?: NamespaceId | null | undefined;
   journeyId: JourneyId;
   version: number;
   contactId: ContactId;
@@ -4936,6 +4945,10 @@ export type JourneyDefinition = {
         type: "shopify_order";
         shop: ShopifyShop;
       }
+    | {
+        type: "event_property";
+        property: string;
+      }
     | undefined;
 };
 
@@ -4951,6 +4964,10 @@ export type JourneyDefinitionWritable = {
     | {
         type: "shopify_order";
         shop: ShopifyShop;
+      }
+    | {
+        type: "event_property";
+        property: string;
       }
     | undefined;
 };
@@ -5018,10 +5035,20 @@ export type JourneyNextEdge = {
 
 export type JourneyWebhookConfig = {
   data?: JsonObject | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string;
+      }
+    | undefined;
 };
 
 export type JourneyWebhookConfigWritable = {
   data?: JsonObjectWritable | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string | undefined;
+      }
+    | undefined;
 };
 
 export type JourneyUpdateTagsNode = {
@@ -5055,17 +5082,12 @@ export type JourneyPredicate =
   | JourneyTagPredicate
   | JourneyPropertyPredicate
   | JourneyCustomFieldPredicate
-  | JourneyEventPredicate;
+  | JourneyEventPredicate
+  | JourneyEntryEventPropertyPredicate;
 
-export type JourneyEventPredicate = {
-  type: "event";
-  eventName: JourneyEventName;
-  occurred: boolean;
-};
-
-export type JourneyCustomFieldPredicate = {
-  type: "custom_field";
-  key: string;
+export type JourneyEntryEventPropertyPredicate = {
+  type: "entry_event_property";
+  property: string;
   comparison: JourneyComparison;
 };
 
@@ -5092,6 +5114,18 @@ export type JourneyNumericComparison = {
 export type JourneyEqualityComparison = {
   operator: "eq" | "neq";
   value: string | number | boolean | null;
+};
+
+export type JourneyEventPredicate = {
+  type: "event";
+  eventName: JourneyEventName;
+  occurred: boolean;
+};
+
+export type JourneyCustomFieldPredicate = {
+  type: "custom_field";
+  key: string;
+  comparison: JourneyComparison;
 };
 
 export type JourneyPropertyPredicate = {
@@ -5134,6 +5168,12 @@ export type JourneyWaitEventEdge = {
 
 export type JourneyWaitForEventConfig = {
   eventName: JourneyEventName;
+  correlation?:
+    | {
+        eventProperty: string;
+        entryProperty: string;
+      }
+    | undefined;
   timeoutSeconds: number;
 };
 
@@ -5175,6 +5215,10 @@ export type JourneySendWhatsAppConfig = {
         [key: string]: string;
       }
     | undefined;
+  /**
+   * Entry-event property path to the JSON object that initializes a navigate Flow button.
+   */
+  flowActionDataBinding?: string | undefined;
 };
 
 export type JourneySendWhatsAppConfigWritable = {
@@ -5193,6 +5237,10 @@ export type JourneySendWhatsAppConfigWritable = {
         [key: string]: string | undefined;
       }
     | undefined;
+  /**
+   * Entry-event property path to the JSON object that initializes a navigate Flow button.
+   */
+  flowActionDataBinding?: string | undefined;
 };
 
 export type WhatsAppTemplateDispatchData = {
@@ -5220,6 +5268,11 @@ export type JourneySendEmailConfig = {
   publicationId?: TemplatePublicationId | undefined;
   senderId?: EmailSenderId | undefined;
   templateData?: JsonObject | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string;
+      }
+    | undefined;
 };
 
 export type JourneySendEmailConfigWritable = {
@@ -5227,6 +5280,11 @@ export type JourneySendEmailConfigWritable = {
   publicationId?: TemplatePublicationId | undefined;
   senderId?: EmailSenderId | undefined;
   templateData?: JsonObjectWritable | undefined;
+  eventBindings?:
+    | {
+        [key: string]: string | undefined;
+      }
+    | undefined;
 };
 
 export type JourneyTrigger =
@@ -5256,6 +5314,7 @@ export type JourneyCustomEventTrigger = {
 
 export type Journey = {
   id: JourneyId;
+  namespaceId?: NamespaceId | null | undefined;
   name: string;
   status: JourneyStatus;
   revision: string;
@@ -5288,6 +5347,7 @@ export type JourneyName = string;
 
 export type CreateJourneyPayload = {
   name: JourneyName;
+  namespaceId?: NamespaceId | undefined;
   definition: JourneyDefinition;
 };
 
@@ -5298,6 +5358,7 @@ export type JourneyPage = {
 
 export type JourneyListItem = {
   id: JourneyId;
+  namespaceId?: NamespaceId | null | undefined;
   name: string;
   status: JourneyStatus;
   publishedVersion: number | null;
@@ -5349,16 +5410,25 @@ export type ContactEventReference =
       id: ContactId;
       externalId?: never | undefined;
       email?: never | undefined;
+      phone?: never | undefined;
     }
   | {
       externalId: string;
       id?: never | undefined;
       email?: never | undefined;
+      phone?: never | undefined;
     }
   | {
       email: string;
       id?: never | undefined;
       externalId?: never | undefined;
+      phone?: never | undefined;
+    }
+  | {
+      phone: string;
+      id?: never | undefined;
+      externalId?: never | undefined;
+      email?: never | undefined;
     };
 
 export type ContactGroupMembershipPage = {
@@ -7323,12 +7393,28 @@ export type WhatsAppTemplateSlugContent = {
   templateSlug: string;
   templateData?: WhatsAppTemplateData | undefined;
   flowToken?: string | undefined;
+  flowActionData?: JsonObject1 | undefined;
 };
 
 export type WhatsAppTemplateSlugContentWritable = {
   templateSlug: string;
   templateData?: WhatsAppTemplateDataWritable | undefined;
   flowToken?: string | undefined;
+  flowActionData?: JsonObject1Writable | undefined;
+};
+
+/**
+ * Initial screen data for a navigate Flow button.
+ */
+export type JsonObject1 = {
+  [key: string]: JsonValue;
+};
+
+/**
+ * Initial screen data for a navigate Flow button.
+ */
+export type JsonObject1Writable = {
+  [key: string]: JsonValueWritable | undefined;
 };
 
 export type WhatsAppTemplateData = {
@@ -7343,12 +7429,14 @@ export type WhatsAppTemplateIdContent = {
   templateId: TemplateId;
   templateData?: WhatsAppTemplateData | undefined;
   flowToken?: string | undefined;
+  flowActionData?: JsonObject1 | undefined;
 };
 
 export type WhatsAppTemplateIdContentWritable = {
   templateId: TemplateId;
   templateData?: WhatsAppTemplateDataWritable | undefined;
   flowToken?: string | undefined;
+  flowActionData?: JsonObject1Writable | undefined;
 };
 
 export type WhatsAppTextContent = {
@@ -7833,6 +7921,7 @@ export type WhatsAppStructuredContent = {
 };
 
 export type WhatsAppMessageContent = {
+  appHandlesFlowSubmission?: true | undefined;
   text?: string | null | undefined;
   template?:
     | {
@@ -7890,6 +7979,7 @@ export type WhatsAppMessageContent = {
             action?:
               | {
                   flow_token: string;
+                  flow_action_data?: JsonObject | undefined;
                 }
               | null
               | undefined;
@@ -7915,6 +8005,7 @@ export type WhatsAppMessageReference = {
 
 export type WhatsAppReceivedFlowResponse = {
   flowToken: string | null;
+  submissionHandler?: "app" | undefined;
   response: {
     [key: string]: JsonValue;
   };
@@ -17667,6 +17758,7 @@ export type JourneysListData = {
   body?: never;
   path?: never;
   query?: {
+    namespaceId?: NamespaceId | undefined;
     status?: JourneyStatus | undefined;
     limit?: number | null | undefined;
     cursor?: string | undefined;
@@ -17715,6 +17807,7 @@ export type JourneysListResponse = JourneysListResponses[keyof JourneysListRespo
 export type JourneysCreateData = {
   body: {
     name: JourneyName;
+    namespaceId?: NamespaceId | undefined;
     definition: JourneyDefinitionWritable;
   };
   path?: never;
@@ -38193,6 +38286,7 @@ export type WhatsappFlowsCreateData = {
       | "SURVEY"
       | "OTHER"
     >;
+    submissionHandler?: "agent" | "app" | undefined;
   };
   path?: never;
   query?: never;
@@ -38351,10 +38445,14 @@ export type WhatsappFlowsListVersionsResponse =
   WhatsappFlowsListVersionsResponses[keyof WhatsappFlowsListVersionsResponses];
 
 export type WhatsappFlowsRecordVersionData = {
-  body: {
-    commitSha: string;
-    expectedWorkspaceRevision: string;
-  };
+  body:
+    | {
+        commitSha: string;
+        expectedWorkspaceRevision: string;
+      }
+    | {
+        flowJson: JsonObjectWritable;
+      };
   path: {
     id: WhatsAppFlowId;
   };

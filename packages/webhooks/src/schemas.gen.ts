@@ -588,10 +588,19 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
             Schema.Null,
           ]),
         ),
+        replyToMetadata: Schema.optionalKey(
+          Schema.Record(
+            Schema.String,
+            Schema.Json.annotate({
+              expected: "JSON value",
+            }),
+          ),
+        ),
         whatsapp: Schema.optionalKey(
           Schema.Union([
             Schema.StructWithRest(
               Schema.Struct({
+                appHandlesFlowSubmission: Schema.optionalKey(Schema.Literal(true)),
                 text: Schema.optionalKey(Schema.Union([Schema.String, Schema.Null])),
                 template: Schema.optionalKey(
                   Schema.Union([
@@ -729,6 +738,14 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                                         Schema.StructWithRest(
                                           Schema.Struct({
                                             flow_token: Schema.String,
+                                            flow_action_data: Schema.optionalKey(
+                                              Schema.Record(
+                                                Schema.String,
+                                                Schema.Json.annotate({
+                                                  expected: "JSON value",
+                                                }),
+                                              ),
+                                            ),
                                           }),
                                           [
                                             Schema.Record(
@@ -1758,6 +1775,7 @@ export const MessageReceivedEventSchema = Schema.StructWithRest(
                   Schema.StructWithRest(
                     Schema.Struct({
                       flowToken: Schema.Union([Schema.String, Schema.Null]),
+                      submissionHandler: Schema.optionalKey(Schema.Literal("app")),
                       response: Schema.Record(
                         Schema.String,
                         Schema.Json.annotate({
@@ -3568,6 +3586,7 @@ export const MailboxMessageReceivedEventSchema = Schema.StructWithRest(
         ]),
         message: Schema.StructWithRest(
           Schema.Struct({
+            flowSubmissionHandledBy: Schema.optionalKey(Schema.Literal("app")),
             id: Schema.String.check(
               Schema.isPattern(
                 new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),
@@ -3795,6 +3814,7 @@ export const MailboxMessageSentEventSchema = Schema.StructWithRest(
         ),
         message: Schema.StructWithRest(
           Schema.Struct({
+            flowSubmissionHandledBy: Schema.optionalKey(Schema.Literal("app")),
             id: Schema.String.check(
               Schema.isPattern(
                 new globalThis.RegExp("^msg_[0-9a-hjkmnp-tv-z]{16,24}$", "u"),

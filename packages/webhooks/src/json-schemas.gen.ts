@@ -431,11 +431,13 @@ export const WebhookEventJsonSchemas: Readonly<
               { type: "null" },
             ],
           },
+          replyToMetadata: { type: "object" },
           whatsapp: {
             anyOf: [
               {
                 type: "object",
                 properties: {
+                  appHandlesFlowSubmission: { type: "boolean", enum: [true] },
                   text: { anyOf: [{ type: "string" }, { type: "null" }] },
                   template: {
                     anyOf: [
@@ -553,7 +555,10 @@ export const WebhookEventJsonSchemas: Readonly<
                                         anyOf: [
                                           {
                                             type: "object",
-                                            properties: { flow_token: { type: "string" } },
+                                            properties: {
+                                              flow_token: { type: "string" },
+                                              flow_action_data: { type: "object" },
+                                            },
                                             required: ["flow_token"],
                                             additionalProperties: true,
                                           },
@@ -1053,6 +1058,7 @@ export const WebhookEventJsonSchemas: Readonly<
                     type: "object",
                     properties: {
                       flowToken: { anyOf: [{ type: "string" }, { type: "null" }] },
+                      submissionHandler: { type: "string", enum: ["app"] },
                       response: { type: "object" },
                       body: { type: "string" },
                     },
@@ -2312,6 +2318,7 @@ export const WebhookEventJsonSchemas: Readonly<
           message: {
             type: "object",
             properties: {
+              flowSubmissionHandledBy: { type: "string", enum: ["app"] },
               id: { type: "string", pattern: "^msg_[0-9a-hjkmnp-tv-z]{16,24}$" },
               campaign: {
                 anyOf: [
@@ -2453,6 +2460,7 @@ export const WebhookEventJsonSchemas: Readonly<
           message: {
             type: "object",
             properties: {
+              flowSubmissionHandledBy: { type: "string", enum: ["app"] },
               id: { type: "string", pattern: "^msg_[0-9a-hjkmnp-tv-z]{16,24}$" },
               campaign: {
                 anyOf: [

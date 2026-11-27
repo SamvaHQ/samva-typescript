@@ -20,6 +20,7 @@ import {
   JsonObject,
   MalformedRequestError,
   MessageId,
+  NamespaceId,
   PaymentRequiredError,
   ResourceNotFoundError,
   UnauthorizedError,
@@ -139,6 +140,7 @@ export const DeleteJourneyResponse = /* @__PURE__ */ (() =>
   }))();
 export type JourneyListItem = {
   readonly id: JourneyId;
+  readonly namespaceId?: NamespaceId | null;
   readonly name: string;
   readonly status: JourneyStatus;
   readonly publishedVersion: number | null;
@@ -149,6 +151,7 @@ export type JourneyListItem = {
 export const JourneyListItem = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: JourneyId,
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     name: Schema.String,
     status: JourneyStatus,
     publishedVersion: Schema.Union([
@@ -223,6 +226,7 @@ export const JourneyRunStep = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "JourneyRunStep" }))();
 export type JourneyRun = {
   readonly id: JourneyRunId;
+  readonly namespaceId?: NamespaceId | null;
   readonly journeyId: JourneyId;
   readonly version: number;
   readonly contactId: ContactId;
@@ -239,6 +243,7 @@ export type JourneyRun = {
 export const JourneyRun = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: JourneyRunId,
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     journeyId: JourneyId,
     version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
@@ -296,6 +301,7 @@ export const JourneyStats = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "JourneyStats" }))();
 export type JourneyRunDetail = {
   readonly id: JourneyRunId;
+  readonly namespaceId?: NamespaceId | null;
   readonly journeyId: JourneyId;
   readonly version: number;
   readonly contactId: ContactId;
@@ -313,6 +319,7 @@ export type JourneyRunDetail = {
 export const JourneyRunDetail = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: JourneyRunId,
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     journeyId: JourneyId,
     version: Schema.Finite.check(Schema.isInt().annotate({ expected: "an integer" }))
       .check(
@@ -348,6 +355,7 @@ export const JourneyRunPage = /* @__PURE__ */ (() =>
   }).annotate({ identifier: "JourneyRunPage" }))();
 export type Journey = {
   readonly id: JourneyId;
+  readonly namespaceId?: NamespaceId | null;
   readonly name: string;
   readonly status: JourneyStatus;
   readonly revision: string;
@@ -360,6 +368,7 @@ export type Journey = {
 export const Journey = /* @__PURE__ */ (() =>
   Schema.Struct({
     id: JourneyId,
+    namespaceId: Schema.optionalKey(Schema.Union([NamespaceId, Schema.Null])),
     name: Schema.String,
     status: JourneyStatus,
     revision: Schema.String,
@@ -406,12 +415,14 @@ export const JourneyVersion = /* @__PURE__ */ (() =>
     publishedAt: Schema.String,
   }).annotate({ identifier: "JourneyVersion" }))();
 export type JourneysListQuery = {
+  readonly namespaceId?: NamespaceId;
   readonly status?: JourneyStatus;
   readonly limit?: number | null;
   readonly cursor?: string;
 };
 export const JourneysListQuery = /* @__PURE__ */ (() =>
   Schema.Struct({
+    namespaceId: Schema.optionalKey(NamespaceId),
     status: Schema.optionalKey(JourneyStatus),
     limit: Schema.optionalKey(
       Schema.Union([
@@ -444,10 +455,15 @@ export type JourneysList504 = GatewayTimeoutError;
 export const JourneysList504 = GatewayTimeoutError;
 export type JourneysCreateRequestJson = {
   readonly name: JourneyName;
+  readonly namespaceId?: NamespaceId;
   readonly definition: JourneyDefinition;
 };
 export const JourneysCreateRequestJson = /* @__PURE__ */ (() =>
-  Schema.Struct({ name: JourneyName, definition: JourneyDefinition }))();
+  Schema.Struct({
+    name: JourneyName,
+    namespaceId: Schema.optionalKey(NamespaceId),
+    definition: JourneyDefinition,
+  }))();
 export type JourneysCreate201 = Journey;
 export const JourneysCreate201 = Journey;
 export type JourneysCreate400 = MalformedRequestError;
@@ -796,7 +812,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       .annotate(OpenApi.Summary, "List journeys")
       .annotate(
         OpenApi.Description,
-        "Returns the organization's journeys, newest first, optionally filtered by status. Pass nextCursor back as cursor for the next page.",
+        "Returns the journeys the caller can access, newest first. Filter by namespaceId or status. Pass nextCursor back as cursor for the next page.",
       ),
     HttpApiEndpoint.post("journeysCreate", "/v1/journeys", {
       payload: JourneysCreateRequestJson,
@@ -819,7 +835,7 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
       .annotate(OpenApi.Summary, "Create a journey")
       .annotate(
         OpenApi.Description,
-        "Creates a draft journey from a definition: a trigger, a root node, and a graph of at most 200 nodes that is acyclic and fully reachable. Templates, senders, and groups the definition names must belong to the organization. Requires a plan that includes journeys.",
+        "Creates a draft journey from a definition: a trigger, a root node, and a graph of at most 200 nodes that is acyclic and fully reachable. A namespace key creates in its own namespace. An organization key can pass namespaceId to place the journey in a namespace. The journey can use resources available in its scope. Requires a plan that includes journeys.",
       ),
     HttpApiEndpoint.get("journeysGet", "/v1/journeys/:id", {
       params: JourneysGetPathParams,
@@ -1075,5 +1091,5 @@ export class JourneysGroup extends HttpApiGroup.make("Journeys")
   )
   .annotate(
     OpenApi.Description,
-    "Event-triggered, per-contact email flows defined as versioned node graphs",
+    "Versioned event-triggered automations that send email and WhatsApp, wait for events, and publish webhooks",
   ) {}
